@@ -50,10 +50,10 @@ for that group (`rust-edit.test.sh` covers the pre/post pair plus `_lib/rust_tar
 
 | Kind        | Shape                 | Example                     |
 | ----------- | --------------------- | --------------------------- |
-| Python hook | `<target>_<op>.py`    | `git_sandbox_guard.py`      |
+| Python hook | `<target>_<op>.py`    | `issue_body_gate.py`      |
 | shell hook  | `<target>-<op>.sh`    | `failure-alert.sh`          |
 | _lib module | `<noun>.py`           | `command_scan.py`           |
-| Python test | `<hook name>_test.py` | `git_sandbox_guard_test.py` |
+| Python test | `<hook name>_test.py` | `issue_body_gate_test.py` |
 | shell test  | `<hook name>.test.sh` | `failure-alert.test.sh`     |
 
 ## Narrowing the work
@@ -112,9 +112,9 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 
 | Hook                 | Event            | Failure Mode | Purpose                                                                                                       |
 | -------------------- | ---------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
-| npm_install_guard.py | PreToolUse(Bash) | fail-closed  | Block a package install unless ignore-scripts is on. The .npmrc where the install runs wins over the home one |
-| rm_to_trash.py       | PreToolUse(Bash) | fail-closed  | Route rm/rmdir/unlink/shred to `mv ~/.Trash/`                                                                 |
-| git_sandbox_guard.py | PreToolUse(Bash) | fail-closed  | Stop tree-rewriting git from running sandboxed in ~/.claude. Read-only forms pass                             |
+| npm_install_guard.ts | PreToolUse(Bash) | fail-closed  | Block a package install unless ignore-scripts is on. The .npmrc where the install runs wins over the home one |
+| rm_to_trash.ts       | PreToolUse(Bash) | fail-closed  | Route rm/rmdir/unlink/shred to `mv ~/.Trash/`                                                                 |
+| git_sandbox_guard.ts | PreToolUse(Bash) | fail-closed  | Stop tree-rewriting git from running sandboxed in ~/.claude. Read-only forms pass                             |
 
 ### lifecycle/
 

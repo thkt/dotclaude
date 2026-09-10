@@ -16,7 +16,7 @@ import sys
 import tempfile
 import unittest
 from datetime import date
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
@@ -107,6 +107,37 @@ class LabelFires(unittest.TestCase):
             self.assertEqual(list(result["elements"]), ["hooks/pre-bash/wiki_scene.py"])
 
 
+class TypeScriptElements(unittest.TestCase):
+    def test_a_fire_naming_a_typescript_hook_is_counted_the_way_a_python_one_is(self) -> None:
+        """A fire naming a TypeScript hook is counted the way a Python one is"""
+        # RARE_BY_DESIGN names a .ts hook, and a suffix set without .ts drops that path before
+        # the tally is built, leaving the entry pointing at a key nothing can produce.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_transcript(
+                root,
+                "project-a/session-1.jsonl",
+                [
+                    _fire(
+                        event="PreToolUse",
+                        command="~/.claude/hooks/security/rm_to_trash.ts",
+                        timestamp="2026-08-01T00:00:00.000Z",
+                    )
+                ],
+            )
+
+            result = usage_counts.count_usage(root)
+
+            self.assertEqual(result["elements"]["hooks/security/rm_to_trash.ts"]["fires"], 1)
+
+        for path in usage_counts.RARE_BY_DESIGN:
+            self.assertIn(
+                PurePosixPath(path).suffix,
+                usage_counts.ELEMENT_SUFFIXES,
+                f"{path} names a suffix the tally drops, so the entry can never match",
+            )
+
+
 class RareByDesign(unittest.TestCase):
     def test_an_element_flagged_rare_by_design_is_not_reported_as_a_delete_candidate_at_zero_fires(
         self,
@@ -114,8 +145,9 @@ class RareByDesign(unittest.TestCase):
         """T-002 An element flagged rare-by-design is not reported as a delete candidate at
         zero fires"""
         # Patched rather than read from whatever paths the module ships with, so shipping a
-        # different set cannot silently turn this case into a no-op.
-        rare_path = "hooks/security/rm_to_trash.py"
+        # different set cannot silently turn this case into a no-op. A name that is not the
+        # real RARE_BY_DESIGN entry, so this case cannot pass by accidentally matching it.
+        rare_path = "hooks/security/example_guard.py"
         with patch.object(usage_counts, "RARE_BY_DESIGN", frozenset({rare_path})):
             verdict = usage_counts.classify(
                 rare_path, fires=0, last_used=None, now=date(2026, 8, 27)
