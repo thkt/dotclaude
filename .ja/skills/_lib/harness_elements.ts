@@ -2,23 +2,16 @@
 /// <reference types="node" />
 // Usage: harness_elements.ts <repo-root>
 //
-// harness_elements.py を TypeScript へ移植したもの。<repo-root> 配下で POPULATION_GLOBS に
-// マッチするハーネスファイルを列挙し、それぞれを always-loaded / path-triggered /
-// glob-triggered / non-prompt のいずれかに分類する。
+// <repo-root> 配下で POPULATION_GLOBS にマッチするハーネスファイルを列挙し、それぞれを
+// always-loaded / path-triggered / glob-triggered / non-prompt のいずれかに分類する。
 //
 // stdout: JSON array of { path, classification }, path relative to <repo-root>
 // exit: 0 on success, 2 without an argument
 //
-// 契約: skills/_lib/harness_elements.py の ALWAYS_LOADED、PATH_TRIGGERED、GLOB_TRIGGERED、
+// 名前は snake_case のまま保つ -- ALWAYS_LOADED、PATH_TRIGGERED、GLOB_TRIGGERED、
 // NON_PROMPT、POPULATION_GLOBS、_frontmatter_lines、_unquote、_read_array、classify、
 // enumerate_elements、main。review_score.ts が自身の Python 由来の名前を camelCase に
-// リネームしたのとは違い、名前は harness_elements.py が宣言するとおりに保つ --
-// skills/ablate/scripts/arms.ts も同じ理由で同じ形を保っている。後続のスライスがこの
-// モジュールの export 名を harness_elements.py の公開名と集合として突き合わせる
-// (#641 の U-004 が使ったのと同じ守り) ため、ここで名前をリネームすると片側にしか
-// ない名前として読めてしまう。
-//
-//
+// リネームしたのとは違い、skills/ablate/scripts/arms.ts も同じ形を保っている。
 // 自前の YAML パーサーではない: ここで扱う 2 つの frontmatter 表記
 // (1 行の `globs: [...]`、`paths:` に続く `  - "..."` 行) は狭いので、この 2 形式を
 // 手書きでパースする方が、そのために依存を増やすより小さく収まる
@@ -34,9 +27,13 @@ export const GLOB_TRIGGERED = "glob-triggered";
 export const NON_PROMPT = "non-prompt";
 
 // 集団の供給リスト。プローズの契約ではなくスクリプトの定数として持つ
-// (docs/wiki/harness-production-divergence.md)。harness_elements.py の
-// POPULATION_GLOBS からそのまま複製している -- このリストを広げるのは退役スライスであり、
-// この移植ではない。
+// (docs/wiki/harness-production-divergence.md)。
+//
+// scripts/ と hooks/ のパターンはそれぞれ .py の glob と .ts の glob を持つ: どちらの木も
+// 片方の拡張子からもう片方へ移すファイルを含んできた (#643 / #684 / #644 / #645 が hooks
+// を .ts へ移し、この退役スライス自身が ablate 自身の script を移す)。.py の拡張子だけを
+// 数える glob だと、そうした移動が済んだファイルを一律に落としてしまう -- ablate 自身の
+// script tree がすべて .ts になった時点でこの skill が自分自身を測れなくなることも含めて。
 //
 // どのパターンもリテラルなトップレベルのセグメントに固定されており (裸の "**" から
 // 始まるものはない)、これらの木の隣に置かれる `.ja/` ミラーはこれらのグロブに
@@ -49,8 +46,10 @@ export const POPULATION_GLOBS: readonly string[] = [
   "CLAUDE.md",
   "skills/**/*.md",
   "skills/**/scripts/*.py",
+  "skills/**/scripts/*.ts",
   "agents/**/*.md",
   "hooks/**/*.py",
+  "hooks/**/*.ts",
   "hooks/**/*.md",
 ];
 

@@ -2,20 +2,16 @@
 /// <reference types="node" />
 // Usage: harness_elements.ts <repo-root>
 //
-// TypeScript port of harness_elements.py: enumerates the harness files under <repo-root>
-// matching POPULATION_GLOBS and classifies each into one of always-loaded / path-triggered /
-// glob-triggered / non-prompt.
+// Enumerates the harness files under <repo-root> matching POPULATION_GLOBS and classifies each
+// into one of always-loaded / path-triggered / glob-triggered / non-prompt.
 //
 // stdout: JSON array of { path, classification }, path relative to <repo-root>
 // exit: 0 on success, 2 without an argument
 //
-// Contract: skills/_lib/harness_elements.py's ALWAYS_LOADED, PATH_TRIGGERED, GLOB_TRIGGERED,
-// NON_PROMPT, POPULATION_GLOBS, _frontmatter_lines, _unquote, _read_array, classify,
-// enumerate_elements and main. Names stay exactly as harness_elements.py declares them, not
-// camelCased the way review_score.ts renamed its own Python source -- skills/ablate/scripts/
-// arms.ts keeps this same shape for the same reason: a later slice compares this module's
-// export names against harness_elements.py's public names as a set (the guard #641's U-004
-// used), so a renamed export here would read as a name only one side has.
+// Names stay snake_case -- ALWAYS_LOADED, PATH_TRIGGERED, GLOB_TRIGGERED, NON_PROMPT,
+// POPULATION_GLOBS, _frontmatter_lines, _unquote, _read_array, classify, enumerate_elements,
+// main -- not camelCased the way review_score.ts renamed its own Python source, the shape
+// skills/ablate/scripts/arms.ts also keeps.
 //
 // Not a from-scratch YAML parser: the two frontmatter shapes in play (`globs: [...]` on one
 // line, `paths:` followed by `  - "..."` lines) are narrow enough that hand-parsing the two
@@ -31,8 +27,14 @@ export const GLOB_TRIGGERED = "glob-triggered";
 export const NON_PROMPT = "non-prompt";
 
 // The population's supply list, held as a script constant rather than a prose contract
-// (docs/wiki/harness-production-divergence.md). Copied from harness_elements.py's
-// POPULATION_GLOBS unchanged -- a retirement slice is what widens this list, not this port.
+// (docs/wiki/harness-production-divergence.md).
+//
+// The scripts/ and hooks/ patterns each carry a .py glob and a .ts glob: skills/ablate/scripts/
+// and hooks/**/ have each moved files from one extension to the other (#643 / #684 / #644 /
+// #645 moved hooks to .ts; this same retirement slice moves ablate's own scripts), and a glob
+// counting only the .py extension would drop every file such a move already made -- including
+// ablate's own script tree once it is all .ts, which would make the skill stop measuring
+// itself.
 //
 // Every pattern is anchored on a literal top-level segment (never on a bare "**"), so a
 // `.ja/` mirror living beside each of these trees is never traversed by these globs: one
@@ -44,8 +46,10 @@ export const POPULATION_GLOBS: readonly string[] = [
   "CLAUDE.md",
   "skills/**/*.md",
   "skills/**/scripts/*.py",
+  "skills/**/scripts/*.ts",
   "agents/**/*.md",
   "hooks/**/*.py",
+  "hooks/**/*.ts",
   "hooks/**/*.md",
 ];
 
