@@ -25,10 +25,10 @@ ABLATION_RESIDUE = "ablation-residue"
 # absent line reports as ABLATION_RESIDUE instead of as coverage nobody checked.
 ENFORCER_TABLE = {
     # settings.json registers the guard as the PostToolUse Edit/Write hook on both trees,
-    # and hooks/_lib/mirror_prose.py's warning cites "(MIRROR.md)" for this exact violation.
+    # and hooks/_lib/mirror_prose.ts's warning cites "(MIRROR.md)" for this exact violation.
     "| Prose language | Japanese under `.ja/`, English everywhere else. Covers comments, "
     "test names, and assertion messages                                                   |": (
-        "hooks/edit/mirror_prose_guard.py"
+        "hooks/edit/mirror_prose_guard.ts"
     ),
 }
 

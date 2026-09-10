@@ -8,7 +8,7 @@ This is the seam between hooks/_lib/scribe_trigger.py's find/should_prompt (U-00
 already unit-tested in hooks/_lib/tests/scribe_trigger_test.py) and a real Bash PostToolUse
 payload. What only the hook wiring can break is whether the trigger a command line carries
 actually reaches scribe_trigger, whether should_prompt's verdict actually reaches stdout in
-the shape hooks/_lib/mirror_prose.py's emit() establishes, and whether a failed
+the shape hooks/_lib/mirror_prose.ts's emit() establishes, and whether a failed
 tool_response actually short-circuits it before should_prompt runs at all. The hook runs as
 a real subprocess against the real scribe_trigger module; only gh, the external system
 should_prompt calls out to, is stubbed.
