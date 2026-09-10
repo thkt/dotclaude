@@ -263,6 +263,28 @@ test("a Green gate whose courier returns unparseable output is a stop, not a pas
   );
 });
 
+// A shim writes to the same stream ahead of the command: inside a worktree, mise prefixed the
+// report with one `mise WARN tracking config` line and the unit stopped as gate_did_not_report
+// (#641 U-002).
+test("a gate report a shell shim printed one line ahead of still carries the unit forward", async () => {
+  const { result } = await runWorkflow(codeJs, {
+    args: { plan, repo: "/abs/repo", verify: true },
+    stubs: {
+      agent: (prompt, opts) => {
+        const key = (opts.label ?? "").split(":")[0];
+        if (key === "gate-green")
+          return {
+            stdout: `mise WARN  tracking config: failed to ln -sf\n${JSON.stringify(gateReport(), null, 2)}\n`,
+            stderr: "",
+          };
+        return stub()(prompt, opts);
+      },
+    },
+  });
+  assert.equal(result.stopped, undefined, "the report behind the warning line was read");
+  assert.deepEqual(result.completed, ["U-1"]);
+});
+
 test("a correction agent that returns nothing stops without re-running the gate", async () => {
   let greenGateCalls = 0;
   const { result } = await runWorkflow(codeJs, {

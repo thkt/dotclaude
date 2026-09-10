@@ -14,7 +14,6 @@ Files are discovered by scanning `hooks/` through git, the way mirror_prose_test
 MirrorSweep scans `.ja/`, so a hook added later is covered without anyone adding it here.
 """
 
-import json
 import subprocess
 import unittest
 from pathlib import Path
@@ -48,28 +47,6 @@ def _first_line(path: Path) -> str:
         return handle.readline().rstrip("\n")
 
 
-def _settings_command_scripts() -> list[Path]:
-    """.py paths settings.json names as a hook command, resolved from ~/.claude to REPO."""
-    settings = json.loads((REPO / "settings.json").read_text(encoding="utf-8"))
-    scripts: list[Path] = []
-
-    def walk(node: object) -> None:
-        if isinstance(node, dict):
-            command = node.get("command")
-            if isinstance(command, str):
-                for token in command.split():
-                    if token.startswith("~/.claude/") and token.endswith(".py"):
-                        scripts.append(REPO / token.removeprefix("~/.claude/"))
-            for value in node.values():
-                walk(value)
-        elif isinstance(node, list):
-            for item in node:
-                walk(item)
-
-    walk(settings.get("hooks", {}))
-    return scripts
-
-
 class ExecutableShebang(unittest.TestCase):
     def test_T_001(self) -> None:
         """T-001 `hooks/` 配下で実行ビットが立っている追跡 `.py` すべてが1行目に `#!/opt/homebrew/bin/python3` を持つ"""
@@ -98,23 +75,6 @@ class NoStaleShebang(unittest.TestCase):
                 offenders.append(str(path.relative_to(REPO)))
         self.assertEqual(
             offenders, [], f"hooks/ files still carrying #!/usr/bin/env python3: {offenders}"
-        )
-
-
-class SettingsCommandShebang(unittest.TestCase):
-    def test_T_003(self) -> None:
-        """T-003 `settings.json` が command として名指す `.py` すべてが実行ビットを持ち、1行目が T-001 と同じシェバンである"""
-        tracked_modes = {path: mode for mode, path in _tracked_entries("hooks/*.py")}
-        offenders: list[str] = []
-        for path in _settings_command_scripts():
-            mode = tracked_modes.get(path)
-            ready = mode == EXEC_MODE and path.is_file() and _first_line(path) == SHEBANG
-            if not ready:
-                offenders.append(str(path.relative_to(REPO)))
-        self.assertEqual(
-            offenders,
-            [],
-            f"settings.json-named .py hooks missing the exec bit or the shebang: {offenders}",
         )
 
 

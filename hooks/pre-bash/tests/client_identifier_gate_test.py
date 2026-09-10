@@ -65,6 +65,10 @@ class ClientIdentifierGateTest(unittest.TestCase):
             ["init", "-q"],
             ["config", "user.email", "t@example.com"],
             ["config", "user.name", "t"],
+            # Background gc/maintenance can fire mid-test and race this test's own git commands
+            # for the same .git/index.lock.
+            ["config", "gc.auto", "0"],
+            ["config", "maintenance.auto", "false"],
         ):
             subprocess.run(["git", *args], cwd=at, check=True, capture_output=True)
         return at

@@ -85,6 +85,18 @@ class TestRustEdit(unittest.TestCase):
     def cargo_calls(self) -> list[str]:
         return self.calls.read_text(encoding="utf-8").split()
 
+    def test_the_fixture_repository_answers_zero_for_gc_auto(self) -> None:
+        """T-421 the python tests' fixture repository answers 0 for gc.auto, read back through
+        git config"""
+        result = subprocess.run(
+            ["git", "-C", str(self.repo), "config", "gc.auto"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        gc_auto = result.stdout.strip() if result.returncode == 0 else ""
+        self.assertEqual(gc_auto, "0")
+
     def test_a_non_rust_edit_never_starts_cargo(self) -> None:
         """T-001: An edit to anything but .rs does not launch cargo"""
         self.assertEqual(self.run_hook(PRE, self.repo / "README.md"), "")

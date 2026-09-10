@@ -9,11 +9,37 @@
 // option as the whole child environment, never merging it with the parent's, so a caller
 // wanting the rest of the parent env passes `{ ...process.env, ... }` itself.
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
-import { basename } from "node:path";
+import { mkdtempSync, realpathSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, join } from "node:path";
 
 // A hook that never returns has to fail the suite rather than hang it, and one waiting on a
 // bounded probe of its own still has to fit.
 export const TIMEOUT_SECONDS = 60;
+
+/** A real git repository under a fresh temp directory, physical-pathed.
+ *
+ * realpathSync because rev-parse reports a physical path and macOS hands out a symlinked
+ * TMPDIR, so a caller comparing against rev-parse output needs the same resolution here. */
+export function fixtureRepo(prefix: string): string {
+  const dir = mkdtempSync(join(tmpdir(), prefix));
+  const init = spawnSync("git", ["init", "-q", dir]);
+  if (init.status !== 0) {
+    throw new Error(`git init must succeed for the fixture repository (exit ${init.status})`);
+  }
+  return realpathSync(dir);
+}
+
+/** The denial reason a hook run wrote, or null for a run that denied nothing. */
+export function denyReason(output: string): string | null {
+  if (!output) {
+    return null;
+  }
+  const parsed = JSON.parse(output) as {
+    hookSpecificOutput?: { permissionDecisionReason?: string };
+  };
+  return parsed.hookSpecificOutput?.permissionDecisionReason ?? null;
+}
 
 /** The whole result, after confirming the hook ran.
  *
