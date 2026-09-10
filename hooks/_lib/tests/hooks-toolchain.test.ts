@@ -126,6 +126,7 @@ test("T-014 the hooks .ts set the toolchain scope check reads is derived from th
     "hooks/_lib/tests/fixtures/shebang/stale-env-bun.ts",
     "hooks/_lib/tests/fixtures/shebang/_lib/has-shebang.ts",
     "hooks/_lib/tests/bun-runtime.test.ts",
+    "hooks/_lib/tests/security-hooks-retirement.test.ts",
     "hooks/_lib/mirror_prose.ts",
     "hooks/_lib/tests/mirror-prose.test.ts",
     "hooks/_lib/tests/mirror-prose-python.test.ts",
