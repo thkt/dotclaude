@@ -22,7 +22,7 @@ import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { run } from "../../_lib/tests/_hook-harness.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +30,9 @@ const HOOK = path.join(HERE, "..", "package_manager_rewrite.ts");
 // hooks/pre-bash/tests -> hooks/pre-bash, the one level package_manager_rewrite.py itself sits
 // under, importable by module name once that directory is on sys.path.
 const HOOKS_PRE_BASH_DIR = path.join(HERE, "..");
+// hooks/pre-bash/tests -> hooks/security, npm_install_guard.ts's own module (T-302:
+// NI_INSTALLS / RUNNERS, the sets a rewritten install-shaped head must land in).
+const NPM_INSTALL_GUARD = path.join(HERE, "..", "..", "security", "npm_install_guard.ts");
 
 // A one-shot driver rather than a CLI: package_manager_rewrite.py has no __main__ export of
 // convert, so this is the smallest way to call it from outside the process. It mirrors the one
@@ -125,4 +128,79 @@ test("T-301 a manager that is not installed leaves the command unchanged rather 
   const stdout = run(HOOK, { tool_name: "Bash", tool_input: { command: "npm install" } }, env);
 
   assert.equal(stdout, "", "npm install must pass through unchanged when ni is not installed");
+});
+
+// package_manager_rewrite.ts and npm_install_guard.ts both carry a top-level
+// `process.exit(main())` (DR-0114, no isMainModule guard) -- the same hazard T-299's PY_DRIVER
+// comment and npm-install-guard.test.ts's header describe. A plain `import` of either hits it:
+// ESM evaluates an imported module's top-level code, exit call included, before the importer's
+// own code resumes, so the import itself would end this file's process before a single
+// assertion ran. A subprocess does not dodge that (the same process.exit fires inside it too);
+// what does is stubbing `process.exit` into a no-op before the dynamic import runs, so main()'s
+// exit call falls through as a statement that does nothing, module evaluation completes, and
+// the import resolves to the real exports. HEAD_DRIVER carries that stub, then enumerates every
+// head convert() can emit for an install-shaped subcommand -- reading which manager names and
+// which subcommands count as "install-shaped" off the two modules' own exports (MANAGERS from
+// package_manager_rewrite.ts, INSTALLS/FETCH_AND_RUN from npm_install_guard.ts) instead of
+// retyping either list here.
+const HEAD_DRIVER = `
+process.exit = () => {};
+const [, pmrPath, nigPath] = process.argv;
+const pmr = await import(pmrPath);
+const nig = await import(nigPath);
+const managers = [...pmr.MANAGERS].filter((m) => m !== "npx" && m !== "bunx");
+const subcommands = [...nig.INSTALLS, ...nig.FETCH_AND_RUN];
+const heads = new Set();
+for (const manager of managers) {
+  for (const subcommand of subcommands) {
+    for (const parts of [[manager, subcommand], [manager, subcommand, "pkg"]]) {
+      const result = pmr.convert(parts);
+      if (result) heads.add(result.split(/\\s+/)[0]);
+    }
+  }
+}
+// npx / bunx never reach the subcommand table above -- convert() rewrites them from the
+// manager name alone (T-299's "npx"/"bunx" rows).
+for (const manager of ["npx", "bunx"]) {
+  const result = pmr.convert([manager, "pkg"]);
+  if (result) heads.add(result.split(/\\s+/)[0]);
+}
+process.stdout.write(JSON.stringify({
+  heads: [...heads],
+  NI_INSTALLS: [...nig.NI_INSTALLS],
+  RUNNERS: [...nig.RUNNERS],
+}));
+`;
+
+interface HeadEnumeration {
+  heads: string[];
+  NI_INSTALLS: string[];
+  RUNNERS: string[];
+}
+
+function installShapedHeads(): HeadEnumeration {
+  const pmrUrl = pathToFileURL(HOOK).href;
+  const nigUrl = pathToFileURL(NPM_INSTALL_GUARD).href;
+  const result = spawnSync(
+    process.execPath,
+    ["--input-type=module", "-e", HEAD_DRIVER, pmrUrl, nigUrl],
+    { input: "", encoding: "utf8" },
+  );
+  if (result.status !== 0) {
+    throw new Error(`node head-enumeration driver failed (exit ${result.status}): ${result.stderr}`);
+  }
+  return JSON.parse(result.stdout) as HeadEnumeration;
+}
+
+test("T-302 every install-shaped head convert can emit is a member of NI_INSTALLS or RUNNERS, derived from both modules rather than restated", () => {
+  const { heads, NI_INSTALLS, RUNNERS } = installShapedHeads();
+  assert.ok(heads.length > 0, "the enumeration must produce at least one head to check");
+
+  const allowed = new Set([...NI_INSTALLS, ...RUNNERS]);
+  for (const head of heads) {
+    assert.ok(
+      allowed.has(head),
+      `convert() emits install-shaped head "${head}", which npm_install_guard.ts's NI_INSTALLS/RUNNERS must cover`,
+    );
+  }
 });
