@@ -32,6 +32,8 @@
     "hooks/**/tests/*.test.ts",
     "hooks/_lib/hook_payload.ts",
     "hooks/lifecycle/recall_index.ts",
+    "hooks/edit/rust_pre_edit.ts",
+    "hooks/edit/rust_post_edit.ts",
     "skills/**/tests/**/*.test.{js,ts}",
     "skills/_lib/harness_hash.ts",
     ".ja/skills/_lib/harness_hash.ts",
