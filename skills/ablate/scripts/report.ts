@@ -1,14 +1,12 @@
 /// <reference types="node" />
-// The TypeScript side of skills/ablate/scripts/report.py: mirrors build_report, write_report,
-// and the render pass write_report drives (report.py's _render/_table/_date_range), plus the
+// TypeScript port of the Python report script this module replaces: mirrors build_report,
+// write_report, and the render pass write_report drives (_render/_table/_date_range), plus the
 // aggregation build_report calls (arms.ts, dr_gate.ts, enforcer_map.ts, usage_counts.ts,
-// verdict.ts, ../../_lib/harness_elements.ts). report.py stays in the tree as report.ts's
-// contract source until #646 retires the Python side, the same shape arms.ts's own header
-// describes. report.py's docstring already states this module is "Not a CLI entry point," so
-// report.ts carries no shebang and no main() the way arms.ts, dr_gate.ts and verdict.ts do not
-// either.
+// verdict.ts, ../../_lib/harness_elements.ts). The Python version's docstring already stated
+// this module is "Not a CLI entry point," so report.ts carries no shebang and no main() the way
+// arms.ts, dr_gate.ts and verdict.ts do not either.
 //
-// Deviation from report.py: report.py reads a module-level TRANSCRIPTS_ROOT constant
+// Deviation from the Python version: it read a module-level TRANSCRIPTS_ROOT constant
 // (Path.home() / ".claude" / "projects") from inside build_report. An ESM import binding
 // cannot be rebound from a test file the way unittest.mock.patch.object rebinds a Python
 // module attribute -- usage_counts.ts's window_days deviation note hits the same wall -- so
@@ -16,9 +14,9 @@
 // parameter (defaulting to the module constant of the same name) instead: a caller drives it
 // by passing a different value, never by patching a binding.
 //
-// Constant and function names stay exactly as report.py declares them, the same no-camelCase
-// convention arms.ts, verdict.ts, dr_gate.ts, enforcer_map.ts and usage_counts.ts hold in this
-// same directory.
+// Constant and function names stay exactly as the Python version declared them, the same
+// no-camelCase convention arms.ts, verdict.ts, dr_gate.ts, enforcer_map.ts and usage_counts.ts
+// hold in this same directory.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -33,18 +31,18 @@ import type { ElementUsage } from "./usage_counts.ts";
 import * as verdict from "./verdict.ts";
 
 // Held here once so every caller that does not override it reads the same value, the same
-// reason report.py's own TRANSCRIPTS_ROOT comment gives.
+// reason the Python version's own TRANSCRIPTS_ROOT comment gave.
 export const TRANSCRIPTS_ROOT: string = join(homedir(), ".claude", "projects");
 
 // The ablation apparatus's own script tree. A path under here is the code that produced the
 // observation, not a harness element under test, so it must never appear in
 // delete_candidates: deleting the apparatus that measures harness elements would remove the
-// ability to keep measuring them. Copied from report.py's APPARATUS_DIR unchanged.
+// ability to keep measuring them. Copied from the Python version's APPARATUS_DIR unchanged.
 const APPARATUS_DIR = "skills/ablate/";
 
 /** One entry of the `observations` list build_report reads: the caller-supplied record of one
- * harness element's trigger task, task set membership, and compliance, per report.py's
- * build_report and verdict.py's classify. */
+ * harness element's trigger task, task set membership, and compliance, per build_report and
+ * verdict's classify. */
 export interface Observation {
   path: string;
   trigger_task?: string | null;
@@ -69,15 +67,15 @@ export interface ReportResult {
 }
 
 /** True when `path` sits inside APPARATUS_DIR (the ablate skill's own tree, matching
- * harness_elements.POPULATION_GLOBS's "skills/**\/scripts/*.py" the way
- * skills/ablate/scripts/report.ts itself does). Mirrors report.py's _is_apparatus; the paths
- * this module ever receives are already the posix-relative form globSync returns, so no
+ * harness_elements.POPULATION_GLOBS's "skills/**\/scripts/*.ts" the way
+ * skills/ablate/scripts/report.ts itself does). Mirrors the Python version's _is_apparatus; the
+ * paths this module ever receives are already the posix-relative form globSync returns, so no
  * PurePosixPath normalization is needed on this side. */
 function _is_apparatus(path: string): boolean {
   return path.startsWith(APPARATUS_DIR);
 }
 
-/** The usage verdict for one path, mirroring report.py's _usage_verdict. An element with no
+/** The usage verdict for one path, mirroring the Python version's _usage_verdict. An element with no
  * transcript entry never fired, so it reaches classify as zero fires rather than being
  * skipped. */
 function _usage_verdict(
@@ -89,8 +87,8 @@ function _usage_verdict(
   return usage_counts.classify(path, entry?.fires ?? 0, entry?.last_used ?? null, now);
 }
 
-/** Calls each preceding unit's script in turn and wires their outputs together, mirroring
- * report.py's build_report. `transcripts_root` replaces report.py's module-namespace
+/** Calls each preceding unit's script in turn and wires their outputs together, mirroring the
+ * Python version's build_report. `transcripts_root` replaces its module-namespace
  * TRANSCRIPTS_ROOT read -- see the header deviation note above.
  *
  * dr_gate.gate runs after verdict.classify's one-sided judgment and before the result reaches
@@ -146,14 +144,14 @@ export function build_report(
   };
 }
 
-// report.py names its written file with this constant appended after the UTC timestamp
-// (REPORT_NAME = "ablate"). Copied unchanged.
+// The Python version named its written file with this constant appended after the UTC
+// timestamp (REPORT_NAME = "ablate"). Copied unchanged.
 const REPORT_NAME = "ablate";
 
 /** The header + separator + data lines of a Markdown table, factored out because _render
  * builds every section's table from differently-shaped inputs -- one row-joining rule changed
  * here changes all of them. Column count comes from `headers`, so a two-column caller and a
- * wider one share the same rendering. Mirrors report.py's _table. */
+ * wider one share the same rendering. Mirrors the Python version's _table. */
 function _table(headers: readonly string[], rows: readonly (readonly string[])[]): string[] {
   const lines = [`| ${headers.join(" | ")} |`, `| ${headers.map(() => "---").join(" | ")} |`];
   lines.push(...rows.map((row) => `| ${row.join(" | ")} |`));
@@ -161,8 +159,8 @@ function _table(headers: readonly string[], rows: readonly (readonly string[])[]
 }
 
 /** The parsed transcripts' date span as one cell. A run whose transcripts hold no fire has no
- * span, and renders as "none" rather than as a pair of empty cells. Mirrors report.py's
- * _date_range. */
+ * span, and renders as "none" rather than as a pair of empty cells. Mirrors the Python
+ * version's _date_range. */
 function _date_range(date_range: { start: string | null; end: string | null }): string {
   const { start, end } = date_range;
   return start && end ? `${start} - ${end}` : "none";
@@ -171,7 +169,7 @@ function _date_range(date_range: { start: string | null; end: string | null }): 
 /** Renders build_report's result as Markdown. Reads that result alone, never the raw
  * `observations` a caller passed in, so a field an observation carries for its own provenance
  * (such as the settings snapshot a run used) can never reach the written report, verbatim or
- * otherwise (T-014). Mirrors report.py's _render; the section order below is the contract
+ * otherwise (T-014). Mirrors the Python version's _render; the section order below is the contract
  * skills/ablate/templates/report-template.md's skeleton names, and report-render.test.ts's
  * T-476 reads that file to check it, so this order must never drift from the template without
  * updating the template in the same change. */
@@ -262,7 +260,7 @@ function _render(result: ReportResult): string {
 /** Writes build_report's result under `out_dir` (defaulting to `<root>/docs/audit`) to
  * `<YYYY-MM-DD>-<HHMMSS>-ablate.md` in UTC (this module's convention, matching
  * skills/census/SKILL.md Phase 5's `date -u +%Y-%m-%d-%H%M%S` naming so same-day reruns from
- * different timezones never collide), mirroring report.py's write_report and the `_render`
+ * different timezones never collide), mirroring the Python version's write_report and the `_render`
  * Markdown pass it calls. */
 export function write_report(
   root: string,

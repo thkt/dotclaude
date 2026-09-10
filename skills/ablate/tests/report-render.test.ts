@@ -1,15 +1,14 @@
 /// <reference types="node" />
 // Behavior tests for skills/ablate/scripts/report.ts's write_report: the render pass over
-// build_report's result and the UTC-timestamped file it writes. Companion to report.test.ts
-// (which drives build_report's aggregation alone) and report-fixture.test.ts (which replays
-// report.py's frozen build_report output against the python3 CLI) -- neither exercises the
-// render/write half report.py's own _render and write_report cover, which is this unit's
-// contract (report.py's write_report and its render pass, mirrored onto report.ts).
+// build_report's result and the UTC-timestamped file it writes. Companion to report.test.ts,
+// which drives build_report's aggregation alone -- neither exercises the render/write half the
+// Python version's own _render and write_report covered, which is this unit's contract (the
+// Python version's write_report and its render pass, mirrored onto report.ts).
 //
 // T-476 reads the template's section order from skills/ablate/templates/report-template.md
 // itself rather than a list copied into this file, the same "the skeleton and _render name the
-// same sections" comparison ablate-form.test.js's T-007 already makes against report.py's
-// source -- this test makes it against report.ts's actual rendered output instead.
+// same sections" comparison ablate-form.test.js's T-007 already made against the Python
+// version's source -- this test makes it against report.ts's actual rendered output instead.
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -56,9 +55,9 @@ test("T-477 write_report names its output with the UTC timestamp shape and write
   try {
     const reportPath = report.write_report(root, [], outDir);
     assert.equal(dirname(reportPath), outDir, "writes under the out_dir it was given");
-    // report.py's write_report names its file "<YYYY-MM-DD>-<HHMMSS>-ablate.md" in UTC
-    // (skills/ablate/scripts/report.py:212-214, REPORT_NAME="ablate") -- only the shape is
-    // asserted, never the exact digits, since the timestamp is real time at write.
+    // The Python version's write_report named its file "<YYYY-MM-DD>-<HHMMSS>-ablate.md" in
+    // UTC (REPORT_NAME="ablate") -- only the shape is asserted, never the exact digits, since
+    // the timestamp is real time at write.
     assert.match(
       basename(reportPath),
       /^\d{4}-\d{2}-\d{2}-\d{6}-ablate\.md$/,

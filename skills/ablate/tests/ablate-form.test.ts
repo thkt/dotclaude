@@ -8,12 +8,12 @@
 // second call site added alongside report.write_report, are both drift no execution test
 // can catch.
 //
-// T-478 replaces the earlier T-005, which spawned a python3 driver.py that imported
-// report.py and called write_report -- report.ts is now the module under test, reached by a
-// plain ESM import, the same "driver-less" shape report.test.ts's own header already states
-// for build_report. T-479 replaces the earlier T-007 the same way: it reads the sections a
-// real report.write_report(...) call renders (report.ts's output) instead of regex-scraping
-// report.py's source for its `lines += ["## ..."]` calls.
+// T-478 replaces the earlier T-005, which spawned a python3 driver script that imported the
+// Python report module and called write_report -- report.ts is now the module under test,
+// reached by a plain ESM import, the same "driver-less" shape report.test.ts's own header
+// already states for build_report. T-479 replaces the earlier T-007 the same way: it reads the
+// sections a real report.write_report(...) call renders (report.ts's output) instead of
+// regex-scraping the Python source for its `lines += ["## ..."]` calls.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -74,8 +74,8 @@ test("T-478 the form test drives report.ts directly instead of spawning python3,
     // given, mirroring the real ~/.claude/projects/**/*.jsonl layout one directory level
     // down. report.build_report's `transcripts_root` parameter -- not a HOME env override or
     // a patched module binding -- is what points it at this fixture directory (report.ts's
-    // own header states this deviation from report.py's module-namespace TRANSCRIPTS_ROOT
-    // read).
+    // own header states this deviation from the Python version's module-namespace
+    // TRANSCRIPTS_ROOT read).
     const transcriptDir = join(transcriptsRoot, "proj-a");
     mkdirSync(transcriptDir, { recursive: true });
     writeFileSync(
@@ -155,8 +155,8 @@ test("T-479 the rendered sections still match the template, read from the templa
     const outDir = join(work, "out");
     mkdirSync(outDir, { recursive: true });
 
-    // report.write_report drives report.ts's own render pass (_render) rather than
-    // report.py's -- the sections it emits are read straight off this call's own output, not
+    // report.write_report drives report.ts's own render pass (_render) rather than the Python
+    // version's -- the sections it emits are read straight off this call's own output, not
     // scraped from either script's source, so this test compares the .ts render's actual
     // behavior against the template, never a list frozen at the moment the test was written.
     const reportPath = report.write_report(repoRoot, [], outDir);

@@ -1,21 +1,20 @@
 /// <reference types="node" />
-// skills/ablate/scripts/report.py の TypeScript 側。build_report、write_report、そして
-// write_report が駆動する render pass (report.py の _render/_table/_date_range)、加えて
-// build_report が呼ぶ集計 (arms.ts, dr_gate.ts, enforcer_map.ts, usage_counts.ts, verdict.ts,
-// ../../_lib/harness_elements.ts) を写す。report.py は #646 が Python 側を退役させるまで、
-// report.ts のcontract sourceとして木に残る -- arms.ts のヘッダが述べているのと同じ形。
-// report.py の docstring はすでにこの module が「Not a CLI entry point」だと述べているため、
+// このモジュールが置き換える Python 版の report script を TypeScript へ移植したもの。
+// build_report、write_report、そして write_report が駆動する render pass
+// (_render/_table/_date_range)、加えて build_report が呼ぶ集計 (arms.ts, dr_gate.ts,
+// enforcer_map.ts, usage_counts.ts, verdict.ts, ../../_lib/harness_elements.ts) を写す。
+// Python 版の docstring はすでにこの module が「Not a CLI entry point」だと述べていたため、
 // report.ts も arms.ts / dr_gate.ts / verdict.ts と同じく shebang と main() を持たない。
 //
-// report.py からの逸脱: report.py は build_report の内部で module-level の TRANSCRIPTS_ROOT
-// 定数 (Path.home() / ".claude" / "projects") を読む。ESM の import binding は
+// Python 版からの逸脱: Python 版は build_report の内部で module-level の TRANSCRIPTS_ROOT
+// 定数 (Path.home() / ".claude" / "projects") を読んでいた。ESM の import binding は
 // unittest.mock.patch.object が Python の module attribute を re-bind するのと同じ形では
 // test file から re-bind できない -- usage_counts.ts の window_days の逸脱ノートと同じ壁に
 // 当たる。そのためこの port は TRANSCRIPTS_ROOT を build_report 自身の `transcripts_root`
 // parameter (同名の module 定数を default 値とする) として通す: caller はそれを binding へ
 // patch するのではなく、別の値を渡すことで駆動する。
 //
-// 定数名と関数名は report.py が宣言したとおりに保つ。arms.ts、verdict.ts、dr_gate.ts、
+// 定数名と関数名は Python 版が宣言したとおりに保つ。arms.ts、verdict.ts、dr_gate.ts、
 // enforcer_map.ts、usage_counts.ts がこの同じ directory で持つ no-camelCase 規約と同じ形。
 import { mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -30,19 +29,19 @@ import * as usage_counts from "./usage_counts.ts";
 import type { ElementUsage } from "./usage_counts.ts";
 import * as verdict from "./verdict.ts";
 
-// ここに一度だけ持ち、override しない caller は全員この値を読む -- report.py 自身の
+// ここに一度だけ持ち、override しない caller は全員この値を読む -- Python 版自身の
 // TRANSCRIPTS_ROOT comment と同じ理由。
 export const TRANSCRIPTS_ROOT: string = join(homedir(), ".claude", "projects");
 
 // ablation apparatus 自身の script tree。この下の path は観測対象の harness element ではなく
 // 観測を生成した側のコードなので、delete_candidates に決して現れてはならない -- harness
-// element を測定する apparatus 自体を削除すると、測定を続ける手段が失われる。report.py の
+// element を測定する apparatus 自体を削除すると、測定を続ける手段が失われる。Python 版の
 // APPARATUS_DIR をそのまま写す。
 const APPARATUS_DIR = "skills/ablate/";
 
-/** build_report が読む `observations` list の1件: report.py の build_report と
- * verdict.py の classify に渡る、1つの harness element の trigger task / task set 所属 /
- * compliance を持つ caller 提供の record。 */
+/** build_report が読む `observations` list の1件: build_report と verdict の classify に
+ * 渡る、1つの harness element の trigger task / task set 所属 / compliance を持つ caller
+ * 提供の record。 */
 export interface Observation {
   path: string;
   trigger_task?: string | null;
@@ -67,15 +66,15 @@ export interface ReportResult {
 }
 
 /** `path` が APPARATUS_DIR の下にあるとき true (ablate skill 自身の tree。
- * harness_elements.POPULATION_GLOBS の "skills/**\/scripts/*.py" と、
- * skills/ablate/scripts/report.ts 自身が一致させているのと同じ形)。report.py の
+ * harness_elements.POPULATION_GLOBS の "skills/**\/scripts/*.ts" と、
+ * skills/ablate/scripts/report.ts 自身が一致させているのと同じ形)。Python 版の
  * _is_apparatus を写す。この module が受け取る path はすでに globSync が返す posix-relative
  * な形なので、この側では PurePosixPath の正規化は不要。 */
 function _is_apparatus(path: string): boolean {
   return path.startsWith(APPARATUS_DIR);
 }
 
-/** 1つの path の usage verdict。report.py の _usage_verdict を写す。transcript entry を
+/** 1つの path の usage verdict。Python 版の _usage_verdict を写す。transcript entry を
  * 持たない element は一度も fire していないので、skip されるのではなく fires 0 として
  * classify に渡る。 */
 function _usage_verdict(
@@ -87,8 +86,8 @@ function _usage_verdict(
   return usage_counts.classify(path, entry?.fires ?? 0, entry?.last_used ?? null, now);
 }
 
-/** 先行する各 unit の script を順に呼び、その出力を配線する -- report.py の build_report を
- * 写す。`transcripts_root` は report.py の module-namespace 経由の TRANSCRIPTS_ROOT 読み取り
+/** 先行する各 unit の script を順に呼び、その出力を配線する -- Python 版の build_report を
+ * 写す。`transcripts_root` は Python 版の module-namespace 経由の TRANSCRIPTS_ROOT 読み取り
  * を置き換える -- 上のヘッダの逸脱ノートを参照。
  *
  * dr_gate.gate は verdict.classify の one-sided な判定の後、結果が返る dict に届く前に
@@ -144,14 +143,14 @@ export function build_report(
   };
 }
 
-// report.py は書き出す file 名を、UTC timestamp の後にこの定数を付けて決める
+// Python 版は書き出す file 名を、UTC timestamp の後にこの定数を付けて決めていた
 // (REPORT_NAME = "ablate")。そのまま写す。
 const REPORT_NAME = "ablate";
 
 /** Markdown table の header + separator + data 行。_render がセクションごとに形の異なる
  * input から table を組み立てるので、ここに factor out してある -- 行の join rule を1箇所
  * 変えれば全セクションに効く。列数は `headers` から決まるので、2列の caller も、より広い
- * caller も同じ描画を共有する。report.py の _table を写す。 */
+ * caller も同じ描画を共有する。Python 版の _table を写す。 */
 function _table(headers: readonly string[], rows: readonly (readonly string[])[]): string[] {
   const lines = [`| ${headers.join(" | ")} |`, `| ${headers.map(() => "---").join(" | ")} |`];
   lines.push(...rows.map((row) => `| ${row.join(" | ")} |`));
@@ -159,7 +158,7 @@ function _table(headers: readonly string[], rows: readonly (readonly string[])[]
 }
 
 /** parse 済み transcripts の日付範囲を1セルにしたもの。fire を1件も持たない run には
- * span がないので、空セル2つではなく "none" として描画する。report.py の _date_range を
+ * span がないので、空セル2つではなく "none" として描画する。Python 版の _date_range を
  * 写す。 */
 function _date_range(date_range: { start: string | null; end: string | null }): string {
   const { start, end } = date_range;
@@ -169,7 +168,7 @@ function _date_range(date_range: { start: string | null; end: string | null }): 
 /** build_report の結果を Markdown として描画する。caller が渡した生の `observations` は
  * 一切読まず、この結果だけを読む -- そのため observation が自分の provenance のために
  * 持つ field (走らせた run の settings snapshot など) は、そのままの形であれ他の形であれ、
- * 書き出される report に届くことは決してない (T-014)。report.py の _render を写す。以下の
+ * 書き出される report に届くことは決してない (T-014)。Python 版の _render を写す。以下の
  * section 順は skills/ablate/templates/report-template.md の skeleton が名指す contract で
  * あり、report-render.test.ts の T-476 がその file を読んで突き合わせるので、この順序は
  * template を同じ change で更新せずに drift させてはならない。 */
@@ -260,7 +259,7 @@ function _render(result: ReportResult): string {
 /** build_report の結果を `out_dir` (default は `<root>/docs/audit`) の下、UTC の
  * `<YYYY-MM-DD>-<HHMMSS>-ablate.md` として書き出す (この module の convention。
  * skills/census/SKILL.md Phase 5 の `date -u +%Y-%m-%d-%H%M%S` naming と揃えてあり、
- * 別々の timezone から同日中に rerun しても衝突しない)。report.py の write_report と、
+ * 別々の timezone から同日中に rerun しても衝突しない)。Python 版の write_report と、
  * それが呼ぶ `_render` Markdown pass を写す。 */
 export function write_report(
   root: string,

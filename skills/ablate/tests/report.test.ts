@@ -1,14 +1,12 @@
 /// <reference types="node" />
-// Behavior tests for skills/ablate/scripts/report.ts's build_report: the TS port of
-// skills/ablate/scripts/report.py's build_report and the aggregation it calls (arms.ts,
-// dr_gate.ts, enforcer_map.ts, usage_counts.ts, verdict.ts,
-// ../../_lib/harness_elements.ts). Unlike report-fixture.test.ts (which replays the frozen
-// cases through a spawned python3 process), every scenario here calls report.build_report
-// directly -- report.ts is the module under test, not a driver around report.py.
+// Behavior tests for skills/ablate/scripts/report.ts's build_report and the aggregation it
+// calls (arms.ts, dr_gate.ts, enforcer_map.ts, usage_counts.ts, verdict.ts,
+// ../../_lib/harness_elements.ts). Every scenario here calls report.build_report directly --
+// report.ts is the module under test, not a driver around the Python version it replaced.
 //
 // T-473 replays skills/ablate/tests/fixtures/report-cases.json (frozen by U-001 from the real
-// python3 report.build_report()) straight against the TS port, the same fixture-freeze-before-
-// port shape report-fixture.test.ts already applies to the python3 CLI replay.
+// python3 build_report() of the Python version this module replaced) straight against the TS
+// port, the docs/wiki/fixture-freeze-before-port.md shape this file's other units already apply.
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -20,8 +18,8 @@ import * as report from "../scripts/report.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-// The same pinned instant and fixture transcripts directory report-fixture.test.ts's own
-// python3 replay uses, so a fire recorded in report-transcripts/seed.jsonl sits at the same
+// The same pinned instant and fixture transcripts directory the frozen report-cases.json fixture
+// was captured against, so a fire recorded in report-transcripts/seed.jsonl sits at the same
 // distance from "now" on both sides of the module boundary this report draws on.
 const NOW = new Date("2026-08-27T00:00:00.000Z");
 const TRANSCRIPTS_ROOT_FIXTURE = join(HERE, "fixtures", "report-transcripts");
