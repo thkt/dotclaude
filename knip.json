@@ -28,7 +28,6 @@
     ".ja/workflows/build/diff-files.ts",
     ".ja/workflows/build/verify-pr.ts",
     "workflows/**/*.test.{js,ts}",
-    "workflows/tests/index.js",
     "hooks/**/tests/*.test.ts",
     "hooks/_lib/hook_payload.ts",
     "hooks/lifecycle/recall_index.ts",
