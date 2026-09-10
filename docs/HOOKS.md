@@ -13,10 +13,10 @@ The Rust binaries are also distributed as sentinels plugins, but registration go
 
 ### Language
 
-A hook is a shell script when its work is a few checks and a fork, and Python when the logic
-is long enough to want structure or is shared with a test. `mirror_prose_guard.py` is the second
-kind: its rule lives in `_lib/mirror_prose.py` and the repository-wide sweep test imports the same
-module.
+A hook is a shell script when its work is a few checks and a fork, and Python or TypeScript when
+the logic is long enough to want structure or is shared with a test. `mirror_prose_guard.ts` is
+the second kind: its rule lives in `_lib/mirror_prose.ts` and the repository-wide sweep test
+imports the same module.
 
 A test is written in the language of the hook it covers. The ones that stay in shell are those
 placing a shell-script stub on PATH: `amphetamine_agent_session` for osascript, `rust-edit` for
@@ -81,7 +81,7 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | PreToolUse         | Write/Edit         | edit/rust_pre_edit.py, guardrails                                                                                                                                 |
 | PreToolUse         | EnterPlanMode      | deny (planning is routed to /think)                                                                                                                               |
 | PreToolUse         | WebFetch/WebSearch | deny (routed to the scout CLI)                                                                                                                                    |
-| PostToolUse        | Write/Edit         | edit/rust_post_edit.py, edit/textlint_fix.py, edit/mirror_prose_guard.py, assay, formatter, gates                                                                 |
+| PostToolUse        | Write/Edit         | edit/rust_post_edit.py, edit/textlint_fix.py, edit/mirror_prose_guard.ts, assay, formatter, gates                                                                 |
 | PostToolUse        | Bash               | gates changed                                                                                                                                                     |
 | PostToolUse        | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
 | SessionStart       | \*                 | lifecycle/recall_index.ts                                                                                                                                         |
@@ -106,7 +106,7 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | rust_pre_edit.py      | PreToolUse  | fail-open    | cargo clippy before .rs edits, injected as additionalContext   |
 | rust_post_edit.py     | PostToolUse | fail-open    | cargo fmt after .rs edits, then clippy on the result           |
 | textlint_fix.py       | PostToolUse | fail-closed  | Auto-fix a Japanese .md file with textlint                     |
-| mirror_prose_guard.py | PostToolUse | fail-closed  | Warn when a `.ja/` file lost its Japanese prose (never blocks) |
+| mirror_prose_guard.ts | PostToolUse | fail-closed  | Warn when a `.ja/` file lost its Japanese prose (never blocks) |
 
 ### security/
 
@@ -135,18 +135,20 @@ Hooks driving an app outside Claude Code. Each one exits 0 when the app it targe
 ### _lib/
 
 Shared code the hooks pull in, never registered on its own. `japanese.py` judges the language
-itself; `mirror_prose.py` inspects what sits under `.ja/`. The first is a predicate any file can
+itself; `mirror_prose.ts` inspects what sits under `.ja/`. The first is a predicate any file can
 take, the second takes the mirror alone as its subject.
 
-| Module          | Used by                                                              |
-| --------------- | -------------------------------------------------------------------- |
-| command_scan.py | issue_body_gate, body_proofread, and the three security hooks        |
-| gh_filing.py    | issue_body_gate, body_proofread                                      |
-| hook_payload.py | mirror_prose, textlint_fix, body_proofread, rust_target, amphetamine |
-| mirror_prose.py | mirror_prose_guard and the .ja/ sweep test                           |
-| japanese.py     | mirror_prose, body_proofread, textlint_fix                           |
-| textlint.py     | body_proofread, textlint_fix                                         |
-| rust_target.py  | rust_pre_edit, rust_post_edit                                        |
+| Module          | Used by                                                        |
+| --------------- | ---------------------------------------------------------------- |
+| command_scan.py | issue_body_gate, body_proofread, and the three security hooks  |
+| gh_filing.py    | issue_body_gate, body_proofread                                 |
+| hook_payload.py | textlint_fix, body_proofread, rust_target, amphetamine          |
+| hook_payload.ts | mirror_prose.ts, recall_index.ts                                 |
+| mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                       |
+| japanese.py     | body_proofread, textlint_fix                                     |
+| japanese.ts     | mirror_prose.ts                                                  |
+| textlint.py     | body_proofread, textlint_fix                                     |
+| rust_target.py  | rust_pre_edit, rust_post_edit                                    |
 
 ## Quality Pipeline (Rust Binaries)
 

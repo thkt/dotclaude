@@ -13,7 +13,7 @@ Rust バイナリは sentinels プラグインとしても配布するが、登�
 
 ### 言語
 
-hook をシェルスクリプトで書くのは、仕事が数個の判定と 1 回の fork で済むとき。構造が要るほど処理が長いか、テストと共有するときは Python で書く。`mirror_prose_guard.py` が後者で、規則そのものは `_lib/mirror_prose.py` にあり、リポジトリ一括検査のテストも同じモジュールを読む。
+hook をシェルスクリプトで書くのは、仕事が数個の判定と 1 回の fork で済むとき。構造が要るほど処理が長いか、テストと共有するときは Python か TypeScript で書く。`mirror_prose_guard.ts` が後者で、規則そのものは `_lib/mirror_prose.ts` にあり、リポジトリ一括検査のテストも同じモジュールを読む。
 
 テストは hook 本体と同じ言語で書く。シェルに残すのは、スタブとしてシェルスクリプトを PATH へ置くものだけで、`amphetamine_agent_session` の osascript と `rust-edit` の cargo がこれにあたる。
 
@@ -53,7 +53,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 | PreToolUse       | Write/Edit         | edit/rust_pre_edit.py, guardrails                                                                                                                                 |
 | PreToolUse       | EnterPlanMode      | deny (計画は /think へ誘導)                                                                                                                                       |
 | PreToolUse       | WebFetch/WebSearch | deny (scout CLI へ誘導)                                                                                                                                           |
-| PostToolUse      | Write/Edit         | edit/rust_post_edit.py, edit/textlint_fix.py, edit/mirror_prose_guard.py, assay, formatter, gates                                                                 |
+| PostToolUse      | Write/Edit         | edit/rust_post_edit.py, edit/textlint_fix.py, edit/mirror_prose_guard.ts, assay, formatter, gates                                                                 |
 | PostToolUse      | Bash               | gates changed                                                                                                                                                     |
 | PostToolUse      | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
 | SessionStart     | \*                 | lifecycle/recall_index.ts                                                                                                                                         |
@@ -78,7 +78,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 | rust_pre_edit.py      | PreToolUse  | fail-open   | .rs 編集前に cargo clippy を走らせ、結果を additionalContext へ注入 |
 | rust_post_edit.py     | PostToolUse | fail-open   | .rs 編集後に cargo fmt、その結果へ clippy                           |
 | textlint_fix.py       | PostToolUse | fail-closed | 日本語の .md ファイルを textlint で自動修正                         |
-| mirror_prose_guard.py | PostToolUse | fail-closed | `.ja/` のファイルが日本語の散文を失ったら警告する (ブロックしない)  |
+| mirror_prose_guard.ts | PostToolUse | fail-closed | `.ja/` のファイルが日本語の散文を失ったら警告する (ブロックしない)  |
 
 ### security/
 
@@ -106,17 +106,19 @@ Claude Code の外にあるアプリを動かす hook。対象のアプリが無
 
 ### _lib/
 
-hook が読み込む共有コード。単体では登録しない。`japanese.py` は言語そのものを判定し、`mirror_prose.py` は `.ja/` の中身を検査する。前者はどのファイルにも使える述語で、後者はミラーだけを対象に取る。
+hook が読み込む共有コード。単体では登録しない。`japanese.py` は言語そのものを判定し、`mirror_prose.ts` は `.ja/` の中身を検査する。前者はどのファイルにも使える述語で、後者はミラーだけを対象に取る。
 
-| モジュール      | 利用元                                                               |
-| --------------- | -------------------------------------------------------------------- |
-| command_scan.py | issue_body_gate, body_proofread, security の 3 本                    |
-| gh_filing.py    | issue_body_gate, body_proofread                                      |
-| hook_payload.py | mirror_prose, textlint_fix, body_proofread, rust_target, amphetamine |
-| mirror_prose.py | mirror_prose_guard と .ja/ 一括検査テスト                            |
-| japanese.py     | mirror_prose, body_proofread, textlint_fix                           |
-| textlint.py     | body_proofread, textlint_fix                                         |
-| rust_target.py  | rust_pre_edit, rust_post_edit                                        |
+| モジュール      | 利用元                                        |
+| --------------- | ------------------------------------------------ |
+| command_scan.py | issue_body_gate, body_proofread, security の 3 本 |
+| gh_filing.py    | issue_body_gate, body_proofread                   |
+| hook_payload.py | textlint_fix, body_proofread, rust_target, amphetamine |
+| hook_payload.ts | mirror_prose.ts, recall_index.ts                  |
+| mirror_prose.ts | mirror_prose_guard と .ja/ 一括検査テスト          |
+| japanese.py     | body_proofread, textlint_fix                       |
+| japanese.ts     | mirror_prose.ts                                    |
+| textlint.py     | body_proofread, textlint_fix                       |
+| rust_target.py  | rust_pre_edit, rust_post_edit                       |
 
 ## Quality Pipeline (Rust バイナリ)
 

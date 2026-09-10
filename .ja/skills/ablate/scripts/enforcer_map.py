@@ -26,10 +26,10 @@ ABLATION_RESIDUE = "ablation-residue"
 # なく ABLATION_RESIDUE として出る。
 ENFORCER_TABLE = {
     # settings.json は両ツリーを対象とする PostToolUse Edit/Write hook として guard を登録
-    # しており、hooks/_lib/mirror_prose.py の警告はこの違反に対して "(MIRROR.md)" を引用する。
+    # しており、hooks/_lib/mirror_prose.ts の警告はこの違反に対して "(MIRROR.md)" を引用する。
     "| Prose language | Japanese under `.ja/`, English everywhere else. Covers comments, "
     "test names, and assertion messages                                                   |": (
-        "hooks/edit/mirror_prose_guard.py"
+        "hooks/edit/mirror_prose_guard.ts"
     ),
 }
 
