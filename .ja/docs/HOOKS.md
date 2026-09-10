@@ -31,10 +31,10 @@ Python はアンダースコアで区切る。shell はハイフンで区切る�
 
 | 種別            | 形                  | 例                          |
 | --------------- | ------------------- | --------------------------- |
-| Python hook     | `<対象>_<操作>.py`  | `issue_body_gate.py`      |
+| Python hook     | `<対象>_<操作>.py`  | `rumdl_check.py`      |
 | shell hook      | `<対象>-<操作>.sh`  | `failure-alert.sh`          |
 | _lib モジュール | `<名詞>.py`         | `command_scan.py`           |
-| Python テスト   | `<hook 名>_test.py` | `issue_body_gate_test.py` |
+| Python テスト   | `<hook 名>_test.py` | `rumdl_check_test.py` |
 | shell テスト    | `<hook 名>.test.sh` | `failure-alert.test.sh`     |
 
 ## 実行の絞り込み
@@ -69,7 +69,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 | -------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
 | package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed | パッケージマネージャーコマンドを ni 系へ変換。マネージャー自身のフラグと bun 内蔵のテストランナーは素通しする |
 | body_proofread.ts          | PreToolUse(Bash) | fail-closed | gh issue/pr create の本文と commit メッセージを校正し、起票には構造チェックを添える (advisory)                |
-| issue_body_gate.py         | PreToolUse(Bash) | fail-closed | 本文が骨格から外れた `gh issue create` を deny する                                                           |
+| issue_body_gate.ts         | PreToolUse(Bash) | fail-closed | 本文が骨格から外れた `gh issue create` を deny する                                                           |
 
 ### edit/
 
@@ -111,7 +111,7 @@ hook が読み込む共有コード。単体では登録しない。`japanese.py
 | モジュール      | 利用元                                                               |
 | --------------- | -------------------------------------------------------------------- |
 | command_scan.py | issue_body_gate, body_proofread, security の 3 本                    |
-| gh_filing.py    | issue_body_gate, body_proofread                                      |
+| gh_filing.ts    | issue_body_gate, body_proofread                                      |
 | hook_payload.py | mirror_prose, textlint_fix, body_proofread, rust_target, amphetamine |
 | mirror_prose.py | mirror_prose_guard と .ja/ 一括検査テスト                            |
 | japanese.py     | mirror_prose, body_proofread, textlint_fix                           |

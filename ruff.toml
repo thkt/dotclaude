@@ -10,4 +10,3 @@ ignore = ["RUF001", "RUF002", "RUF003"]
 # hook のテストは日本語の入力データと説明コメントを持ち、行長は実行時の挙動に関わらない。
 [lint.per-file-ignores]
 "hooks/**/tests/*.py" = ["E501"]
-"hooks/pre-bash/issue_body_gate.py" = ["E501"]

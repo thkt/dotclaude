@@ -74,7 +74,7 @@ The order below is the registration order in `settings.json`. Within one matcher
 | PreToolUse        | `Bash`             | `security/rm_to_trash.ts`                       | none               | 15      |
 | PreToolUse        | `Bash`             | `security/git_sandbox_guard.ts`                 | none               | 15      |
 | PreToolUse        | `Bash`             | `pre-bash/body_proofread.ts`                    | none               | 60      |
-| PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.py`                   | none               | 30      |
+| PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.ts`                   | none               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | none               | 30      |
 | PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.py`                         | `**/*.rs`          | 60      |
 | PreToolUse        | `Write\|Edit`      | `guardrails`                                    | none               | 30      |
@@ -107,7 +107,7 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | `git_sandbox_guard.ts`          | Bash                    | Denies a tree-rewriting git call running sandboxed                | fail-close   |
 | `package_manager_rewrite.ts`    | Bash                    | Rewrites a package manager command into its ni equivalent, always deciding allow | advisory |
 | `body_proofread.ts`             | Bash                    | Proofreads a gh filing or commit body and returns it as additionalContext | advisory |
-| `issue_body_gate.py`            | Bash                    | Matches a `gh issue create` body against its title's template, denying both a divergence and a state it cannot compare | fail-close |
+| `issue_body_gate.ts`            | Bash                    | Matches a `gh issue create` body against its title's template, denying both a divergence and a state it cannot compare | fail-close |
 | `client_identifier_gate.ts`     | Bash                    | Denies a commit in this repository whose staged diff adds a term from the identifier list kept outside it | fail-close |
 | `rust_pre_edit.py`              | Write / Edit (`*.rs`)   | Injects clippy findings as additionalContext                      | advisory     |
 | `rust_post_edit.py`             | Write / Edit (`*.rs`)   | Runs `cargo fmt`, then clippy again, and returns the findings     | advisory     |
@@ -124,7 +124,7 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | Module             | Knowledge it owns                                               |
 | ------------------ | --------------------------------------------------------------- |
 | `command_scan.py`  | Which token on a Bash line sits in command position, after stripping wrappers and assignments |
-| `gh_filing.py`     | The body-flag spellings of `gh issue create` / `gh pr create`    |
+| `gh_filing.ts`     | The body-flag spellings of `gh issue create` / `gh pr create`    |
 | `hook_payload.py`  | Typed payload reads and the deny envelope                        |
 | `japanese.py`      | Japanese detection and its threshold                             |
 | `mirror_prose.py`  | Detection of a `.ja/` file whose Japanese is gone                |

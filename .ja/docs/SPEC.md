@@ -74,7 +74,7 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PreToolUse        | `Bash`             | `security/rm_to_trash.ts`                       | なし               | 15      |
 | PreToolUse        | `Bash`             | `security/git_sandbox_guard.ts`                 | なし               | 15      |
 | PreToolUse        | `Bash`             | `pre-bash/body_proofread.ts`                    | なし               | 60      |
-| PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.py`                   | なし               | 30      |
+| PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.ts`                   | なし               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | なし               | 30      |
 | PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.py`                         | `**/*.rs`          | 60      |
 | PreToolUse        | `Write\|Edit`      | `guardrails`                                    | なし               | 30      |
@@ -107,7 +107,7 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `git_sandbox_guard.ts`          | Bash                    | サンドボックス下で tree を書き換える git 呼び出しを deny          | fail-close |
 | `package_manager_rewrite.ts`    | Bash                    | パッケージ マネージャ コマンドを ni 系へ書き換え、決定は常に allow | advisory  |
 | `body_proofread.ts`             | Bash                    | gh filing と commit の本文を校正し additionalContext で返す       | advisory  |
-| `issue_body_gate.py`            | Bash                    | `gh issue create` の本文をタイトル型のテンプレートと照合し、乖離と比較不能をどちらも deny | fail-close |
+| `issue_body_gate.ts`            | Bash                    | `gh issue create` の本文をタイトル型のテンプレートと照合し、乖離と比較不能をどちらも deny | fail-close |
 | `client_identifier_gate.ts`     | Bash                    | 本リポジトリの commit で、外部に置いた識別子リストの語を含む staged diff を deny | fail-close |
 | `rust_pre_edit.py`              | Write / Edit (`*.rs`)   | clippy の指摘を additionalContext として注入                      | advisory  |
 | `rust_post_edit.py`             | Write / Edit (`*.rs`)   | `cargo fmt` の後に clippy を再実行し指摘を返す                    | advisory  |
@@ -124,7 +124,7 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | モジュール         | 引き受ける知識                                                  |
 | ------------------ | --------------------------------------------------------------- |
 | `command_scan.py`  | Bash 行のどこがコマンド位置かの判定。ラッパーと環境変数代入を剥がす |
-| `gh_filing.py`     | `gh issue create` / `gh pr create` の本文フラグの綴り            |
+| `gh_filing.ts`     | `gh issue create` / `gh pr create` の本文フラグの綴り            |
 | `hook_payload.py`  | payload の型付き読み出しと deny 封筒の生成                       |
 | `japanese.py`      | 日本語判定としきい値                                             |
 | `mirror_prose.py`  | `.ja/` 配下で日本語が消えた状態の検出                            |

@@ -1,7 +1,7 @@
 /// <reference types="node" />
-// TypeScript side of hooks/_lib/gh_filing.py: what a `gh issue create` or `gh pr create` names
-// on its own command line. Two PreToolUse hooks read the same filing, so gh's flag spellings
-// are one piece of knowledge here rather than duplicated per hook.
+// Ported from the retired Python gh_filing module: what a `gh issue create` or `gh pr create`
+// names on its own command line. Two PreToolUse hooks read the same filing, so gh's flag
+// spellings are one piece of knowledge here rather than duplicated per hook.
 //
 // Read from the filing's own tokens, never from every command on the line: a `--body-file`
 // belonging to some other command names a different file, and inspecting it under the issue's
