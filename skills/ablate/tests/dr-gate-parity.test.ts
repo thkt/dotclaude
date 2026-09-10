@@ -6,20 +6,20 @@
 // never calls gate, only reads which names each side declares. dr_gate.py stays live as
 // report.py's import source until #646 retires it; this test retires with that slice.
 //
-// pythonPublicNames (./python-public-names.ts) reads dr_gate.py's own AST rather than importing
+// pythonPublicNames (./_python-public-names.ts) reads dr_gate.py's own AST rather than importing
 // it and calling dir(): `import re`, `from pathlib import Path`, and `from verdict import
 // DELETE_CANDIDATE` all bind names into dr_gate.py's namespace that dir() would report as
 // public, but dr_gate.py's text never declares any of them as its own -- dr_gate.ts imports the
 // same three kinds of names (readFileSync/globSync/join, DELETE_CANDIDATE) without re-exporting
 // them (see dr_gate.ts's header), so a dir()-based comparison would report names neither side
-// actually added or dropped. See python-public-names.ts's header for how the AST read
+// actually added or dropped. See _python-public-names.ts's header for how the AST read
 // sidesteps it.
 import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import * as drGate from "../scripts/dr_gate.ts";
-import { pythonPublicNames } from "./python-public-names.ts";
+import { pythonPublicNames } from "./_python-public-names.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPTS_DIR = join(HERE, "..", "scripts");

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 // skills/ablate/scripts/dr_gate.py の TypeScript 側: ablate skill における削除候補への DR
-// 突き合わせゲート。dr_gate.py は、この slice が Python 側を退役させるまで、report.py の
-// import 元として生き続ける。両側は、それまで同じ名前を持つ。
+// 突き合わせゲート。dr_gate.py は、#646 が Python 側を退役させるまで、report.py の import 元
+// として生き続ける。両側は、それまで同じ名前を持つ。
 //
 // 照合が DR 本文をパス文字列で検索するのは、パスを自分自身へ写す機械可読フィールドを持つ DR
 // がまだ無いため。

@@ -4,8 +4,8 @@
 // already exports it for measurement_status, so classify's "not yet observed" verdict and
 // arms.ts's "not enough runs yet" verdict stay the same string in one place. verdict.py stays
 // in the tree the same way arms.py does (see arms.ts's header): report.py still imports it as
-// a Python module until that slice retires the Python side, so both sides carry the same
-// names until then.
+// a Python module until #646 retires the Python side, so both sides carry the same names
+// until then.
 //
 // Constant and function names stay exactly as verdict.py declares them, the same
 // no-camelCase convention arms.ts holds.

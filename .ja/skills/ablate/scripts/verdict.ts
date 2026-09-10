@@ -3,7 +3,7 @@
 // Green step で arms.ts から読む。arms.ts は measurement_status のためにすでに UNMEASURED を
 // export しており、classify の「まだ観測されていない」判定と arms.ts の「実行回数がまだ足り
 // ない」判定は、こうして同じ文字列を1箇所だけに持つ。verdict.py は arms.py と同じ形で木に
-// 残る (arms.ts のヘッダを参照): report.py は Python 側が退役するその slice まで、今も
+// 残る (arms.ts のヘッダを参照): report.py は #646 が Python 側を退役させるまで、今も
 // これを Python module として import しているため、それまで両側が同じ名前を持つ。
 //
 // 定数名と関数名は verdict.py が宣言したとおりに保つ。arms.ts が持つ no-camelCase 規約と

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 // The TypeScript side of skills/ablate/scripts/dr_gate.py: DR cross-reference gate for delete
 // candidates in the ablate skill. dr_gate.py stays live as report.py's import source until
-// that slice retires the Python side, so both sides carry the same names until then.
+// #646 retires the Python side, so both sides carry the same names until then.
 //
 // The lookup searches DR bodies for the path text because no DR maps a path to itself through
 // any machine-readable field yet.

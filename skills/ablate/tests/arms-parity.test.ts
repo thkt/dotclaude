@@ -7,7 +7,7 @@
 // report.py's and usage_counts.py's import source until #646 retires it; this test retires with
 // that slice.
 //
-// pythonPublicNames (./python-public-names.ts) reads arms.py's own AST rather than importing it
+// pythonPublicNames (./_python-public-names.ts) reads arms.py's own AST rather than importing it
 // and calling dir(), because `from __future__ import annotations` binds a module-level name
 // (`annotations`) that dir() would report as public even though that name is a language flag,
 // not a declaration arms.py's text made -- comparing it against arms.ts's export list would
@@ -18,7 +18,7 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import * as arms from "../scripts/arms.ts";
-import { pythonPublicNames } from "./python-public-names.ts";
+import { pythonPublicNames } from "./_python-public-names.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPTS_DIR = join(HERE, "..", "scripts");

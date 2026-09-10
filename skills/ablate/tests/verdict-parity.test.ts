@@ -6,19 +6,19 @@
 // never calls classify, only reads which names each side declares. verdict.py stays live as
 // report.py's import source until #646 retires it; this test retires with that slice.
 //
-// pythonPublicNames (./python-public-names.ts) reads verdict.py's own AST rather than importing
+// pythonPublicNames (./_python-public-names.ts) reads verdict.py's own AST rather than importing
 // it and calling dir(): `from arms import UNMEASURED` binds UNMEASURED into verdict.py's
 // namespace, so dir() would report it as one of verdict's own public names, but verdict.py's
 // text never declares it -- verdict.ts reads UNMEASURED from arms.ts the same way and does not
 // re-export it (see verdict.ts's header), so a dir()-based comparison would report a name
-// neither side actually added or dropped. See python-public-names.ts's header for how the AST
+// neither side actually added or dropped. See _python-public-names.ts's header for how the AST
 // read sidesteps it.
 import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import * as verdict from "../scripts/verdict.ts";
-import { pythonPublicNames } from "./python-public-names.ts";
+import { pythonPublicNames } from "./_python-public-names.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPTS_DIR = join(HERE, "..", "scripts");

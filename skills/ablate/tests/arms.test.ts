@@ -10,11 +10,14 @@ import {
   ARMS,
   BASE_COMMAND,
   FULL_HARNESS,
+  MEASURED,
   PASS_THRESHOLD,
   RUN_COUNT,
+  UNMEASURED,
   WIPED,
   WIPED_PLUS_ONE,
   arm_command,
+  measurement_status,
 } from "../scripts/arms.ts";
 
 test("T-334 ARMS lists the three arm names in the order the python module declares them", () => {
@@ -25,6 +28,14 @@ test("T-334 ARMS lists the three arm names in the order the python module declar
 test("T-335 the run count and the pass threshold come back as the numbers the python module holds", () => {
   assert.equal(RUN_COUNT, 5);
   assert.equal(PASS_THRESHOLD, 0.8);
+
+  // arms_test.py's T-008 rebinds arms.RUN_COUNT to move the boundary; an ESM namespace binding
+  // cannot be reassigned from outside, so the boundary is driven relative to the constant
+  // instead. Both sides of it are asserted, because a comparison written as `runs > RUN_COUNT`
+  // reports a run at the count as unmeasured and no other case here would notice.
+  assert.equal(measurement_status(RUN_COUNT - 1), UNMEASURED);
+  assert.equal(measurement_status(RUN_COUNT), MEASURED);
+  assert.equal(measurement_status(RUN_COUNT + 1), MEASURED);
 });
 
 test("T-336 the arm-building functions return the same shape the python cases expect for each arm", () => {
