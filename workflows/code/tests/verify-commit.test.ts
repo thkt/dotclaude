@@ -3,7 +3,9 @@
 // commit postcondition verifier it replaces. T-151..T-154 mirror that Python suite's
 // setUp/commit_unit/verify helpers directly: each test builds a temp repository with real
 // git (a fixture standing in for the plumbing would not catch a check that reads the wrong
-// git output) and calls verify() in-process.
+// git output) and calls verify() in-process. The repository itself comes from
+// workflows/_lib/tests/_git-repo.ts's withTempRepo, the same disposable-repo helper
+// workflows/build/tests/diff-files.test.ts's buildRepo shares.
 //
 // T-155..T-157 cover the CLI wrapper (main) instead: they spawn the real script through
 // workflows/_lib/tests/_cli-fixture.ts's runCli and replay workflows/code/tests/fixtures/
@@ -12,12 +14,13 @@
 // framing, or the exit-1-on-bad-JSON path, since those live in main(), not verify().
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { runCli } from "../../_lib/tests/_cli-fixture.ts";
+import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
 import { verify } from "../verify-commit.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -53,21 +56,18 @@ function head(repo: string): string {
   return git(repo, ["rev-parse", "HEAD"]);
 }
 
-/** Runs `fn` against a fresh temp repository seeded with a "chore: seed" root commit,
- * mirroring VerifyCommitTest.setUp. Removed once `fn` returns or throws. */
+/** Runs `fn` against a fresh temp repository (`withTempRepo` already ran `git init`) seeded
+ * with a "chore: seed" root commit, mirroring VerifyCommitTest.setUp. Removed once `fn`
+ * returns or throws. */
 function withUnitRepo<T>(fn: (handle: RepoHandle) => T): T {
-  const repo = mkdtempSync(join(tmpdir(), "verify-commit-test-"));
-  try {
-    git(repo, ["init", "--quiet", "--initial-branch", "main"]);
+  return withTempRepo((repo) => {
     git(repo, ["config", "user.email", "test@example.com"]);
     git(repo, ["config", "user.name", "test"]);
     write(repo, "README.md", "seed\n");
     git(repo, ["add", "README.md"]);
     git(repo, ["commit", "--quiet", "-m", "chore: seed"]);
     return fn({ repo, baseline: head(repo) });
-  } finally {
-    rmSync(repo, { recursive: true, force: true });
-  }
+  });
 }
 
 /** Commits `files` (default src/x.ts) with `subject` + blank line + `body`, mirroring
@@ -317,6 +317,19 @@ test(
         expected,
         "stdout matches the fixture's pass_report byte for byte",
       );
+    });
+  },
+);
+
+test(
+  "T-420 diff-files and verify-commit create their repositories through the helper",
+  () => {
+    withUnitRepo((handle) => {
+      const result = spawnSync("git", ["-C", handle.repo, "config", "gc.auto"], {
+        encoding: "utf8",
+      });
+      const gcAuto = result.status === 0 ? result.stdout.trim() : "";
+      assert.equal(gcAuto, "0");
     });
   },
 );

@@ -57,6 +57,10 @@ class TestRustEdit(unittest.TestCase):
         self.repo = root / "repo"
         (self.repo / "src").mkdir(parents=True)
         _ = subprocess.run(["git", "-C", str(self.repo), "init", "-q"], check=True)
+        _ = subprocess.run(["git", "-C", str(self.repo), "config", "gc.auto", "0"], check=True)
+        _ = subprocess.run(
+            ["git", "-C", str(self.repo), "config", "maintenance.auto", "false"], check=True
+        )
         (self.repo / "src" / "lib.rs").touch()
         (self.repo / "src" / "other.rs").touch()
 

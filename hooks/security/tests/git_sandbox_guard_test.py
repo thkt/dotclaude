@@ -69,6 +69,14 @@ class TestGitSandboxGuard(unittest.TestCase):
     def fixture_repo(path: Path) -> Path:
         path.mkdir(parents=True)
         _ = subprocess.run(["git", "init", "-q", str(path)], check=True, capture_output=True)
+        _ = subprocess.run(
+            ["git", "-C", str(path), "config", "gc.auto", "0"], check=True, capture_output=True
+        )
+        _ = subprocess.run(
+            ["git", "-C", str(path), "config", "maintenance.auto", "false"],
+            check=True,
+            capture_output=True,
+        )
         # resolve() because rev-parse reports a physical path and macOS hands out a
         # symlinked TMPDIR.
         return path.resolve()
@@ -85,6 +93,17 @@ class TestGitSandboxGuard(unittest.TestCase):
     def assert_allowed(self, command: str, cwd: Path | None = None, escaped: bool = False) -> None:
         with self.subTest(command=command):
             self.assertNotIn(DENY_MARK, self.run_hook(command, cwd, escaped), "denies")
+
+    def test_fixture_repository_disables_background_gc(self) -> None:
+        """T-421 the python tests' fixture repository answers 0 for gc.auto, read back through git config"""
+        result = subprocess.run(
+            ["git", "-C", str(self.guarded), "config", "gc.auto"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        gc_auto = result.stdout.strip() if result.returncode == 0 else ""
+        self.assertEqual(gc_auto, "0")
 
     def test_tree_rewriting_is_denied(self) -> None:
         """T-001 A git that rewrites the working tree is denied"""
