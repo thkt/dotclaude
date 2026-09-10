@@ -53,7 +53,7 @@ diff の固定点は呼び出し元の指定 (commit SHA、branch、tag、merge-
 
 下のフィールドを構造化出力で返す。diff が空なら spec_found = true を finding なしで返し、呼び出し元が散文を求めるときだけ最初の finding の detail に "no changes to review" と書く。固定点が解決しないなら固定点を報告して停止し、空の照合に進まない。軸内で最も重い finding を最初の finding の detail に書く。軸をまたいで単一の勝者を選ばない。それは分離が防ごうとしている rerank そのもの。
 
-severity の enum のうち、high は受け入れ基準を満たさない finding、medium は主経路は動くが spec から逸脱する finding、low は文言や軽微な差を指す。
+severity の enum のうち、high が指すのは受け入れ基準を満たさない finding。medium は主経路が動いたまま spec から逸脱する finding を指し、low は文言や軽微な差を指す。
 
 | Field                | Type    | Value                                                                                          |
 | -------------------- | ------- | ---------------------------------------------------------------------------------------------- |
@@ -63,4 +63,3 @@ severity の enum のうち、high は受け入れ基準を満たさない findi
 | findings[].spec_line | string  | 根拠となる spec 行の引用。missing なら欠けている要求文                                         |
 | findings[].location  | string  | diff 内の file:line。scope_creep は逸脱したコードの位置                                        |
 | findings[].detail    | string  | spec が要求した状態と diff の状態の差を 3 文以内で                                             |
-

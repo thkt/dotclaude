@@ -63,4 +63,3 @@ Within severity's enum, high defeats an acceptance criterion, medium diverges wh
 | findings[].spec_line | string  | The quoted spec line behind the finding. For missing, the absent requirement text                             |
 | findings[].location  | string  | file:line in the diff. For scope_creep, the location of the stray code                                        |
 | findings[].detail    | string  | The gap between the state the spec required and the state in the diff, in at most 3 sentences                 |
-
