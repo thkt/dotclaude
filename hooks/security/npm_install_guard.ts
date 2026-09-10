@@ -1,8 +1,8 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
 // PreToolUse hook: block a package install when ignore-scripts is not configured. The
-// TypeScript side of hooks/security/npm_install_guard.py (DR-0112's migration); MANAGERS /
-// INSTALLS / NI_INSTALLS / RUNNERS / FETCH_AND_RUN / SUBCOMMANDS / OVERRIDES /
+// TypeScript replacement for the retired npm_install_guard Python hook (DR-0112's migration);
+// MANAGERS / INSTALLS / NI_INSTALLS / RUNNERS / FETCH_AND_RUN / SUBCOMMANDS / OVERRIDES /
 // VALUED_NPM_FLAGS / TRIGGERS / REASONS and _installs / _target / _setting / _configured /
 // main carry the Python side's names and shapes.
 //

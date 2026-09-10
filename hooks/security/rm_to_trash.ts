@@ -1,9 +1,8 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// PreToolUse hook: redirect deletion to `mv ~/.Trash/`. The TypeScript side of
-// hooks/security/rm_to_trash.py (DR-0112's migration); rm_to_trash.py stays in the tree while
-// its callers move over one at a time, so VERBS / TRIGGERS / REASONS mirror the Python side's
-// values character for character.
+// PreToolUse hook: redirect deletion to `mv ~/.Trash/`. The TypeScript replacement for the
+// retired rm_to_trash Python hook (DR-0112's migration); VERBS / TRIGGERS / REASONS carry the
+// Python side's values character for character.
 //
 // Failure mode: fail-closed (security enforcement).
 import { readFileSync } from "node:fs";

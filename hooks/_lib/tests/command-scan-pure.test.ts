@@ -26,7 +26,7 @@ test("T-269 subcommand and git_subcommand skip the valued flags their tables nam
   assert.deepEqual(git_subcommand(["git", "-C", "/tmp"]), [null, []]);
 
   // subcommand() with a non-git valued-flags table, mirroring
-  // hooks/security/npm_install_guard.py's VALUED_NPM_FLAGS usage: the same skipping has to
+  // hooks/security/npm_install_guard.ts's VALUED_NPM_FLAGS usage: the same skipping has to
   // work for a table git_subcommand never reads.
   const npmValuedFlags = new Set(["--prefix", "-C", "--registry", "-w", "--workspace"]);
   assert.deepEqual(subcommand(["npm", "install"], npmValuedFlags), ["install", []]);
