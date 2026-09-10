@@ -122,13 +122,34 @@ const relayStdout = async (unit, label, command) => {
 
 const gateScript = bundled("workflows/_lib/gate.ts");
 
-const parsedReport = (stdout) => {
+const gateObject = (text) => {
   try {
-    const report = JSON.parse(stdout);
+    const report = JSON.parse(text);
     return report && typeof report.verdict === "string" ? report : null;
   } catch {
     return null;
   }
+};
+
+// The command runs under the user's login shell, and a shim writes to that stream before the
+// command does: inside a worktree, mise printed one `mise WARN tracking config` line ahead of
+// the report and JSON.parse rejected the whole stdout, stopping the unit as gate_did_not_report
+// (#641 U-002). gate.ts pretty-prints its report, so the document opens on a line holding `{`
+// alone and closes on the last line holding `}` alone. The parse is retried from each opening
+// line, earliest first, so the outermost object is the one that comes back.
+const parsedReport = (stdout) => {
+  const direct = gateObject(stdout);
+  if (direct) return direct;
+  const lines = stdout.split(/\r\n|\r|\n/);
+  let end = lines.length - 1;
+  while (end >= 0 && lines[end].trim() !== "}") end -= 1;
+  if (end < 0) return null;
+  for (let start = 0; start < end; start += 1) {
+    if (lines[start].trim() !== "{") continue;
+    const found = gateObject(lines.slice(start, end + 1).join("\n"));
+    if (found) return found;
+  }
+  return null;
 };
 
 // The report crosses back through an agent, which fills a {stdout, stderr} schema. With the
