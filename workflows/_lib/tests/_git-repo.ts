@@ -22,8 +22,10 @@ import { join } from "node:path";
 
 /** The four-variable git identity `skills/scribe/tests/verify-run.test.ts`'s GIT_ENV uses,
  * layered onto `process.env` -- passed to every command `withTempRepo` runs against the
- * repository it creates. */
-const GIT_ENV: Record<string, string> = {
+ * repository it creates. Exported so a caller that runs its own git commands (commits, most
+ * often) against a `withTempRepo` repository reuses this identity instead of carrying a second
+ * copy of the same four variables. */
+export const GIT_ENV: Record<string, string> = {
   ...(process.env as Record<string, string>),
   GIT_AUTHOR_NAME: "git-repo-test",
   GIT_AUTHOR_EMAIL: "git-repo-test@example.com",
