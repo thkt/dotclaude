@@ -126,6 +126,18 @@ test("T-014 the hooks .ts set the toolchain scope check reads is derived from th
     "hooks/_lib/tests/fixtures/shebang/stale-env-bun.ts",
     "hooks/_lib/tests/fixtures/shebang/_lib/has-shebang.ts",
     "hooks/_lib/tests/bun-runtime.test.ts",
+    "hooks/_lib/rust_target.ts",
+    "hooks/_lib/tests/rust-target.test.ts",
+    "hooks/_lib/textlint.ts",
+    "hooks/_lib/tests/textlint.test.ts",
+    "hooks/edit/rust_pre_edit.ts",
+    "hooks/edit/rust_post_edit.ts",
+    "hooks/edit/tests/rust-edit.test.ts",
+    "hooks/edit/textlint_fix.ts",
+    "hooks/edit/tests/textlint-fix.test.ts",
+    "hooks/edit/rumdl_check.ts",
+    "hooks/edit/tests/rumdl-check.test.ts",
+    "hooks/edit/tests/edit-tooling-retirement.test.ts",
   ];
   const missing = planAddedFiles.filter((file) => !hooksTs.includes(file));
   assert.deepEqual(
