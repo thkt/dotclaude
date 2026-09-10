@@ -55,7 +55,7 @@ function referencesCanonicalSchema(row: string): boolean {
   return row.includes("finding-schema.md");
 }
 
-test("no reviewer definition restates the severity values, and the same predicate flags a fixture definition that does", () => {
+test("T-435 no reviewer definition restates the severity values, and the same predicate flags a fixture definition that does", () => {
   for (const path of reviewerFiles()) {
     const label = relative(REPO_ROOT, path);
     const row = severityRowLine(readFileSync(path, "utf8"));
@@ -79,7 +79,7 @@ test("no reviewer definition restates the severity values, and the same predicat
   );
 });
 
-test("finding-schema.md carries the enum and every reviewer definition points at it by path", () => {
+test("T-436 finding-schema.md carries the enum and every reviewer definition points at it by path", () => {
   const schemaLines = readFileSync(SCHEMA_PATH, "utf8").split("\n");
   const canonicalLine = schemaLines[SCHEMA_SEVERITY_LINE - 1] ?? "";
   assert.match(
