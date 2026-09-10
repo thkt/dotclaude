@@ -1,0 +1,32 @@
+[
+  {
+    "name": "counts_fires_across_transcripts_and_drops_a_label_only_command",
+    "files": {
+      "project-a/session-1.jsonl": "{\"type\": \"attachment\", \"attachment\": {\"type\": \"hook_success\", \"hookName\": \"PreToolUse:Bash\", \"hookEvent\": \"PreToolUse\", \"command\": \"~/.claude/hooks/pre-bash/wiki_scene.py\", \"stdout\": \"\", \"exitCode\": 0}, \"timestamp\": \"2026-08-01T00:00:00.000Z\"}\n{\"type\": \"attachment\", \"attachment\": {\"type\": \"hook_success\", \"hookName\": \"PostToolUse:Bash\", \"hookEvent\": \"PostToolUse\", \"command\": \"formatter\", \"stdout\": \"\", \"exitCode\": 0}, \"timestamp\": \"2026-08-01T00:00:00.000Z\"}\n",
+      "project-b/session-2.jsonl": "{\"type\": \"attachment\", \"attachment\": {\"type\": \"hook_success\", \"hookName\": \"PostToolUse:Bash\", \"hookEvent\": \"PostToolUse\", \"command\": \"~/.claude/hooks/post-bash/scribe_prompt.py\", \"stdout\": \"\", \"exitCode\": 0}, \"timestamp\": \"2026-08-10T00:00:00.000Z\"}\n"
+    },
+    "argv": [
+      "<root>"
+    ],
+    "exit": 0,
+    "stdout": "{\"elements\": {\"hooks/pre-bash/wiki_scene.py\": {\"fires\": 1, \"last_used\": \"2026-08-01\"}, \"hooks/post-bash/scribe_prompt.py\": {\"fires\": 1, \"last_used\": \"2026-08-10\"}}, \"transcript_count\": 2, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-10\"}}\n"
+  },
+  {
+    "name": "boundary_crossing_transcript",
+    "files": {
+      "project-a/session-1.jsonl": "{\"type\": \"attachment\", \"attachment\": {\"type\": \"hook_success\", \"hookName\": \"PreToolUse:Bash\", \"hookEvent\": \"PreToolUse\", \"command\": \"~/.claude/hooks/pre-bash/wiki_scene.py\", \"stdout\": \"\", \"exitCode\": 0}, \"timestamp\": \"2026-06-01T00:00:00.000Z\"}\n{\"type\": \"attachment\", \"attachment\": {\"type\": \"hook_success\", \"hookName\": \"PreToolUse:Bash\", \"hookEvent\": \"PreToolUse\", \"command\": \"~/.claude/hooks/pre-bash/wiki_scene.py\", \"stdout\": \"\", \"exitCode\": 0}, \"timestamp\": \"2026-05-01T00:00:00.000Z\"}\n"
+    },
+    "argv": [
+      "<root>"
+    ],
+    "exit": 0,
+    "stdout": "{\"elements\": {\"hooks/pre-bash/wiki_scene.py\": {\"fires\": 2, \"last_used\": \"2026-06-01\"}}, \"transcript_count\": 1, \"date_range\": {\"start\": \"2026-05-01\", \"end\": \"2026-06-01\"}}\n"
+  },
+  {
+    "name": "missing_transcripts_root_argument_errors",
+    "files": {},
+    "argv": [],
+    "exit": 2,
+    "stdout": ""
+  }
+]
