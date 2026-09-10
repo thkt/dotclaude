@@ -93,9 +93,9 @@ class ScribeWorkflowParity(unittest.TestCase):
             "a step carries id: gate, which the claude step's condition addresses",
         )
         self.assertIn(
-            "scribe_gate.py",
+            "scribe_gate.ts",
             text,
-            "the gate step runs hooks/_lib/scribe_gate.py, U-003's should_run CLI",
+            "the gate step runs hooks/_lib/scribe_gate.ts, U-003's should_run CLI",
         )
         window = claude_step_window(text)
         self.assertIn(
