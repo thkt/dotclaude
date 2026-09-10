@@ -241,6 +241,18 @@ export function extractProse(filePath: string): string[] {
 
 /** The warning for a file that lost its Japanese, or null when there is nothing to say
  * (the original Python module's `check`). The file has to exist: extractProse reads it. */
+/** The original Python module's `Path(path).is_file()`, which answers false for every reason a
+ * stat can fail rather than raising. statSync raises instead, so a payload naming a file the
+ * editor has already moved would leave the hook exiting 1 with a stack trace where the Python
+ * hook exited 0 in silence. */
+function isReadableFile(filePath: string): boolean {
+  try {
+    return statSync(filePath).isFile();
+  } catch {
+    return false;
+  }
+}
+
 export function check(filePath: string): string | null {
   if (!isTarget(filePath)) return null;
   const lines = extractProse(filePath);
@@ -313,7 +325,7 @@ export function checkEnglish(filePath: string): string | null {
  * human and additionalContext reaches whoever rewrote the file. */
 export function emit(stdinText: string): void {
   const filePath = editedFile(stdinText);
-  if (filePath === null) return;
+  if (filePath === null || !isReadableFile(filePath)) return;
   const message = check(filePath);
   if (message === null) return;
   notify(message);

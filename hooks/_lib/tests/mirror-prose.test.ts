@@ -17,10 +17,11 @@
 // exclusion at all; mirror_prose's sweep walks the filesystem directly, the same way the retired
 // Python module's rglob did).
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { editedFile } from "../hook_payload.ts";
 import { check, checkEnglish } from "../mirror_prose.ts";
 
@@ -44,7 +45,10 @@ function editedPath(absolutePath: string): string {
   return resolved;
 }
 
-const EXCLUDED_DIR_NAMES = new Set(["node_modules", "projects", "logs"]);
+// .git and __pycache__ carry the retired Python module's own two exclusions; the other three
+// are what this repo's tree grows that its rglob never met. A worktree keeps .git as a file,
+// so only the primary checkout reaches that entry at all.
+const EXCLUDED_DIR_NAMES = new Set(["node_modules", "projects", "logs", ".git", "__pycache__"]);
 
 /** mirror_prose_test.py's MirrorSweep.rglob walk, adapted to prune node_modules/, projects/,
  * and logs/ during the walk itself rather than filtering them out afterward -- pruning is what
@@ -137,4 +141,21 @@ test("T-368 an english-side file that kept the japanese original is reported by 
     offenders.includes(relative),
     `the english-side file left in Japanese must be reported by its own relative path: ${offenders.join(", ")}`,
   );
+});
+
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+
+// The two above run on temp trees, which prove the predicate and the exclusions but never read
+// this checkout. mirror_prose_test.py's MirrorSweep read it, and that is where a mirror going
+// English between edits was actually caught -- the module's own header calls it "every file,
+// including what landed while no hook was watching". These two restore that reading.
+test("no .ja file in this checkout lost its Japanese", () => {
+  const mirror = path.join(REPO, ".ja");
+  assert.ok(existsSync(mirror), "this checkout carries a .ja/ tree for the sweep to read");
+
+  assert.deepEqual(jaSweepOffenders(mirror), [], ".ja/ files that lost their Japanese");
+});
+
+test("no english-side file in this checkout kept the japanese original", () => {
+  assert.deepEqual(englishSweepOffenders(REPO), [], "English-side files still in Japanese");
 });

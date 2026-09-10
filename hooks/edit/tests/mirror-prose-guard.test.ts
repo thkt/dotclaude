@@ -60,3 +60,18 @@ test("T-373 an edit whose mirror is present produces no output", () => {
     "a .ja file that still carries a Japanese character must stay silent",
   );
 });
+
+// The Python guard answered a payload whose file_path names nothing with exit 0 and no output
+// (`if path is None or not Path(path).is_file(): return`). statSync raises where is_file()
+// answered false, so without the same guard this case ended as an uncaught ENOENT: exit 1 with
+// a stack trace on stderr. run() throws on a non-zero exit, so a regression fails here rather
+// than passing quietly.
+test("a payload naming a path no file sits at produces no output", () => {
+  const missing = path.join(mkdtempSync(path.join(tmpdir(), "mirror-prose-guard-missing-")), ".ja", "gone.ts");
+
+  assert.equal(
+    runHook(missing),
+    "",
+    "a file_path that resolves to nothing must leave the guard silent, not crash it",
+  );
+});
