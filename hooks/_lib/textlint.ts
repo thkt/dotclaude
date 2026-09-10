@@ -1,16 +1,17 @@
 /// <reference types="node" />
-// Shared textlint invocation for the fix and lint hooks. TypeScript port of
-// hooks/_lib/textlint.py (docs/decisions/0112-adopt-typescript-for-helper-scripts.md, unit
-// U-002): mirrors its public functions (fix, lint). shutil.which's PATH search is mirrored as
-// a node:fs existence check walking process.env.PATH -- the runner (bun x, then npx) and the
-// exit-0-when-absent behavior stay exactly what textlint.py already establishes.
+// Shared textlint invocation for the fix and lint hooks (docs/decisions/0112-adopt-typescript-
+// for-helper-scripts.md, unit U-002): fix and lint carry over from this module's Python
+// sibling, which stays in the tree because hooks/pre-bash/body_proofread.py still imports it
+// directly. shutil.which's PATH search is mirrored as a node:fs existence check walking
+// process.env.PATH -- the runner (bun x, then npx) and the exit-0-when-absent behavior stay
+// exactly what that sibling already establishes.
 import { spawnSync } from "node:child_process";
 import { accessSync, constants, statSync } from "node:fs";
 import { delimiter, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Not $HOME/.claude, which names the installed harness alone: a checkout run from anywhere
-// else finds no config there. Mirrors textlint.py's REPO_ROOT.
+// else finds no config there.
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CONFIG = join(REPO_ROOT, ".textlintrc.json");
 
@@ -30,15 +31,13 @@ function which(bin: string): boolean {
   return false;
 }
 
-/** Mirrors textlint.py's _runner(). */
 function runner(): string[] | null {
   if (which("bun")) return ["bun", "x"];
   if (which("npx")) return ["npx"];
   return null;
 }
 
-/** null when textlint cannot run at all: no config, or no runner to start it with. Mirrors
- * textlint.py's _run(). */
+/** null when textlint cannot run at all: no config, or no runner to start it with. */
 function run(args: string[]): { stdout: string } | null {
   try {
     if (!statSync(CONFIG).isFile()) return null;
@@ -57,14 +56,14 @@ function run(args: string[]): { stdout: string } | null {
   return { stdout: result.stdout ?? "" };
 }
 
-/** Mirrors textlint.py's fix(): the result goes unread, since the caller runs after the edit
- * landed and a textlint failure has nothing left to stop. */
+/** The result goes unread, since the caller runs after the edit landed and a textlint
+ * failure has nothing left to stop. */
 export function fix(path: string): void {
   run(["--fix", path]);
 }
 
 /** The findings, empty when textlint found none or could not run. The caller cannot tell the
- * two apart, and neither leaves it anything to report. Mirrors textlint.py's lint(). */
+ * two apart, and neither leaves it anything to report. */
 export function lint(path: string): string {
   const result = run([path]);
   return result !== null ? result.stdout : "";

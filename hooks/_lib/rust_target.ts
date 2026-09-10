@@ -1,15 +1,15 @@
 /// <reference types="node" />
-// Shared .rs handling for the rust-*-edit hooks. TypeScript port of hooks/_lib/rust_target.py
-// (docs/decisions/0112-adopt-typescript-for-helper-scripts.md, unit U-001): mirrors its public
-// functions (target, clippyOutput, fmt) and MAX_FINDINGS.
+// Shared .rs handling for the rust-*-edit hooks (docs/decisions/0112-adopt-typescript-for-
+// helper-scripts.md, unit U-001): target, clippyOutput, fmt, and MAX_FINDINGS carry over from
+// this module's retired Python predecessor.
 //
-// One deliberate divergence from the Python source: subprocess.run raises FileNotFoundError
-// when a binary is missing, which rust_target.py lets propagate uncaught. node:child_process's
-// spawnSync never throws for that case -- it returns `{ error, status: null }` instead (the
-// same status:null-reads-as-nothing-to-report shape hooks/edit/rumdl_check.py's
-// subprocess.run/FileNotFoundError catch establishes for its own missing-binary case). This
-// module reads status === null as "nothing to report" rather than reintroducing a throw, so a
-// missing cargo stays a silent hook here exactly as it is meant to.
+// One deliberate divergence from that predecessor: Python's subprocess.run raises
+// FileNotFoundError when a binary is missing, and the predecessor let it propagate uncaught.
+// node:child_process's spawnSync never throws for that case -- it returns `{ error, status:
+// null }` instead (the same status:null-reads-as-nothing-to-report shape the retired
+// rumdl-check hook's subprocess.run/FileNotFoundError catch established for its own
+// missing-binary case). This module reads status === null as "nothing to report" rather than
+// reintroducing a throw, so a missing cargo stays a silent hook here exactly as it is meant to.
 import { spawnSync } from "node:child_process";
 import { basename, dirname, relative, resolve } from "node:path";
 import { editedFile } from "./hook_payload.ts";
@@ -39,7 +39,7 @@ function splitLines(text: string): string[] {
 }
 
 /** The cargo workspace root and the edited file, as [root, file], or null when cargo has
- * nothing to do. Mirrors rust_target.py's target(). */
+ * nothing to do. */
 export function target(payloadText: string): [string, string] | null {
   const path = editedFile(payloadText);
   if (path === null || !path.endsWith(".rs")) {
@@ -56,16 +56,15 @@ export function target(payloadText: string): [string, string] | null {
 }
 
 /** file's path relative to root, or file's own basename when it does not resolve under root
- * (a symlinked root in the payload vs. the real path git prints). Mirrors rust_target.py's
- * _findings() fallback: the name alone still matches most findings, and losing the sort beats
- * raising out of a hook. */
+ * (a symlinked root in the payload vs. the real path git prints): the name alone still matches
+ * most findings, and losing the sort beats raising out of a hook. */
 function relativeToRoot(root: string, file: string): string {
   const rel = relative(resolve(root), resolve(file));
   return rel.startsWith("..") ? basename(file) : rel;
 }
 
 /** The edited file's own clippy findings first, then the rest, cut to MAX_FINDINGS after the
- * whole run is collected -- never on a partial read. Mirrors rust_target.py's _findings(). */
+ * whole run is collected -- never on a partial read. */
 function findings(root: string, file: string): string {
   const relativePath = relativeToRoot(root, file);
   // short format so the cut counts findings, not the source excerpts the default format wraps
@@ -88,8 +87,7 @@ function findings(root: string, file: string): string {
 
 /** The hook JSON for a clippy run, or null when clippy found nothing to say.
  *
- * Nothing to say beats an empty additionalContext, which costs the reader a turn. Mirrors
- * rust_target.py's clippy_output(). */
+ * Nothing to say beats an empty additionalContext, which costs the reader a turn. */
 export function clippyOutput(event: string, root: string, file: string): string | null {
   const found = findings(root, file);
   if (!found.trim()) {
@@ -103,8 +101,8 @@ export function clippyOutput(event: string, root: string, file: string): string 
   });
 }
 
-/** Runs cargo fmt in root. Mirrors rust_target.py's fmt(): the result goes unread, since the
- * edit already landed and a cargo fmt failure has nothing left to stop. */
+/** Runs cargo fmt in root. The result goes unread, since the edit already landed and a cargo
+ * fmt failure has nothing left to stop. */
 export function fmt(root: string): void {
   spawnSync("cargo", ["fmt"], { cwd: root, encoding: "utf8" });
 }

@@ -1,10 +1,9 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// PostToolUse hook: auto-fix a Japanese .md file with textlint. TypeScript port of
-// hooks/edit/textlint_fix.py (unit U-004, docs/decisions/0112-adopt-typescript-for-helper-
-// scripts.md): composes hooks/_lib/hook_payload.ts's editedFile, hooks/_lib/japanese.ts's
-// hasJapanese, and hooks/_lib/textlint.ts's fix the way the python original composes their
-// same-named modules.
+// PostToolUse hook: auto-fix a Japanese .md file with textlint (unit U-004,
+// docs/decisions/0112-adopt-typescript-for-helper-scripts.md): composes hooks/_lib/
+// hook_payload.ts's editedFile, hooks/_lib/japanese.ts's hasJapanese, and hooks/_lib/
+// textlint.ts's fix, the way its retired Python predecessor composed the same pieces.
 //
 // settings.json narrows this to .md paths with an `if` condition. The suffix check below
 // repeats it so the hook still holds when called directly, as the tests do.

@@ -1,18 +1,17 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// PostToolUse hook: report rumdl violations after editing a .md file. TypeScript port of
-// hooks/edit/rumdl_check.py (unit U-005, docs/decisions/0112-adopt-typescript-for-helper-
-// scripts.md): composes hooks/_lib/hook_payload.ts's editedFile and notify around a
-// `rumdl check <path>` subprocess, the way the python original composes their same-named
-// module.
+// PostToolUse hook: report rumdl violations after editing a .md file (unit U-005,
+// docs/decisions/0112-adopt-typescript-for-helper-scripts.md): composes hooks/_lib/
+// hook_payload.ts's editedFile and notify around a `rumdl check <path>` subprocess, the way
+// its retired Python predecessor composed the same pieces.
 //
 // Unlike textlint_fix.ts, this hook only reports; it never calls `rumdl fmt`, so a fix stays a
 // decision the human or the agent makes on purpose.
 //
-// subprocess.run raises FileNotFoundError when rumdl is missing, which rumdl_check.py catches
-// and turns into exit 0. spawnSync never throws for that case -- it returns
-// `{ error, status: null }` instead, the same status:null-reads-as-nothing-to-report shape
-// hooks/_lib/rust_target.ts already established for a missing cargo. This hook reads
+// subprocess.run raises FileNotFoundError when rumdl is missing, which the retired Python
+// predecessor caught and turned into exit 0. spawnSync never throws for that case -- it
+// returns `{ error, status: null }` instead, the same status:null-reads-as-nothing-to-report
+// shape hooks/_lib/rust_target.ts already established for a missing cargo. This hook reads
 // status === null the same way.
 import { spawnSync } from "node:child_process";
 import { readFileSync, statSync } from "node:fs";

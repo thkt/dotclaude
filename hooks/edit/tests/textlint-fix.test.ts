@@ -1,12 +1,12 @@
 /// <reference types="node" />
-// Unit U-004: hooks/edit/textlint_fix.ts, the TypeScript port of hooks/edit/textlint_fix.py
-// (docs/decisions/0112-adopt-typescript-for-helper-scripts.md). The python original composes
-// hooks/_lib/hook_payload.py's edited_file, hooks/_lib/japanese.py's has_japanese, and
-// hooks/_lib/textlint.py's fix -- so this test drives that same composition through a stub
-// `bun` on PATH, the way hooks/_lib/tests/textlint.test.ts's installStubBun and
-// hooks/edit/tests/rust-edit.test.ts's CARGO_CALLS log both already do for this codebase's
-// runner-resolution hooks: the stub records the path it was asked to fix, so the assertion
-// reads whether textlint was reached at all, not what it did to the file.
+// Unit U-004: hooks/edit/textlint_fix.ts (docs/decisions/0112-adopt-typescript-for-helper-
+// scripts.md), composing hooks/_lib/hook_payload.ts's editedFile, hooks/_lib/japanese.ts's
+// hasJapanese, and hooks/_lib/textlint.ts's fix, the way its retired Python predecessor
+// composed the same pieces -- this test drives that composition through a stub `bun` on PATH,
+// the way hooks/_lib/tests/textlint.test.ts's installStubBun and hooks/edit/tests/rust-
+// edit.test.ts's CARGO_CALLS log both already do for this codebase's runner-resolution hooks:
+// the stub records the path it was asked to fix, so the assertion reads whether textlint was
+// reached at all, not what it did to the file.
 import assert from "node:assert/strict";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -18,7 +18,7 @@ import { run } from "../../_lib/tests/_hook-harness.ts";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "textlint_fix.ts");
 
-// Mirrors hooks/edit/tests/textlint_fix_test.py's REDUNDANT_MD / ENGLISH_MD fixtures: enough
+// Mirrors the retired textlint_fix hook tests' REDUNDANT_MD / ENGLISH_MD fixtures: enough
 // Japanese characters to clear japanese.ts's DEFAULT_THRESHOLD of 50, and an English-only
 // counterpart that stays under it.
 const JAPANESE_MD =

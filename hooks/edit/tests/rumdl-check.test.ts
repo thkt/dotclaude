@@ -1,12 +1,12 @@
 /// <reference types="node" />
-// Unit U-005: hooks/edit/rumdl_check.ts, the TypeScript port of hooks/edit/rumdl_check.py
-// (docs/decisions/0112-adopt-typescript-for-helper-scripts.md). The python original composes
-// hooks/_lib/hook_payload.py's edited_file and notify around a `rumdl check <path>` subprocess
-// -- this test drives that same composition through a stub `rumdl` on PATH, the way
+// Unit U-005: hooks/edit/rumdl_check.ts (docs/decisions/0112-adopt-typescript-for-helper-
+// scripts.md), composing hooks/_lib/hook_payload.ts's editedFile and notify around a
+// `rumdl check <path>` subprocess, the way its retired Python predecessor composed the same
+// pieces -- this test drives that composition through a stub `rumdl` on PATH, the way
 // hooks/edit/tests/rust-edit.test.ts's STUB_CARGO and hooks/edit/tests/textlint-fix.test.ts's
 // installStubBun both already do for this codebase's runner-resolution hooks: the stub prints
-// one finding and exits non-zero, the shape hooks/edit/rumdl_check.py's subprocess.run reads
-// (returncode != 0 and non-empty stdout) before it hands the finding to notify.
+// one finding and exits non-zero, the shape rumdl_check.ts's spawnSync call reads
+// (status !== 0 and non-empty stdout) before it hands the finding to notify.
 import assert from "node:assert/strict";
 import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -19,8 +19,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "rumdl_check.ts");
 
 // MD022-shaped: what a real rumdl reports for two headings with no blank line between them.
-// Mirrors hooks/edit/tests/rumdl_check_test.py's VIOLATING_MD and the MD022 finding its
-// test_violation_reaches_both_channels expects on both notify channels.
+// Mirrors the retired rumdl_check hook tests' VIOLATING_MD and the MD022 finding their
+// violation-reaches-both-channels case expected on both notify channels.
 const VIOLATING_MD = "# Heading\n## Another Heading\n";
 const FINDING = "violation.md:2:1 [MD022] headings should be surrounded by blank lines";
 

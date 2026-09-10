@@ -1,10 +1,9 @@
 /// <reference types="node" />
-// Unit U-001: rust_target.ts's clippy findings pipeline against rust_target.py's contract
-// (hooks/_lib/rust_target.py) -- cargo clippy's whole stdout+stderr is collected before
-// MAX_FINDINGS trims it, and a missing cargo binary must read as nothing to say rather than a
-// thrown failure. A stub cargo on PATH plays the same role hooks/edit/tests/rust_edit_test.py's
-// STUB_CARGO does for the Python side: the assertions read what clippyOutput does with the
-// stub's output, not a real crate.
+// Unit U-001: rust_target.ts's clippy findings pipeline -- cargo clippy's whole stdout+stderr
+// is collected before MAX_FINDINGS trims it, and a missing cargo binary must read as nothing to
+// say rather than a thrown failure. A stub cargo on PATH plays the same role the retired
+// rust-edit hook tests' STUB_CARGO once did for the Python side: the assertions read what
+// clippyOutput does with the stub's output, not a real crate.
 import assert from "node:assert/strict";
 import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -30,7 +29,7 @@ function installStubCargo(root: string, script: string): string {
 
 /** Runs fn with PATH replaced by exactly binDir -- a replaced (not merged) PATH is what makes
  * "cargo absent" true regardless of whether this machine happens to have a real cargo
- * installed, the same reasoning hooks/edit/tests/rust_edit_test.py's setUp documents for its
+ * installed, the same reasoning the retired rust-edit hook tests' setUp once documented for
  * own env replacement. */
 function withOnlyPath<T>(binDir: string, fn: () => T): T {
   const original = process.env.PATH;
@@ -64,11 +63,10 @@ test("T-376 a clippy run yielding more than the cap returns exactly the cap, cut
   );
 
   assert.ok(result, "clippy produced findings but clippyOutput returned nothing");
-  // clippyOutput returns the JSON.stringify'd hookSpecificOutput envelope (mirroring
-  // rust_target.py's clippy_output), so additionalContext's embedded newlines are the
-  // two literal characters \n, not real line breaks -- unwrap before splitting, the way
-  // rust_edit_test.py's own assertions read the Python side via
-  // json.loads(out)["hookSpecificOutput"]["additionalContext"].
+  // clippyOutput returns the JSON.stringify'd hookSpecificOutput envelope, so
+  // additionalContext's embedded newlines are the two literal characters \n, not real line
+  // breaks -- unwrap before splitting, mirroring how the retired rust-edit hook tests once read
+  // the Python side via json.loads(out)["hookSpecificOutput"]["additionalContext"].
   const additionalContext = JSON.parse(result).hookSpecificOutput.additionalContext as string;
   const lines = additionalContext.split("\n");
   assert.equal(
