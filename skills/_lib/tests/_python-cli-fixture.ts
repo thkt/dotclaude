@@ -13,10 +13,20 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { CliRun } from "../../../workflows/_lib/tests/_cli-fixture.ts";
 
-// Absolute path per docs/wiki/fixture-freeze-before-port.md's own instruction (record each case
-// by running it through /opt/homebrew/bin/python3), bypassing PATH resolution so which python3 a
-// developer's shell would find never changes what a frozen case replays against.
-export const PYTHON3 = "/opt/homebrew/bin/python3";
+// An absolute interpreter path, so the cleared PATH below cannot change which python3 a frozen
+// case replays against. Resolved rather than written down: /opt/homebrew/bin/python3 is the
+// macOS path the hook shebangs carry, and CI runs ubuntu, where that path holds nothing and
+// spawnSync would answer `status: null` -- which a frozen case would then read as an exit code
+// that never matches. Asking python3 for sys.executable finds the same interpreter this repo's
+// own Python suite runs under, on either platform.
+const PYTHON3 = (() => {
+  const found = spawnSync("python3", ["-c", "import sys; print(sys.executable)"], {
+    encoding: "utf8",
+  });
+  const path = (found.stdout ?? "").trim();
+  assert.ok(path, `python3 must resolve to an interpreter path: ${found.stderr ?? found.error}`);
+  return path;
+})();
 
 export interface RunPythonCliOptions {
   env?: Record<string, string>;
