@@ -24,7 +24,7 @@ export const INSTALLS: ReadonlySet<string> = new Set([
   "upgrade",
 ]);
 
-// What package_manager_rewrite.py rewrites the managers into (#643 fixes the inclusion).
+// What package_manager_rewrite.ts rewrites the managers into (#643 fixes the inclusion).
 export const NI_INSTALLS: ReadonlySet<string> = new Set(["ni", "nci", "nup"]);
 
 // Fetch-and-run: the package and its dependencies are installed before the bin runs

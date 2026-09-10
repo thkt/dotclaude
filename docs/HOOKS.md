@@ -95,8 +95,8 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 
 | Hook                       | Event            | Failure Mode | Purpose                                                                                                                          |
 | -------------------------- | ---------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| package_manager_rewrite.py | PreToolUse(Bash) | fail-closed  | Convert package manager commands to the ni family. A manager's own flags, and bun's built-in test runner, pass through unchanged |
-| body_proofread.py          | PreToolUse(Bash) | fail-closed  | Proofread a gh issue/pr create body and a commit message, with a structure check on the filing (advisory)                        |
+| package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed  | Convert package manager commands to the ni family. A manager's own flags, and bun's built-in test runner, pass through unchanged |
+| body_proofread.ts          | PreToolUse(Bash) | fail-closed  | Proofread a gh issue/pr create body and a commit message, with a structure check on the filing (advisory)                        |
 | issue_body_gate.py         | PreToolUse(Bash) | fail-closed  | Deny a `gh issue create` whose body leaves the template skeleton                                                                 |
 
 ### edit/
