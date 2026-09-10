@@ -37,6 +37,8 @@
     ".ja/skills/_lib/harness_hash.ts",
     "skills/_lib/review_score.ts",
     ".ja/skills/_lib/review_score.ts",
+    "skills/_lib/harness_elements.ts",
+    ".ja/skills/_lib/harness_elements.ts",
     "skills/**/scripts/*.{js,mjs,ts}",
     ".ja/skills/**/scripts/*.{js,mjs,ts}",
     "tests/*.test.{js,ts}",
