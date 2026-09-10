@@ -2,11 +2,11 @@
 // Ports the two new U-003 scenarios of skills/scribe/tests/ci_parity_test.py's parity suite to
 // the .ts side: that file's own checks run under python3 and stay there (T-007/T-008/T-009/
 // T-010, issue #531's Plan), but T-449/T-450 pin U-003's own contract -- the interpreter setup
-// step DR-0116 chose (node, via actions/setup-node) and the gate step's move from
-// `python3 hooks/_lib/scribe_gate.py` to `node hooks/_lib/scribe_gate.ts` -- and this repo's
-// node --test glob (`skills/scribe/tests/*.test.ts`) is what actually discovers and runs them,
-// the same reason hooks/_lib/tests/scribe-gate.test.ts exists alongside
-// hooks/_lib/tests/scribe_gate_test.py rather than folding into it.
+// step DR-0116 chose (node, via actions/setup-node) and the gate step's move to
+// `node hooks/_lib/scribe_gate.ts` -- and this repo's node --test glob
+// (`skills/scribe/tests/*.test.ts`) is what actually discovers and runs them, the same reason
+// hooks/_lib/tests/scribe-gate.test.ts exists as its own file rather than folding into the
+// retired Python side's suite.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -39,16 +39,14 @@ test(
 );
 
 test(
-  "T-450 the gate step invokes the .ts file and no step invokes scribe_gate.py, read from scribe.yml",
+  "T-450 the gate step invokes the .ts file with an explicit node interpreter, read from scribe.yml",
   () => {
+    // Absence of the retired Python original is hooks/_lib/tests/scribe-gate-retirement.test.ts's
+    // job (a repo-wide scan that covers this workflow file too), not repeated here.
     const text = workflowText();
     assert.ok(
       text.includes("node hooks/_lib/scribe_gate.ts"),
       "the gate step launches hooks/_lib/scribe_gate.ts with an explicit node interpreter",
-    );
-    assert.ok(
-      !text.includes("scribe_gate.py"),
-      "no step still invokes the retired hooks/_lib/scribe_gate.py",
     );
   },
 );
