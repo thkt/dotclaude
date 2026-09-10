@@ -45,6 +45,8 @@
     "hooks/pre-bash/package_manager_rewrite.ts",
     "hooks/pre-bash/body_proofread.ts",
     "hooks/edit/mirror_prose_guard.ts",
+    "hooks/pre-bash/issue_body_gate.ts",
+    "hooks/pre-bash/wiki_scene.ts",
     "skills/**/tests/**/*.test.{js,ts}",
     "skills/_lib/harness_hash.ts",
     ".ja/skills/_lib/harness_hash.ts",

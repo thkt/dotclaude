@@ -6,7 +6,7 @@ Fixture records follow the shape a real ~/.claude/projects/**/*.jsonl transcript
 a hook fire (confirmed by reading a live transcript in this session): a top-level "timestamp"
 paired with an "attachment" object whose "hookEvent" is PreToolUse or PostToolUse and whose
 "command" names the hook script that fired. A real "command" carries the home-relative form
-the harness invoked ("~/.claude/hooks/pre-bash/wiki_scene.py"), measured over this session's
+the harness invoked ("~/.claude/hooks/pre-bash/wiki_scene.ts"), measured over this session's
 transcripts, so the fixtures below write that form rather than the repo-root-relative path a
 harness element is named by.
 """
@@ -65,7 +65,7 @@ class FireCounting(unittest.TestCase):
                 [
                     _fire(
                         event="PreToolUse",
-                        command="~/.claude/hooks/pre-bash/wiki_scene.py",
+                        command="~/.claude/hooks/pre-bash/wiki_scene.ts",
                         timestamp="2026-08-01T00:00:00.000Z",
                     )
                 ],
@@ -73,7 +73,7 @@ class FireCounting(unittest.TestCase):
 
             result = usage_counts.count_usage(root)
 
-            self.assertEqual(result["elements"]["hooks/pre-bash/wiki_scene.py"]["fires"], 1)
+            self.assertEqual(result["elements"]["hooks/pre-bash/wiki_scene.ts"]["fires"], 1)
 
 
 class LabelFires(unittest.TestCase):
@@ -96,7 +96,7 @@ class LabelFires(unittest.TestCase):
                     ),
                     _fire(
                         event="PreToolUse",
-                        command="~/.claude/hooks/pre-bash/wiki_scene.py",
+                        command="~/.claude/hooks/pre-bash/wiki_scene.ts",
                         timestamp="2026-08-01T00:00:00.000Z",
                     ),
                 ],
@@ -104,7 +104,7 @@ class LabelFires(unittest.TestCase):
 
             result = usage_counts.count_usage(root)
 
-            self.assertEqual(list(result["elements"]), ["hooks/pre-bash/wiki_scene.py"])
+            self.assertEqual(list(result["elements"]), ["hooks/pre-bash/wiki_scene.ts"])
 
 
 class TypeScriptElements(unittest.TestCase):
@@ -167,7 +167,7 @@ class MeasurementWindow(unittest.TestCase):
         with patch.object(usage_counts, "MEASUREMENT_WINDOW_DAYS", 30):
             stale_last_used = date(2026, 1, 1).isoformat()  # outside a 30-day window
             verdict = usage_counts.classify(
-                "hooks/pre-bash/wiki_scene.py",
+                "hooks/pre-bash/wiki_scene.ts",
                 fires=5,
                 last_used=stale_last_used,
                 now=date(2026, 8, 27),
@@ -189,7 +189,7 @@ class TranscriptSummary(unittest.TestCase):
                 [
                     _fire(
                         event="PreToolUse",
-                        command="~/.claude/hooks/pre-bash/wiki_scene.py",
+                        command="~/.claude/hooks/pre-bash/wiki_scene.ts",
                         timestamp="2026-08-01T00:00:00.000Z",
                     )
                 ],
