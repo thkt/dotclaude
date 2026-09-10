@@ -1,7 +1,7 @@
 /// <reference types="node" />
 // Shared textlint invocation for the fix and lint hooks (docs/decisions/0112-adopt-typescript-
 // for-helper-scripts.md, unit U-002): fix and lint carry over from this module's Python
-// sibling, which stays in the tree because hooks/pre-bash/body_proofread.py still imports it
+// sibling, which stays in the tree with no importer left once the proofreading hook retired
 // directly. shutil.which's PATH search is mirrored as a node:fs existence check walking
 // process.env.PATH -- the runner (bun x, then npx) and the exit-0-when-absent behavior stay
 // exactly what that sibling already establishes.

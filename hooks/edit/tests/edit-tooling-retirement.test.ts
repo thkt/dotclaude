@@ -7,9 +7,8 @@
 // hooks/edit/textlint_fix.py.
 //
 // Two Python modules the plan's file list named stay in the tree, each with a live importer
-// this slice does not touch. hooks/pre-bash/body_proofread.py imports textlint and japanese,
-// and body_proofread itself moves in a later slice; retiring either module here would leave
-// that import naming nothing.
+// this slice does not touch. Both lost their last importer when the proofreading hook retired
+// on main, so each is residue a later slice removes rather than a module still in use.
 //
 // Same shape as hooks/_lib/tests/recall-index-retirement.test.ts, generalized from one retired
 // name to six: no tracked file outside the historical directories (docs/decisions/,

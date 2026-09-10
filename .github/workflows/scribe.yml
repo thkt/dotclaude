@@ -35,13 +35,19 @@ jobs:
           # since a PR opened with GITHUB_TOKEN does not trigger test.yml.
           persist-credentials: true
 
+      # Node 22 は型ストリップ (.ts をそのまま node に渡す機能) を無フラグで行わない。
+      # 24 (LTS) から無フラグで有効になる (test.yml と同じ理由、DR-0116)。
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
       # gh ships on the runner image but not at the path scribe_trigger.py's DEFAULT_GH
       # falls back to (a macOS Homebrew path), so resolve the runner's own binary here.
       - name: Determine whether scribe has new input
         id: gate
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: CLAUDE_GH_BIN="$(command -v gh)" python3 hooks/_lib/scribe_gate.py
+        run: CLAUDE_GH_BIN="$(command -v gh)" node hooks/_lib/scribe_gate.ts
 
       - name: Run scribe
         if: steps.gate.outputs.should_run == 'true'

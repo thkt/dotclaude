@@ -1,7 +1,7 @@
 /// <reference types="node" />
 // Differential tests for hooks/_lib/textlint.ts against its Python sibling (unit U-002,
 // docs/decisions/0112-adopt-typescript-for-helper-scripts.md, still imported directly by
-// hooks/pre-bash/body_proofread.py): for the same PATH and the same edited file, lint() must
+// the retired Python proofreader): for the same PATH and the same edited file, lint() must
 // invoke the same runner + textlint command and read back the same result, and fix() must stay
 // silent under the same conditions. Both modules resolve CONFIG from their own file's location
 // (the real repo's .textlintrc.json), so this test controls the runner instead: a stub `bun` on
