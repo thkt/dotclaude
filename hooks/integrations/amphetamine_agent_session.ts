@@ -18,25 +18,26 @@
 // own header carries the rest of this reasoning. This mirrors the codebase's existing
 // scribe_trigger.ts (pure, hooks/_lib/) / scribe_prompt.ts (hook body, hooks/post-bash/) split.
 //
-// main mirrors the retired amphetamine_agent_session hook's main + run + _release + _foreign_session: it
-// reads the same argv position Python's sys.argv[1] does, filters to the three known actions,
-// and then branches on release / acquire+background the way run() does. The app-directory and
-// `shutil.which("osascript")` gates main() makes ahead of that are out of this unit's scope --
-// its own goal statement scopes it to the argv-driven acquire/release/background contract, and
-// the source test range this unit ports (amphetamine_agent_session_test.py's T-011..T-024)
-// starts after T-009, the missing-app case. Left for a later unit; see this unit's result notes.
+// main mirrors the retired amphetamine_agent_session hook's main + run + _release +
+// _foreign_session: it reads the same argv position Python's sys.argv[1] does, filters to the
+// three known actions, gates on the app directory and on osascript being resolvable, and then
+// branches on release / acquire+background the way run() does. Both gates matter on a machine
+// without Amphetamine: this hook fires on UserPromptSubmit, on every PostToolUse and on Stop,
+// and without them each of those would create the state directory, sweep it and fork osascript.
 //
 // The retired amphetamine_agent_session hook defers its `re`, `shutil` and `subprocess` imports to the
 // functions that need them, reasoning that most hook runs return before reaching one. Node's
 // `node:child_process` (subprocess's counterpart) is a built-in with no package to resolve, and
 // none of the five prior TS hook ports that call an external binary (rumdl_check.ts among them)
 // defer that import either, so this port keeps spawnSync as a static top-level import rather
-// than reaching for `import()`. `re`'s counterpart is a regex literal, which carries no import
+// than reaching for `import()`. Measured before choosing, since the Python original deferred it
+// on a run-count argument: two rounds of 60 bun runs each put the hoisted form 0.9 ms and 2.0 ms
+// per run behind the dynamic one, under DR-0112's 5 ms reassessment threshold. `re`'s counterpart is a regex literal, which carries no import
 // at all. `shutil.which`'s counterpart folds into the spawnSync call itself, the way
 // rumdl_check.ts already reads a missing binary off spawnSync's own result (`status === null`)
 // instead of probing PATH first.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { readStdin } from "../_lib/hook_payload.ts";
@@ -166,11 +167,36 @@ function run(action: string, payloadText: string, stateDir: string): void {
   startSession();
 }
 
-/** Mirrors the retired amphetamine_agent_session hook's main. The app-directory and osascript-availability
- * gates it makes ahead of this dispatch are not ported here -- see this file's header. */
+/** Where the app sits absent CLAUDE_AMPHETAMINE_APP. Mirrors the retired hook's DEFAULT_APP. */
+const DEFAULT_APP = "/Applications/Amphetamine.app";
+
+/** True when `path` is a directory. The retired hook asked `Path(app).is_dir()`, which answers
+ * false for every reason a stat can fail rather than raising. */
+function isDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/** The osascript the retired hook's `shutil.which("osascript")` would have found, or null.
+ * Resolved on PATH rather than pinned: the hook's own tests put a stub there, and the retired
+ * hook spawned it by bare name too. */
+function osascriptOnPath(): string | null {
+  const found = spawnSync("/usr/bin/env", ["sh", "-c", "command -v osascript"], {
+    encoding: "utf8",
+  });
+  const path = (found.stdout ?? "").trim();
+  return found.status === 0 && path ? path : null;
+}
+
+/** Mirrors the retired amphetamine_agent_session hook's main. */
 function main(): number {
   const action = process.argv[2] ?? "";
   if (action !== "acquire" && action !== "release" && action !== "background") return 0;
+  if (!isDirectory(process.env.CLAUDE_AMPHETAMINE_APP || DEFAULT_APP)) return 0;
+  if (osascriptOnPath() === null) return 0;
   const stateDir = process.env.CLAUDE_AMPHETAMINE_STATE_DIR || defaultStateDir();
   run(action, readStdin(), stateDir);
   return 0;

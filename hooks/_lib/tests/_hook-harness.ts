@@ -1,8 +1,8 @@
 /// <reference types="node" />
-// Ports hooks/_lib/hook_harness.py's checked/run/TIMEOUT_SECONDS to the .ts side (issue #626),
-// the same way workflows/_lib/tests/_brace.ts is the shared, `_`-prefixed, .ja-mirror-less
-// helper other tests in its layer import from. hook_harness.py itself stays: 16 Python hook
-// tests still import it, and this file does not touch that contract.
+// checked/run/TIMEOUT_SECONDS: ports the retired Python hook_harness module (issue #626), the
+// same way workflows/_lib/tests/_brace.ts is the shared, `_`-prefixed, .ja-mirror-less helper
+// other tests in its layer import from. The last Python hook tests that imported the retired
+// module retired alongside it, so this file is the harness's only implementation now.
 //
 // Runs the hook with node (process.execPath), not bun -- CI has no bun. env, when given,
 // replaces the child's environment outright rather than extending it: spawnSync uses the env

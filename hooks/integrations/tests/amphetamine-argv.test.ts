@@ -9,6 +9,7 @@
 import assert from "node:assert/strict";
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -179,4 +180,51 @@ test("T-399 a repeated background call inside the throttle window returns early 
     firstStamp,
     "a throttled background call must not touch the bg marker's mtime",
   );
+});
+
+// The retired suite's T-009. Without it the hook creates the state directory, sweeps it and
+// forks osascript on every UserPromptSubmit, every PostToolUse and every Stop of a machine that
+// has no Amphetamine installed.
+test("a machine without the app gets no marker, no sweep and no osascript", () => {
+  const f = fixture();
+  const missing = path.join(path.dirname(f.stateDir), "no-such-app.app");
+
+  const out = run(
+    HOOK,
+    { session_id: "s1" },
+    {
+      ...process.env,
+      PATH: `${f.binDir}${path.delimiter}${process.env.PATH}`,
+      OSASCRIPT_LOG: f.log,
+      STUB_REMAINING: NO_SESSION,
+      CLAUDE_AMPHETAMINE_APP: missing,
+      CLAUDE_AMPHETAMINE_STATE_DIR: f.stateDir,
+    },
+    ["acquire"],
+  );
+
+  assert.equal(out, "", "the hook must stay silent");
+  assert.equal(sent(f), "", "no osascript command must be sent");
+  assert.equal(existsSync(f.stateDir), false, "the state directory must not be created");
+});
+
+test("a PATH with no osascript gets no marker and no sweep", () => {
+  const f = fixture();
+
+  const out = run(
+    HOOK,
+    { session_id: "s1" },
+    {
+      ...process.env,
+      PATH: "",
+      OSASCRIPT_LOG: f.log,
+      STUB_REMAINING: NO_SESSION,
+      CLAUDE_AMPHETAMINE_APP: f.app,
+      CLAUDE_AMPHETAMINE_STATE_DIR: f.stateDir,
+    },
+    ["acquire"],
+  );
+
+  assert.equal(out, "", "the hook must stay silent");
+  assert.equal(existsSync(f.stateDir), false, "the state directory must not be created");
 });

@@ -1,8 +1,8 @@
 /// <reference types="node" />
-// Ports hooks/_lib/hook_harness.py's checked/run/TIMEOUT_SECONDS to the .ts side (issue #626),
-// the same way workflows/_lib/tests/_brace.ts is the shared, `_`-prefixed, .ja-mirror-less
-// helper other tests in its layer import from. hook_harness.py itself stays: 16 Python hook
-// tests still import it, and this file does not touch that contract.
+// checked/run/TIMEOUT_SECONDS: ports the retired Python hook_harness module (issue #626), the
+// same way workflows/_lib/tests/_brace.ts is the shared, `_`-prefixed, .ja-mirror-less helper
+// other tests in its layer import from. The last Python hook tests that imported the retired
+// module retired alongside it, so this file is the harness's only implementation now.
 //
 // Each scenario below drives a small positive-control fixture under fixtures/harness/
 // (docs/wiki/absence-test-positive-control-fixture.md) rather than a real hook, so the
@@ -58,7 +58,7 @@ test("T-242 an object payload reaches the hook as its JSON text and a string pay
   assert.equal(run(ECHO_STDIN_FIXTURE, stringPayload), stringPayload);
 });
 
-test("T-266 the harness kills a hook at the same 60 seconds hook_harness.py allowed", () => {
+test("T-266 the harness kills a hook at the same 60 seconds the retired Python module allowed", () => {
   // The two harnesses run the same hooks from the same settings, so a hook that fits one
   // budget and not the other would pass a test run and stall a real session.
   assert.equal(TIMEOUT_SECONDS, 60);

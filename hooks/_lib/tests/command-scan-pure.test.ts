@@ -56,7 +56,7 @@ test("T-271 starts_with matches a prefix by position and before_pathspec cuts th
   assert.equal(starts_with(cmd, ["gh", "pr", "create"]), false);
   assert.equal(starts_with(["gh", "issue"], ["gh", "issue", "create"]), false);
 
-  // before_pathspec: what follows -- is a pathspec, not a flag (command_scan.py's own
+  // before_pathspec: what follows -- is a pathspec, not a flag (the retired Python module's own
   // `git rm -- -h` / `git clean -fd -- -notes` docstring examples).
   assert.deepEqual(before_pathspec(["-fd", "--", "-notes"]), ["-fd"]);
   assert.deepEqual(before_pathspec(["-h"]), ["-h"]);

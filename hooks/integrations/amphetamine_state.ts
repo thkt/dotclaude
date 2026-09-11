@@ -1,5 +1,5 @@
 /// <reference types="node" />
-// The pure, safely-importable half of hooks/integrations/amphetamine_agent_session.py's port:
+// The pure, safely-importable half of the retired amphetamine_agent_session hook's port:
 // the marker-mtime primitives (unit U-003) and session_id plus the marker-existence checks
 // amphetamine_agent_session.ts's release/foreign-session branching needs (unit U-004). Split
 // out of amphetamine_agent_session.ts so this module can stay import-safe.
@@ -22,11 +22,11 @@ import { closeSync, openSync, readdirSync, rmSync, statSync, utimesSync } from "
 import { join } from "node:path";
 import { parse } from "../_lib/hook_payload.ts";
 
-/** How fresh a marker's mtime has to be to count as live. Mirrors amphetamine_agent_session.py's
+/** How fresh a marker's mtime has to be to count as live. Mirrors the retired amphetamine_agent_session hook's
  * _fresh, and STALE_MINUTES is that module's own constant for _sweep's cutoff. */
 export const STALE_MINUTES = 480;
 
-/** Whether path's mtime falls inside the last `minutes`. Mirrors amphetamine_agent_session.py's
+/** Whether path's mtime falls inside the last `minutes`. Mirrors the retired amphetamine_agent_session hook's
  * _fresh, which reads OSError (a marker removed mid-check) as not fresh. */
 export function fresh(path: string, minutes: number): boolean {
   try {
@@ -37,7 +37,7 @@ export function fresh(path: string, minutes: number): boolean {
 }
 
 /** Every entry name directly under dir that starts with prefix. Mirrors
- * amphetamine_agent_session.py's `state_dir.glob(f"{prefix}*")`, which reads a missing
+ * the retired amphetamine_agent_session hook's `state_dir.glob(f"{prefix}*")`, which reads a missing
  * directory as no matches rather than an error. */
 function markerNames(dir: string, prefix: string): string[] {
   try {
@@ -48,20 +48,20 @@ function markerNames(dir: string, prefix: string): string[] {
 }
 
 /** Whether any file under stateDir named `${prefix}*` is fresh. Mirrors
- * amphetamine_agent_session.py's _any_fresh. */
+ * the retired amphetamine_agent_session hook's _any_fresh. */
 export function anyFresh(stateDir: string, prefix: string, minutes: number): boolean {
   return markerNames(stateDir, prefix).some((name) => fresh(join(stateDir, name), minutes));
 }
 
 /** Whether any `${prefix}*` marker exists under stateDir, regardless of freshness. Mirrors
- * the `any(state_dir.glob(...))` checks amphetamine_agent_session.py's _release and
+ * the `any(state_dir.glob(...))` checks the retired amphetamine_agent_session hook's _release and
  * _foreign_session each make on their own prefix. */
 export function anyMarker(stateDir: string, prefix: string): boolean {
   return markerNames(stateDir, prefix).length > 0;
 }
 
 /** Whether any "session-" or "bg-" prefixed marker exists under stateDir, regardless of
- * freshness. Mirrors amphetamine_agent_session.py's _markers, which _foreign_session calls to
+ * freshness. Mirrors the retired amphetamine_agent_session hook's _markers, which _foreign_session calls to
  * confirm a running session belongs to Claude Code rather than a person: the first process to
  * acquire leaves a marker before any later turn's foreign-session check runs. */
 export function hasMarkers(stateDir: string): boolean {
@@ -69,7 +69,7 @@ export function hasMarkers(stateDir: string): boolean {
 }
 
 /** Drops every "session-" and "bg-" prefixed marker under stateDir whose mtime has passed
- * STALE_MINUTES. Mirrors amphetamine_agent_session.py's _sweep. */
+ * STALE_MINUTES. Mirrors the retired amphetamine_agent_session hook's _sweep. */
 export function sweep(stateDir: string): void {
   for (const name of [...markerNames(stateDir, "session-"), ...markerNames(stateDir, "bg-")]) {
     const path = join(stateDir, name);
@@ -97,7 +97,7 @@ export function removeMarker(path: string): void {
 }
 
 /** The session a call belongs to, or null when this hook should ignore it. Mirrors
- * amphetamine_agent_session.py's session_id: acquire and release open and close the main
+ * the retired amphetamine_agent_session hook's session_id: acquire and release open and close the main
  * turn, so a subagent-born call would double count them, while background exists for the
  * opposite reason -- only a subagent or a Workflow/Agent spawn tells this hook that work
  * outlives the turn. */
