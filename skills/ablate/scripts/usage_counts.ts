@@ -41,10 +41,10 @@ const _VARIABLE_PREFIX_RE = /^\$\{[A-Z_]+\}\//;
 
 // The suffixes that count as an element. Some fires carry a label instead of a path, and a
 // label names no harness element, so it stays out of the tally.
-export const ELEMENT_SUFFIXES: ReadonlySet<string> = new Set([".py", ".sh", ".js"]);
+export const ELEMENT_SUFFIXES: ReadonlySet<string> = new Set([".py", ".sh", ".js", ".ts"]);
 
 // Safety nets exercised only on an uncommon input, where zero fires must not read as unused.
-export const RARE_BY_DESIGN: ReadonlySet<string> = new Set(["hooks/security/rm_to_trash.py"]);
+export const RARE_BY_DESIGN: ReadonlySet<string> = new Set(["hooks/security/rm_to_trash.ts"]);
 
 // How many days back from `now` a most-recent fire still counts as observed.
 export const MEASUREMENT_WINDOW_DAYS = 90;

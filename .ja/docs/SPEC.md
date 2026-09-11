@@ -69,13 +69,13 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 
 | イベント          | matcher            | 実体                                            | if 条件            | timeout |
 | ----------------- | ------------------ | ----------------------------------------------- | ------------------ | ------- |
-| PreToolUse        | `Bash`             | `pre-bash/package_manager_rewrite.py`           | なし               | 15      |
-| PreToolUse        | `Bash`             | `security/npm_install_guard.py`                 | なし               | 60      |
-| PreToolUse        | `Bash`             | `security/rm_to_trash.py`                       | なし               | 15      |
-| PreToolUse        | `Bash`             | `security/git_sandbox_guard.py`                 | なし               | 15      |
-| PreToolUse        | `Bash`             | `pre-bash/body_proofread.py`                    | なし               | 60      |
+| PreToolUse        | `Bash`             | `pre-bash/package_manager_rewrite.ts`           | なし               | 15      |
+| PreToolUse        | `Bash`             | `security/npm_install_guard.ts`                 | なし               | 60      |
+| PreToolUse        | `Bash`             | `security/rm_to_trash.ts`                       | なし               | 15      |
+| PreToolUse        | `Bash`             | `security/git_sandbox_guard.ts`                 | なし               | 15      |
+| PreToolUse        | `Bash`             | `pre-bash/body_proofread.ts`                    | なし               | 60      |
 | PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.py`                   | なし               | 30      |
-| PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.py`            | なし               | 30      |
+| PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | なし               | 30      |
 | PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.py`                         | `**/*.rs`          | 60      |
 | PreToolUse        | `Write\|Edit`      | `guardrails`                                    | なし               | 30      |
 | PreToolUse        | `EnterPlanMode`    | インライン `echo` による deny                   | なし               | なし    |
@@ -102,13 +102,13 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 
 | hook                            | 発火                    | 判定                                                              | 失敗方針  |
 | ------------------------------- | ----------------------- | ----------------------------------------------------------------- | --------- |
-| `rm_to_trash.py`                | Bash                    | `rm` / `rmdir` / `unlink` / `shred` と `find -delete` / `git clean` を deny し `mv ~/.Trash/` へ誘導 | fail-close |
-| `npm_install_guard.py`          | Bash                    | `ignore-scripts` 未設定の install を deny。ni 系の別名も同じ扱い  | fail-close |
-| `git_sandbox_guard.py`          | Bash                    | サンドボックス下で tree を書き換える git 呼び出しを deny          | fail-close |
-| `package_manager_rewrite.py`    | Bash                    | パッケージ マネージャ コマンドを ni 系へ書き換え、決定は常に allow | advisory  |
-| `body_proofread.py`             | Bash                    | gh filing と commit の本文を校正し additionalContext で返す       | advisory  |
+| `rm_to_trash.ts`                | Bash                    | `rm` / `rmdir` / `unlink` / `shred` と `find -delete` / `git clean` を deny し `mv ~/.Trash/` へ誘導 | fail-close |
+| `npm_install_guard.ts`          | Bash                    | `ignore-scripts` 未設定の install を deny。ni 系の別名も同じ扱い  | fail-close |
+| `git_sandbox_guard.ts`          | Bash                    | サンドボックス下で tree を書き換える git 呼び出しを deny          | fail-close |
+| `package_manager_rewrite.ts`    | Bash                    | パッケージ マネージャ コマンドを ni 系へ書き換え、決定は常に allow | advisory  |
+| `body_proofread.ts`             | Bash                    | gh filing と commit の本文を校正し additionalContext で返す       | advisory  |
 | `issue_body_gate.py`            | Bash                    | `gh issue create` の本文をタイトル型のテンプレートと照合し、乖離と比較不能をどちらも deny | fail-close |
-| `client_identifier_gate.py`     | Bash                    | 本リポジトリの commit で、外部に置いた識別子リストの語を含む staged diff を deny | fail-close |
+| `client_identifier_gate.ts`     | Bash                    | 本リポジトリの commit で、外部に置いた識別子リストの語を含む staged diff を deny | fail-close |
 | `rust_pre_edit.py`              | Write / Edit (`*.rs`)   | clippy の指摘を additionalContext として注入                      | advisory  |
 | `rust_post_edit.py`             | Write / Edit (`*.rs`)   | `cargo fmt` の後に clippy を再実行し指摘を返す                    | advisory  |
 | `textlint_fix.py`               | Write / Edit (`*.md`)   | 日本語判定を通った Markdown を textlint で自動修正                | advisory  |

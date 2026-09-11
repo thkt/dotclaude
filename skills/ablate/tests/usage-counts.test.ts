@@ -19,7 +19,9 @@ import {
   classify,
   count_usage,
   MEASUREMENT_WINDOW_DAYS,
+  ELEMENT_SUFFIXES,
   RARE_BY_DESIGN,
+  element_path,
 } from "../scripts/usage_counts.ts";
 import type { UsageResult } from "../scripts/usage_counts.ts";
 
@@ -43,6 +45,23 @@ test("T-354 count_usage tallies the fires inside the window and drops the ones o
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("a fire naming a typescript hook is counted the way a python one is", () => {
+  // RARE_BY_DESIGN names a .ts hook, and a suffix set without .ts drops that path before the
+  // tally is built, leaving the entry pointing at a key nothing can produce.
+  for (const path of RARE_BY_DESIGN) {
+    assert.ok(
+      ELEMENT_SUFFIXES.has(path.slice(path.lastIndexOf("."))),
+      `${path} names a suffix the tally drops, so the entry can never match`,
+    );
+  }
+
+  assert.equal(
+    element_path("~/.claude/hooks/security/rm_to_trash.ts"),
+    "hooks/security/rm_to_trash.ts",
+    "a .ts hook fire must resolve to its repo-relative path",
+  );
 });
 
 test("T-355 a path in RARE_BY_DESIGN classifies as measured rather than as a delete candidate", () => {
