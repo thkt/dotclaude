@@ -34,7 +34,12 @@ export const LIST_PATH: string =
 
 // `git commit`, and the porcelain aliases that reach the same place. `git add` is out of
 // scope: staging is reversible without touching history.
-export const COMMIT_RE = /\bgit\b(?![^|;&]*\b--dry-run\b)[^|;&]*\bcommit\b/;
+// The exemption reads `(?<![\w-])--dry-run` rather than `\b--dry-run`: `\b` needs a word
+// character on one side, and the space before a flag is not one, so the boundary never
+// matched and every dry run was examined like a real commit. The lookbehind keeps
+// `--no-dry-run` from counting as the flag, and the lookahead keeps `--dry-run-later`
+// from counting either.
+export const COMMIT_RE = /\bgit\b(?![^|;&]*(?<![\w-])--dry-run(?![\w-]))[^|;&]*\bcommit\b/;
 
 /** The identifiers to refuse, lowercased. An absent or comment-only list disables the gate. */
 export function _terms(): string[] {
