@@ -65,11 +65,19 @@ function sleep(ms: number): Promise<void> {
 
 // The hook detaches recall, so the log needs the job to land before it is read -- mirrors
 // the retired Python test's run_hook polling loop.
+// The hook spawns recall detached and unrefs it, so the stub writes its log on the operating
+// system's schedule rather than this test's. One second was not enough under a full parallel
+// suite run: the wait timed out roughly one run in three while the stub was merely late, never
+// absent. The loop returns the moment the log has content, so a longer bound costs the passing
+// path nothing and only buys the loaded machine room.
+const LOG_WAIT_ATTEMPTS = 200;
+const LOG_WAIT_INTERVAL_MS = 50;
+
 async function waitForLog(logPath: string): Promise<string> {
-  for (let attempt = 0; attempt < 20; attempt += 1) {
+  for (let attempt = 0; attempt < LOG_WAIT_ATTEMPTS; attempt += 1) {
     const text = readFileSync(logPath, "utf8");
     if (text) return text;
-    await sleep(50);
+    await sleep(LOG_WAIT_INTERVAL_MS);
   }
   return readFileSync(logPath, "utf8");
 }
