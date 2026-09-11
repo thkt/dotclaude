@@ -23,9 +23,9 @@ scenes: []
 ## 参照コード
 
 - `rules/conventions/MIRROR.md` の Canonical side and mirroring (canonical の向きと、形の決め方)
-- `hooks/_lib/mirror_prose.py` の `check_english` と `is_english_target` (英語側に残った日本語 prose を拾う)
-- `hooks/edit/mirror_prose_guard.py` (編集のたびに 1 ファイルを見る PostToolUse hook)
-- `hooks/_lib/tests/mirror_prose_test.py` (hook が見ていない間に入った分をリポジトリ全域で走査する)
+- `hooks/_lib/mirror_prose.ts` の `checkEnglish` と `isEnglishTarget` (英語側に残った日本語 prose を拾う)
+- `hooks/edit/mirror_prose_guard.ts` (編集のたびに 1 ファイルを見る PostToolUse hook)
+- `hooks/_lib/tests/mirror-prose.test.ts` (hook が見ていない間に入った分をリポジトリ全域で走査する)
 - `workflows/_lib/tests/reference-notation.test.js` の `WORKFLOW_TREE_DIRS` (EN と `.ja/` の 2 ツリーを列挙して同じ検査を回す)
 
 ## 由来

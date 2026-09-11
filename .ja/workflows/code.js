@@ -124,13 +124,33 @@ const relayStdout = async (unit, label, command) => {
 
 const gateScript = bundled("workflows/_lib/gate.ts");
 
-const parsedReport = (stdout) => {
+const gateObject = (text) => {
   try {
-    const report = JSON.parse(stdout);
+    const report = JSON.parse(text);
     return report && typeof report.verdict === "string" ? report : null;
   } catch {
     return null;
   }
+};
+
+// コマンドはユーザーのログインシェルの下で走り、コマンド自身より先に shim が同じストリームへ書く。
+// worktree の中では mise が `mise WARN tracking config` の 1 行をレポートの前に出力し、JSON.parse が
+// stdout 全体を拒んで unit が gate_did_not_report で止まった (#641 U-002)。gate.ts はレポートを
+// pretty-print するので、文書は `{` だけの行で開き、`}` だけの最後の行で閉じる。開始行ごとに前から
+// 順に parse をやり直すので、戻るのは最も外側のオブジェクトになる。
+const parsedReport = (stdout) => {
+  const direct = gateObject(stdout);
+  if (direct) return direct;
+  const lines = stdout.split(/\r\n|\r|\n/);
+  let end = lines.length - 1;
+  while (end >= 0 && lines[end].trim() !== "}") end -= 1;
+  if (end < 0) return null;
+  for (let start = 0; start < end; start += 1) {
+    if (lines[start].trim() !== "{") continue;
+    const found = gateObject(lines.slice(start, end + 1).join("\n"));
+    if (found) return found;
+  }
+  return null;
 };
 
 // レポートは agent を経由して戻り、agent は {stdout, stderr} の schema を埋める。コマンドの出力が

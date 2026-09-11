@@ -144,6 +144,12 @@ test("T-014 the hooks .ts set the toolchain scope check reads is derived from th
     "hooks/pre-bash/tests/wiki-scene-find.test.ts",
     "hooks/pre-bash/tests/wiki-scene-runtime.test.ts",
     "hooks/pre-bash/tests/pre-bash-skill-hooks-retirement.test.ts",
+    "hooks/_lib/mirror_prose.ts",
+    "hooks/_lib/tests/mirror-prose.test.ts",
+    "hooks/_lib/tests/mirror-prose-python.test.ts",
+    "hooks/edit/mirror_prose_guard.ts",
+    "hooks/edit/tests/mirror-prose-guard.test.ts",
+    "hooks/_lib/tests/mirror-prose-retirement.test.ts",
   ];
   const missing = planAddedFiles.filter((file) => !hooksTs.includes(file));
   assert.deepEqual(

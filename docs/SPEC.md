@@ -82,7 +82,7 @@ The order below is the registration order in `settings.json`. Within one matcher
 | PreToolUse        | `WebFetch\|WebSearch` | Inline `echo` deny                           | none               | none    |
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.py`                        | `**/*.rs`          | 30      |
 | PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.py`                          | `**/*.md`          | 60      |
-| PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.py`                    | `**/.ja/**`        | 10      |
+| PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.ts`                    | `**/.ja/**`        | 10      |
 | PostToolUse       | `Write\|Edit`      | `assay`                                         | none               | 30      |
 | PostToolUse       | `Write\|Edit`      | `formatter`                                     | none               | 30      |
 | PostToolUse       | `Write\|Edit`      | `gates`                                         | none               | 120     |
@@ -112,7 +112,7 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | `rust_pre_edit.py`              | Write / Edit (`*.rs`)   | Injects clippy findings as additionalContext                      | advisory     |
 | `rust_post_edit.py`             | Write / Edit (`*.rs`)   | Runs `cargo fmt`, then clippy again, and returns the findings     | advisory     |
 | `textlint_fix.py`               | Write / Edit (`*.md`)   | Auto-fixes a Markdown file that passes the Japanese check         | advisory     |
-| `mirror_prose_guard.py`         | Write / Edit (`.ja/**`) | Warns about a `.ja/` file with no Japanese character. Never blocks | advisory    |
+| `mirror_prose_guard.ts`         | Write / Edit (`.ja/**`) | Warns about a `.ja/` file with no Japanese character. Never blocks | advisory    |
 | `amphetamine_agent_session.py`  | UserPromptSubmit / PostToolUse / Stop | Holds the Mac awake through a reference count per session_id | fail-open |
 | `recall_index.ts`               | SessionStart            | Catches recall's cross-session index up in the background         | fail-open    |
 | `failure-alert.sh`              | Stop / StopFailure      | Sounds a turn that ended as anything but `end_turn`. Subagents are out of scope | fail-open |
@@ -127,7 +127,7 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | `gh_filing.ts`     | The body-flag spellings of `gh issue create` / `gh pr create`    |
 | `hook_payload.py`  | Typed payload reads and the deny envelope                        |
 | `japanese.py`      | Japanese detection and its threshold                             |
-| `mirror_prose.py`  | Detection of a `.ja/` file whose Japanese is gone                |
+| `mirror_prose.ts`  | Detection of a `.ja/` file whose Japanese is gone                |
 | `rust_target.py`   | Cargo workspace root resolution and clippy output shaping        |
 | `textlint.py`      | textlint config resolution and invocation                        |
 | `hook_harness.py`  | Hook invocation from tests, with the exit status checked         |
