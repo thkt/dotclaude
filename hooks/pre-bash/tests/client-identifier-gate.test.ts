@@ -117,8 +117,23 @@ test("T-297 a dry-run commit and a commit outside the guarded repository are bot
   const listPath = path.join(scratch, "client-names.txt");
   writeFileSync(listPath, `# comment\n${TERM}\n\n${OTHER_TERM}\n`);
 
-  const dryRun = runHook("git commit --dry-run -m x", GUARDED_REPO, listPath);
-  assert.equal(dryRun, null, "--dry-run must pass the commit through unexamined");
+  // A scratch guarded repository with the term staged, so passing through is the exemption
+  // doing its work rather than the index happening to carry nothing. Reading this checkout's
+  // index made the case pass only while no staged file named a listed term, and this test file
+  // names one.
+  const { repo, hook } = scratchGuardedRepo("client-identifier-gate-dryrun-guarded-");
+  writeFileSync(path.join(repo, "staged.md"), `${TERM.toUpperCase()} appears here\n`);
+  spawnSync("git", ["add", "staged.md"], { cwd: repo });
+  const dryRunPayload = JSON.stringify({
+    tool_name: "Bash",
+    tool_input: { command: "git commit --dry-run -m x" },
+    cwd: repo,
+  });
+  assert.equal(
+    run(hook, dryRunPayload, { ...process.env, CLAUDE_CLIENT_NAMES_FILE: listPath }),
+    "",
+    "--dry-run must pass the commit through unexamined",
+  );
 
   const outside = makeRepo(path.join(scratch, "other"));
   stage(outside, "a.md", `${TERM} is here\n`);

@@ -12,8 +12,10 @@
 // path relative to cwd, and its result depends on actual git history rather than files on
 // disk. Each case's `setup` (write a file, or run a git subcommand) replays into a fresh temp
 // git repository, the way workflows/build/tests/diff_files_test.py's setUp + per-test setup
-// built the repos the frozen fixture recorded. The fixture's stdin/stdout carry two
-// placeholders this replay resolves before comparing:
+// built the repos the frozen fixture recorded. The repository itself comes from
+// workflows/_lib/tests/_git-repo.ts's withTempRepo, the same disposable-repo helper
+// workflows/code/tests/verify-commit.test.ts's withUnitRepo shares. The fixture's stdin/stdout
+// carry two placeholders this replay resolves before comparing:
 //   <repo>       the temp repository's absolute path
 //   the sentinel sha SENTINEL_BASE_SHA below, standing in for the repo's own root commit (the
 //                "chore: seed" commit every case with a base commits first) -- git assigns
@@ -26,11 +28,13 @@
 // case, the literal unresolvable value passed straight through.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { fixture, runCli, withTempHome, type FixtureCase } from "../../_lib/tests/_cli-fixture.ts";
+import { gcAutoValue, withTempRepo } from "../../_lib/tests/_git-repo.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "diff-files.ts");
@@ -60,44 +64,53 @@ const FIXTURES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "diff-files-cases.json"), "utf8"),
 ) as DiffFilesFixtureCase[];
 
-/** Replays a fixture case's `setup` into a fresh git repository under `root`, the way
+/** Replays a fixture case's `setup` into a fresh git repository, the way
  * workflows/build/tests/diff_files_test.py's setUp + per-test setup built the repos the
- * frozen fixture recorded: `git init`, a fixed committer identity, then each step in order.
- * Returns the repo's absolute path and, once at least one commit has been made, the repo's
+ * frozen fixture recorded: a fixed committer identity, then each step in order. Runs `fn`
+ * against the repo's absolute path and, once at least one commit has been made, the repo's
  * root commit sha -- the real value standing in for SENTINEL_BASE_SHA in this run. `steps`
- * empty (the exit-1 cases, which never reach git) skips repo setup entirely. */
-function buildRepo(
-  root: string,
+ * empty (the exit-1 cases, which never reach git) skips repo setup entirely, so those cases get
+ * a plain temp directory instead of a repository through
+ * workflows/_lib/tests/_git-repo.ts's withTempRepo. */
+function buildRepo<T>(
   steps: readonly SetupStep[],
-): { repo: string; baseSha: string | null } {
-  const repo = mkdtempSync(join(root, "diff-files-repo-"));
-  if (steps.length === 0) return { repo, baseSha: null };
-
-  spawnSync("git", ["-C", repo, "init", "-q", "-b", "main"]);
-  spawnSync("git", ["-C", repo, "config", "user.email", "t@example.com"]);
-  spawnSync("git", ["-C", repo, "config", "user.name", "t"]);
-
-  let committed = false;
-  for (const step of steps) {
-    if (step.type === "write") {
-      const target = join(repo, step.path);
-      mkdirSync(dirname(target), { recursive: true });
-      writeFileSync(target, step.content);
-    } else {
-      const result = spawnSync("git", ["-C", repo, ...step.args], { encoding: "utf8" });
-      if (result.status !== 0) {
-        throw new Error(`setup step \`git ${step.args.join(" ")}\` failed: ${result.stderr}`);
-      }
-      if (step.args[0] === "commit") committed = true;
+  fn: (repo: string, baseSha: string | null) => T,
+): T {
+  if (steps.length === 0) {
+    const repo = mkdtempSync(join(tmpdir(), "diff-files-repo-"));
+    try {
+      return fn(repo, null);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
     }
   }
 
-  const baseSha = committed
-    ? spawnSync("git", ["-C", repo, "rev-list", "--max-parents=0", "HEAD"], { encoding: "utf8" })
-        .stdout.trim()
-        .split("\n")[0]
-    : null;
-  return { repo, baseSha: baseSha || null };
+  return withTempRepo((repo) => {
+    spawnSync("git", ["-C", repo, "config", "user.email", "t@example.com"]);
+    spawnSync("git", ["-C", repo, "config", "user.name", "t"]);
+
+    let committed = false;
+    for (const step of steps) {
+      if (step.type === "write") {
+        const target = join(repo, step.path);
+        mkdirSync(dirname(target), { recursive: true });
+        writeFileSync(target, step.content);
+      } else {
+        const result = spawnSync("git", ["-C", repo, ...step.args], { encoding: "utf8" });
+        if (result.status !== 0) {
+          throw new Error(`setup step \`git ${step.args.join(" ")}\` failed: ${result.stderr}`);
+        }
+        if (step.args[0] === "commit") committed = true;
+      }
+    }
+
+    const baseSha = committed
+      ? spawnSync("git", ["-C", repo, "rev-list", "--max-parents=0", "HEAD"], { encoding: "utf8" })
+          .stdout.trim()
+          .split("\n")[0]
+      : null;
+    return fn(repo, baseSha || null);
+  });
 }
 
 /** Resolves `<repo>` and, when this case minted one, SENTINEL_BASE_SHA in a fixture case's raw
@@ -114,29 +127,30 @@ test(
   () => {
     for (const testCase of FIXTURES) {
       withTempHome((home) => {
-        const { repo, baseSha } = buildRepo(home, testCase.setup ?? []);
-        const stdin = resolveStdin(testCase.stdin, repo, baseSha);
-        const result = runCli(SCRIPT, home, stdin, [], {
-          cwd: repo,
-          env: { PATH: process.env.PATH ?? "" },
+        buildRepo(testCase.setup ?? [], (repo, baseSha) => {
+          const stdin = resolveStdin(testCase.stdin, repo, baseSha);
+          const result = runCli(SCRIPT, home, stdin, [], {
+            cwd: repo,
+            env: { PATH: process.env.PATH ?? "" },
+          });
+          assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
+          if (testCase.stdout === "") {
+            assert.equal(result.stdout, "", `${testCase.name}: stdout`);
+            return;
+          }
+          // The CLI echoes its input `base` back verbatim, so the fixture's own "<base-sha>"
+          // placeholder resolves to this run's resolved-stdin base, not necessarily baseSha
+          // itself (the unknown-base case's base is never the sentinel).
+          const echoedBase = (JSON.parse(stdin) as { base: string }).base;
+          const expected = JSON.parse(
+            testCase.stdout.replaceAll("<base-sha>", echoedBase),
+          ) as unknown;
+          assert.deepEqual(
+            JSON.parse(result.stdout) as unknown,
+            expected,
+            `${testCase.name}: parsed stdout`,
+          );
         });
-        assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
-        if (testCase.stdout === "") {
-          assert.equal(result.stdout, "", `${testCase.name}: stdout`);
-          return;
-        }
-        // The CLI echoes its input `base` back verbatim, so the fixture's own "<base-sha>"
-        // placeholder resolves to this run's resolved-stdin base, not necessarily baseSha
-        // itself (the unknown-base case's base is never the sentinel).
-        const echoedBase = (JSON.parse(stdin) as { base: string }).base;
-        const expected = JSON.parse(
-          testCase.stdout.replaceAll("<base-sha>", echoedBase),
-        ) as unknown;
-        assert.deepEqual(
-          JSON.parse(result.stdout) as unknown,
-          expected,
-          `${testCase.name}: parsed stdout`,
-        );
       });
     }
   },
@@ -164,5 +178,14 @@ test(
         assert.equal(result.stderr.startsWith(prefix), true, `${name}: stderr prefix`);
       });
     }
+  },
+);
+
+test(
+  "T-420 diff-files and verify-commit create their repositories through the helper",
+  () => {
+    buildRepo([{ type: "write", path: "a.txt", content: "a\n" }], (repo) => {
+      assert.equal(gcAutoValue(repo), "0");
+    });
   },
 );
