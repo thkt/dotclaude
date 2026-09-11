@@ -1,0 +1,2 @@
+{"type": "attachment", "attachment": {"type": "hook_success", "hookName": "PreToolUse:Bash", "hookEvent": "PreToolUse", "command": "~/.claude/skills/sample/scripts/dr-governed.py", "stdout": "", "exitCode": 0}, "timestamp": "2026-08-01T00:00:00.000Z"}
+{"type": "attachment", "attachment": {"type": "hook_success", "hookName": "PreToolUse:Bash", "hookEvent": "PreToolUse", "command": "~/.claude/skills/sample/scripts/dr-governed.py", "stdout": "", "exitCode": 0}, "timestamp": "2026-08-20T00:00:00.000Z"}

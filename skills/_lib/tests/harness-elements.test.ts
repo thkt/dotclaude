@@ -1,0 +1,68 @@
+/// <reference types="node" />
+// Behavior tests for skills/_lib/harness_elements.ts: classify, enumerate_elements and main.
+// skills/_lib/tests/fixtures/harness-elements-cases.json (built by U-001) freezes the real
+// python3 Python version's own argv -> exit/stdout, captured against a constructed temp repo
+// tree; every scenario below drives that same fixture through classify()/enumerate_elements()
+// directly or through the .ts CLI, rather than hand-copying the frontmatter shapes or the
+// expected element list a second time (docs/wiki/harness-production-divergence.md; the same
+// DRY choice the Python version's own _instantiate helper made for its test suite).
+import assert from "node:assert/strict";
+import { rmSync } from "node:fs";
+import { dirname, join } from "node:path";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { fixture, runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import { loadTreeFixtures, replayTreeFixtures, writeTree } from "./_tree-fixture.ts";
+import type { TreeFixtureCase } from "./_tree-fixture.ts";
+import { classify, enumerate_elements } from "../harness_elements.ts";
+import type { HarnessElement } from "../harness_elements.ts";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const SCRIPT = join(HERE, "..", "harness_elements.ts");
+
+const CASES = loadTreeFixtures(join(HERE, "fixtures", "harness-elements-cases.json"));
+
+// The one fixture case that carries every frontmatter shape classify() branches on
+// (no-frontmatter rules file, paths-bearing rules file, globs-bearing docs/wiki page, and the
+// non-prompt leftovers), recorded by running the real python3 CLI against the Python version --
+// not a second, hand-written copy of those shapes.
+const MULTI_SHAPE_CASE = fixture(CASES, "classifies_every_element_kind_and_collapses_a_ja_mirror");
+
+function expectedElements(entry: TreeFixtureCase): HarnessElement[] {
+  return JSON.parse(entry.stdout) as HarnessElement[];
+}
+
+test("T-348 classify returns the same category for each frontmatter shape the python cases record", () => {
+  const root = writeTree("harness-elements-classify", MULTI_SHAPE_CASE.files);
+  try {
+    for (const expected of expectedElements(MULTI_SHAPE_CASE)) {
+      const actual = classify(join(root, expected.path));
+      assert.equal(
+        actual,
+        expected.classification,
+        `${expected.path}: expected ${expected.classification}, got ${actual}`,
+      );
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("T-349 enumerate_elements returns the same element list for a constructed tree, compared as names", () => {
+  const root = writeTree("harness-elements-enumerate", MULTI_SHAPE_CASE.files);
+  try {
+    const expectedNames = expectedElements(MULTI_SHAPE_CASE)
+      .map((element) => element.path)
+      .sort();
+    const actualNames = enumerate_elements(root)
+      .map((element) => element.path)
+      .sort();
+    assert.deepEqual(actualNames, expectedNames);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("T-350 the frozen CLI cases replay through the .ts entry point", () => {
+  replayTreeFixtures(CASES, "harness-elements-cli", (argv, root) => runCli(SCRIPT, root, "", argv));
+});

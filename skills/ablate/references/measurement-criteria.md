@@ -1,8 +1,8 @@
 # /ablate measurement criteria
 
 Used by Phase 2 to build each element's observation and by `verdict.classify` in
-`${CLAUDE_SKILL_DIR}/scripts/verdict.py` to score it. The run count, pass threshold, and arm
-list stay script constants in `${CLAUDE_SKILL_DIR}/scripts/arms.py`; a copy of a number here
+`${CLAUDE_SKILL_DIR}/scripts/verdict.ts` to score it. The run count, pass threshold, and arm
+list stay script constants in `${CLAUDE_SKILL_DIR}/scripts/arms.ts`; a copy of a number here
 goes stale on the next edit to that file with nothing to catch it
 (`docs/wiki/deterministic-script-judgment.md`).
 

@@ -1,0 +1,30 @@
+[
+  {
+    "name": "classifies_every_element_kind_and_collapses_a_ja_mirror",
+    "files": {
+      "rules/sample.md": "# Sample Rule\n\nBody with no frontmatter block.\n",
+      "rules/path-triggered.md": "---\npaths:\n  - \"**/*.ts\"\n---\n\n# Path Rule\n",
+      "CLAUDE.md": "# CLAUDE\n\nRoot instructions.\n",
+      "docs/wiki/sample.md": "---\nglobs: [\"**/*.ts\"]\nscenes: []\n---\n\n# Wiki Page\n",
+      "docs/wiki/plain.md": "# Wiki Page No Frontmatter\n",
+      "skills/foo/SKILL.md": "# Skill\n",
+      "skills/foo/scripts/bar.py": "print(1)\n",
+      "hooks/pre-bash/example.py": "print(1)\n",
+      "hooks/pre-bash/example.md": "# Hook doc\n",
+      "agents/example.md": "# Agent\n",
+      ".ja/rules/sample.md": "# サンプルルール\n\n本文。\n"
+    },
+    "argv": [
+      "<root>"
+    ],
+    "exit": 0,
+    "stdout": "[{\"path\": \"CLAUDE.md\", \"classification\": \"always-loaded\"}, {\"path\": \"agents/example.md\", \"classification\": \"non-prompt\"}, {\"path\": \"docs/wiki/plain.md\", \"classification\": \"non-prompt\"}, {\"path\": \"docs/wiki/sample.md\", \"classification\": \"glob-triggered\"}, {\"path\": \"hooks/pre-bash/example.md\", \"classification\": \"non-prompt\"}, {\"path\": \"hooks/pre-bash/example.py\", \"classification\": \"non-prompt\"}, {\"path\": \"rules/path-triggered.md\", \"classification\": \"path-triggered\"}, {\"path\": \"rules/sample.md\", \"classification\": \"always-loaded\"}, {\"path\": \"skills/foo/SKILL.md\", \"classification\": \"non-prompt\"}, {\"path\": \"skills/foo/scripts/bar.py\", \"classification\": \"non-prompt\"}]\n"
+  },
+  {
+    "name": "missing_repo_root_argument_errors",
+    "files": {},
+    "argv": [],
+    "exit": 2,
+    "stdout": ""
+  }
+]

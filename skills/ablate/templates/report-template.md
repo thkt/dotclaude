@@ -1,6 +1,6 @@
 # Ablation Report Template
 
-The section skeleton `/ablate`'s `${CLAUDE_SKILL_DIR}/scripts/report.py` `_render` emits: which sections appear and in what order. Every table's columns and every Summary row label come from the `_table` calls inside `_render`, so this file names neither. A copy of them here goes stale on the next column `_render` gains, with nothing to catch it.
+The section skeleton `/ablate`'s `${CLAUDE_SKILL_DIR}/scripts/report.ts` `_render` emits: which sections appear and in what order. Every table's columns and every Summary row label come from the `_table` calls inside `_render`, so this file names neither. A copy of them here goes stale on the next column `_render` gains, with nothing to catch it.
 
 When `_render` finds no delete candidates, it writes `No delete candidates.` in place of that section's list.
 

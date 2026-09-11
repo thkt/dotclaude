@@ -1,13 +1,12 @@
 /// <reference types="node" />
-// The TypeScript side of skills/ablate/scripts/dr_gate.py: DR cross-reference gate for delete
-// candidates in the ablate skill. dr_gate.py stays live as report.py's import source until
-// #646 retires the Python side, so both sides carry the same names until then.
+// TypeScript port of the Python DR cross-reference gate this module replaces, for delete
+// candidates in the ablate skill.
 //
 // The lookup searches DR bodies for the path text because no DR maps a path to itself through
 // any machine-readable field yet.
 //
-// Constant and function names stay exactly as dr_gate.py declares them, the same no-camelCase
-// convention arms.ts and verdict.ts hold.
+// Constant and function names stay exactly as the Python version declared them, the same
+// no-camelCase convention arms.ts and verdict.ts hold.
 import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DELETE_CANDIDATE } from "./verdict.ts";
@@ -18,8 +17,7 @@ import { DELETE_CANDIDATE } from "./verdict.ts";
 export const HELD = "held";
 
 // Handed to node:fs's globSync unexpanded, never hand-copied as an expanded file list
-// (docs/wiki/path-reference-audit.md). Same glob text as dr_gate.py's _DR_GLOB, so the two
-// sides walk the same DR set.
+// (docs/wiki/path-reference-audit.md).
 const _DR_GLOB = "docs/decisions/*.md";
 
 // The section this gate reads for a confirmation record. Both "## " and "### " occur across

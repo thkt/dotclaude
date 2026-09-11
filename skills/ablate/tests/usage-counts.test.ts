@@ -1,0 +1,88 @@
+/// <reference types="node" />
+// In-process tests for skills/ablate/scripts/usage_counts.ts: FIRE_EVENTS, ELEMENT_SUFFIXES,
+// RARE_BY_DESIGN, MEASUREMENT_WINDOW_DAYS, element_path, _parse_date, _iter_fires, count_usage,
+// classify and main. skills/ablate/tests/fixtures/usage-counts-cases.json was frozen against
+// the real python3 Python version this module replaced; T-354 below replays that same frozen
+// fixture against the .ts port's count_usage directly, rather than hand-writing a second set
+// of expected rows that could drift from it (docs/wiki/fixture-freeze-before-port.md), the same
+// DRY choice skills/ablate/tests/enforcer-map.test.ts makes for enforcer_map.ts.
+import assert from "node:assert/strict";
+import { rmSync } from "node:fs";
+import { dirname, join } from "node:path";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { fixture } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import { loadTreeFixtures, writeTree } from "../../_lib/tests/_tree-fixture.ts";
+import { DELETE_CANDIDATE, NEEDS_HUMAN_JUDGMENT } from "../scripts/verdict.ts";
+import { UNMEASURED } from "../scripts/arms.ts";
+import {
+  classify,
+  count_usage,
+  MEASUREMENT_WINDOW_DAYS,
+  ELEMENT_SUFFIXES,
+  RARE_BY_DESIGN,
+  element_path,
+} from "../scripts/usage_counts.ts";
+import type { UsageResult } from "../scripts/usage_counts.ts";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+
+const CASES = loadTreeFixtures(join(HERE, "fixtures", "usage-counts-cases.json"));
+
+test("T-354 count_usage tallies the fires inside the window and drops the ones outside it, driven by the frozen transcript", () => {
+  // "the window" here is the set FIRE_EVENTS/ELEMENT_SUFFIXES recognize as one hook fire
+  // naming a harness element: counts_fires_across_transcripts_and_drops_a_label_only_command
+  // is the frozen fixture case that puts an element-shaped fire ("~/.claude/hooks/.../*.py")
+  // and a label-only fire ("formatter", which names no element and so falls outside that set)
+  // in the same transcript pair. Replaying it straight through the ported count_usage proves
+  // the label-only one is dropped rather than tallied, and the element-shaped ones are.
+  const entry = fixture(CASES, "counts_fires_across_transcripts_and_drops_a_label_only_command");
+  const root = writeTree("usage-counts-count", entry.files);
+  try {
+    const expected = JSON.parse(entry.stdout) as UsageResult;
+    const result = count_usage(root);
+    assert.deepEqual(result, expected);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a fire naming a typescript hook is counted the way a python one is", () => {
+  // RARE_BY_DESIGN names a .ts hook, and a suffix set without .ts drops that path before the
+  // tally is built, leaving the entry pointing at a key nothing can produce.
+  for (const path of RARE_BY_DESIGN) {
+    assert.ok(
+      ELEMENT_SUFFIXES.has(path.slice(path.lastIndexOf("."))),
+      `${path} names a suffix the tally drops, so the entry can never match`,
+    );
+  }
+
+  assert.equal(
+    element_path("~/.claude/hooks/security/rm_to_trash.ts"),
+    "hooks/security/rm_to_trash.ts",
+    "a .ts hook fire must resolve to its repo-relative path",
+  );
+});
+
+test("T-355 a path in RARE_BY_DESIGN classifies as measured rather than as a delete candidate", () => {
+  const [rarePath] = RARE_BY_DESIGN;
+  const now = new Date("2026-08-27T00:00:00.000Z");
+
+  // Zero fires and no last_used would read as unused for any other path -- RARE_BY_DESIGN's
+  // first-row-wins check must still keep this one out of DELETE_CANDIDATE.
+  const verdict = classify(rarePath, 0, null, now, MEASUREMENT_WINDOW_DAYS);
+
+  assert.notEqual(verdict, DELETE_CANDIDATE);
+  assert.equal(verdict, NEEDS_HUMAN_JUDGMENT);
+});
+
+test("T-356 classify takes the window as an argument, so a caller can drive both sides of the boundary without patching a module binding", () => {
+  const path = "hooks/pre-bash/wiki_scene.ts";
+  const now = new Date("2026-08-27T00:00:00.000Z");
+  // 238 days before `now` (usage_counts_test.py's MeasurementWindow case uses the same shape:
+  // a last_used date that a narrow window reports stale and a wide window reports current).
+  const lastUsed = "2026-01-01";
+
+  assert.equal(classify(path, 5, lastUsed, now, 30), UNMEASURED);
+  assert.equal(classify(path, 5, lastUsed, now, 300), NEEDS_HUMAN_JUDGMENT);
+});

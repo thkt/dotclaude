@@ -1,9 +1,7 @@
 /// <reference types="node" />
-// In-process tests for skills/ablate/scripts/verdict.ts, replaying the observation table
-// skills/ablate/tests/verdict_test.py drives against verdict.py (verdict.py stays live as
-// report.py's import source until that slice retires the Python side; see verdict.ts's
-// header). This unit runs the assertions against the TypeScript side alone -- a dual-language
-// name comparison, if one is planned, belongs in a later unit, not here.
+// In-process tests for skills/ablate/scripts/verdict.ts, replaying the observation table the
+// Python version's own test suite drove against it. This unit runs the assertions against the
+// TypeScript side alone.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { PASS_THRESHOLD, UNMEASURED } from "../scripts/arms.ts";
@@ -25,7 +23,7 @@ test("T-337 an unmeasured input classifies as the unmeasured verdict rather than
 });
 
 test("T-338 a pass rate at and below the threshold classify on the sides the python cases record", () => {
-  // complies is a bool in verdict.py's classify; the caller derives it by comparing an
+  // complies is a bool in verdict's classify; the caller derives it by comparing an
   // arm's observed pass rate against arms.ts's PASS_THRESHOLD before calling classify.
   // At the threshold counts as passing (verdict_test.py's T-009 side); one step below it
   // does not (verdict_test.py's T-010 side).

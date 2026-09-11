@@ -2,7 +2,7 @@
 name: ablate
 description: Removes one harness element at a time, reruns, and judges whether that element moves the result. Elements that do not move it are listed as delete candidates.
 when_to_use: ablation, one-sided ablation, measuring a harness element's effect, listing delete candidates, harness ablation, which rules actually matter
-allowed-tools: Read Write LS Bash(python3:*) Bash(claude:*)
+allowed-tools: Read Write LS Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(skills/_lib/*) Bash(claude:*)
 model: opus
 argument-hint: "[element path]"
 ---
@@ -15,14 +15,14 @@ argument-hint: "[element path]"
 
 ## Where the criteria and thresholds live
 
-The arm list, the run count per arm, and the pass threshold are all constants in `${CLAUDE_SKILL_DIR}/scripts/arms.py`. The classification criteria live in `${CLAUDE_SKILL_DIR}/scripts/verdict.py`. The DR-gate criteria, the confirmed-unmet marker and where the records are read from, live in `${CLAUDE_SKILL_DIR}/scripts/dr_gate.py`. The measurement window and the rare-by-design set live in `${CLAUDE_SKILL_DIR}/scripts/usage_counts.py`. The per-rule trigger tasks and the fixed task set live in `${CLAUDE_SKILL_DIR}/references/measurement-criteria.md`. Do not copy a number into this body (`docs/wiki/deterministic-script-judgment.md`).
+The arm list, the run count per arm, and the pass threshold are all constants in `${CLAUDE_SKILL_DIR}/scripts/arms.ts`. The classification criteria live in `${CLAUDE_SKILL_DIR}/scripts/verdict.ts`. The DR-gate criteria, the confirmed-unmet marker and where the records are read from, live in `${CLAUDE_SKILL_DIR}/scripts/dr_gate.ts`. The measurement window and the rare-by-design set live in `${CLAUDE_SKILL_DIR}/scripts/usage_counts.ts`. The per-rule trigger tasks and the fixed task set live in `${CLAUDE_SKILL_DIR}/references/measurement-criteria.md`. Do not copy a number into this body (`docs/wiki/deterministic-script-judgment.md`).
 
 ## Phase 1: Enumerate
 
-Call `enumerate_elements(root)` in `skills/_lib/harness_elements.py` for the harness elements and each one's classification. When `$ARGUMENTS` names an element path, hand Phase 2 that one alone.
+Call `enumerate_elements(root)` in `skills/_lib/harness_elements.ts` for the harness elements and each one's classification. When `$ARGUMENTS` names an element path, hand Phase 2 that one alone.
 
 ```bash
-python3 -c 'import sys; sys.path.insert(0, "skills/_lib"); import harness_elements, json; print(json.dumps(harness_elements.enumerate_elements(".")))'
+node skills/_lib/harness_elements.ts .
 ```
 
 ## Phase 2: Run the arms
@@ -37,10 +37,10 @@ For each element Phase 1 returned, and each arm in `arms.ARMS`, assemble the com
 
 ## Phase 3: Report
 
-Call `report.write_report(root, observations)`. Before a delete candidate reaches the report, `dr_gate.gate` reads `docs/decisions/` and holds back any element a live record governs, so the Summary counts them apart. It also runs `usage_counts.py` and folds each element's fire count and last-used date into the same Harness Elements table, so there is one route to see them, not a second one running alongside it. It writes to `docs/audit/` by default, naming the file `<YYYY-MM-DD>-<HHMMSS>-ablate.md` in UTC, in the section order `${CLAUDE_SKILL_DIR}/templates/report-template.md` carries.
+Call `report.write_report(root, observations)`. Before a delete candidate reaches the report, `dr_gate.gate` reads `docs/decisions/` and holds back any element a live record governs, so the Summary counts them apart. It also runs `usage_counts.ts` and folds each element's fire count and last-used date into the same Harness Elements table, so there is one route to see them, not a second one running alongside it. It writes to `docs/audit/` by default, naming the file `<YYYY-MM-DD>-<HHMMSS>-ablate.md` in UTC, in the section order `${CLAUDE_SKILL_DIR}/templates/report-template.md` carries.
 
 ```bash
-python3 -c 'import sys; sys.path.insert(0, "skills/ablate/scripts"); sys.path.insert(0, "skills/_lib"); import report, json, pathlib; print(report.write_report(pathlib.Path("."), json.load(sys.stdin)))' < <observations.json>
+node --input-type=module -e 'const { write_report } = await import("./skills/ablate/scripts/report.ts"); let data = ""; for await (const chunk of process.stdin) data += chunk; console.log(write_report(".", JSON.parse(data)));' < <observations.json>
 ```
 
 ## Output
