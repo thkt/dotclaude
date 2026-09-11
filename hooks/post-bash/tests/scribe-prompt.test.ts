@@ -119,7 +119,7 @@ test("T-390 a triggering command reaches notify with the prompt text unchanged",
   assert.equal(
     payload.hookSpecificOutput.additionalContext,
     "scribe_prompt: 直近の pull で docs/wiki/ 未反映の入力が増えた。/scribe を実行して知見を抽出する。",
-    "hooks/post-bash/scribe_prompt.py's message text must reach additionalContext unchanged",
+    "the retired Python module's message text must reach additionalContext unchanged",
   );
 });
 

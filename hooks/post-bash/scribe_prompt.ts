@@ -1,9 +1,9 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// PostToolUse hook: nudge toward /scribe when a git pull just brought down new work. Ports
-// hooks/post-bash/scribe_prompt.py to TypeScript (unit U-002), composing scribe_trigger.ts's
-// find/shouldPrompt (unit U-001) and hook_payload.ts's parse/field/notify the way
-// hooks/lifecycle/recall_index.ts composes hook_payload.ts's parse.
+// PostToolUse hook: nudge toward /scribe when a git pull just brought down new work. The
+// TypeScript replacement for the retired Python scribe_prompt hook (unit U-002), composing
+// scribe_trigger.ts's find/shouldPrompt (unit U-001) and hook_payload.ts's parse/field/notify
+// the way hooks/lifecycle/recall_index.ts composes hook_payload.ts's parse.
 //
 // The Bash tool_response carries no exit code
 // (https://code.claude.com/docs/en/hooks#posttooluse-decision-control), so `interrupted` is the
@@ -11,7 +11,7 @@
 import { field, notify, parse, readStdin } from "../_lib/hook_payload.ts";
 import { find, shouldPrompt } from "../_lib/scribe_trigger.ts";
 
-// Mirrors scribe_prompt.py's message text verbatim (T-390 pins the two identical).
+// Mirrors the retired Python module's message text verbatim (T-390 pins the two identical).
 const MESSAGE =
   "scribe_prompt: 直近の pull で docs/wiki/ 未反映の入力が増えた。" +
   "/scribe を実行して知見を抽出する。";

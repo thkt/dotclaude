@@ -5,9 +5,8 @@
 // path plus its CLAUDE_GH_BIN override (T-387, new to this port since the Python side never
 // swaps DEFAULT_GH under test), a missing or failing gh leaving shouldPrompt silent (T-388,
 // TestGhBinary's 2 observations), and command_scan's lexing failure leaving find() silent
-// rather than throwing (T-389, a TypeScript-side deviation from scribe_trigger.py's find, which
-// lets that failure propagate to its own caller, hooks/post-bash/scribe_prompt.py -- this port
-// has no such caller yet, so the module itself absorbs it instead).
+// rather than throwing (T-389, a TypeScript-side deviation from the retired Python module's
+// find, which let that failure propagate to its own caller; this port absorbs it here instead).
 import assert from "node:assert/strict";
 import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";

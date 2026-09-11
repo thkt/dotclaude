@@ -1,6 +1,6 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// The hook body half of hooks/integrations/amphetamine_agent_session.py's port (unit U-004):
+// The hook body half of the retired amphetamine_agent_session hook's port (unit U-004):
 // main's argv dispatch, mirroring the shebang + `process.exit(main())` shape DR-0114 asks of a
 // finished hook body (hooks/lifecycle/recall_index.ts's shape). This is the 6th hook this shape
 // lands in -- #634, #642, #643, #644 and #684 landed first -- so the dispatch below copies that
@@ -18,7 +18,7 @@
 // own header carries the rest of this reasoning. This mirrors the codebase's existing
 // scribe_trigger.ts (pure, hooks/_lib/) / scribe_prompt.ts (hook body, hooks/post-bash/) split.
 //
-// main mirrors amphetamine_agent_session.py's main + run + _release + _foreign_session: it
+// main mirrors the retired amphetamine_agent_session hook's main + run + _release + _foreign_session: it
 // reads the same argv position Python's sys.argv[1] does, filters to the three known actions,
 // and then branches on release / acquire+background the way run() does. The app-directory and
 // `shutil.which("osascript")` gates main() makes ahead of that are out of this unit's scope --
@@ -26,7 +26,7 @@
 // the source test range this unit ports (amphetamine_agent_session_test.py's T-011..T-024)
 // starts after T-009, the missing-app case. Left for a later unit; see this unit's result notes.
 //
-// amphetamine_agent_session.py defers its `re`, `shutil` and `subprocess` imports to the
+// The retired amphetamine_agent_session hook defers its `re`, `shutil` and `subprocess` imports to the
 // functions that need them, reasoning that most hook runs return before reaching one. Node's
 // `node:child_process` (subprocess's counterpart) is a built-in with no package to resolve, and
 // none of the five prior TS hook ports that call an external binary (rumdl_check.ts among them)
@@ -51,28 +51,28 @@ import {
   touchMarker,
 } from "./amphetamine_state.ts";
 
-/** _amph's osascript timeout in seconds. Mirrors amphetamine_agent_session.py's
+/** _amph's osascript timeout in seconds. Mirrors the retired amphetamine_agent_session hook's
  * AMPH_TIMEOUT_SECONDS: osascript can sit on a modal Amphetamine raises, and this hook fires on
  * every tool call, so a blocked call would wedge the turn. */
 const AMPH_TIMEOUT_SECONDS = 5;
 
-/** How long a session runs. Mirrors amphetamine_agent_session.py's SESSION_MINUTES: release
+/** How long a session runs. Mirrors the retired amphetamine_agent_session hook's SESSION_MINUTES: release
  * reads it as the upper bound of what it recognizes as its own, so nothing longer is issued. */
 const SESSION_MINUTES = 60;
 
 /** background returns without calling osascript until this long after the last issue. Mirrors
- * amphetamine_agent_session.py's BG_REFRESH_MINUTES. */
+ * the retired amphetamine_agent_session hook's BG_REFRESH_MINUTES. */
 const BG_REFRESH_MINUTES = 5;
 
 /** How fresh a bg marker has to be for release to read it as work still running. Mirrors
- * amphetamine_agent_session.py's BG_FRESH_MINUTES. */
+ * the retired amphetamine_agent_session hook's BG_FRESH_MINUTES. */
 const BG_FRESH_MINUTES = 15;
 
 /** Amphetamine's own code for "no session running" -- one of the negative codes `remaining`
- * documents. Mirrors amphetamine_agent_session.py's NO_SESSION. */
+ * documents. Mirrors the retired amphetamine_agent_session hook's NO_SESSION. */
 const NO_SESSION = -3;
 
-/** Where markers live absent CLAUDE_AMPHETAMINE_STATE_DIR. Mirrors amphetamine_agent_session.py's
+/** Where markers live absent CLAUDE_AMPHETAMINE_STATE_DIR. Mirrors the retired amphetamine_agent_session hook's
  * DEFAULT_STATE_DIR, read at call time so a test swapping HOME never touches this machine's own
  * directory. */
 function defaultStateDir(): string {
@@ -80,7 +80,7 @@ function defaultStateDir(): string {
 }
 
 /** Sends one AppleScript command to Amphetamine via osascript, empty on a non-zero exit or a
- * timeout. Mirrors amphetamine_agent_session.py's _amph. */
+ * timeout. Mirrors the retired amphetamine_agent_session hook's _amph. */
 function amph(command: string): string {
   const result = spawnSync("osascript", ["-e", `tell application "Amphetamine" to ${command}`], {
     encoding: "utf8",
@@ -90,7 +90,7 @@ function amph(command: string): string {
 }
 
 /** Issues a new Amphetamine session. The only place one is issued: release's ownership test
- * (below) assumes this length. Mirrors amphetamine_agent_session.py's start_session -- closed-
+ * (below) assumes this length. Mirrors the retired amphetamine_agent_session hook's start_session -- closed-
  * display mode stays Amphetamine's own preference rather than set per session, the way the
  * Python original leaves it out of `options` too. */
 function startSession(): void {
@@ -101,7 +101,7 @@ function startSession(): void {
 
 /** Seconds left on the running session, or null when Amphetamine answered with something
  * unreadable -- which leaves every caller on the side that touches nothing. Mirrors
- * amphetamine_agent_session.py's remaining, whose `int(...)` raises ValueError on anything
+ * the retired amphetamine_agent_session hook's remaining, whose `int(...)` raises ValueError on anything
  * that is not a plain (optionally signed) integer string. */
 function remaining(): number | null {
   const text = amph("session time remaining");
@@ -109,7 +109,7 @@ function remaining(): number | null {
 }
 
 /** A session no Claude Code process started, which taking over would cut short. Mirrors
- * amphetamine_agent_session.py's _foreign_session: any marker in the directory means the
+ * the retired amphetamine_agent_session hook's _foreign_session: any marker in the directory means the
  * running session is ours, since the first process to acquire starts one and every later turn
  * then sees a positive remaining time and would otherwise stand aside without joining the
  * count. */
@@ -118,7 +118,7 @@ function foreignSession(stateDir: string, marker: string, bgMarker: string): boo
   return remaining() !== NO_SESSION;
 }
 
-/** Mirrors amphetamine_agent_session.py's _release. */
+/** Mirrors the retired amphetamine_agent_session hook's _release. */
 function release(stateDir: string, marker: string, bgMarker: string): void {
   removeMarker(marker);
 
@@ -141,7 +141,7 @@ function release(stateDir: string, marker: string, bgMarker: string): void {
   amph("end session");
 }
 
-/** Mirrors amphetamine_agent_session.py's run. */
+/** Mirrors the retired amphetamine_agent_session hook's run. */
 function run(action: string, payloadText: string, stateDir: string): void {
   const sid = sessionId(payloadText, action);
   if (sid === null) return;
@@ -166,7 +166,7 @@ function run(action: string, payloadText: string, stateDir: string): void {
   startSession();
 }
 
-/** Mirrors amphetamine_agent_session.py's main. The app-directory and osascript-availability
+/** Mirrors the retired amphetamine_agent_session hook's main. The app-directory and osascript-availability
  * gates it makes ahead of this dispatch are not ported here -- see this file's header. */
 function main(): number {
   const action = process.argv[2] ?? "";

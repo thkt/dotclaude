@@ -1,17 +1,17 @@
 /// <reference types="node" />
-// The TypeScript port of hooks/_lib/scribe_trigger.py's public surface: DEFAULT_GH, find, and
-// shouldPrompt. Follows scribe_gate.ts's naming convention for this same Python module's
-// snake_case names (should_run -> shouldRun there; should_prompt -> shouldPrompt here), not
-// command_scan.ts's literal-name convention -- that module carries a differential test pinning
-// python and TypeScript to identical names, which this module does not.
+// DEFAULT_GH, find, and shouldPrompt: the TypeScript replacement for the retired Python
+// scribe_trigger module's public surface. Follows scribe_gate.ts's naming convention for that
+// module's snake_case names (should_run -> shouldRun there; should_prompt -> shouldPrompt here),
+// not command_scan.ts's literal-name convention -- that module carries a differential test
+// pinning Python and TypeScript to identical names, which this module does not.
 //
 // No shebang and no exec bit: hooks/_lib/tests/shebang-ts.test.ts's T-013 forbids a shebang
 // line under hooks/_lib/*.ts, the same rule scribe_gate.ts follows.
 //
 // unmergedScribePrExists / lastScribeMerge / hasNewInput / defaultRunner below duplicate
-// scribe_gate.ts's own private copies of the same scribe_trigger.py helpers rather than
-// importing them: DR-0116 scoped scribe_trigger.ts out of that unit, so scribe_gate.ts ported
-// its own unexported slice first. This module is scribe_trigger.py's real destination; the two
+// scribe_gate.ts's own private copies of the same retired module's helpers rather than
+// importing them: DR-0116 scoped this module out of that unit, so scribe_gate.ts ported
+// its own unexported slice first. This module is that retired module's real destination; the two
 // copies stay independent per DRY's boundary (each can evolve independently -- scribe_gate.ts
 // answers a CI should-run question, this module a hook cooldown question).
 import { spawnSync } from "node:child_process";
@@ -21,14 +21,14 @@ import { dirname, isAbsolute, join } from "node:path";
 import { commands, starts_with } from "./command_scan.ts";
 
 /** A gh invocation, injected so tests hand over canned stdout instead of a live gh process.
- * Mirrors scribe_trigger.py's GhRunner. */
+ * Mirrors the retired Python module's GhRunner. */
 export type GhRunner = (args: readonly string[]) => string;
 
 /** A hook starts with PATH cut down, so a bare `gh` raises before any gate runs.
- * Mirrors scribe_trigger.py's DEFAULT_GH; CLAUDE_GH_BIN overrides it (T-387). */
+ * Mirrors the retired Python module's DEFAULT_GH; CLAUDE_GH_BIN overrides it (T-387). */
 export const DEFAULT_GH = "/opt/homebrew/bin/gh";
 
-// The interval a stamp counts as recent. Mirrors scribe_trigger.py's WINDOW_MINUTES.
+// The interval a stamp counts as recent. Mirrors the retired Python module's WINDOW_MINUTES.
 const WINDOW_MINUTES = 8 * 60;
 
 export interface ShouldPromptOptions {
@@ -37,7 +37,7 @@ export interface ShouldPromptOptions {
   readonly gh?: string;
 }
 
-/** `~` and `~/rest` expand the way a shell expands them ahead of `cd`; scribe_trigger.py's find
+/** `~` and `~/rest` expand the way a shell expands them ahead of `cd`; the retired Python module's find
  * gets this for free from `Path.expanduser()`. */
 function expandHome(target: string): string {
   if (target === "~") {
@@ -57,12 +57,11 @@ function resolveCd(directory: string, target: string): string {
 }
 
 /** The directory a `git pull` runs in, or null when the line runs none.
- * Mirrors scribe_trigger.py's find.
+ * Mirrors the retired Python module's find.
  *
  * A lexing failure (an unterminated quote) leaves this silent rather than throwing (T-389): the
- * Python original lets that same command_scan failure propagate to its own caller,
- * hooks/post-bash/scribe_prompt.py; this port has no such caller yet, so the module itself
- * absorbs it, the same silence should_prompt keeps for a broken gh call. */
+ * Python original let that same command_scan failure propagate to its own caller. This port
+ * absorbs it here instead, the same silence should_prompt keeps for a broken gh call. */
 export function find(command: string): string | null {
   let scanned: string[][];
   try {
@@ -185,7 +184,7 @@ function hasNewInput(cursor: string, call: GhRunner): boolean {
   return (JSON.parse(call(issues)) as unknown[]).length >= 1;
 }
 
-/** Whether scribe should nudge for this directory. Mirrors scribe_trigger.py's should_prompt.
+/** Whether scribe should nudge for this directory. Mirrors the retired Python module's should_prompt.
  *
  * Not a stamp on every evaluation: it would buy the gh round trips a quiet pull spends at the
  * cost of swallowing a merge that lands minutes into the window it opened. */

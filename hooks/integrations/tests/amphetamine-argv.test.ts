@@ -26,8 +26,8 @@ import { sessionId } from "../amphetamine_state.ts";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "amphetamine_agent_session.ts");
 
-// -3 is Amphetamine's own code for "no session running" (amphetamine_agent_session.py's
-// NO_SESSION); the Python suite's tests default run_hook's `remaining` to the same string.
+// -3 is Amphetamine's own code for "no session running" (the retired amphetamine_agent_session
+// hook's NO_SESSION); the Python suite's tests default run_hook's `remaining` to the same string.
 const NO_SESSION = "-3";
 
 // Mirrors amphetamine_agent_session_test.py's STUB_OSASCRIPT: log every command's argv and

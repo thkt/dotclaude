@@ -20,7 +20,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { anyFresh, fresh, removeMarker, STALE_MINUTES, sweep, touchMarker } from "../amphetamine_state.ts";
 
-// The window release reads a bg marker against (amphetamine_agent_session.py's
+// The window release reads a bg marker against (the retired amphetamine_agent_session hook's
 // BG_FRESH_MINUTES), independent of STALE_MINUTES: a marker can be well inside the sweep's
 // 8-hour cutoff and still read as stale to the 15-minute bg check.
 const BG_FRESH_MINUTES = 15;
