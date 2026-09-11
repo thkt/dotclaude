@@ -192,3 +192,85 @@ test(
     }
   },
 );
+
+// U-002: ablate's harness_elements and report Phase 1 / Phase 3 calls and allowed-tools grant
+// carry the same python3-premised shape census's did before T-189. T-407 generalizes the
+// absence check to every tracked SKILL.md rather than a second census-only two-file list, and
+// T-408 checks ablate's own Phase 1 / Phase 3 calls against the path grant its own frontmatter
+// names, the same source-read shape as T-188 above.
+
+function grantsPython3Bash(content: string): boolean {
+  return content.includes("Bash(python3:*)");
+}
+
+test(
+  "T-407 no SKILL.md frontmatter grants Bash(python3:*), and the same predicate flags a " +
+    "fixture frontmatter that does",
+  () => {
+    assertDetectsAndMisses(grantsPython3Bash, "Bash(python3:*)");
+
+    // Every tracked SKILL.md, not a hardcoded per-skill pair (docs/wiki/retire-rename-procedure.md):
+    // this file itself is not a SKILL.md, so no self-exclusion is needed.
+    const skillMdFiles = trackedFiles(REPO_ROOT).filter((path) => path.endsWith("SKILL.md"));
+    const offenders = offendersAmong(
+      skillMdFiles,
+      (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
+      grantsPython3Bash,
+    );
+    assert.deepEqual(
+      offenders,
+      [],
+      `SKILL.md files still granting Bash(python3:*): ${offenders.join(", ")}`,
+    );
+  },
+);
+
+const ABLATE_SKILL_MD_SOURCES = [
+  { label: "skills/ablate/SKILL.md", path: "skills/ablate/SKILL.md" },
+  { label: ".ja/skills/ablate/SKILL.md", path: ".ja/skills/ablate/SKILL.md" },
+];
+
+/** The path token immediately preceding `${scriptName}.ts` in `source`, read straight from the
+ * text instead of restated as a literal (docs/wiki/workflow-const-source-text-check.md). */
+function extractScriptPath(source: string, scriptName: string): string | null {
+  const m = source.match(new RegExp(`[\\w$\\{\\}./-]+${scriptName}\\.ts\\b`));
+  return m ? m[0] : null;
+}
+
+/** Every `Bash(...)` grant on the frontmatter's allowed-tools line that names a path (contains
+ * "/"), with its trailing `*` stripped and `${CLAUDE_SKILL_DIR}` resolved to skills/ablate. */
+function extractAblatePathGrants(source: string): string[] {
+  const allowedToolsLine = source.match(/^allowed-tools:.*$/m);
+  const line = allowedToolsLine ? allowedToolsLine[0] : "";
+  return [...line.matchAll(/Bash\(([^)]+)\)/g)]
+    .map((m) => m[1])
+    .filter((grant) => grant.includes("/"))
+    .map((grant) => grant.replace(/\*+$/, "").replaceAll("${CLAUDE_SKILL_DIR}", "skills/ablate"));
+}
+
+test(
+  "T-408 ablate's SKILL.md invokes its scripts through the path grant its frontmatter names, " +
+    "read from the file rather than restated",
+  () => {
+    for (const { label, path } of ABLATE_SKILL_MD_SOURCES) {
+      const source = readFileSync(join(REPO_ROOT, path), "utf8");
+      const harnessPath = extractScriptPath(source, "harness_elements");
+      const reportPath = extractScriptPath(source, "report");
+      assert.ok(harnessPath, `${label}: harness_elements.ts is not invoked by a file path`);
+      assert.ok(reportPath, `${label}: report.ts is not invoked by a file path`);
+
+      const grantPrefixes = extractAblatePathGrants(source);
+      assert.ok(grantPrefixes.length > 0, `${label}: allowed-tools grants no path at all`);
+
+      for (const scriptPath of [harnessPath, reportPath]) {
+        const resolved = (scriptPath as string)
+          .replaceAll("${CLAUDE_SKILL_DIR}", "skills/ablate")
+          .replace(/^\.\//, "");
+        assert.ok(
+          grantPrefixes.some((prefix) => resolved.startsWith(prefix)),
+          `${label}: allowed-tools grants no path covering ${scriptPath}`,
+        );
+      }
+    }
+  },
+);
