@@ -59,3 +59,15 @@ def run(
 ) -> str:
     """The hook's stdout, after confirming it ran."""
     return checked(hook, payload, env, args).stdout
+
+
+def disable_background_git_maintenance(repo: Path) -> None:
+    """Turns gc.auto and maintenance.auto off on `repo`, right after `git init`.
+
+    Background gc/maintenance can fire mid-test on a repo git considers large or stale enough,
+    racing the test's own git commands for the same .git/index.lock -- the same flakiness
+    hypothesis workflows/_lib/tests/_git-repo.ts's withTempRepo guards against on the TypeScript
+    side. Call this once per fixture repository, immediately after `git init`.
+    """
+    subprocess.run(["git", "-C", str(repo), "config", "gc.auto", "0"], check=True)
+    subprocess.run(["git", "-C", str(repo), "config", "maintenance.auto", "false"], check=True)
