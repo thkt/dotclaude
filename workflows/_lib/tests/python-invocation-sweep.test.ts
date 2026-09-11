@@ -64,18 +64,17 @@ const EXCLUSIONS: readonly Exclusion[] = [
   },
 ];
 
-function exactExclusionPaths(): string[] {
-  return EXCLUSIONS.filter((e) => e.kind === "exact").map((e) => e.path);
-}
-
-function prefixExclusionPaths(): string[] {
-  return EXCLUSIONS.filter((e) => e.kind === "prefix").map((e) => e.path);
+// The shape EXCLUSIONS.filter(kind).map(path) repeats for "exact" and "prefix", each read at
+// two call sites below (the sweep itself and T-462's trace-back check), so it is factored to one
+// function taking the kind rather than two near-identical filter/map pairs.
+function exclusionPaths(kind: Exclusion["kind"]): string[] {
+  return EXCLUSIONS.filter((e) => e.kind === kind).map((e) => e.path);
 }
 
 // offendersAmong's own extraExclusions only matches a path exactly, so a directory-shaped
 // exclusion (plugins/) is applied here, ahead of the call, instead of inside it.
 function sweepCandidates(): string[] {
-  const prefixes = prefixExclusionPaths();
+  const prefixes = exclusionPaths("prefix");
   return trackedFiles(REPO_ROOT).filter(
     (path) => !prefixes.some((prefix) => path.startsWith(prefix)),
   );
@@ -150,7 +149,7 @@ test(
       sweepCandidates(),
       (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
       invokesPython3,
-      exactExclusionPaths(),
+      exclusionPaths("exact"),
     );
     assert.deepEqual(
       offenders,
@@ -178,12 +177,12 @@ test(
     // confirm the exact-match and prefix exclusions it actually passed to
     // offendersAmong/sweepCandidates trace back to EXCLUSIONS.
     assert.deepEqual(
-      exactExclusionPaths(),
+      exclusionPaths("exact"),
       [SELF_PATH, "hooks/herdr-agent-state.sh"],
       "the sweep's exact-match exclusions must be read from EXCLUSIONS, not restated",
     );
     assert.deepEqual(
-      prefixExclusionPaths(),
+      exclusionPaths("prefix"),
       ["plugins/"],
       "the sweep's prefix exclusion must be read from EXCLUSIONS, not restated",
     );
