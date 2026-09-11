@@ -162,6 +162,15 @@ test("T-014 the hooks .ts set the toolchain scope check reads is derived from th
     "hooks/pre-bash/tests/wiki-scene-find.test.ts",
     "hooks/pre-bash/tests/wiki-scene-runtime.test.ts",
     "hooks/pre-bash/tests/pre-bash-skill-hooks-retirement.test.ts",
+    "hooks/_lib/scribe_trigger.ts",
+    "hooks/_lib/tests/scribe-trigger.test.ts",
+    "hooks/post-bash/scribe_prompt.ts",
+    "hooks/post-bash/tests/scribe-prompt.test.ts",
+    "hooks/integrations/amphetamine_agent_session.ts",
+    "hooks/integrations/amphetamine_state.ts",
+    "hooks/integrations/tests/amphetamine-marker.test.ts",
+    "hooks/integrations/tests/amphetamine-argv.test.ts",
+    "hooks/integrations/tests/hooks-python-retirement.test.ts",
   ];
   const missing = planAddedFiles.filter((file) => !hooksTs.includes(file));
   assert.deepEqual(

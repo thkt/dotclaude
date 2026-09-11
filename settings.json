@@ -206,7 +206,7 @@
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/post-bash/scribe_prompt.py",
+            "command": "~/.claude/hooks/post-bash/scribe_prompt.ts",
             "timeout": 30
           }
         ]
@@ -216,7 +216,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.py background",
+            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.ts background",
             "timeout": 15
           }
         ]
@@ -348,7 +348,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.py release",
+            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.ts release",
             "timeout": 15
           }
         ]
@@ -370,7 +370,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.py acquire",
+            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.ts acquire",
             "timeout": 15
           },
           {
