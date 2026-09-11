@@ -1,0 +1,4904 @@
+{
+  "_note": "Frozen commands_with_env() output for the corpus _command-scan-corpus.ts's commandScanCorpus() derives (hooks/_lib/tests/_command-scan-corpus.ts). Each row is {name, command, commands_with_env, raises}: name identifies the row, command is the raw text a hook receives as tool_input.command, commands_with_env is command_scan.py's commands_with_env(command) captured as [[env, tokens], ...] (env an object, tokens a string array), and raises is null unless command_scan.py raises constructing that output, in which case raises holds the exception's type name (e.g. \"ValueError\") and commands_with_env is null. JSON escaping: command and every token already ran through command_scan.py's _restore(), so a token can carry a raw newline the source text spelled as a real line break (heredoc bodies, a multi-line commit message) or as a backslash-newline line continuation restored back to `\\` + newline. Both are written here with JSON's own string escapes: a literal newline is `\\n`, and a literal backslash is `\\\\`, so a restored line continuation appears as the two-character sequence `\\\\n` (an escaped backslash followed by an escaped newline). No other escaping convention is in play; every other character is JSON's default.",
+  "cases": [
+    {
+      "name": "lexical paren-open unquoted",
+      "command": "echo alpha(beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            "(",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-open single-quoted",
+      "command": "echo 'alpha(beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha(beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-open double-quoted",
+      "command": "echo \"alpha(beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha(beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-open after-backslash",
+      "command": "echo alpha\\(beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha(beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-open token-head",
+      "command": "echo (alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "(",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-open token-tail",
+      "command": "echo alphabeta(",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta",
+            "("
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-open adjacent-punctuation",
+      "command": "echo alpha(;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            "(;",
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-close unquoted",
+      "command": "echo alpha)beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            ")",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-close single-quoted",
+      "command": "echo 'alpha)beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha)beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-close double-quoted",
+      "command": "echo \"alpha)beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha)beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-close after-backslash",
+      "command": "echo alpha\\)beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha)beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-close token-head",
+      "command": "echo )alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            ")",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-close token-tail",
+      "command": "echo alphabeta)",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta",
+            ")"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical paren-close adjacent-punctuation",
+      "command": "echo alpha);echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            ");",
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical semicolon unquoted",
+      "command": "echo alpha;beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ],
+        [
+          {},
+          [
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical semicolon single-quoted",
+      "command": "echo 'alpha;beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha;beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical semicolon double-quoted",
+      "command": "echo \"alpha;beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha;beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical semicolon after-backslash",
+      "command": "echo alpha\\;beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha;beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical semicolon token-head",
+      "command": "echo ;alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo"
+          ]
+        ],
+        [
+          {},
+          [
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical semicolon token-tail",
+      "command": "echo alphabeta;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical semicolon adjacent-punctuation",
+      "command": "echo alpha;|echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            ";|",
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical lt unquoted",
+      "command": "echo alpha<beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            "<",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical lt single-quoted",
+      "command": "echo 'alpha<beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha<beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical lt double-quoted",
+      "command": "echo \"alpha<beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha<beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical lt after-backslash",
+      "command": "echo alpha\\<beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha<beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical lt token-head",
+      "command": "echo <alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "<",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical lt token-tail",
+      "command": "echo alphabeta<",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta",
+            "<"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical lt adjacent-punctuation",
+      "command": "echo alpha<;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            "<;",
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical gt unquoted",
+      "command": "echo alpha>beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            ">",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical gt single-quoted",
+      "command": "echo 'alpha>beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha>beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical gt double-quoted",
+      "command": "echo \"alpha>beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha>beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical gt after-backslash",
+      "command": "echo alpha\\>beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha>beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical gt token-head",
+      "command": "echo >alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            ">",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical gt token-tail",
+      "command": "echo alphabeta>",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta",
+            ">"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical gt adjacent-punctuation",
+      "command": "echo alpha>;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            ">;",
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical pipe unquoted",
+      "command": "echo alpha|beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ],
+        [
+          {},
+          [
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical pipe single-quoted",
+      "command": "echo 'alpha|beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha|beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical pipe double-quoted",
+      "command": "echo \"alpha|beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha|beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical pipe after-backslash",
+      "command": "echo alpha\\|beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha|beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical pipe token-head",
+      "command": "echo |alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo"
+          ]
+        ],
+        [
+          {},
+          [
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical pipe token-tail",
+      "command": "echo alphabeta|",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical pipe adjacent-punctuation",
+      "command": "echo alpha|;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            "|;",
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical amp unquoted",
+      "command": "echo alpha&beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ],
+        [
+          {},
+          [
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical amp single-quoted",
+      "command": "echo 'alpha&beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha&beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical amp double-quoted",
+      "command": "echo \"alpha&beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha&beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical amp after-backslash",
+      "command": "echo alpha\\&beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha&beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical amp token-head",
+      "command": "echo &alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo"
+          ]
+        ],
+        [
+          {},
+          [
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical amp token-tail",
+      "command": "echo alphabeta&",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical amp adjacent-punctuation",
+      "command": "echo alpha&;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            "&;",
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical hash unquoted",
+      "command": "echo alpha#beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical hash single-quoted",
+      "command": "echo 'alpha#beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha#beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical hash double-quoted",
+      "command": "echo \"alpha#beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha#beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical hash after-backslash",
+      "command": "echo alpha\\#beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha#beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical hash token-head",
+      "command": "echo #alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical hash token-tail",
+      "command": "echo alphabeta#",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical hash adjacent-punctuation",
+      "command": "echo alpha#;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical backslash unquoted",
+      "command": "echo alpha\\beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical backslash single-quoted",
+      "command": "echo 'alpha\\beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\\beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical backslash double-quoted",
+      "command": "echo \"alpha\\beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\\beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical backslash after-backslash",
+      "command": "echo alpha\\\\beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\\beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical backslash token-head",
+      "command": "echo \\alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical backslash token-tail",
+      "command": "echo alphabeta\\",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical backslash adjacent-punctuation",
+      "command": "echo alpha\\;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha;echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical single-quote unquoted",
+      "command": "echo alpha'beta",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical single-quote single-quoted",
+      "command": "echo 'alpha'\\''beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha'beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical single-quote double-quoted",
+      "command": "echo \"alpha'beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha'beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical single-quote after-backslash",
+      "command": "echo alpha\\'beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha'beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical single-quote token-head",
+      "command": "echo 'alphabeta",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical single-quote token-tail",
+      "command": "echo alphabeta'",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical single-quote adjacent-punctuation",
+      "command": "echo alpha';echo beta",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical double-quote unquoted",
+      "command": "echo alpha\"beta",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical double-quote single-quoted",
+      "command": "echo 'alpha\"beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\"beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical double-quote double-quoted",
+      "command": "echo \"alpha\\\"beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\"beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical double-quote after-backslash",
+      "command": "echo alpha\\\"beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\"beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical double-quote token-head",
+      "command": "echo \"alphabeta",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical double-quote token-tail",
+      "command": "echo alphabeta\"",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical double-quote adjacent-punctuation",
+      "command": "echo alpha\";echo beta",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "lexical space unquoted",
+      "command": "echo alpha beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical space single-quoted",
+      "command": "echo 'alpha beta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical space double-quoted",
+      "command": "echo \"alpha beta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical space after-backslash",
+      "command": "echo alpha\\ beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical space token-head",
+      "command": "echo  alphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical space token-tail",
+      "command": "echo alphabeta ",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical space adjacent-punctuation",
+      "command": "echo alpha ;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical newline unquoted",
+      "command": "echo alpha\nbeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ],
+        [
+          {},
+          [
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical newline single-quoted",
+      "command": "echo 'alpha\nbeta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\nbeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical newline double-quoted",
+      "command": "echo \"alpha\nbeta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\nbeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical newline after-backslash",
+      "command": "echo alpha\\\nbeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical newline token-head",
+      "command": "echo \nalphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo"
+          ]
+        ],
+        [
+          {},
+          [
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical newline token-tail",
+      "command": "echo alphabeta\n",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical newline adjacent-punctuation",
+      "command": "echo alpha\n;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha",
+            "\n;",
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical line-continuation unquoted",
+      "command": "echo alpha\\\nbeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical line-continuation single-quoted",
+      "command": "echo 'alpha\\\nbeta'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\\\nbeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical line-continuation double-quoted",
+      "command": "echo \"alpha\\\nbeta\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\\\nbeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical line-continuation after-backslash",
+      "command": "echo alpha\\\\\nbeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha\\\nbeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical line-continuation token-head",
+      "command": "echo \\\nalphabeta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical line-continuation token-tail",
+      "command": "echo alphabeta\\\n",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alphabeta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "lexical line-continuation adjacent-punctuation",
+      "command": "echo alpha\\\n;echo beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "beta"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc <<EOF terminated",
+      "command": "cat <<EOF\nbody line\nEOF\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc <<EOF unterminated",
+      "command": "cat <<EOF\nbody line\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "body",
+            "line"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc <<-EOF terminated",
+      "command": "cat <<-EOF\nbody line\nEOF\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "-EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc <<-EOF unterminated",
+      "command": "cat <<-EOF\nbody line\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "-EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "body",
+            "line"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc <<'EOF' terminated",
+      "command": "cat <<'EOF'\nbody line\nEOF\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc <<'EOF' unterminated",
+      "command": "cat <<'EOF'\nbody line\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "body",
+            "line"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc <<\"EOF\" terminated",
+      "command": "cat <<\"EOF\"\nbody line\nEOF\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc <<\"EOF\" unterminated",
+      "command": "cat <<\"EOF\"\nbody line\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "body",
+            "line"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc quoted-fake-marker terminated",
+      "command": "echo '<< END'\nsome content\nEND\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "<< END"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "heredoc quoted-fake-marker unterminated",
+      "command": "echo '<< END'\nsome content\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "<< END"
+          ]
+        ],
+        [
+          {},
+          [
+            "some",
+            "content"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper sudo bare",
+      "command": "sudo rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper sudo with-flag",
+      "command": "sudo -n root rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper sudo absolute-path",
+      "command": "/usr/local/bin/sudo rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper env bare",
+      "command": "env rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper env with-flag",
+      "command": "env -n root rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper env absolute-path",
+      "command": "/usr/local/bin/env rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper time bare",
+      "command": "time rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper time with-flag",
+      "command": "time -n root rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper time absolute-path",
+      "command": "/usr/local/bin/time rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper nice bare",
+      "command": "nice rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper nice with-flag",
+      "command": "nice -n root rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper nice absolute-path",
+      "command": "/usr/local/bin/nice rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper xargs bare",
+      "command": "xargs rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper xargs with-flag",
+      "command": "xargs -n root rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper xargs absolute-path",
+      "command": "/usr/local/bin/xargs rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper command bare",
+      "command": "command rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper command with-flag",
+      "command": "command -n root rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper command absolute-path",
+      "command": "/usr/local/bin/command rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper exec bare",
+      "command": "exec rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper exec with-flag",
+      "command": "exec -n root rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper exec absolute-path",
+      "command": "/usr/local/bin/exec rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper nohup bare",
+      "command": "nohup rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper nohup with-flag",
+      "command": "nohup -n root rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve wrapper nohup absolute-path",
+      "command": "/usr/local/bin/nohup rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -exec single",
+      "command": "find . -name '*.tmp' -exec rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-name",
+            "*.tmp",
+            "-exec",
+            "rm",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -exec plus",
+      "command": "find . -exec rm {} +",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-exec",
+            "rm",
+            "{}",
+            "+"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}",
+            "+"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -exec chained",
+      "command": "find . -exec echo {} \\; -exec rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-exec",
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -execdir single",
+      "command": "find . -name '*.tmp' -execdir rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-name",
+            "*.tmp",
+            "-execdir",
+            "rm",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -execdir plus",
+      "command": "find . -execdir rm {} +",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-execdir",
+            "rm",
+            "{}",
+            "+"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}",
+            "+"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -execdir chained",
+      "command": "find . -execdir echo {} \\; -execdir rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-execdir",
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -ok single",
+      "command": "find . -name '*.tmp' -ok rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-name",
+            "*.tmp",
+            "-ok",
+            "rm",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -ok plus",
+      "command": "find . -ok rm {} +",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-ok",
+            "rm",
+            "{}",
+            "+"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}",
+            "+"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -ok chained",
+      "command": "find . -ok echo {} \\; -ok rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-ok",
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -okdir single",
+      "command": "find . -name '*.tmp' -okdir rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-name",
+            "*.tmp",
+            "-okdir",
+            "rm",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -okdir plus",
+      "command": "find . -okdir rm {} +",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-okdir",
+            "rm",
+            "{}",
+            "+"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}",
+            "+"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve exec-flag -okdir chained",
+      "command": "find . -okdir echo {} \\; -okdir rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-okdir",
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve env-assignment single",
+      "command": "FOO=1 rm -rf x",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1"
+          },
+          [
+            "rm",
+            "-rf",
+            "x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve env-assignment multiple",
+      "command": "FOO=1 BAR=2 npm install",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1",
+            "BAR": "2"
+          },
+          [
+            "npm",
+            "install"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve env-assignment before-wrapper",
+      "command": "FOO=1 sudo rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1"
+          },
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "resolve env-assignment non-assignment-equals",
+      "command": "./a=b --flag",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "a=b",
+            "--flag"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #0",
+      "command": "cd /tmp && rm -rf x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cd",
+            "/tmp"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #1",
+      "command": "a; b | c",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "a"
+          ]
+        ],
+        [
+          {},
+          [
+            "b"
+          ]
+        ],
+        [
+          {},
+          [
+            "c"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #2",
+      "command": "cd /tmp\nrm -rf x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cd",
+            "/tmp"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #3",
+      "command": "cat > /tmp/m.txt << 'EOF'\ngh issue create --title x\nEOF\ngit commit -F /tmp/m.txt",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            ">",
+            "/tmp/m.txt",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-F",
+            "/tmp/m.txt"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #4",
+      "command": "cat <<-END\nrm -rf /\nEND\necho done",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            "<<",
+            "-END"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "done"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #5",
+      "command": "git commit -m 'see << EOF\nfor details'\nrm -rf x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-m",
+            "see << EOF\nfor details"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #6",
+      "command": "echo '<< END'\nrm -rf x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "<< END"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #7",
+      "command": "git commit -m 'fix: 1 行目\n\ngh issue create を本文で説明する行'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-m",
+            "fix: 1 行目\n\ngh issue create を本文で説明する行"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #8",
+      "command": "git commit -m 'remove rm calls'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-m",
+            "remove rm calls"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #9",
+      "command": "sed -i '' 's|rm -rf x|y|g' f",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "sed",
+            "-i",
+            "",
+            "s|rm -rf x|y|g",
+            "f"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #10",
+      "command": "sudo rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #11",
+      "command": "env rm /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #12",
+      "command": "time rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #13",
+      "command": "find . -print0 | xargs -0 rm",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-print0"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #14",
+      "command": "sudo -u root rm x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #15",
+      "command": "/bin/rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #16",
+      "command": "find . -name '*.tmp' -exec rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-name",
+            "*.tmp",
+            "-exec",
+            "rm",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #17",
+      "command": "find . -execdir rm {} +",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-execdir",
+            "rm",
+            "{}",
+            "+"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}",
+            "+"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #18",
+      "command": "find . -exec echo {} \\; -exec rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-exec",
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "echo",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #19",
+      "command": "echo 'unterminated",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "curated command_scan_test #20",
+      "command": "FOO=1 rm -rf x",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1"
+          },
+          [
+            "rm",
+            "-rf",
+            "x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #21",
+      "command": "FOO=1 BAR=2 npm install",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1",
+            "BAR": "2"
+          },
+          [
+            "npm",
+            "install"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #22",
+      "command": "GH_TOKEN=x gh issue create",
+      "commands_with_env": [
+        [
+          {
+            "GH_TOKEN": "x"
+          },
+          [
+            "gh",
+            "issue",
+            "create"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #23",
+      "command": "FOO=1 gh issue create --title x",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1"
+          },
+          [
+            "gh",
+            "issue",
+            "create",
+            "--title",
+            "x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #24",
+      "command": "./a=b --flag",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "a=b",
+            "--flag"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #25",
+      "command": "1FOO=x rm -rf y",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "1FOO=x",
+            "rm",
+            "-rf",
+            "y"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #26",
+      "command": "rm -rf \\\n  /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #27",
+      "command": "cp x \\\n  /some/dir/rm",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cp",
+            "x",
+            "/some/dir/rm"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #28",
+      "command": "gh issue create --repo r \\\n  --title \"[Bug] x\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "gh",
+            "issue",
+            "create",
+            "--repo",
+            "r",
+            "--title",
+            "[Bug] x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #29",
+      "command": "gh \\\n  issue create --title \"[Bug] x\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "gh",
+            "issue",
+            "create",
+            "--title",
+            "[Bug] x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #30",
+      "command": "ec\\\nho hi",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "hi"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #31",
+      "command": "git commit -m 'a \\\nb'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-m",
+            "a \\\nb"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #32",
+      "command": "cat > /tmp/m.txt << 'EOF'\nbody\nEOF\ngit commit \\\n  -F /tmp/m.txt",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            ">",
+            "/tmp/m.txt",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-F",
+            "/tmp/m.txt"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test #33",
+      "command": "find . -type f \\\n  -exec rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-type",
+            "f",
+            "-exec",
+            "rm",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #0",
+      "command": "npm install",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "install"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #1",
+      "command": "pnpm add zod",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "pnpm",
+            "add",
+            "zod"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #2",
+      "command": "yarn upgrade",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "yarn",
+            "upgrade"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #3",
+      "command": "ni",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "ni"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #4",
+      "command": "cd /tmp && npm install",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cd",
+            "/tmp"
+          ]
+        ],
+        [
+          {},
+          [
+            "npm",
+            "install"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #5",
+      "command": "cd /tmp\nnpm install",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cd",
+            "/tmp"
+          ]
+        ],
+        [
+          {},
+          [
+            "npm",
+            "install"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #6",
+      "command": "npm  install",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "install"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #7",
+      "command": "npm --prefix /tmp install",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "--prefix",
+            "/tmp",
+            "install"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #8",
+      "command": "npm --silent install",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "--silent",
+            "install"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #9",
+      "command": "npx create-vite my-app",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npx",
+            "create-vite",
+            "my-app"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #10",
+      "command": "nlx create-vite my-app",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "nlx",
+            "create-vite",
+            "my-app"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #11",
+      "command": "bunx create-vite my-app",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "bunx",
+            "create-vite",
+            "my-app"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #12",
+      "command": "npm install --ignore-scripts=false",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "install",
+            "--ignore-scripts=false"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #13",
+      "command": "npm install --no-ignore-scripts",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "install",
+            "--no-ignore-scripts"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #14",
+      "command": "npm run build",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "run",
+            "build"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #15",
+      "command": "git status",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "status"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #16",
+      "command": "npm ls --depth=0",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "ls",
+            "--depth=0"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #17",
+      "command": "git commit -m 'run npm install first'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-m",
+            "run npm install first"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #18",
+      "command": "FOO=1 npm install zod",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1"
+          },
+          [
+            "npm",
+            "install",
+            "zod"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #19",
+      "command": "pnpm dlx cowsay",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "pnpm",
+            "dlx",
+            "cowsay"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #20",
+      "command": "npm exec cowsay",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "exec",
+            "cowsay"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #21",
+      "command": "bun x cowsay",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "bun",
+            "x",
+            "cowsay"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #22",
+      "command": "yarn dlx cowsay",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "yarn",
+            "dlx",
+            "cowsay"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #23",
+      "command": "npm install zod",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "npm",
+            "install",
+            "zod"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated npm_install_guard_test #24",
+      "command": "cd /tmp/project && npm install zod",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cd",
+            "/tmp/project"
+          ]
+        ],
+        [
+          {},
+          [
+            "npm",
+            "install",
+            "zod"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #0",
+      "command": "rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #1",
+      "command": "rmdir /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rmdir",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #2",
+      "command": "unlink /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "unlink",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #3",
+      "command": "shred /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "shred",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #9",
+      "command": "find . -name \"*.tmp\" -exec rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-name",
+            "*.tmp",
+            "-exec",
+            "rm",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #12",
+      "command": "git commit -m 'remove rm calls from the test'",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-m",
+            "remove rm calls from the test"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #13",
+      "command": "echo 'rm -rf danger' > note.txt",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "rm -rf danger",
+            ">",
+            "note.txt"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #14",
+      "command": "cat > /tmp/m.txt << 'EOF'\nrm -rf /tmp/x\nEOF\ngit commit -F /tmp/m.txt",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            ">",
+            "/tmp/m.txt",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-F",
+            "/tmp/m.txt"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #15",
+      "command": "rm -rf \"/tmp/x",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "curated rm_to_trash_test #17",
+      "command": "find . -name \"*.tmp\" -delete",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-name",
+            "*.tmp",
+            "-delete"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #18",
+      "command": "git clean -fd",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "clean",
+            "-fd"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #19",
+      "command": "git -C /tmp clean -fd",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "-C",
+            "/tmp",
+            "clean",
+            "-fd"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #20",
+      "command": "git clean -n",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "clean",
+            "-n"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #21",
+      "command": "git clean -nd",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "clean",
+            "-nd"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #22",
+      "command": "git clean --dry-run",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "clean",
+            "--dry-run"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #23",
+      "command": "find . -name \"*.tmp\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-name",
+            "*.tmp"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #24",
+      "command": "FOO=1 rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1"
+          },
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated rm_to_trash_test #25",
+      "command": "FOO=1 BAR=2 rm -rf /tmp/x",
+      "commands_with_env": [
+        [
+          {
+            "FOO": "1",
+            "BAR": "2"
+          },
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #0",
+      "command": "git checkout main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "checkout",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #1",
+      "command": "git checkout -- agents/x.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "checkout",
+            "--",
+            "agents/x.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #2",
+      "command": "git switch main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "switch",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #3",
+      "command": "git pull",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "pull"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #4",
+      "command": "git pull --ff-only origin main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "pull",
+            "--ff-only",
+            "origin",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #5",
+      "command": "git merge origin/main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "merge",
+            "origin/main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #6",
+      "command": "git rebase main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "rebase",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #7",
+      "command": "git reset --hard origin/main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "reset",
+            "--hard",
+            "origin/main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #8",
+      "command": "git revert HEAD",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "revert",
+            "HEAD"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #9",
+      "command": "git cherry-pick abc1234",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "cherry-pick",
+            "abc1234"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #10",
+      "command": "git stash pop",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "stash",
+            "pop"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #11",
+      "command": "git restore agents/x.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "restore",
+            "agents/x.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #13",
+      "command": "git rm agents/x.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "rm",
+            "agents/x.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #14",
+      "command": "git mv agents/x.md agents/y.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "mv",
+            "agents/x.md",
+            "agents/y.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #15",
+      "command": "git sparse-checkout set docs",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "sparse-checkout",
+            "set",
+            "docs"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #16",
+      "command": "git sparse-checkout disable",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "sparse-checkout",
+            "disable"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #17",
+      "command": "git rm --cached agents/x.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "rm",
+            "--cached",
+            "agents/x.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #18",
+      "command": "git rm -n agents/x.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "rm",
+            "-n",
+            "agents/x.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #19",
+      "command": "git sparse-checkout list",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "sparse-checkout",
+            "list"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #20",
+      "command": "git checkout -b docs/foo",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "checkout",
+            "-b",
+            "docs/foo"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #21",
+      "command": "git switch -c docs/foo",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "switch",
+            "-c",
+            "docs/foo"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #22",
+      "command": "git reset --mixed origin/main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "reset",
+            "--mixed",
+            "origin/main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #23",
+      "command": "git reset --soft HEAD~1",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "reset",
+            "--soft",
+            "HEAD~1"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #24",
+      "command": "git stash list",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "stash",
+            "list"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #25",
+      "command": "git fetch origin",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "fetch",
+            "origin"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #26",
+      "command": "git status --short",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "status",
+            "--short"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #27",
+      "command": "git diff --stat",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "diff",
+            "--stat"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #28",
+      "command": "git push -u origin HEAD",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "push",
+            "-u",
+            "origin",
+            "HEAD"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #29",
+      "command": "git commit -m \"git pull を追加\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-m",
+            "git pull を追加"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #30",
+      "command": "echo \"run git checkout main\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "run git checkout main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #31",
+      "command": "git commit -m \"unclosed",
+      "commands_with_env": null,
+      "raises": "ValueError"
+    },
+    {
+      "name": "curated git_sandbox_guard_test #32",
+      "command": "ls -la",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "ls",
+            "-la"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #33",
+      "command": "gh pr list",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "gh",
+            "pr",
+            "list"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #34",
+      "command": "git checkout --help",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "checkout",
+            "--help"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #35",
+      "command": "git stash --help",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "stash",
+            "--help"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #36",
+      "command": "git rm --help",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "rm",
+            "--help"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #37",
+      "command": "git apply --help",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "apply",
+            "--help"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #38",
+      "command": "git apply --check x.patch",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "apply",
+            "--check",
+            "x.patch"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #39",
+      "command": "git apply --stat x.patch",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "apply",
+            "--stat",
+            "x.patch"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #40",
+      "command": "git apply x.patch",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "apply",
+            "x.patch"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #41",
+      "command": "git mv -n agents/a.md agents/b.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "mv",
+            "-n",
+            "agents/a.md",
+            "agents/b.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #42",
+      "command": "git mv --dry-run agents/a.md agents/b.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "mv",
+            "--dry-run",
+            "agents/a.md",
+            "agents/b.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #43",
+      "command": "git mv agents/a.md agents/b.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "mv",
+            "agents/a.md",
+            "agents/b.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #44",
+      "command": "git restore --staged agents/x.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "restore",
+            "--staged",
+            "agents/x.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #45",
+      "command": "git restore --staged --worktree agents/x.md",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "restore",
+            "--staged",
+            "--worktree",
+            "agents/x.md"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #46",
+      "command": "git rebase --show-current-patch",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "rebase",
+            "--show-current-patch"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #47",
+      "command": "git rebase --abort",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "rebase",
+            "--abort"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #48",
+      "command": "git rm -- -h",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "rm",
+            "--",
+            "-h"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #49",
+      "command": "git checkout -- --help",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "checkout",
+            "--",
+            "--help"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #50",
+      "command": "git bisect start",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "bisect",
+            "start"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #51",
+      "command": "git bisect good",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "bisect",
+            "good"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #52",
+      "command": "git bisect bad HEAD~3",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "bisect",
+            "bad",
+            "HEAD~3"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #53",
+      "command": "git bisect reset",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "bisect",
+            "reset"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #54",
+      "command": "git bisect log",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "bisect",
+            "log"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #55",
+      "command": "git bisect view",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "bisect",
+            "view"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #56",
+      "command": "git bisect visualize",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "bisect",
+            "visualize"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #57",
+      "command": "git bisect terms",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "bisect",
+            "terms"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #58",
+      "command": "git checkout-index -a -f",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "checkout-index",
+            "-a",
+            "-f"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #59",
+      "command": "git read-tree -u --reset HEAD~1",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "read-tree",
+            "-u",
+            "--reset",
+            "HEAD~1"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #60",
+      "command": "git read-tree HEAD~1",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "read-tree",
+            "HEAD~1"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #61",
+      "command": "git write-tree",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "write-tree"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #62",
+      "command": "git update-index --refresh",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "update-index",
+            "--refresh"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #63",
+      "command": "git filter-branch --force --tree-filter true HEAD",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "filter-branch",
+            "--force",
+            "--tree-filter",
+            "true",
+            "HEAD"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #64",
+      "command": "git -C /tmp/guarded-repo checkout main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "-C",
+            "/tmp/guarded-repo",
+            "checkout",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #65",
+      "command": "git --git-dir=/tmp/guarded-repo/.git --work-tree=/tmp/guarded-repo checkout main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "--git-dir=/tmp/guarded-repo/.git",
+            "--work-tree=/tmp/guarded-repo",
+            "checkout",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #66",
+      "command": "git checkout main && git -C /tmp/guarded-repo checkout main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "checkout",
+            "main"
+          ]
+        ],
+        [
+          {},
+          [
+            "git",
+            "-C",
+            "/tmp/guarded-repo",
+            "checkout",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #67",
+      "command": "GIT_DIR=/tmp/guarded-repo/.git GIT_WORK_TREE=/tmp/guarded-repo git checkout main",
+      "commands_with_env": [
+        [
+          {
+            "GIT_DIR": "/tmp/guarded-repo/.git",
+            "GIT_WORK_TREE": "/tmp/guarded-repo"
+          },
+          [
+            "git",
+            "checkout",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #68",
+      "command": "GIT_DIR=/tmp/guarded-repo/.git GIT_WORK_TREE=/tmp/guarded-repo git status",
+      "commands_with_env": [
+        [
+          {
+            "GIT_DIR": "/tmp/guarded-repo/.git",
+            "GIT_WORK_TREE": "/tmp/guarded-repo"
+          },
+          [
+            "git",
+            "status"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated git_sandbox_guard_test #69",
+      "command": "git -C /tmp/missing-repo checkout main",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "git",
+            "-C",
+            "/tmp/missing-repo",
+            "checkout",
+            "main"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test joined-continuation of \"rm -rf \\\\\\n  /tmp/x\"",
+      "command": "rm -rf  /tmp/x",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "rm",
+            "-rf",
+            "/tmp/x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test joined-continuation of \"gh issue create --repo r \\\\\\n  --title \\\"[Bug] x\\\"\"",
+      "command": "gh issue create --repo r  --title \"[Bug] x\"",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "gh",
+            "issue",
+            "create",
+            "--repo",
+            "r",
+            "--title",
+            "[Bug] x"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test joined-continuation of \"cat > /tmp/m.txt << 'EOF'\\nbody\\nEOF\\ngit commit \\\\\\n  -F /tmp/m.txt\"",
+      "command": "cat > /tmp/m.txt << 'EOF'\nbody\nEOF\ngit commit  -F /tmp/m.txt",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "cat",
+            ">",
+            "/tmp/m.txt",
+            "<<",
+            "EOF"
+          ]
+        ],
+        [
+          {},
+          [
+            "git",
+            "commit",
+            "-F",
+            "/tmp/m.txt"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
+      "name": "curated command_scan_test joined-continuation of \"find . -type f \\\\\\n  -exec rm {} \\\\;\"",
+      "command": "find . -type f  -exec rm {} \\;",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "find",
+            ".",
+            "-type",
+            "f",
+            "-exec",
+            "rm",
+            "{}"
+          ]
+        ],
+        [
+          {},
+          [
+            "rm",
+            "{}"
+          ]
+        ]
+      ],
+      "raises": null
+    }
+  ]
+}

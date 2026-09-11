@@ -70,9 +70,9 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | イベント          | matcher            | 実体                                            | if 条件            | timeout |
 | ----------------- | ------------------ | ----------------------------------------------- | ------------------ | ------- |
 | PreToolUse        | `Bash`             | `pre-bash/package_manager_rewrite.py`           | なし               | 15      |
-| PreToolUse        | `Bash`             | `security/npm_install_guard.py`                 | なし               | 60      |
-| PreToolUse        | `Bash`             | `security/rm_to_trash.py`                       | なし               | 15      |
-| PreToolUse        | `Bash`             | `security/git_sandbox_guard.py`                 | なし               | 15      |
+| PreToolUse        | `Bash`             | `security/npm_install_guard.ts`                 | なし               | 60      |
+| PreToolUse        | `Bash`             | `security/rm_to_trash.ts`                       | なし               | 15      |
+| PreToolUse        | `Bash`             | `security/git_sandbox_guard.ts`                 | なし               | 15      |
 | PreToolUse        | `Bash`             | `pre-bash/body_proofread.py`                    | なし               | 60      |
 | PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.py`                   | なし               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.py`            | なし               | 30      |
@@ -82,7 +82,7 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PreToolUse        | `WebFetch\|WebSearch` | インライン `echo` による deny                | なし               | なし    |
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.py`                        | `**/*.rs`          | 30      |
 | PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.py`                          | `**/*.md`          | 60      |
-| PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.py`                    | `**/.ja/**`        | 10      |
+| PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.ts`                    | `**/.ja/**`        | 10      |
 | PostToolUse       | `Write\|Edit`      | `assay`                                         | なし               | 30      |
 | PostToolUse       | `Write\|Edit`      | `formatter`                                     | なし               | 30      |
 | PostToolUse       | `Write\|Edit`      | `gates`                                         | なし               | 120     |
@@ -102,9 +102,9 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 
 | hook                            | 発火                    | 判定                                                              | 失敗方針  |
 | ------------------------------- | ----------------------- | ----------------------------------------------------------------- | --------- |
-| `rm_to_trash.py`                | Bash                    | `rm` / `rmdir` / `unlink` / `shred` と `find -delete` / `git clean` を deny し `mv ~/.Trash/` へ誘導 | fail-close |
-| `npm_install_guard.py`          | Bash                    | `ignore-scripts` 未設定の install を deny。ni 系の別名も同じ扱い  | fail-close |
-| `git_sandbox_guard.py`          | Bash                    | サンドボックス下で tree を書き換える git 呼び出しを deny          | fail-close |
+| `rm_to_trash.ts`                | Bash                    | `rm` / `rmdir` / `unlink` / `shred` と `find -delete` / `git clean` を deny し `mv ~/.Trash/` へ誘導 | fail-close |
+| `npm_install_guard.ts`          | Bash                    | `ignore-scripts` 未設定の install を deny。ni 系の別名も同じ扱い  | fail-close |
+| `git_sandbox_guard.ts`          | Bash                    | サンドボックス下で tree を書き換える git 呼び出しを deny          | fail-close |
 | `package_manager_rewrite.py`    | Bash                    | パッケージ マネージャ コマンドを ni 系へ書き換え、決定は常に allow | advisory  |
 | `body_proofread.py`             | Bash                    | gh filing と commit の本文を校正し additionalContext で返す       | advisory  |
 | `issue_body_gate.py`            | Bash                    | `gh issue create` の本文をタイトル型のテンプレートと照合し、乖離と比較不能をどちらも deny | fail-close |
@@ -112,7 +112,7 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `rust_pre_edit.py`              | Write / Edit (`*.rs`)   | clippy の指摘を additionalContext として注入                      | advisory  |
 | `rust_post_edit.py`             | Write / Edit (`*.rs`)   | `cargo fmt` の後に clippy を再実行し指摘を返す                    | advisory  |
 | `textlint_fix.py`               | Write / Edit (`*.md`)   | 日本語判定を通った Markdown を textlint で自動修正                | advisory  |
-| `mirror_prose_guard.py`         | Write / Edit (`.ja/**`) | 日本語を 1 文字も含まない `.ja/` ファイルを警告する。止めない     | advisory  |
+| `mirror_prose_guard.ts`         | Write / Edit (`.ja/**`) | 日本語を 1 文字も含まない `.ja/` ファイルを警告する。止めない     | advisory  |
 | `amphetamine_agent_session.py`  | UserPromptSubmit / PostToolUse / Stop | session_id 単位の参照カウントで Mac のスリープを抑止 | fail-open |
 | `recall_index.ts`               | SessionStart            | recall の横断索引をバックグラウンドで追いつかせる                 | fail-open |
 | `failure-alert.sh`              | Stop / StopFailure      | `end_turn` 以外の終了で音を鳴らす。サブエージェントは対象外       | fail-open |
@@ -127,7 +127,7 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `gh_filing.py`     | `gh issue create` / `gh pr create` の本文フラグの綴り            |
 | `hook_payload.py`  | payload の型付き読み出しと deny 封筒の生成                       |
 | `japanese.py`      | 日本語判定としきい値                                             |
-| `mirror_prose.py`  | `.ja/` 配下で日本語が消えた状態の検出                            |
+| `mirror_prose.ts`  | `.ja/` 配下で日本語が消えた状態の検出                            |
 | `rust_target.py`   | cargo ワークスペース根の解決と clippy 出力の整形                 |
 | `textlint.py`      | textlint の設定解決と実行                                        |
 | `hook_harness.py`  | テストからの hook 起動と終了コード確認                           |

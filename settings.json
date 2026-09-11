@@ -169,13 +169,13 @@
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/mirror_prose_guard.py",
+            "command": "~/.claude/hooks/edit/mirror_prose_guard.ts",
             "if": "Write(**/.ja/**)",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/mirror_prose_guard.py",
+            "command": "~/.claude/hooks/edit/mirror_prose_guard.ts",
             "if": "Edit(**/.ja/**)",
             "timeout": 10
           },
@@ -233,17 +233,17 @@
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/security/npm_install_guard.py",
+            "command": "~/.claude/hooks/security/npm_install_guard.ts",
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/security/rm_to_trash.py",
+            "command": "~/.claude/hooks/security/rm_to_trash.ts",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/security/git_sandbox_guard.py",
+            "command": "~/.claude/hooks/security/git_sandbox_guard.ts",
             "timeout": 15
           },
           {
