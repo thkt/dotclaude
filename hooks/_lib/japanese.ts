@@ -1,8 +1,8 @@
 /// <reference types="node" />
 // Japanese detection shared by the hooks that treat Japanese prose differently. The TypeScript
 // side of hooks/_lib/japanese.py (DR-0112's TypeScript migration); japanese.py stays in the tree
-// because hooks/edit/textlint_fix.py still imports it, so both live side by side until
-// that caller moves over.
+// with no Python caller left: the proofreading hook retired on main and the auto-fix hook
+// retires here, so japanese.py and its test are residue a later slice removes.
 //
 // Callers pick the threshold: mirror_prose_guard asks whether a single character survives,
 // textlint asks whether the text is Japanese enough for Japanese-only rules to apply.
