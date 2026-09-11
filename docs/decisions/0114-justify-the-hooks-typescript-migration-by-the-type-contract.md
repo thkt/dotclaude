@@ -84,6 +84,8 @@ hooks 層のスライスが始まる時点で、各 hook の shebang 行を `#!/
 - hooks 層の `.ts` が bun 専用 API を書かずに `node --test` の下でも green である（DR-0113 の discipline を hooks 層で実際に満たす）
 - 追跡された hooks 層の `.ts` すべてのシェバンが絶対パスで固定され、PATH 解決に依存しない
 
+hook 層の移行後の実測は DR-0112 に記録した。8 本の合計は 90.87ms で、bun を採らず node のままなら超えていたはずの python3 基準 196.80ms を下回る。8 本すべてが `node -e ''` の 30.4ms も下回っており、hooks 層だけ runtime を分けた判断はこの実測で裏づけられる。
+
 ### Reassessment Triggers
 
 - node の起動コストが bun と同等になり、hooks 層だけ runtime を分ける理由が消える（DR-0113 の Reassessment Triggers と同じ条件）
