@@ -1,5 +1,5 @@
 ---
-globs: ["**/scripts/*.py"]
+globs: ["**/scripts/*.ts"]
 scenes: ["implement"]
 ---
 

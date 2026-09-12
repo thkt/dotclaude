@@ -2,25 +2,25 @@
 /// <reference types="node" />
 // Usage: usage_counts.ts <transcripts-root>
 //
-// skills/ablate/scripts/usage_counts.py を TypeScript へ移植したもの: FIRE_EVENTS、
-// ELEMENT_SUFFIXES、RARE_BY_DESIGN、MEASUREMENT_WINDOW_DAYS、element_path、_parse_date、
-// _iter_fires、count_usage、classify、main。定数名と関数名は usage_counts.py が宣言した
+// このモジュールが置き換える Python 版の usage-counter script を TypeScript へ移植したもの:
+// FIRE_EVENTS、ELEMENT_SUFFIXES、RARE_BY_DESIGN、MEASUREMENT_WINDOW_DAYS、element_path、
+// _parse_date、_iter_fires、count_usage、classify、main。定数名と関数名は Python 版が宣言した
 // とおりに保つ。arms.ts、verdict.ts、dr_gate.ts、enforcer_map.ts がこの同じディレクトリで
 // 保つのと同じ no-camelCase の規約。
 //
-// usage_counts.py は UNMEASURED を arms.py から、DELETE_CANDIDATE/NEEDS_HUMAN_JUDGMENT を
-// verdict.py から import する。この移植も同じ import を持つ -- verdict.ts が UNMEASURED に
-// 対して既に行っているのと同じ再利用。
+// Python 版は UNMEASURED を自身の arms module から、DELETE_CANDIDATE/NEEDS_HUMAN_JUDGMENT を
+// 自身の verdict module から import していた。この移植も同じ import を持つ -- verdict.ts が
+// UNMEASURED に対して既に行っているのと同じ再利用。
 //
-// usage_counts.py からの逸脱点: classify の docstring (usage_counts.py:169) は「module
-// namespace から RARE_BY_DESIGN と MEASUREMENT_WINDOW_DAYS を読む。キャプチャした default
-// 値としてではないため、どちらかを実行時に patch すると返る判定も変わる」と書く --
-// unittest.mock.patch.object が module-level の名前を re-bind する形。ESM の import
-// binding は test file の外側から同じ形で re-bind できない (map_all/target_files の
-// enforcer_map.ts も同じ壁に当たった)。そのためこの移植は代わりに MEASUREMENT_WINDOW_DAYS
-// を classify 自身の `window_days` 引数として持つ (module 定数を default 値にする):
-// 呼び出し側は binding を patch するのではなく別の値を渡すことで、boundary の両側を
-// 動かす。RARE_BY_DESIGN は module-level の export のまま、直接読む形を変えない。
+// Python 版からの逸脱点: classify の docstring は「module namespace から RARE_BY_DESIGN と
+// MEASUREMENT_WINDOW_DAYS を読む。キャプチャした default 値としてではないため、どちらかを
+// 実行時に patch すると返る判定も変わる」と書いていた -- unittest.mock.patch.object が
+// module-level の名前を re-bind する形。ESM の import binding は test file の外側から
+// 同じ形で re-bind できない (map_all/target_files の enforcer_map.ts も同じ壁に当たった)。
+// そのためこの移植は代わりに MEASUREMENT_WINDOW_DAYS を classify 自身の `window_days`
+// 引数として持つ (module 定数を default 値にする): 呼び出し側は binding を patch するの
+// ではなく別の値を渡すことで、boundary の両側を動かす。RARE_BY_DESIGN は module-level の
+// export のまま、直接読む形を変えない。
 import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
@@ -92,7 +92,7 @@ export function element_path(command: string): string | null {
 
 /** transcript timestamp ("2026-08-01T00:00:00.000Z") が指す calendar date (YYYY-MM-DD)、
  * 値が有効な ISO date で始まらない場合は null (1件の壊れた record が読み取り全体を止めて
- * はならない -- usage_counts.py の report.py 由来の per-line tolerance と同じ)。 */
+ * はならない -- Python 版自身の report 由来の per-line tolerance と同じ)。 */
 function _parse_date(timestamp: string): string | null {
   const candidate = timestamp.slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(candidate)) {
@@ -189,7 +189,7 @@ export function count_usage(root: string): UsageResult {
 // | fires > 0 and last_used falls inside window_days | NEEDS_HUMAN_JUDGMENT |
 // | fires == 0 | DELETE_CANDIDATE |
 /** 上の表に従い、1つの要素の usage observation を verdict へ割り当てる。`window_days` は
- * usage_counts.py が module namespace から読んでいた MEASUREMENT_WINDOW_DAYS を置き換える
+ * Python 版が module namespace から読んでいた MEASUREMENT_WINDOW_DAYS を置き換える
  * -- 上のヘッダの逸脱点を参照。 */
 export function classify(
   path: string,

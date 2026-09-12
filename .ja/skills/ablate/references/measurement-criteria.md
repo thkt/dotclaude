@@ -1,7 +1,7 @@
 # /ablate 計測基準
 
-Phase 2 が各要素の観測を組む際と、`${CLAUDE_SKILL_DIR}/scripts/verdict.py` の `verdict.classify`
-が判定する際に使う。実行回数、通過閾値、アームの一覧は `${CLAUDE_SKILL_DIR}/scripts/arms.py` の
+Phase 2 が各要素の観測を組む際と、`${CLAUDE_SKILL_DIR}/scripts/verdict.ts` の `verdict.classify`
+が判定する際に使う。実行回数、通過閾値、アームの一覧は `${CLAUDE_SKILL_DIR}/scripts/arms.ts` の
 定数に留める。数値をここへ複製すると、その定数を次に編集した時点で古くなり、それを捕まえるものが
 無い (`docs/wiki/deterministic-script-judgment.md`)。
 

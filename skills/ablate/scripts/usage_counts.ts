@@ -2,25 +2,25 @@
 /// <reference types="node" />
 // Usage: usage_counts.ts <transcripts-root>
 //
-// TypeScript port of skills/ablate/scripts/usage_counts.py: FIRE_EVENTS, ELEMENT_SUFFIXES,
-// RARE_BY_DESIGN, MEASUREMENT_WINDOW_DAYS, element_path, _parse_date, _iter_fires, count_usage,
-// classify, main. Constant and function names stay exactly as usage_counts.py declares them,
-// the same no-camelCase convention arms.ts, verdict.ts, dr_gate.ts and enforcer_map.ts hold in
-// this same directory.
+// TypeScript port of the Python usage-counter script this module replaces: FIRE_EVENTS,
+// ELEMENT_SUFFIXES, RARE_BY_DESIGN, MEASUREMENT_WINDOW_DAYS, element_path, _parse_date,
+// _iter_fires, count_usage, classify, main. Constant and function names stay exactly as the
+// Python version declared them, the same no-camelCase convention arms.ts, verdict.ts,
+// dr_gate.ts and enforcer_map.ts hold in this same directory.
 //
-// usage_counts.py imports UNMEASURED from arms.py and DELETE_CANDIDATE/NEEDS_HUMAN_JUDGMENT
-// from verdict.py; this port carries the same import, the same reuse verdict.ts already made
-// for UNMEASURED.
+// The Python version imported UNMEASURED from its arms module and DELETE_CANDIDATE/
+// NEEDS_HUMAN_JUDGMENT from its verdict module; this port carries the same import, the same
+// reuse verdict.ts already made for UNMEASURED.
 //
-// Deviation from usage_counts.py: classify's docstring there (usage_counts.py:169) says it
-// "reads RARE_BY_DESIGN and MEASUREMENT_WINDOW_DAYS from the module namespace rather than as
-// captured defaults, so patching either at run time changes the verdict returned" --
-// unittest.mock.patch.object rebinding a module-level name. An ESM import binding cannot be
-// rebound the same way from a test file (map_all/target_files in enforcer_map.ts hit the same
-// wall), so this port carries MEASUREMENT_WINDOW_DAYS as classify's own `window_days`
-// parameter (defaulting to the module constant) instead: a caller drives both sides of the
-// boundary by passing a different value, not by patching a binding. RARE_BY_DESIGN stays a
-// module-level export, read directly, unchanged.
+// Deviation from the Python version: its classify docstring said it "reads RARE_BY_DESIGN and
+// MEASUREMENT_WINDOW_DAYS from the module namespace rather than as captured defaults, so
+// patching either at run time changes the verdict returned" -- unittest.mock.patch.object
+// rebinding a module-level name. An ESM import binding cannot be rebound the same way from a
+// test file (map_all/target_files in enforcer_map.ts hit the same wall), so this port carries
+// MEASUREMENT_WINDOW_DAYS as classify's own `window_days` parameter (defaulting to the module
+// constant) instead: a caller drives both sides of the boundary by passing a different value,
+// not by patching a binding. RARE_BY_DESIGN stays a module-level export, read directly,
+// unchanged.
 import { globSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
@@ -91,7 +91,7 @@ export function element_path(command: string): string | null {
 
 /** The calendar date (YYYY-MM-DD) a transcript timestamp ("2026-08-01T00:00:00.000Z") falls
  * on, or null when the value does not start with a valid ISO date (one malformed record must
- * not stop the read, matching usage_counts.py's report.py-style per-line tolerance). */
+ * not stop the read, matching the Python version's own report-style per-line tolerance). */
 function _parse_date(timestamp: string): string | null {
   const candidate = timestamp.slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(candidate)) {
@@ -188,7 +188,7 @@ export function count_usage(root: string): UsageResult {
 // | fires > 0 and last_used falls inside window_days | NEEDS_HUMAN_JUDGMENT |
 // | fires == 0 | DELETE_CANDIDATE |
 /** Assigns one element's usage observation a verdict, per the table above. `window_days`
- * replaces usage_counts.py's module-namespace read of MEASUREMENT_WINDOW_DAYS -- see the
+ * replaces the Python version's module-namespace read of MEASUREMENT_WINDOW_DAYS -- see the
  * header deviation note above. */
 export function classify(
   path: string,

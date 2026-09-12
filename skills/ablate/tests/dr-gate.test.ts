@@ -1,13 +1,12 @@
 /// <reference types="node" />
-// In-process tests for skills/ablate/scripts/dr_gate.ts, replaying the observation table
-// skills/ablate/tests/dr_gate_test.py drives against dr_gate.py (dr_gate.py stays live as
-// report.py's import source until that slice retires the Python side; see dr_gate.ts's
-// header). This unit runs the assertions against the TypeScript side alone -- a dual-language
-// name comparison, if one is planned, belongs in a later unit, not here.
+// In-process tests for skills/ablate/scripts/dr_gate.ts, replaying the observation table the
+// Python version's own test suite drove against it. This unit runs the assertions against the
+// TypeScript side alone.
 //
 // A confirmation record is a line reading `Confirmed unmet: {date}` inside the DR file, the
-// same convention dr_gate_test.py documents: no DR in the repository carries a
-// machine-checkable field for it, and issue #485's Scope excludes rewriting DR bodies.
+// same convention the Python version's own test suite documented: no DR in the repository
+// carries a machine-checkable field for it, and issue #485's Scope excludes rewriting DR
+// bodies.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

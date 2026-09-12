@@ -5,21 +5,20 @@
 // Output: JSON array of {file, line_number, verdict, enforcer?} to stdout, one entry per
 // non-blank line across the always-loaded files, file order then line order.
 //
-// skills/ablate/scripts/enforcer_map.py を TypeScript へ移植したもの: DELETE_CANDIDATE、
-// ABLATION_RESIDUE、ENFORCER_TABLE、classify_line、classify_file、target_files、map_all、
-// main。定数名と関数名は enforcer_map.py が宣言したとおりに保つ。arms.ts、verdict.ts、
-// dr_gate.ts がこの同じディレクトリで保つのと同じ no-camelCase の規約。
+// このモジュールが置き換える Python 版の enforcer-map script を TypeScript へ移植したもの:
+// DELETE_CANDIDATE、ABLATION_RESIDUE、ENFORCER_TABLE、classify_line、classify_file、
+// target_files、map_all、main。定数名と関数名は Python 版が宣言したとおりに保つ。arms.ts、
+// verdict.ts、dr_gate.ts がこの同じディレクトリで保つのと同じ no-camelCase の規約。
 //
-// DELETE_CANDIDATE は ./verdict.ts から import せずローカルに宣言する: enforcer_map.py も
-// verdict.py を import しておらず、report.py:90 は enforcer_map 側と verdict 側の判定を
-// 共有 identity ではなく文字列値どうしの比較で突き合わせている。ローカル定数にすることで、
-// この移植の import グラフは元の Python module と同じ形を保つ。
+// DELETE_CANDIDATE は ./verdict.ts から import せずローカルに宣言する: Python 版も自身の
+// verdict module を import しておらず、report.ts の build_report は enforcer_map 側と
+// verdict 側の判定を共有 identity ではなく文字列値どうしの比較で突き合わせている。ローカル
+// 定数にすることで、この移植の import グラフは置き換えた Python module と同じ形を保つ。
 //
-// map_all は targetFiles の省略可能な上書き引数を持つ: enforcer_map_test.py は
-// unittest.mock.patch.object で target_files / harness_elements の結果を偽物に差し替えて
-// おり、それは import 先 module 内の名前を re-bind する操作である。ESM の namespace
-// import は外側から同じ形で re-bind できないため、代わりに上書き値を明示的な引数として
-// 通す。
+// map_all は targetFiles の省略可能な上書き引数を持つ。enforcer-map.test.ts が固定の
+// ファイル一覧を直接差し替えて使う。ESM の namespace import は外側から名前を re-bind
+// できない -- Python の `unittest.mock.patch.object` が import 先 module 内の名前を
+// re-bind するのとは違う形 -- ため、代わりに上書き値を明示的な引数として通す。
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
@@ -39,7 +38,7 @@ const PROSE_LANGUAGE_ROW =
 // always-loaded な行の完全一致テキスト -> それを既に保証する enforcer。enforcer を
 // 確認できなかった規則は、誰も確認していないカバレッジとしてでっち上げるのではなく、
 // テーブルから外したままにする。そのため不在の行は ABLATION_RESIDUE として報告される。
-// enforcer_map.py の ENFORCER_TABLE をそのまま複製している。
+// Python 版の ENFORCER_TABLE をそのまま複製している。
 export const ENFORCER_TABLE: Record<string, string> = {
   // settings.json はこのガードを両方の木で PostToolUse Edit/Write フックとして登録して
   // おり、hooks/_lib/mirror_prose.ts の警告はこの違反そのものに対して "(MIRROR.md)" を
@@ -48,8 +47,8 @@ export const ENFORCER_TABLE: Record<string, string> = {
 };
 
 /** always-loaded なファイルの分類済みの行 1 件。`enforcer` は `verdict` が
- * DELETE_CANDIDATE のときだけ存在する。enforcer_map.py の classify_file がすべての
- * エントリに `null` を持たせるのではなくその分岐でだけキーを設定するのと同じ形。 */
+ * DELETE_CANDIDATE のときだけ存在する。Python 版の classify_file がすべての
+ * エントリに `null` を持たせるのではなくその分岐でだけキーを設定していたのと同じ形。 */
 export interface EnforcerMapEntry {
   file: string;
   line_number: number;
@@ -84,7 +83,7 @@ export function classify_file(root: string, rel_path: string): EnforcerMapEntry[
 }
 
 /** `root` のハーネスがすべてのセッションのコンテキストへ常に読み込むリポジトリルート
- * 相対パス。タプルとして持たず実行時に導出する理由は enforcer_map.py 自身の
+ * 相対パス。タプルとして持たず実行時に導出する理由は Python 版自身の
  * target_files と同じ。 */
 export function target_files(root: string): string[] {
   return enumerate_elements(root)
@@ -93,8 +92,8 @@ export function target_files(root: string): string[] {
 }
 
 /** always-loaded なファイル全体の非空行を、ファイル順・行順で分類する。`targetFiles` を
- * 渡すと `target_files(root)` によるスキャンの代わりに使われる -- enforcer_map_test.py が
- * unittest.mock.patch.object で行う差し替えに相当する。 */
+ * 渡すと `target_files(root)` によるスキャンの代わりに使われる -- enforcer-map.test.ts が
+ * 固定のファイル一覧に直接差し替えるのに使う。 */
 export function map_all(root: string, targetFiles?: readonly string[]): EnforcerMapEntry[] {
   const results: EnforcerMapEntry[] = [];
   for (const rel_path of targetFiles ?? target_files(root)) {

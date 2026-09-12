@@ -1,9 +1,7 @@
 /// <reference types="node" />
-// In-process tests for skills/ablate/scripts/arms.ts, replaying the observation table
-// skills/ablate/tests/arms_test.py drives against arms.py (arms.py stays live as report.py's
-// and usage_counts.py's import source through #646; see arms.ts's header). This unit runs the
-// assertions against the TypeScript side alone -- the dual-language name comparison lives in
-// the later arms-parity.test.ts unit, not here.
+// In-process tests for skills/ablate/scripts/arms.ts, replaying the observation table the
+// Python version's own test suite drove against it. This unit runs the assertions against the
+// TypeScript side alone.
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -39,8 +37,8 @@ test("T-335 the run count and the pass threshold come back as the numbers the py
 });
 
 test("T-336 the arm-building functions return the same shape the python cases expect for each arm", () => {
-  // wiped restricts settings loading to the project source alone (arms.py's arm_command
-  // docstring).
+  // wiped restricts settings loading to the project source alone (the Python version's
+  // arm_command docstring).
   const wipedCommand = arm_command(WIPED);
   assert.deepEqual(wipedCommand, [...BASE_COMMAND, "--setting-sources", "project"]);
 

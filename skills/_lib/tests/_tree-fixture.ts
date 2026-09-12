@@ -1,50 +1,15 @@
 /// <reference types="node" />
-// Shared by the fixture-freeze-before-port tests for harness_elements.py, enforcer_map.py and
-// usage_counts.py (skills/_lib/tests/harness-elements-fixture.test.ts,
-// skills/ablate/tests/enforcer-map-fixture.test.ts,
-// skills/ablate/tests/usage-counts-fixture.test.ts): each spawns the real python3 CLI against a
-// constructed temp tree and compares its exit code and stdout against a frozen fixture case, per
-// docs/wiki/fixture-freeze-before-port.md. Mirrors workflows/_lib/tests/_cli-fixture.ts's
-// runCli/CliRun shape, for a python3 target instead of a node one.
+// Tree-fixture replay helpers shared by skills/_lib/tests/harness-elements.test.ts and
+// skills/ablate/tests/enforcer-map.test.ts: builds a temp tree from a frozen fixture case and
+// compares a run's exit code and stdout against it, per docs/wiki/fixture-freeze-before-port.md.
+//
+// The python3 runner this file used to carry retired with the scripts it launched: the same
+// frozen cases now replay against the .ts ports directly, so nothing here starts an interpreter.
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { CliRun } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-
-// An absolute interpreter path, so the cleared PATH below cannot change which python3 a frozen
-// case replays against. Resolved rather than written down: /opt/homebrew/bin/python3 is the
-// macOS path the hook shebangs carry, and CI runs ubuntu, where that path holds nothing and
-// spawnSync would answer `status: null` -- which a frozen case would then read as an exit code
-// that never matches. Asking python3 for sys.executable finds the same interpreter this repo's
-// own Python suite runs under, on either platform.
-const PYTHON3 = (() => {
-  const found = spawnSync("python3", ["-c", "import sys; print(sys.executable)"], {
-    encoding: "utf8",
-  });
-  const path = (found.stdout ?? "").trim();
-  assert.ok(path, `python3 must resolve to an interpreter path: ${found.stderr ?? found.error}`);
-  return path;
-})();
-
-export interface RunPythonCliOptions {
-  env?: Record<string, string>;
-}
-
-/** Runs `scriptPath` under python3 with `argv`, PATH cleared so the process cannot lean on
- * anything found via the ambient PATH -- the same isolation runCli gives a node CLI. */
-export function runPythonCli(
-  scriptPath: string,
-  argv: readonly string[],
-  options: RunPythonCliOptions = {},
-): CliRun {
-  const result = spawnSync(PYTHON3, [scriptPath, ...argv], {
-    encoding: "utf8",
-    env: { PATH: "", ...options.env },
-  });
-  return { status: result.status, stdout: result.stdout, stderr: result.stderr };
-}
 
 /** Writes `files` (relative path -> content, directories implied by "/" in the key) under a
  * fresh temp directory prefixed `prefix`, returning that directory's absolute path. */
@@ -81,9 +46,8 @@ export function loadTreeFixtures(path: string): TreeFixtureCase[] {
 /** Runs every case in `cases` against `run`: builds a fresh `treePrefix`-named temp tree from
  * the case's `files`, substitutes ROOT_PLACEHOLDER for that tree's own root in both the argv and
  * the expected stdout, and asserts the run's exit code and stdout match -- the loop
- * harness-elements-fixture.test.ts, harness-elements.test.ts, enforcer-map-fixture.test.ts,
- * enforcer-map.test.ts and usage-counts-fixture.test.ts each ran by hand before this collapsed
- * it to one place. The tree is removed afterward whether the assertion passes or throws. `run`
+ * harness-elements.test.ts and enforcer-map.test.ts each ran by hand before this collapsed it to
+ * one place. The tree is removed afterward whether the assertion passes or throws. `run`
  * receives the tree's root alongside argv, for a caller (harness-elements.test.ts's and
  * enforcer-map.test.ts's .ts-CLI replay) that also runs the CLI with that root as its HOME. */
 export function replayTreeFixtures(
