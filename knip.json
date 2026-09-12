@@ -33,6 +33,8 @@
     "hooks/_lib/hook_payload.ts",
     "hooks/_lib/mirror_prose.ts",
     "hooks/lifecycle/recall_index.ts",
+    "hooks/post-bash/scribe_prompt.ts",
+    "hooks/integrations/amphetamine_agent_session.ts",
     "hooks/edit/rust_pre_edit.ts",
     "hooks/edit/rust_post_edit.ts",
     "hooks/edit/textlint_fix.ts",
@@ -66,7 +68,7 @@
     "tests/**/*.{js,ts}",
     "agents/**/*.{js,ts}"
   ],
-  "ignoreBinaries": ["codex", "markdownlint-cli2", "rumdl"],
+  "ignoreBinaries": ["codex", "markdownlint-cli2", "rumdl", "osascript"],
   "ignoreDependencies": ["oxfmt", "^@?textlint"],
   "ignoreFiles": [
     "workflows/tests/fixtures/**",

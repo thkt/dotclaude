@@ -41,7 +41,7 @@ jobs:
         with:
           node-version: 24
 
-      # gh ships on the runner image but not at the path scribe_trigger.py's DEFAULT_GH
+      # gh ships on the runner image but not at the path scribe_trigger.ts's DEFAULT_GH
       # falls back to (a macOS Homebrew path), so resolve the runner's own binary here.
       - name: Determine whether scribe has new input
         id: gate

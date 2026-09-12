@@ -200,7 +200,7 @@ class TranscriptSummary(unittest.TestCase):
                 [
                     _fire(
                         event="PostToolUse",
-                        command="~/.claude/hooks/post-bash/scribe_prompt.py",
+                        command="~/.claude/hooks/post-bash/scribe_prompt.ts",
                         timestamp="2026-08-10T00:00:00.000Z",
                     )
                 ],

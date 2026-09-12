@@ -53,7 +53,7 @@ The directory is the unit of responsibility. The runner column names who reads t
 
 ### Input and output
 
-A hook reads a JSON payload from stdin and writes JSON, or text destined for additionalContext, to stdout. Every hook exits 0. A non-zero status is a broken hook rather than a designed result, and `checked` in `hooks/_lib/hook_harness.py` raises AssertionError on it. That check covers the 12 Python hooks started through the harness; the 2 shell hooks are tested through their own scripts, which read the result alone.
+A hook reads a JSON payload from stdin and writes JSON, or text destined for additionalContext, to stdout. Every hook exits 0. A non-zero status is a broken hook rather than a designed result, and `checked` in `hooks/_lib/tests/_hook-harness.ts` throws on it, failing the test. Every hook's test goes through that check; the shell hooks are tested through their own scripts, which read the result alone.
 
 A hook that stops a call goes through `hook_payload.deny` and emits the same envelope. `permissionDecision` takes exactly four values: `allow`, `deny`, `ask`, `defer`. Anything else fails schema validation, and the gate then passes the call silently while stopping nothing.
 
@@ -87,13 +87,13 @@ The order below is the registration order in `settings.json`. Within one matcher
 | PostToolUse       | `Write\|Edit`      | `formatter`                                     | none               | 30      |
 | PostToolUse       | `Write\|Edit`      | `gates`                                         | none               | 120     |
 | PostToolUse       | `Bash`             | `gates changed`                                 | none               | 120     |
-| PostToolUse       | `*`                | `integrations/amphetamine_agent_session.py background` | none         | 15      |
+| PostToolUse       | `*`                | `integrations/amphetamine_agent_session.ts background` | none         | 15      |
 | SessionStart      | `*`                | `lifecycle/recall_index.ts`                     | none               | 60      |
 | SessionStart      | `*`                | `herdr-agent-state.sh session`                  | none               | 10      |
-| UserPromptSubmit  | none               | `integrations/amphetamine_agent_session.py acquire` | none           | 15      |
+| UserPromptSubmit  | none               | `integrations/amphetamine_agent_session.ts acquire` | none           | 15      |
 | UserPromptSubmit  | none               | `codegraph prompt-hook`                         | none               | 10      |
 | Stop              | none               | `lifecycle/failure-alert.sh stop`               | none               | 60      |
-| Stop              | none               | `integrations/amphetamine_agent_session.py release` | none           | 15      |
+| Stop              | none               | `integrations/amphetamine_agent_session.ts release` | none           | 15      |
 | StopFailure       | none               | `lifecycle/failure-alert.sh fail`               | none               | 60      |
 
 ### Per-hook decision and failure mode
@@ -113,7 +113,7 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | `rust_post_edit.ts`             | Write / Edit (`*.rs`)   | Runs `cargo fmt`, then clippy again, and returns the findings     | advisory     |
 | `textlint_fix.ts`               | Write / Edit (`*.md`)   | Auto-fixes a Markdown file that passes the Japanese check         | advisory     |
 | `mirror_prose_guard.ts`         | Write / Edit (`.ja/**`) | Warns about a `.ja/` file with no Japanese character. Never blocks | advisory    |
-| `amphetamine_agent_session.py`  | UserPromptSubmit / PostToolUse / Stop | Holds the Mac awake through a reference count per session_id | fail-open |
+| `amphetamine_agent_session.ts`  | UserPromptSubmit / PostToolUse / Stop | Holds the Mac awake through a reference count per session_id | fail-open |
 | `recall_index.ts`               | SessionStart            | Catches recall's cross-session index up in the background         | fail-open    |
 | `failure-alert.sh`              | Stop / StopFailure      | Sounds a turn that ended as anything but `end_turn`. Subagents are out of scope | fail-open |
 | `statusline.sh`                 | `statusLine` key        | Renders the model name and usage. Partial display is accepted. It is registered under the top-level `statusLine` key, not in the `hooks` map | fail-open |
@@ -123,14 +123,13 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 
 | Module             | Knowledge it owns                                               |
 | ------------------ | --------------------------------------------------------------- |
-| `command_scan.py`  | Which token on a Bash line sits in command position, after stripping wrappers and assignments |
+| `command_scan.ts`  | Which token on a Bash line sits in command position, after stripping wrappers and assignments |
 | `gh_filing.ts`     | The body-flag spellings of `gh issue create` / `gh pr create`    |
 | `hook_payload.py`  | Typed payload reads and the deny envelope                        |
 | `japanese.py`      | Japanese detection and its threshold                             |
 | `mirror_prose.ts`  | Detection of a `.ja/` file whose Japanese is gone                |
 | `rust_target.ts`   | Cargo workspace root resolution and clippy output shaping        |
 | `textlint.ts`      | textlint config resolution and invocation                       |
-| `hook_harness.py`  | Hook invocation from tests, with the exit status checked         |
 
 ## Skill contract
 

@@ -50,10 +50,10 @@ for that group (`rust-edit.test.ts` covers the pre/post pair plus `_lib/rust_tar
 
 | Kind        | Shape                 | Example                     |
 | ----------- | --------------------- | --------------------------- |
-| Python hook | `<target>_<op>.py`    | `scribe_prompt.py`          |
+| Python hook | `<target>_<op>.py`    | none remain (all ported to TypeScript) |
 | shell hook  | `<target>-<op>.sh`    | `failure-alert.sh`          |
-| _lib module | `<noun>.py`           | `command_scan.py`           |
-| Python test | `<hook name>_test.py` | `scribe_prompt_test.py`     |
+| _lib module | `<noun>.py`           | `japanese.py`                |
+| Python test | `<hook name>_test.py` | `japanese_test.py`          |
 | shell test  | `<hook name>.test.sh` | `failure-alert.test.sh`     |
 
 ## Narrowing the work
@@ -130,7 +130,7 @@ Hooks driving an app outside Claude Code. Each one exits 0 when the app it targe
 
 | Hook                         | Trigger                             | Failure Mode | Purpose                                                     |
 | ---------------------------- | ----------------------------------- | ------------ | ----------------------------------------------------------- |
-| amphetamine_agent_session.py | UserPromptSubmit, PostToolUse, Stop | fail-closed  | Hold macOS awake while a turn runs, release it when it ends |
+| amphetamine_agent_session.ts | UserPromptSubmit, PostToolUse, Stop | fail-closed  | Hold macOS awake while a turn runs, release it when it ends |
 
 ### _lib/
 
@@ -140,9 +140,9 @@ take, the second takes the mirror alone as its subject.
 
 | Module          | Used by                                                        |
 | --------------- | -------------------------------------------------------------- |
-| command_scan.py | issue_body_gate, body_proofread, and the three security hooks  |
+| command_scan.ts | issue_body_gate, body_proofread, and the three security hooks  |
 | gh_filing.ts    | issue_body_gate, body_proofread                                |
-| hook_payload.py | body_proofread, scribe_prompt, and the hooks still on Python   |
+| hook_payload.py | none remain; the module is residue a later slice removes        |
 | hook_payload.ts | mirror_prose, rust_target, recall_index, and the four edit hooks |
 | mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                      |
 | japanese.py     | body_proofread                                                  |

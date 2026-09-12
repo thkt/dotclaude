@@ -19,7 +19,7 @@ scenes: []
 ## 参照コード
 
 - `settings.json` の `hooks`（session start に読まれる登録）
-- `hooks/post-bash/scribe_prompt.py`（標準入力に payload を渡せば単体で動く形）
+- `hooks/post-bash/scribe_prompt.ts`（標準入力に payload を渡せば単体で動く形）
 
 ## 根拠
 
