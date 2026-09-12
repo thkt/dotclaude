@@ -449,8 +449,7 @@ const PLAN_SCHEMA = obj(
 
 // Coupled with /think Phase 3's unit-size guidance; change both sides together. A seam unit's
 // tests cross unit boundaries, so only non-seam units are checked.
-// Canonical here. skills/think/SKILL.md restates these and unit-caps-ssot.test.js fails on drift;
-// .agents/skills/build/scripts/validate-plan.ts is out of any test's reach and is changed by hand.
+// Canonical here. skills/think/SKILL.md restates these and unit-caps-ssot.test.js fails on drift.
 const UNIT_CAPS = { files: 3, tests: 4 };
 const oversizedUnits = (p) =>
   p.units.filter((u) => {

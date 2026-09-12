@@ -51,5 +51,5 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。コードが見�
 | ------------ | ----------------------------------------------------------------------------------------------- |
 | Prefix       | SF                                                                                              |
 | カテゴリ     | catch / promise / async / ui-feedback / fallback                                                |
-| Severity     | critical / high / medium / low                                                                  |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | error_propagation または pattern_search。このエラーはユーザーに可視化されるかサイレントのままか |

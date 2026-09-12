@@ -3,7 +3,7 @@
 // spawned here, so nothing in this file reaches the network.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, symlinkSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -147,11 +147,42 @@ test("pruneNulls descends into array items", () => {
 });
 
 test("strictify and pruneNulls round-trip a response back to the shape the script expects", () => {
-  strictify(FETCH_SCHEMA);
-  assert.deepEqual(pruneNulls({ found: false, body: "", title: null }, FETCH_SCHEMA), {
-    found: false,
-    body: "",
-  });
+  const strict = strictify(FETCH_SCHEMA);
+  // strict marks title nullable because FETCH_SCHEMA's own required list leaves it optional:
+  // a compliant strict-mode response fills it with null, which pruneNulls must then drop
+  // against the original schema to land back on the shape the script expects.
+  assert.deepEqual(
+    pruneNulls(
+      { found: false, body: "", title: strict.properties.title.anyOf ? null : "unreachable" },
+      FETCH_SCHEMA,
+    ),
+    { found: false, body: "" },
+  );
+});
+
+// T-433: the test above calls itself a round trip but never reads what strictify returned, so
+// it duplicates "pruneNulls drops a null standing for a property the original left optional"
+// without proving the two functions compose. This pins that the round-trip test's own source
+// captures strictify's return value and threads that same value into the pruneNulls call.
+test("the round-trip check fails when strictify's output is discarded, which the current shape does not", () => {
+  const source = readFileSync(fileURLToPath(import.meta.url), "utf8");
+  const marker =
+    'test("strictify and pruneNulls round-trip a response back to the shape the script expects"';
+  const start = source.indexOf(marker);
+  assert.ok(start >= 0, "the round-trip test is missing from this file");
+  const bodyStart = source.indexOf("=> {", start) + "=> {".length;
+  const bodyEnd = source.indexOf("\n});", bodyStart);
+  const body = source.slice(bodyStart, bodyEnd);
+
+  const captured = body.match(/const\s+(\w+)\s*=\s*strictify\(/);
+  assert.ok(
+    captured,
+    "the round-trip test calls strictify but discards its return value instead of capturing it",
+  );
+  assert.ok(
+    new RegExp(`pruneNulls\\([^;]*\\b${captured[1]}\\b`).test(body),
+    `pruneNulls in the round-trip test never reads ${captured?.[1]}, so strictify's output still never reaches it`,
+  );
 });
 
 test("loadAgent gives general-purpose no preamble and the write sandbox", () => {

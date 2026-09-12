@@ -7,7 +7,7 @@
 // inside a string value stay balanced, so the scan still lands on the real closing brace).
 import assert from "node:assert/strict";
 import test from "node:test";
-import { extractBracedBody } from "./_brace.ts";
+import { extractBracedBody, parseStringArrayConst } from "./_brace.ts";
 
 test("T-048 extractBracedBody returns null when the brace opened after the marker never closes", () => {
   const source = 'const meta = { "name": "audit", "phases": [';
@@ -20,4 +20,20 @@ test("T-049 extractBracedBody returns the inner text of a balanced literal whose
     extractBracedBody(source, "const meta = {"),
     ' "description": "Workflow({name:\'audit\'})" ',
   );
+});
+
+test("T-426 the shared scan returns the same end index for a brace pair and for a bracket pair, driven through the two existing call sites", () => {
+  const braceSource = 'const meta = { "outer": { "inner": 1 }, "after": "tail" };';
+  assert.strictEqual(
+    extractBracedBody(braceSource, "const meta = {"),
+    ' "outer": { "inner": 1 }, "after": "tail" ',
+  );
+
+  const bracketSource = 'const LIST = [ "a", ["nested"], "tail" ];';
+  assert.deepStrictEqual(parseStringArrayConst(bracketSource, "LIST"), ["a", "nested", "tail"]);
+});
+
+test("T-427 an unclosed pair returns the same not-found result for both delimiter kinds", () => {
+  assert.strictEqual(extractBracedBody('const meta = { "a": [', "const meta = {"), null);
+  assert.strictEqual(parseStringArrayConst('const LIST = [ "a", "b"', "LIST"), null);
 });

@@ -84,7 +84,12 @@
 - Python の Path.is_file() は壊れたシンボリックリンクの OSError を握って False を返すが、Node の statSync は例外を投げてクラッシュする #675
 - Node の Dirent.isFile() はシンボリックリンクを辿らずファイル一覧から落とすが、Python の os.walk はシンボリックリンクのファイルを辿って一覧に含める #675
 - 退役対象ファイルの consumer 一覧は、Plan の手作業列挙だと機械的な grep 網羅より見落としやすい #675
-- TS 移植で Node の existsSync はディレクトリにも true を返すため、Python の Path.is_file() が担っていたファイル種別チェックを個別に書かないとガードを素通りしてクラッシュする #679
+- パリティテストが export の名前集合だけを比較し値を比較しないと、実装のロジックが変わっても検出できない #690
+- Python の非公開 helper (先頭アンダースコア) をそのまま TS へ複製すると、名前だけを比較するパリティテストの対象外 (アンダースコア接頭辞除外) になり、値の相違が検出されない #690
+- テスト専用の共有ヘルパーファイルはファイル名先頭にアンダースコアを付ける命名規約があるが、新規追加時に踏襲されないことがある #690
+- リポジトリ全体を歩く既存の Python 回帰テストを隔離 temp fixture の TS 版へ移植すると、実チェックアウトに対する回帰検出が失われる #691
+- knip の entry は import されない CLI 入口だけでなく、まだどの消費者も import していない named export を持つ library ファイルにも要る。無いとその export が unused export として検出される #691
+- worktree 内でツール管理コマンド (mise 等) が warning 行を stdout の先頭に書くため、JSON.parse(stdout) で全体を parse すると gate report が壊れて読めなくなる。開き括弧だけの行から parse をやり直すと復旧する #689
 
 ## 棄却
 

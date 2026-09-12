@@ -63,6 +63,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。範囲にコー�
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Prefix       | REUSE                                                                                                                                          |
 | カテゴリ     | utility / pattern / inline / unused_import / stdlib / native / dependency                                                                                   |
-| Severity     | critical / high / medium / low                                                                                                                            |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Disposition  | reviewer によるデフォルトの上書き。上書き時は disposition_reason を伴う。詳細は ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-disposition.md § Disposition を参照 |
 | Verification | pattern_search。既存ユーティリティが新規コードのすべてのエッジケースを網羅するか                                                               |

@@ -60,5 +60,5 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。コードが範�
 | ------------ | ------------------------------------------------------------------------------------------- |
 | Prefix       | OPS                                                                                         |
 | カテゴリ     | error-boundary / loading-state / logging / performance                                      |
-| Severity     | critical / high / medium / low                                                              |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | pattern_search または call_site_check。このコンポーネントはユーザー向けか、重要経路にあるか |

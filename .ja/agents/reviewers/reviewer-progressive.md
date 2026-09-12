@@ -48,6 +48,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。JS が範囲に�
 | ------------ | --------------------------------------------------------------------------------------------- |
 | Prefix       | PE                                                                                            |
 | カテゴリ     | layout / animation / event / style / toggle                                                   |
-| Severity     | critical / high / medium / low                                                                           |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | pattern_search。この JS パターンは他のコンポーネントでも使われているか                        |
 | 必須         | 各 recommendation は独立した finding とし、location、変更、効果、ブラウザ対応を fix に書く   |
