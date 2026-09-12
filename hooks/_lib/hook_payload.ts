@@ -9,6 +9,21 @@
 // `unknown`, which a caller has to narrow before using -- the same contract hook_payload.py's
 // docstring states for `object`.
 
+import { readFileSync } from "node:fs";
+
+/** The payload on stdin, empty when there is none.
+ *
+ * A closed stdin (no pipe, a TTY with nothing typed) can make a synchronous fd-0 read throw
+ * rather than return "". Python's `sys.stdin.read()` answers "" there, so a hook ported from
+ * the Python side has to read it as empty too rather than let the throw exit it non-zero. */
+export function readStdin(): string {
+  try {
+    return readFileSync(0, "utf8");
+  } catch {
+    return "";
+  }
+}
+
 /** A JSON object, or null for an array, a scalar, or null itself. */
 function mapping(value: unknown): Record<string, unknown> | null {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {

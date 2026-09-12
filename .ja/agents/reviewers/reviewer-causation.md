@@ -64,6 +64,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。コードが範�
 | ------------ | -------------------------------------------------------------------------------------- |
 | Prefix       | RC                                                                                     |
 | カテゴリ     | symptom / state-sync / race / workaround                                               |
-| Severity     | critical / high / medium / low                                                         |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | execution_trace または pattern_search。その根本原因は本当に記述された症状を生み出すか  |
 | 必須         | five_whys (観測可能な事実から根本原因への 5 ステップの連鎖。evidence に付記)、root_cause (本質的な問題。reasoning に書く)。呼び出し元の schema に追加キーは無い |

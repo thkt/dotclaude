@@ -5,16 +5,16 @@
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and docs in one
 // change, then confirm zero residual references across git ls-files. The walk itself is
-// offendersAmong (workflows/_lib/tests/_retirement.ts), shared with record-retirement.test.ts
-// and ts-harness-retirement.test.ts, so the historical-directory exclusions it applies
-// (docs/decisions/ and .claude/workspace/research/, kept as historical record by that same
-// procedure) live in one place rather than a copy per test file.
+// assertNoResidualReferences (workflows/_lib/tests/_retirement.ts), shared with
+// record-retirement.test.ts and ts-harness-retirement.test.ts, so the historical-directory
+// exclusions it applies (docs/decisions/ and .claude/workspace/research/, kept as historical
+// record by that same procedure) live in one place rather than a copy per test file.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "./_retirement.ts";
+import { assertDetectsAndMisses, assertNoResidualReferences } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
@@ -30,22 +30,20 @@ function referencesRetiredPath(content: string): boolean {
 }
 
 test("T-014 no tracked file references _lib/gate.py", () => {
-  assertDetectsAndMisses(referencesRetiredPath, RETIRED_PATH);
+  // The fixture is a hand-typed literal, not a reference to RETIRED_PATH: a typo in the
+  // constant must not flow into the fixture the positive control is checked against
+  // (docs/wiki/absence-test-positive-control-fixture.md item 4).
+  assertDetectsAndMisses(referencesRetiredPath, "_lib/gate.py");
 
   // This test's own file names RETIRED_PATH to describe what it checks, so it is passed as an
   // extra exclusion; the historical directories (docs/decisions/, .claude/workspace/research/)
-  // are offendersAmong's own default, not repeated here.
-  const offenders = offendersAmong(
-    trackedFiles(REPO_ROOT),
+  // are assertNoResidualReferences's own default, not repeated here.
+  assertNoResidualReferences(
+    REPO_ROOT,
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
     referencesRetiredPath,
+    RETIRED_PATH,
     [SELF_PATH],
-  );
-  assert.deepEqual(
-    offenders,
-    [],
-    `files still naming ${RETIRED_PATH} (docs/decisions/ and .claude/workspace/research/ are ` +
-      `kept as history, not counted): ${offenders.join(", ")}`,
   );
 });
 

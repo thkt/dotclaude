@@ -6,17 +6,20 @@
 // in-process import (`from find_wiki_rule import ...`, `from triage import ...`) of a module
 // that no longer exists as Python, so the connection they check can now only run in-process in
 // TypeScript. Reuses the shared git() shape skills/scribe/tests/verify-run.test.ts's own git()
-// helper gives its callers, for the same real temp-repo commit sequence T-235 replays.
+// helper gives its callers, for the same real temp-repo commit sequence T-235 replays. The
+// temp repository itself, and the GIT_ENV identity git() runs commits under, both come from
+// workflows/_lib/tests/_git-repo.ts's withTempRepo -- the same disposable-repo helper
+// verify-run.test.ts and workflows/assert/tests/worktree.test.ts share.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { find, readScenes, SCENES } from "../scripts/find_wiki_rule.ts";
 import { merge, readStore, triage, type Triaged } from "../scripts/triage.ts";
 import { verify, type TriageReport } from "../scripts/verify_run.ts";
+import { GIT_ENV, gcAutoValue, withTempRepo } from "../../../workflows/_lib/tests/_git-repo.ts";
 
 // skills/scribe/tests -> skills/scribe -> skills -> repo root, the same climb
 // skills/scribe/tests/find-wiki-rule.test.ts's own REPO_ROOT constant makes.
@@ -58,14 +61,6 @@ test("T-234 a --scene issue-close query over docs/wiki returns exactly the five 
   );
 });
 
-const GIT_ENV: Record<string, string> = {
-  ...(process.env as Record<string, string>),
-  GIT_AUTHOR_NAME: "scribe-test",
-  GIT_AUTHOR_EMAIL: "scribe-test@example.com",
-  GIT_COMMITTER_NAME: "scribe-test",
-  GIT_COMMITTER_EMAIL: "scribe-test@example.com",
-};
-
 /** Runs a real `git` command against `repo`, throwing on a non-zero exit -- the same shape
  * skills/scribe/tests/verify-run.test.ts's own git() gives its callers. */
 function git(repo: string, ...args: string[]): void {
@@ -91,9 +86,7 @@ test(
     "verify_run.ts return ok true, and one commit fewer makes it false",
   () => {
     const names = Array.from({ length: 7 }, (_, i) => `item${i}`);
-    const tmp = mkdtempSync(join(tmpdir(), "scripts-contract-"));
-    try {
-      const repo = join(tmp, "worktree");
+    withTempRepo((repo) => {
       const wiki = join(repo, "docs", "wiki");
       const candidates = join(wiki, "_candidates.md");
       mkdirSync(wiki, { recursive: true });
@@ -104,7 +97,6 @@ test(
       const commits = report.commits;
       assert.ok(commits.length > 0, "triage splits 7 qualifying patterns into 2+ commits");
 
-      git(repo, "init", "-q");
       git(repo, "add", "-A");
       git(repo, "commit", "-q", "-m", "chore: seed candidates");
       writeFileSync(join(wiki, "an-earlier-page.md"), "# earlier\n");
@@ -133,8 +125,16 @@ test(
       const shiftedReport: TriageReport = { commits: shiftedCommits, deferred: report.deferred };
       const shifted = verify(repo, shiftedReport, base);
       assert.equal(shifted.ok, false);
-    } finally {
-      rmSync(tmp, { recursive: true, force: true });
-    }
+    });
+  },
+);
+
+test(
+  "T-419 verify-run, scripts-contract and worktree each create their repositories through the " +
+    "helper, asserted by the gc.auto value those repositories report",
+  () => {
+    withTempRepo((repo) => {
+      assert.equal(gcAutoValue(repo), "0");
+    });
   },
 );

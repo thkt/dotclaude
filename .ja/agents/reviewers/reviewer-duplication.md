@@ -68,5 +68,5 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。コードが範�
 | ------------ | ----------------------------------------------------------------- |
 | Prefix       | DRY                                                               |
 | カテゴリ     | exact / near-duplicate / pattern / reimplementation / arg-variant |
-| Severity     | critical / high / medium / low                                               |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | pattern_search。発見された以外にもさらに出現があるか              |

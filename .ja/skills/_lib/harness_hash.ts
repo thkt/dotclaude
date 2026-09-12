@@ -2,10 +2,10 @@
 /// <reference types="node" />
 // Usage: harness_hash.ts <skill-name>
 //
-// harness_hash.py の TypeScript 移植を段階的に進める最初のユニット。今回運ぶのは
-// (name, content) の組の一覧を内容アドレス化する digest プリミティブのみ。digest() は
-// harness_hash.py の _digest の TS 版で、gate.ts が自分の純関数 (tail, classifyObservation,
-// ...) に使っているのと同じ形 -- 素直な named export にして in-process でテストする。
+// harness_hash.py の TypeScript 移植。digest() は (name, content) の組の一覧を内容アドレス化
+// する digest プリミティブで、harness_hash.py の _digest の TS 版 -- 素直な named export にして
+// in-process でテストする形は gate.ts が自分の純関数 (tail, classifyObservation, ...) に
+// 使っているのと同じ。残りはパスヘルパー、corpus のハッシュ化、CLI エントリポイントを移植する。
 //
 // 到着順でなく名前でソートする。ディレクトリを読む順序が機械ごとに違うと、同じ corpus が
 // 別のハッシュになってしまうため。各組は name、`\0`、content、`\0` の順に update する。

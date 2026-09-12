@@ -94,5 +94,5 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。行き詰まり�
 | ------------ | ------------------------------------------------------------------------ |
 | Prefix       | RU                                                                       |
 | カテゴリ     | RU1-RU8 (idiom / error / lifetime / trait / async / unsafe / type / api) |
-| Severity     | critical / high / medium / low                                           |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | pattern_search または call_site_check。clippy やコンパイルによる裏取りは evidence に書く |

@@ -18,8 +18,8 @@ export const meta = {
 //    critic-audit / critic-evidence を通過済みなので、assert の Challenge は Codex findings のみ。
 // 2. gate は (build, tests, issues) から schema + script の規則で計算し、enhancer の散文から
 //    decode しない。
-// 3. worktree.ts / bootstrap.ts は決定論 script で、生成と cleanup は $CLAUDE_SESSION_ID から
-//    同じ branch / path を導く。
+// 3. worktree.ts / bootstrap.ts は決定論 script。Bootstrap は $CLAUDE_SESSION_ID から branch /
+//    path を一度だけ導き、Cleanup は再導出せず boot.worktree_path を使い回す。
 // 4. adversarial (codex 600s) は Evidence と同時に始め、Challenge / Triage の裏で走らせる。
 //    barrier に入れると最長 stage が全体を塞ぐ。
 // OUTCOME.md 不在時に stub は生成しない。assert は対象 repo への書き込み副作用を持たない。不在は
@@ -673,18 +673,28 @@ try {
   }
 } finally {
   // ---- Cleanup: worktree 撤去 (結果に関わらず必ず走る) ----
+  // 撤去先は script 自身が解決し、agent の裁量に委ねない。$CLAUDE_SESSION_ID は Cleanup の
+  // agent step 自身が shell 展開しなければならない変数であり、それが unset や不整合な環境では
+  // agent がどれだけ従順でも worktree が残る。boot.worktree_path は Bootstrap の時点で既に
+  // 判明している (worktree.ts の create() 自身が同じ session id から導いた値) ので、ここから
+  // id を復元し、agent には literal な値として渡す。
   phase("Cleanup");
-  await agent(
-    anchor(
-      `assert の Cleanup 段階を担当する。node ${SCRIPTS}/worktree.ts --cleanup "$CLAUDE_SESSION_ID" で assert 用 worktree を撤去する。失敗しても warning として報告するだけでよい (best-effort)。他のファイルに触れない。`,
-    ),
-    {
-      agentType: "general-purpose",
-      phase: "Cleanup",
-      label: "cleanup",
-      model: "sonnet",
-    },
+  const worktreeIdMatch = /^\.claude\/worktrees\/assert-(.+)$/.exec(
+    String(boot.worktree_path || ""),
   );
+  if (worktreeIdMatch) {
+    await agent(
+      anchor(
+        `assert の Cleanup 段階を担当する。node ${SCRIPTS}/worktree.ts --cleanup "${worktreeIdMatch[1]}" で ${boot.worktree_path} の assert 用 worktree を撤去する。他のファイルに触れない。`,
+      ),
+      {
+        agentType: "general-purpose",
+        phase: "Cleanup",
+        label: "cleanup",
+        model: "sonnet",
+      },
+    );
+  }
   // finally に置く (try 直後ではない) のは、try 内の throw でも行を残すため。finally block は
   // throw が workflow の外へ伝播する前に走る。
   await recordRun();

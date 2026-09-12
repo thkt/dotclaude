@@ -69,6 +69,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。上の低いバ�
 | ------------ | ----------------------------------------------------------------------------------------------- |
 | Prefix       | SEC                                                                                             |
 | カテゴリ     | A01-A10, LLM01                                                                                         |
-| Severity     | critical / high / medium                                                                        |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照。このレビュアーは low を付けない |
 | Verification | execution_trace、call_site_check、または pattern_search。悪用可能性を確認するために検証する内容 |
 | Extra        | execution_trace 用の entry_points は verification の文中に `file:line` で書く。呼び出し元の schema に追加キーは無い                                   |
