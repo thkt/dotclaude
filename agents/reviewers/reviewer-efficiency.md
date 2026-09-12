@@ -63,6 +63,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no code is in r
 | ------------ | --------------------------------------------------------------------------------- |
 | Prefix       | EFF                                                                               |
 | Categories   | unnecessary_work / missed_concurrency / hot_path / toctou / memory / overly_broad |
-| Severity     | critical / high / medium / low                                                               |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | hotpath_analysis. Name the path frequency and the work the fix saves              |
 | Extra        | path_frequency (hot/warm/cold) in reasoning                                       |

@@ -60,5 +60,5 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no code is in r
 | ------------ | --------------------------------------------------------------------------------------- |
 | Prefix       | OPS                                                                                     |
 | Categories   | error-boundary / loading-state / logging / performance                                  |
-| Severity     | critical / high / medium / low                                                          |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | pattern_search or call_site_check. Is this component user-facing or in a critical path? |

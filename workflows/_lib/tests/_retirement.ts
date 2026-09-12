@@ -82,3 +82,24 @@ export function assertDetectsAndMisses(
     `positive control (${retiredName}): the same line goes undetected once the cue is removed`,
   );
 }
+
+/** Runs one retirement test's full body: scans `trackedFiles(repoRoot)` with `offendersAmong`
+ * under `extraExclusions`, and asserts the result is empty. `retiredLabel` names the retired
+ * path in the failure message. Consolidates the offendersAmong-call-plus-assert.deepEqual glue
+ * that gate-retirement.test.ts and ts-harness-retirement.test.ts each still repeat once per
+ * retired path. */
+export function assertNoResidualReferences(
+  repoRoot: string,
+  read: (path: string) => string,
+  matches: (content: string, path: string) => boolean,
+  retiredLabel: string,
+  extraExclusions: string[],
+): void {
+  const offenders = offendersAmong(trackedFiles(repoRoot), read, matches, extraExclusions);
+  assert.deepEqual(
+    offenders,
+    [],
+    `files still naming ${retiredLabel} (docs/decisions/ and .claude/workspace/research/ are ` +
+      `kept as history, not counted): ${offenders.join(", ")}`,
+  );
+}

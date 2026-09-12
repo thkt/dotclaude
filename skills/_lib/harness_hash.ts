@@ -2,10 +2,11 @@
 /// <reference types="node" />
 // Usage: harness_hash.ts <skill-name>
 //
-// TypeScript port of harness_hash.py, landing incrementally: this unit carries only the
-// digest primitive that content-addresses a list of (name, content) pairs. digest() is the
-// TS mirror of harness_hash.py's _digest -- exported plainly and tested in-process, the same
-// shape gate.ts uses for its own pure functions (tail, classifyObservation, ...).
+// TypeScript port of harness_hash.py. digest() is the digest primitive that content-addresses
+// a list of (name, content) pairs -- the TS mirror of harness_hash.py's _digest, exported
+// plainly and tested in-process, the same shape gate.ts uses for its own pure functions
+// (tail, classifyObservation, ...). The rest of the file ports harness_hash.py's path helpers,
+// corpus hashing, and CLI entry point.
 //
 // Sorted by name, not by arrival order: the same corpus would digest differently between
 // machines that read a directory in different orders. Each pair updates name, then a `\0`,

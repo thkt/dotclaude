@@ -48,6 +48,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no JS is in ran
 | ------------ | ----------------------------------------------------------------------------------- |
 | Prefix       | PE                                                                                  |
 | Categories   | layout / animation / event / style / toggle                                         |
-| Severity     | critical / high / medium / low                                                                 |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | pattern_search. Is this JS pattern used in other components too?                    |
 | Required     | Each recommendation is its own finding, with location, change, impact, and browser support in fix |

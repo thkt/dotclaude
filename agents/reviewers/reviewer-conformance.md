@@ -10,6 +10,8 @@ background: true
 
 Decide whether the implemented diff faithfully meets the originating issue or spec. Report three categories (missing, scope_creep, wrong), each with the backing spec line quoted.
 
+When a path below still begins with `${`, the harness left the variable unexpanded; read the same path under `~/.claude/` instead.
+
 ## Posture
 
 - This is the Spec axis of a two-axis review. Code can conform to every quality standard yet implement the wrong thing, and the reverse. So Spec-axis findings stay separate from quality/standards findings: a consumer must not merge or rerank them. The separation exists to stop one axis from masking the other
@@ -51,11 +53,13 @@ Check the diff from the fixed point to `HEAD` against the spec in three categori
 
 Return the fields below as structured output. If the diff is empty, return spec_found = true with no findings and say "no changes to review" in the first finding's detail only when the caller asks for prose. If the fixed point does not resolve, report the fixed point and stop, without proceeding to an empty match. Name the worst finding within the axis in the first finding's detail. Do not pick a single winner across axes; that is the reranking the separation prevents.
 
+Within severity's enum, high defeats an acceptance criterion, medium diverges while the main flow still works, and low is wording or a minor gap.
+
 | Field                | Type    | Value                                                                                                         |
 | -------------------- | ------- | ------------------------------------------------------------------------------------------------------------- |
 | spec_found           | boolean | true when a spec to conform against was found and reviewed                                                    |
 | findings[].category  | enum    | missing / scope_creep / wrong                                                                                 |
-| findings[].severity  | enum    | high (defeats an acceptance criterion) / medium (diverges while the main flow works) / low (wording or minor) |
+| findings[].severity  | enum    | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields; this reviewer never assigns critical  |
 | findings[].spec_line | string  | The quoted spec line behind the finding. For missing, the absent requirement text                             |
 | findings[].location  | string  | file:line in the diff. For scope_creep, the location of the stray code                                        |
 | findings[].detail    | string  | The gap between the state the spec required and the state in the diff, in at most 3 sentences                 |

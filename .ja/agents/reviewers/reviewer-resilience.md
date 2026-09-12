@@ -62,6 +62,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。コードが範�
 | ------------ | ---------------------------------------------------------- |
 | Prefix       | CHX                                                        |
 | カテゴリ     | data / resource / cascade / infra / state。infra は Phase 1 の単一障害点、cascade は Phase 3 のみ、残りは Phase 2、4、5 に対応 |
-| Severity     | critical / high / medium / low。ブラスト半径スコアリングから取る |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照。具体的なレベルはブラスト半径スコアリングから取る |
 | Verification | execution_trace。トリガーは finding が名指しする障害に到達するか |
 | Extra        | failure (何が壊れるか) と hypothesis (When X, system will Y) は reasoning に書く。呼び出し元の schema に追加キーは無い |

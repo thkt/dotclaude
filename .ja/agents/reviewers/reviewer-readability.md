@@ -54,7 +54,7 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。コードが範�
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Prefix       | CQ                                                                                                                                             |
 | カテゴリ     | structure / readability                                                                                                                        |
-| Severity     | critical / high / medium / low                                                                                                                            |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Disposition  | reviewer によるデフォルトの上書き。上書き時は disposition_reason を伴う。詳細は ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-disposition.md § Disposition を参照 |
 | Verification | pattern_search または hotpath_analysis。このパターンは広範に存在するかクリティカルパスにあるか                                                 |
 | Extra        | subcategory (structure / waste / naming / complexity / comments / ai_smell / cognitive-load、任意、category/subcategory として付加)              |
