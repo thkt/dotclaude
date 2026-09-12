@@ -439,7 +439,6 @@ const PLAN_SCHEMA = obj(
 // /think Phase 3 の unit サイズ指針と結合しているので、両側を一緒に変える。seam unit のテストは
 // unit 間の境界を跨ぐため、検査対象は非 seam unit に限る。
 // 正はここ。skills/think/SKILL.md が述べ直し、ずれたら unit-caps-ssot.test.js が落ちる。
-// .agents/skills/build/scripts/validate-plan.ts はテストから届かず、手で合わせる。
 const UNIT_CAPS = { files: 3, tests: 4 };
 const oversizedUnits = (p) =>
   p.units.filter((u) => {

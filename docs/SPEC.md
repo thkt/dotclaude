@@ -76,12 +76,12 @@ The order below is the registration order in `settings.json`. Within one matcher
 | PreToolUse        | `Bash`             | `pre-bash/body_proofread.ts`                    | none               | 60      |
 | PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.ts`                   | none               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | none               | 30      |
-| PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.py`                         | `**/*.rs`          | 60      |
+| PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.ts`                         | `**/*.rs`          | 60      |
 | PreToolUse        | `Write\|Edit`      | `guardrails`                                    | none               | 30      |
 | PreToolUse        | `EnterPlanMode`    | Inline `echo` deny                              | none               | none    |
 | PreToolUse        | `WebFetch\|WebSearch` | Inline `echo` deny                           | none               | none    |
-| PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.py`                        | `**/*.rs`          | 30      |
-| PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.py`                          | `**/*.md`          | 60      |
+| PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
+| PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.ts`                          | `**/*.md`          | 60      |
 | PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.ts`                    | `**/.ja/**`        | 10      |
 | PostToolUse       | `Write\|Edit`      | `assay`                                         | none               | 30      |
 | PostToolUse       | `Write\|Edit`      | `formatter`                                     | none               | 30      |
@@ -109,9 +109,9 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | `body_proofread.ts`             | Bash                    | Proofreads a gh filing or commit body and returns it as additionalContext | advisory |
 | `issue_body_gate.ts`            | Bash                    | Matches a `gh issue create` body against its title's template, denying both a divergence and a state it cannot compare | fail-close |
 | `client_identifier_gate.ts`     | Bash                    | Denies a commit in this repository whose staged diff adds a term from the identifier list kept outside it | fail-close |
-| `rust_pre_edit.py`              | Write / Edit (`*.rs`)   | Injects clippy findings as additionalContext                      | advisory     |
-| `rust_post_edit.py`             | Write / Edit (`*.rs`)   | Runs `cargo fmt`, then clippy again, and returns the findings     | advisory     |
-| `textlint_fix.py`               | Write / Edit (`*.md`)   | Auto-fixes a Markdown file that passes the Japanese check         | advisory     |
+| `rust_pre_edit.ts`              | Write / Edit (`*.rs`)   | Injects clippy findings as additionalContext                      | advisory     |
+| `rust_post_edit.ts`             | Write / Edit (`*.rs`)   | Runs `cargo fmt`, then clippy again, and returns the findings     | advisory     |
+| `textlint_fix.ts`               | Write / Edit (`*.md`)   | Auto-fixes a Markdown file that passes the Japanese check         | advisory     |
 | `mirror_prose_guard.ts`         | Write / Edit (`.ja/**`) | Warns about a `.ja/` file with no Japanese character. Never blocks | advisory    |
 | `amphetamine_agent_session.py`  | UserPromptSubmit / PostToolUse / Stop | Holds the Mac awake through a reference count per session_id | fail-open |
 | `recall_index.ts`               | SessionStart            | Catches recall's cross-session index up in the background         | fail-open    |
@@ -128,8 +128,8 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | `hook_payload.py`  | Typed payload reads and the deny envelope                        |
 | `japanese.py`      | Japanese detection and its threshold                             |
 | `mirror_prose.ts`  | Detection of a `.ja/` file whose Japanese is gone                |
-| `rust_target.py`   | Cargo workspace root resolution and clippy output shaping        |
-| `textlint.py`      | textlint config resolution and invocation                        |
+| `rust_target.ts`   | Cargo workspace root resolution and clippy output shaping        |
+| `textlint.ts`      | textlint config resolution and invocation                       |
 | `hook_harness.py`  | Hook invocation from tests, with the exit status checked         |
 
 ## Skill contract
@@ -308,9 +308,9 @@ External binaries run right after an edit and after a Bash call. `gates` has a 1
 
 | Step          | Command                                                                                      |
 | ------------- | -------------------------------------------------------------------------------------------- |
-| Node tests    | `node --test` over `tests/`, `agents/**/tests/`, `hooks/**/tests/`, `skills/**/tests/`, `workflows/**/tests/` |
+| Node tests    | `node --test` over `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"`, `"workflows/**/tests/*.test.js"`, `"workflows/**/tests/*.test.ts"` |
 | Python tests  | `find agents hooks skills workflows -name '*_test.py'`, one file per invocation               |
-| Shell tests   | `find hooks -name '*.test.sh'`, one file per bash invocation                                  |
+| Shell tests   | `find hooks sandbox -name '*.test.sh'`, one file per bash invocation                          |
 | oxlint        | `npx oxlint`                                                                                  |
 | textlint      | `npx textlint '.ja/**/*.md'`                                                                  |
 | ruff          | `pipx run --spec ruff==0.16.4 ruff check .`                                                   |
@@ -373,9 +373,9 @@ Here are the files a new component touches, and the command that confirms the ad
 
 | Adding   | Files to touch                                                          | Confirmation                                |
 | -------- | ----------------------------------------------------------------------- | ------------------------------------------- |
-| A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `find hooks -name '*_test.py'` and `find hooks -name '*.test.sh'` |
-| A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js"`   |
-| An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js"`   |
-| A workflow | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`           | `node --test "workflows/**/tests/*.test.js"`|
+| A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `find hooks -name '*_test.py'` and `find hooks sandbox -name '*.test.sh'` |
+| A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
+| An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
+| A workflow | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`           | `node --test "workflows/**/tests/*.test.js" "workflows/**/tests/*.test.ts"` |
 | A DR     | `docs/decisions/NNNN-*.md`                                              | `node --test tests/decision-records.test.js`|
 | A document | `.ja/docs/<NAME>.md` first, `docs/<NAME>.md` in the same commit       | `npx textlint '.ja/**/*.md'` and `rumdl check .` |

@@ -1,13 +1,8 @@
-// skills/ablate/scripts/arms.py の TypeScript 側。arm 名の一覧、実行回数、合格閾値、そして
-// arm の CLI コマンドを組む関数と測定状態を読む関数を持つ。arms.py は #646 まで木に残る --
-// report.py と usage_counts.py が今も Python module としてこれを import しており、
-// skills/ablate/SKILL.md:43 も `python3 -c '... import report ...'` でそこへ届く経路を
-// 今も実行するため、その slice が Python 側を退役させるまで両側が同じ名前を持つ。
+// このモジュールが置き換える Python 版の arm helper を TypeScript へ移植したもの。arm 名の
+// 一覧、実行回数、合格閾値、そして arm の CLI コマンドを組む関数と測定状態を読む関数を持つ。
 //
-// 定数名と関数名は arms.py が宣言したとおりに保つ。hook_payload.ts が hook_payload.py の
-// edited_file を camelCase に改名したのとは違う形。skills/ablate/tests/arms-parity.test.ts
-// (本計画の後続 unit) が python3 を spawn して arms.py の公開名を集め、この module の
-// export 名と集合として突き合わせるため、ここで改名すると片側にしかない名前として読まれる。
+// 定数名と関数名は Python 版が宣言したとおりに保つ。hook_payload.ts が hook_payload.py の
+// edited_file を camelCase に改名したのとは違う形。
 
 export const WIPED = "wiped";
 export const WIPED_PLUS_ONE = "wiped+1";

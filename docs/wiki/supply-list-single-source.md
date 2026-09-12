@@ -1,5 +1,5 @@
 ---
-globs: ["**/scripts/**/*.py", "workflows/**/*.ts", "**/tests/**/*.ts", "agents/**/*.md"]
+globs: ["**/scripts/**/*.ts", "workflows/**/*.ts", "**/tests/**/*.ts", "agents/**/*.md"]
 scenes: ["implement"]
 ---
 
@@ -18,10 +18,10 @@ scenes: ["implement"]
 
 ## 参照コード
 
-- `skills/ablate/scripts/enforcer_map.py` の `target_files`（`harness_elements.enumerate_elements` の always-loaded 絞り込みから実行時に導出し、手書きの定数を持たない）
+- `skills/ablate/scripts/enforcer_map.ts` の `target_files`（`harness_elements.enumerate_elements` の always-loaded 絞り込みから実行時に導出し、手書きの定数を持たない）
 
 ## 根拠
 
 - #557 `record.py` の stdout キー集合が docstring の一文とインラインな辞書リテラルのみに存在し、`build.js` 側は `RECORD_COUNT_TYPES` という名前付き定数から `RECORD_SCHEMA` を導出している非対称を指摘した
-- #577 `enforcer_map.py` の `TARGET_FILES` が常時ロードファイル 8 件を手で複製した定数で、`harness_elements.enumerate_elements` が動的に返す 9 件目 (`rules/development/TOOLS.md`) を欠いていた。`target_files(root)` として実行時導出に置き換えた
+- #577 `enforcer_map`（当時の Python 版）の `TARGET_FILES` が常時ロードファイル 8 件を手で複製した定数で、`harness_elements.enumerate_elements` が動的に返す 9 件目 (`rules/development/TOOLS.md`) を欠いていた。`target_files(root)` として実行時導出に置き換えた
 - (research) `workflows/_lib/tests/` の retirement テスト 3 本がそれぞれ全ツリー走査を持ち、歴史記録として除外する場所の一覧が 3 通りに分かれていた。reviewer 定義 15 本が `agents/_lib/finding-schema.md` の severity enum を再掲していた

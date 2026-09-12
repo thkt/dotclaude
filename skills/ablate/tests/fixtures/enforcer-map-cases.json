@@ -1,0 +1,22 @@
+[
+  {
+    "name": "classifies_covered_and_uncovered_lines_across_every_always_loaded_file",
+    "files": {
+      "rules/sample.md": "| Prose language | Japanese under `.ja/`, English everywhere else. Covers comments, test names, and assertion messages                                                   |\n\nalways ask before deleting a branch\n",
+      "CLAUDE.md": "root instruction with no enforcer\n",
+      "rules/path-triggered.md": "---\npaths:\n  - \"**/*.ts\"\n---\n\nnever reached\n"
+    },
+    "argv": [
+      "<root>"
+    ],
+    "exit": 0,
+    "stdout": "[{\"file\": \"CLAUDE.md\", \"line_number\": 1, \"verdict\": \"ablation-residue\"}, {\"file\": \"rules/sample.md\", \"line_number\": 1, \"verdict\": \"delete-candidate\", \"enforcer\": \"hooks/edit/mirror_prose_guard.ts\"}, {\"file\": \"rules/sample.md\", \"line_number\": 3, \"verdict\": \"ablation-residue\"}]\n"
+  },
+  {
+    "name": "missing_repo_root_argument_errors",
+    "files": {},
+    "argv": [],
+    "exit": 2,
+    "stdout": ""
+  }
+]

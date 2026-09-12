@@ -94,5 +94,5 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. The table below sett
 | ------------ | ------------------------------------------------------------------------ |
 | Prefix       | RU                                                                       |
 | Categories   | RU1-RU8 (idiom / error / lifetime / trait / async / unsafe / type / api) |
-| Severity     | critical / high / medium / low                                           |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | pattern_search or call_site_check. A clippy or compile cross-check goes into evidence |
