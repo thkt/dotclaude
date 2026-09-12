@@ -46,7 +46,7 @@ already reads as English stays as it is (`rm_to_trash`, `body_proofread`).
 Two exceptions. Something wrapping an external app whole takes `<app>_<what it manages>`, and
 `amphetamine_agent_session` keeps "only during an agent's turn" in the name. Something a single
 word covers stays one word (`statusline`). A test covering several hooks at once carries a name
-for that group (`rust-edit.test.sh` covers the pre/post pair plus `_lib/rust_target.py`).
+for that group (`rust-edit.test.ts` covers the pre/post pair plus `_lib/rust_target.ts`).
 
 | Kind        | Shape                 | Example                     |
 | ----------- | --------------------- | --------------------------- |
@@ -78,10 +78,10 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | Event              | Matcher            | Hooks                                                                                                                                                             |
 | ------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PreToolUse         | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread, pre-bash/issue_body_gate |
-| PreToolUse         | Write/Edit         | edit/rust_pre_edit.py, guardrails                                                                                                                                 |
+| PreToolUse         | Write/Edit         | edit/rust_pre_edit.ts, guardrails                                                                                                                                 |
 | PreToolUse         | EnterPlanMode      | deny (planning is routed to /think)                                                                                                                               |
 | PreToolUse         | WebFetch/WebSearch | deny (routed to the scout CLI)                                                                                                                                    |
-| PostToolUse        | Write/Edit         | edit/rust_post_edit.py, edit/textlint_fix.py, edit/mirror_prose_guard.ts, assay, formatter, gates                                                                 |
+| PostToolUse        | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/mirror_prose_guard.ts, assay, formatter, gates                                                                 |
 | PostToolUse        | Bash               | gates changed                                                                                                                                                     |
 | PostToolUse        | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
 | SessionStart       | \*                 | lifecycle/recall_index.ts                                                                                                                                         |
@@ -95,17 +95,17 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 
 | Hook                       | Event            | Failure Mode | Purpose                                                                                                                          |
 | -------------------------- | ---------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| package_manager_rewrite.py | PreToolUse(Bash) | fail-closed  | Convert package manager commands to the ni family. A manager's own flags, and bun's built-in test runner, pass through unchanged |
-| body_proofread.py          | PreToolUse(Bash) | fail-closed  | Proofread a gh issue/pr create body and a commit message, with a structure check on the filing (advisory)                        |
+| package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed  | Convert package manager commands to the ni family. A manager's own flags, and bun's built-in test runner, pass through unchanged |
+| body_proofread.ts          | PreToolUse(Bash) | fail-closed  | Proofread a gh issue/pr create body and a commit message, with a structure check on the filing (advisory)                        |
 | issue_body_gate.py         | PreToolUse(Bash) | fail-closed  | Deny a `gh issue create` whose body leaves the template skeleton                                                                 |
 
 ### edit/
 
 | Hook                  | Event       | Failure Mode | Purpose                                                        |
 | --------------------- | ----------- | ------------ | -------------------------------------------------------------- |
-| rust_pre_edit.py      | PreToolUse  | fail-open    | cargo clippy before .rs edits, injected as additionalContext   |
-| rust_post_edit.py     | PostToolUse | fail-open    | cargo fmt after .rs edits, then clippy on the result           |
-| textlint_fix.py       | PostToolUse | fail-closed  | Auto-fix a Japanese .md file with textlint                     |
+| rust_pre_edit.ts      | PreToolUse  | fail-open    | cargo clippy before .rs edits, injected as additionalContext   |
+| rust_post_edit.ts     | PostToolUse | fail-open    | cargo fmt after .rs edits, then clippy on the result           |
+| textlint_fix.ts       | PostToolUse | fail-closed  | Auto-fix a Japanese .md file with textlint                     |
 | mirror_prose_guard.ts | PostToolUse | fail-closed  | Warn when a `.ja/` file lost its Japanese prose (never blocks) |
 
 ### security/
@@ -139,16 +139,17 @@ itself; `mirror_prose.ts` inspects what sits under `.ja/`. The first is a predic
 take, the second takes the mirror alone as its subject.
 
 | Module          | Used by                                                        |
-| --------------- | ---------------------------------------------------------------- |
+| --------------- | -------------------------------------------------------------- |
 | command_scan.py | issue_body_gate, body_proofread, and the three security hooks  |
-| gh_filing.py    | issue_body_gate, body_proofread                                 |
-| hook_payload.py | textlint_fix, body_proofread, rust_target, amphetamine          |
-| hook_payload.ts | mirror_prose.ts, recall_index.ts                                 |
-| mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                       |
-| japanese.py     | body_proofread, textlint_fix                                     |
-| japanese.ts     | mirror_prose.ts                                                  |
-| textlint.py     | body_proofread, textlint_fix                                     |
-| rust_target.py  | rust_pre_edit, rust_post_edit                                    |
+| gh_filing.py    | issue_body_gate, body_proofread                                |
+| hook_payload.py | body_proofread, scribe_prompt, and the hooks still on Python   |
+| hook_payload.ts | mirror_prose, rust_target, recall_index, and the four edit hooks |
+| mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                      |
+| japanese.py     | body_proofread                                                  |
+| japanese.ts     | mirror_prose, textlint_fix                                      |
+| textlint.py     | body_proofread                                                  |
+| textlint.ts     | textlint_fix                                                    |
+| rust_target.ts  | rust_pre_edit, rust_post_edit                                   |
 
 ## Quality Pipeline (Rust Binaries)
 
@@ -239,7 +240,7 @@ once per window", is the exception and says so where it is written.
 
 The mode names how the script itself reacts to an error, not whether the tool call survives. Only a PreToolUse hook can stop a call, and it does so by printing a decision rather than by exiting non-zero. Claude Code keeps running when a hook exits with an error.
 
-A fail-closed hook can still ignore one specific failure, which is not a downgrade: `textlint_fix.py` stops on its own defects and ignores textlint's exit code, because the edit has already landed by the time it runs.
+A fail-closed hook can still ignore one specific failure, which is not a downgrade: `textlint_fix.ts` stops on its own defects and ignores textlint's exit code, because the edit has already landed by the time it runs.
 
 | Mode        | The script                                          | In shell            | In Python                  | Used by                            |
 | ----------- | --------------------------------------------------- | ------------------- | -------------------------- | ---------------------------------- |

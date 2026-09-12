@@ -7,28 +7,24 @@
 // workflows/_lib/tests/_cli-fixture.ts (skills/scribe/tests/triage.test.ts carries the sibling
 // pattern) for exit code and stdout/stderr, plus hooks/_lib/shebang_scope.ts's trackedEntries for
 // the git-index mode check. runCli's cleared PATH is restored to the real one for these cases
-// because verify_run.ts shells out to the real `git` binary against the temp repo.
+// because verify_run.ts shells out to the real `git` binary against the temp repo. The temp
+// repository itself comes from workflows/_lib/tests/_git-repo.ts's withTempRepo, the same
+// disposable-repo helper skills/scribe/tests/scripts-contract.test.ts and
+// workflows/assert/tests/worktree.test.ts share, so this file carries no GIT_ENV of its own --
+// GIT_ENV is imported from that helper.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { trackedEntries } from "../../../hooks/_lib/shebang_scope.ts";
 import { runCli, withTempHome } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import { GIT_ENV, gcAutoValue, withTempRepo } from "../../../workflows/_lib/tests/_git-repo.ts";
 import { verify, type TriageReport, type TriageRow } from "../scripts/verify_run.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "verify_run.ts");
-
-const GIT_ENV: Record<string, string> = {
-  ...(process.env as Record<string, string>),
-  GIT_AUTHOR_NAME: "scribe-test",
-  GIT_AUTHOR_EMAIL: "scribe-test@example.com",
-  GIT_COMMITTER_NAME: "scribe-test",
-  GIT_COMMITTER_EMAIL: "scribe-test@example.com",
-};
 
 /** Runs a real `git` command against `repo`, throwing on a non-zero exit -- the same shape
  * the retired Python suite's own `_git` helper gave its callers. */
@@ -63,19 +59,17 @@ function candidates(waiting: string[], rejected: string[] = [], oneOff: string[]
   ].join("\n");
 }
 
-/** Builds the branch point verify_run.ts is asked to diff against: a fresh git repo, optionally
- * seeded with a `_candidates.md` store, then one `docs(wiki):` commit every branch point in this
- * repository already carries. `startWaiting === null` leaves the store out entirely -- the branch
- * point a first run starts from. The retired Python suite's `_init_worktree`. */
+/** Seeds `repo` (a git repository `withTempRepo` already created) with docs/wiki, optionally a
+ * `_candidates.md` store, then one `docs(wiki):` commit every branch point in this repository
+ * already carries. `startWaiting === null` leaves the store out entirely -- the branch point a
+ * first run starts from. The retired Python suite's `_init_worktree`. */
 function initWorktree(
-  root: string,
+  repo: string,
   startWaiting: string[] | null,
   startOneOff: string[] = [],
-): string {
-  const repo = join(root, "worktree");
+): void {
   const wiki = join(repo, "docs", "wiki");
   mkdirSync(wiki, { recursive: true });
-  git(repo, "init", "-q");
   if (startWaiting !== null) {
     writeFileSync(join(wiki, "_candidates.md"), candidates(startWaiting, [], startOneOff));
     git(repo, "add", "-A");
@@ -84,7 +78,6 @@ function initWorktree(
   writeFileSync(join(wiki, "an-earlier-page.md"), "# earlier\n");
   git(repo, "add", "-A");
   git(repo, "commit", "-q", "-m", "docs(wiki): an-earlier-page を追加/更新");
-  return repo;
 }
 
 /** One Phase 6 commit: writes `names` as wiki pages and drops their rows from 昇格待ち. Returns
@@ -148,10 +141,9 @@ function runVerify(home: string, repo: string, atBase: string, triageReport: Tri
 
 test("T-223 a run whose docs(wiki) commit count and remaining waiting rows both match the report returns ok true and exits 0", () => {
   withTempHome((home) => {
-    const tmp = mkdtempSync(join(tmpdir(), "verify-run-t223-"));
-    try {
+    withTempRepo((repo) => {
       const start = Array.from({ length: 5 }, (_, i) => `item${i}`);
-      const repo = initWorktree(tmp, start);
+      initWorktree(repo, start);
       const atBase = base(repo);
       const left = commitPages(repo, start, ["item0", "item1", "item2"]);
       commitPages(repo, left, ["item3", "item4"]);
@@ -164,18 +156,15 @@ test("T-223 a run whose docs(wiki) commit count and remaining waiting rows both 
       const run = runVerify(home, repo, atBase, triageReport);
       assert.equal(run.status, 0, run.stderr);
       assert.equal(JSON.parse(run.stdout).ok, true);
-    } finally {
-      rmSync(tmp, { recursive: true, force: true });
-    }
+    });
   });
 });
 
 test("T-224 a run one commit short of the report returns ok false, exits 1, and names the commits field with expected and actual", () => {
   withTempHome((home) => {
-    const tmp = mkdtempSync(join(tmpdir(), "verify-run-t224-"));
-    try {
+    withTempRepo((repo) => {
       const start = Array.from({ length: 5 }, (_, i) => `item${i}`);
-      const repo = initWorktree(tmp, start);
+      initWorktree(repo, start);
       const atBase = base(repo);
       const left = commitPages(repo, start, ["item0", "item1", "item2"]);
       commitPages(repo, left, ["item3", "item4"]);
@@ -195,78 +184,61 @@ test("T-224 a run one commit short of the report returns ok false, exits 1, and 
       const parsed = JSON.parse(run.stdout);
       assert.equal(parsed.ok, false);
       assertMismatch(parsed.mismatches, "commits", 3, 2);
-    } finally {
-      rmSync(tmp, { recursive: true, force: true });
-    }
+    });
   });
 });
 
 test("T-225 a row moved to the rejected section and a deferred row entering the waiting section both move the expected remaining count, and a store absent at base counts as zero rows", () => {
   // (a) A row Phase 4 dropped into 棄却 clears an expected line the same way a committed page
   // does, so the run still balances.
-  {
-    const tmp = mkdtempSync(join(tmpdir(), "verify-run-t225a-"));
-    try {
-      const start = Array.from({ length: 5 }, (_, i) => `item${i}`);
-      const repo = initWorktree(tmp, start);
-      const atBase = base(repo);
-      const wiki = join(repo, "docs", "wiki");
-      for (const n of ["item0", "item1"]) {
-        writeFileSync(join(wiki, `${n}.md`), `# ${n}\n`);
-      }
-      writeFileSync(join(wiki, "_candidates.md"), candidates(["item3", "item4"], ["item2"]));
-      git(repo, "add", "-A");
-      git(repo, "commit", "-q", "-m", "docs(wiki): item0, item1 を追加/更新");
-
-      const result = verify(repo, report([rows(["item0", "item1"])]), atBase);
-      assert.equal(result.ok, true, JSON.stringify(result.mismatches));
-    } finally {
-      rmSync(tmp, { recursive: true, force: true });
+  withTempRepo((repo) => {
+    const start = Array.from({ length: 5 }, (_, i) => `item${i}`);
+    initWorktree(repo, start);
+    const atBase = base(repo);
+    const wiki = join(repo, "docs", "wiki");
+    for (const n of ["item0", "item1"]) {
+      writeFileSync(join(wiki, `${n}.md`), `# ${n}\n`);
     }
-  }
+    writeFileSync(join(wiki, "_candidates.md"), candidates(["item3", "item4"], ["item2"]));
+    git(repo, "add", "-A");
+    git(repo, "commit", "-q", "-m", "docs(wiki): item0, item1 を追加/更新");
+
+    const result = verify(repo, report([rows(["item0", "item1"])]), atBase);
+    assert.equal(result.ok, true, JSON.stringify(result.mismatches));
+  });
 
   // (b) A deferred row entering 昇格待ち (a 単発 row promoted by a second piece of evidence, but
   // left uncommitted by the commit cap) grows the expected remaining count by the inflow.
-  {
-    const tmp = mkdtempSync(join(tmpdir(), "verify-run-t225b-"));
-    try {
-      const repo = initWorktree(tmp, ["item0", "item1"], ["solo"]);
-      const atBase = base(repo);
-      const wiki = join(repo, "docs", "wiki");
-      for (const n of ["item0", "item1"]) {
-        writeFileSync(join(wiki, `${n}.md`), `# ${n}\n`);
-      }
-      writeFileSync(join(wiki, "_candidates.md"), candidates(["solo"]));
-      git(repo, "add", "-A");
-      git(repo, "commit", "-q", "-m", "docs(wiki): item0, item1 を追加/更新");
-
-      const triageReport = report([rows(["item0", "item1"])], [{ name: "solo", section: "単発" }]);
-      const result = verify(repo, triageReport, atBase);
-      assert.equal(result.ok, true, JSON.stringify(result.mismatches));
-    } finally {
-      rmSync(tmp, { recursive: true, force: true });
+  withTempRepo((repo) => {
+    initWorktree(repo, ["item0", "item1"], ["solo"]);
+    const atBase = base(repo);
+    const wiki = join(repo, "docs", "wiki");
+    for (const n of ["item0", "item1"]) {
+      writeFileSync(join(wiki, `${n}.md`), `# ${n}\n`);
     }
-  }
+    writeFileSync(join(wiki, "_candidates.md"), candidates(["solo"]));
+    git(repo, "add", "-A");
+    git(repo, "commit", "-q", "-m", "docs(wiki): item0, item1 を追加/更新");
+
+    const triageReport = report([rows(["item0", "item1"])], [{ name: "solo", section: "単発" }]);
+    const result = verify(repo, triageReport, atBase);
+    assert.equal(result.ok, true, JSON.stringify(result.mismatches));
+  });
 
   // (c) The store is absent entirely at base (the first run in a repository with no store
   // yet); that absence counts as zero waiting rows, not an error.
-  {
-    const tmp = mkdtempSync(join(tmpdir(), "verify-run-t225c-"));
-    try {
-      const repo = initWorktree(tmp, null);
-      const atBase = base(repo);
-      const wiki = join(repo, "docs", "wiki");
-      writeFileSync(join(wiki, "brand-new.md"), "# brand-new\n");
-      writeFileSync(join(wiki, "_candidates.md"), candidates([]));
-      git(repo, "add", "-A");
-      git(repo, "commit", "-q", "-m", "docs(wiki): brand-new を追加/更新");
+  withTempRepo((repo) => {
+    initWorktree(repo, null);
+    const atBase = base(repo);
+    const wiki = join(repo, "docs", "wiki");
+    writeFileSync(join(wiki, "brand-new.md"), "# brand-new\n");
+    writeFileSync(join(wiki, "_candidates.md"), candidates([]));
+    git(repo, "add", "-A");
+    git(repo, "commit", "-q", "-m", "docs(wiki): brand-new を追加/更新");
 
-      const result = verify(repo, report([rows(["brand-new"], undefined)]), atBase);
-      assert.equal(result.ok, true, JSON.stringify(result.mismatches));
-    } finally {
-      rmSync(tmp, { recursive: true, force: true });
-    }
-  }
+    const result = verify(repo, report([rows(["brand-new"], undefined)]), atBase);
+    assert.equal(result.ok, true, JSON.stringify(result.mismatches));
+  });
 });
 
 test("T-226 a missing argument, non-JSON stdin, and a report without commits each exit 2 with a stderr line starting with usage:, and the tracked verify_run.ts carries mode 100755 and opens with the env node shebang", () => {
@@ -302,3 +274,14 @@ test("T-226 a missing argument, non-JSON stdin, and a report without commits eac
   const firstLine = readFileSync(absolutePath, "utf8").split(/\r?\n/, 1)[0];
   assert.equal(firstLine, "#!/usr/bin/env node", "shebang line");
 });
+
+test(
+  "T-419 verify-run, scripts-contract and worktree each create their repositories through the " +
+    "helper, asserted by the gc.auto value those repositories report",
+  () => {
+    withTempRepo((repo) => {
+      initWorktree(repo, null);
+      assert.equal(gcAutoValue(repo), "0");
+    });
+  },
+);

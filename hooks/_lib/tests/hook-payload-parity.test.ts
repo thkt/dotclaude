@@ -4,18 +4,19 @@
 // typescript-for-helper-scripts.md's Success Criteria, "the CLI contract does not change across
 // the migration; the first slice confirms it with a differential test diffing the Python and
 // TypeScript outputs"). The read path is what this slice diffs: field and editedFile, the two
-// every consumer reaches for. notify and deny write to stdout rather than returning, so their
-// parity moves with the first consumer that switches. hooks/lifecycle/recall_index.ts is that
-// first TS-side consumer, reading parse from this module instead of hook_payload.py; every
-// other hook still imports the Python side, so this test keeps guarding both while they move
-// over one at a time.
+// every consumer reaches for. notify and deny write to stdout rather than returning, so each
+// one's parity moves with the first consumer that switches to it. hooks/lifecycle/recall_index.ts
+// already switched to this module's parse; hooks/edit/rumdl_check.ts (unit U-005) is notify's
+// first switched consumer, so this file adds notify's parity case alongside it. deny has no
+// switched consumer yet. Every other hook still imports the Python side, so this test keeps
+// guarding both while they move over one at a time.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { editedFile, field } from "../hook_payload.ts";
+import { editedFile, field, notification } from "../hook_payload.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const HOOKS_LIB_DIR = join(HERE, "..");
@@ -39,9 +40,14 @@ function fixture(id: string): Fixture {
 }
 
 // A one-shot driver rather than a CLI: hook_payload.py has no __main__, so this is the smallest
-// way to call its named exports from outside the process. It mirrors exactly the three
-// functions hook_payload.ts exposes for reading a payload value.
+// way to call its named exports from outside the process. It mirrors the functions
+// hook_payload.ts exposes and hook_payload.py also carries (field, edited_file, notify; deny
+// stays out until a consumer switches to it too). notify prints its envelope straight to
+// stdout rather than returning it, so the driver captures that print with redirect_stdout and
+// hands the parsed line back as `result`, the same shape the other branches return directly.
 const PY_DRIVER = `
+import contextlib
+import io
 import json
 import sys
 
@@ -54,6 +60,11 @@ if fn == "field":
     result = hp.field(spec["container"], spec["key"])
 elif fn == "edited_file":
     result = hp.edited_file(spec["text"])
+elif fn == "notify":
+    captured = io.StringIO()
+    with contextlib.redirect_stdout(captured):
+        hp.notify(spec["message"], hook_event_name=spec["hookEventName"])
+    result = json.loads(captured.getvalue())
 else:
     raise SystemExit(f"unknown fn: {fn}")
 print(json.dumps({"result": result}))
@@ -61,7 +72,8 @@ print(json.dumps({"result": result}))
 
 type PythonSpec =
   | { fn: "field"; container: unknown; key: string }
-  | { fn: "edited_file"; text: string };
+  | { fn: "edited_file"; text: string }
+  | { fn: "notify"; message: string; hookEventName: string };
 
 function runPython(spec: PythonSpec): unknown {
   const result = spawnSync("python3", ["-c", PY_DRIVER, HOOKS_LIB_DIR], {
@@ -131,4 +143,19 @@ test("T-004 the comparison runs over at least one payload and both implementatio
     assert.ok(typeof pyResult === "string" && pyResult.length > 0, `${id}: hook_payload.py`);
     assert.equal(tsResult, pyResult, `${id}: both implementations must agree`);
   }
+});
+
+test("T-005 both implementations write the same notify envelope for a PostToolUse finding, the shape hooks/edit/rumdl_check.ts's notify call now depends on", () => {
+  const message = "violation.md:2:1 [MD022] headings should be surrounded by blank lines";
+  const hookEventName = "PostToolUse";
+
+  const tsResult = notification(message, hookEventName);
+  const pyResult = runPython({ fn: "notify", message, hookEventName });
+
+  assert.deepEqual(tsResult, pyResult, "hook_payload.ts and hook_payload.py must agree");
+  assert.equal(
+    (tsResult as { systemMessage: string }).systemMessage,
+    message,
+    "the human channel must carry the finding verbatim",
+  );
 });
