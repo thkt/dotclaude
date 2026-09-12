@@ -80,6 +80,8 @@ workflow script も TypeScript にする。
 - 移行前後で helper script の CLI 契約が変わらない。第 1 スライスは Python 版と TypeScript 版の出力を突き合わせる差分テストで確認する
 - hook 層の移行後、`PreToolUse` の Bash matcher 8 本の合計起動時間が移行前を下回る
 
+hook 層の移行後に 8 本を実測した。合計 90.87ms で、移行前の基準 196.80ms (python3 24.6ms x 8) を下回る。1 本あたりの改善は平均 13.24ms、最小でも 12.16ms で、下の Reassessment Triggers が定める 5ms を上回る。測り方と 8 本それぞれの値は `.claude/workspace/research/2026-09-11-hook-startup-measurement.md` にある。
+
 ### Reassessment Triggers
 
 - 移行済み層で、型が防げたはずの不具合が 1 件も出ない状態が 2 スライス続く

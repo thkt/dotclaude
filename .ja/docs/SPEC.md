@@ -53,7 +53,7 @@
 
 ### 入出力
 
-hook は stdin から JSON payload を受け取り、stdout に JSON か additionalContext 用のテキストを書く。終了コードは全 hook が 0 固定である。0 以外は設計上の結果ではなく破損であり、`hooks/_lib/hook_harness.py` の `checked` が AssertionError を上げてテストを落とす。この確認が効くのは harness 経由で起動する Python hook 12 本であり、シェル hook 2 本は各自のテストが結果だけを見る。
+hook は stdin から JSON payload を受け取り、stdout に JSON か additionalContext 用のテキストを書く。終了コードは全 hook が 0 固定である。0 以外は設計上の結果ではなく破損であり、`hooks/_lib/tests/_hook-harness.ts` の `checked` が例外を投げてテストを落とす。全 hook のテストがこの確認を通り、シェル hook は各自のテストが結果だけを見る。
 
 呼び出しを止める hook は `hook_payload.deny` を通し、同じ形の封筒を出す。`permissionDecision` に入るのは `allow`, `deny`, `ask`, `defer` の 4 値だけである。それ以外を書くとスキーマ検証で落ち、ゲートは何も止めないまま無言で通る。
 
@@ -87,13 +87,13 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PostToolUse       | `Write\|Edit`      | `formatter`                                     | なし               | 30      |
 | PostToolUse       | `Write\|Edit`      | `gates`                                         | なし               | 120     |
 | PostToolUse       | `Bash`             | `gates changed`                                 | なし               | 120     |
-| PostToolUse       | `*`                | `integrations/amphetamine_agent_session.py background` | なし        | 15      |
+| PostToolUse       | `*`                | `integrations/amphetamine_agent_session.ts background` | なし        | 15      |
 | SessionStart      | `*`                | `lifecycle/recall_index.ts`                     | なし               | 60      |
 | SessionStart      | `*`                | `herdr-agent-state.sh session`                  | なし               | 10      |
-| UserPromptSubmit  | なし               | `integrations/amphetamine_agent_session.py acquire` | なし           | 15      |
+| UserPromptSubmit  | なし               | `integrations/amphetamine_agent_session.ts acquire` | なし           | 15      |
 | UserPromptSubmit  | なし               | `codegraph prompt-hook`                         | なし               | 10      |
 | Stop              | なし               | `lifecycle/failure-alert.sh stop`               | なし               | 60      |
-| Stop              | なし               | `integrations/amphetamine_agent_session.py release` | なし           | 15      |
+| Stop              | なし               | `integrations/amphetamine_agent_session.ts release` | なし           | 15      |
 | StopFailure       | なし               | `lifecycle/failure-alert.sh fail`               | なし               | 60      |
 
 ### 個別 hook の判定と失敗方針
@@ -113,7 +113,7 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `rust_post_edit.ts`             | Write / Edit (`*.rs`)   | `cargo fmt` の後に clippy を再実行し指摘を返す                    | advisory  |
 | `textlint_fix.ts`               | Write / Edit (`*.md`)   | 日本語判定を通った Markdown を textlint で自動修正                | advisory  |
 | `mirror_prose_guard.ts`         | Write / Edit (`.ja/**`) | 日本語を 1 文字も含まない `.ja/` ファイルを警告する。止めない     | advisory  |
-| `amphetamine_agent_session.py`  | UserPromptSubmit / PostToolUse / Stop | session_id 単位の参照カウントで Mac のスリープを抑止 | fail-open |
+| `amphetamine_agent_session.ts`  | UserPromptSubmit / PostToolUse / Stop | session_id 単位の参照カウントで Mac のスリープを抑止 | fail-open |
 | `recall_index.ts`               | SessionStart            | recall の横断索引をバックグラウンドで追いつかせる                 | fail-open |
 | `failure-alert.sh`              | Stop / StopFailure      | `end_turn` 以外の終了で音を鳴らす。サブエージェントは対象外       | fail-open |
 | `statusline.sh`                 | `statusLine` キー       | モデル名と使用率を描画する。部分表示を許容。`hooks` マップではなく最上位の `statusLine` に登録する | fail-open |
@@ -123,14 +123,13 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 
 | モジュール         | 引き受ける知識                                                  |
 | ------------------ | --------------------------------------------------------------- |
-| `command_scan.py`  | Bash 行のどこがコマンド位置かの判定。ラッパーと環境変数代入を剥がす |
+| `command_scan.ts`  | Bash 行のどこがコマンド位置かの判定。ラッパーと環境変数代入を剥がす |
 | `gh_filing.ts`     | `gh issue create` / `gh pr create` の本文フラグの綴り            |
 | `hook_payload.py`  | payload の型付き読み出しと deny 封筒の生成                       |
 | `japanese.py`      | 日本語判定としきい値                                             |
 | `mirror_prose.ts`  | `.ja/` 配下で日本語が消えた状態の検出                            |
 | `rust_target.ts`   | cargo ワークスペース根の解決と clippy 出力の整形                 |
 | `textlint.ts`      | textlint の設定解決と実行                                        |
-| `hook_harness.py`  | テストからの hook 起動と終了コード確認                           |
 
 ## Skill 契約
 

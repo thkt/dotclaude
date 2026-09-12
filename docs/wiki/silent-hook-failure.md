@@ -18,7 +18,7 @@ hook が落ちても Claude Code はエラーを出さない。促しが出な�
 
 ## 参照コード
 
-- `hooks/_lib/scribe_trigger.py` の `DEFAULT_GH`（PATH が切り詰められるので絶対パスで引く）
+- `hooks/_lib/scribe_trigger.ts` の `DEFAULT_GH`（PATH が切り詰められるので絶対パスで引く）
 - `hooks/lifecycle/recall_index.ts` の `DEFAULT_RECALL`（同じ形の先例）
 
 ## 根拠

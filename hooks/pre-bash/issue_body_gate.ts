@@ -36,7 +36,7 @@ export const VALIDATOR: string = join(ROOT, "skills", "issue", "scripts", "valid
 export const TEMPLATES: string = join(ROOT, "skills", "issue", "templates");
 
 // DR-0114's fixed Homebrew bun path (hooks/_lib/shebang_scope.ts's SHEBANG), the same fallback
-// shape as hooks/_lib/scribe_trigger.py's DEFAULT_GH: a hook can run with PATH cut down to
+// shape as hooks/_lib/scribe_trigger.ts's DEFAULT_GH: a hook can run with PATH cut down to
 // nothing, so a bare "bun" is never trusted to resolve on its own.
 export const DEFAULT_BUN: string = "/opt/homebrew/bin/bun";
 
