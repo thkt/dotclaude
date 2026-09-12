@@ -56,7 +56,6 @@
 - hako.sh の run_agent/run_login は agents.sh の agent 名検証より前に workspace 解決 (git clone) を実行し、validate-then-assemble の順序を逆転させている。未知の agent 名でも検証失敗前にクローンの副作用が生じ、後始末もされない #556
 - 参照モジュールが 1 ファイル内で T-NNN を T-001 から再採番する規約を持つとき、新規追加した複数ファイルに渡って単一の連番を通すと、後続ファイルがどこも T-001 から採番されない構造逸脱として検出される #556
 - 実装単位 ID (U-NNN 等) を DR/README のような持続文書で引用するとき、その ID を定義する issue 番号を併記しないと、番号は issue ごとに再利用されるため単体で追跡できない #585
-- DR 番号は pre-check.ts の返り値をそのまま採らず、未マージの他 PR が先に同じ番号を使っていないか確認してから確定する #491
 - 原因未確定かつローカル再現しない不具合は、推測に基づく修正を当てず再現条件を確定する診断計測を先に足す #590
 - Red gate の test_command は、失敗行の文字列が実行間で完全一致する出力形式 (reporter) を要求する #596
 - tests を持つ unit は plan の files に、そのテストが動かすモジュールを含める。Red が触れるのは files にあるものだけなので、files 外を import するテストは Red を確立できない #600
@@ -73,7 +72,6 @@
 - PR 本文の Review focus 節で、振る舞いが変わったファイルと comment のみの変更ファイルを分けて示す #648
 - TS 化で knip.json の glob 拡張だけでは足りず、CLI 入口ファイル (entry) と静的 import されない test fixture (ignoreFiles) は明示しないと未使用 export として新規に誤検出される #653
 - knip の project glob は TS 化した層 (hooks/**、skills/**/*.ts) を足さないと、その層の .ts は dead-export 検出ゼロのまま tsc だけが見る (research)
-- docs/SPEC.md の確認コマンドは CI の test.yml の glob とずれる (.test.ts と sandbox が無い)。片方を正本にする (research)
 - issue を拾う前に ## Plan の有無と Blocked by の open 状態で着手可能性を機械的に絞る。build は Plan の無い issue を no-plan で止める (research)
 - build 計画の語りを実装のコメントに残さない #667
 - `/// <reference types="node" />` 等のディレクティブは新規ファイル自身が実際に対象 API を使うかで要否を判定する。同じ形の参照ファイルに無くても確認せず複製すると規約からの逸脱になる #667
@@ -90,6 +88,12 @@
 - リポジトリ全体を歩く既存の Python 回帰テストを隔離 temp fixture の TS 版へ移植すると、実チェックアウトに対する回帰検出が失われる #691
 - knip の entry は import されない CLI 入口だけでなく、まだどの消費者も import していない named export を持つ library ファイルにも要る。無いとその export が unused export として検出される #691
 - worktree 内でツール管理コマンド (mise 等) が warning 行を stdout の先頭に書くため、JSON.parse(stdout) で全体を parse すると gate report が壊れて読めなくなる。開き括弧だけの行から parse をやり直すと復旧する #689
+- TS への移植で新設したヘルパー関数に reference module の camelCase 規約から外れたアンダースコア接頭辞 (`_isExecutableFile` 等) を付けると、Python 移植名由来の正当化が無い限り独立レビューで検出される #701
+- 命名規約からの逸脱を正当化していた根拠 (parity test 等) が同じ diff で消えると、その逸脱の正当化も同時に失効する #702
+- reference module を「設計せず複製する」規約下のポートでも、複数モジュールに重複する処理を 1 つの新設共有抽象化へ統合すると、PR 本文で開示していてもその抽象化自体が issue の scope 外として独立レビューで指摘される #697
+- Python の str.splitlines() は \n 以外に \r\n・\r・Unicode 行境界でも分割するが、TS へ移すとき split("\n") のみだと挙動が異なる。LF のみの現行データでは到達不能 #697
+- workflows/tests/ja-ts-parity.test.js は git ls-files で `.ja/**/*.ts` をリポジトリ全域走査するため、新規追加した .ts モジュールの .ja ミラーは別途登録しなくても自動的に検査対象へ入る #696
+- grep 等の文字出現検査で実 invocation の有無を判定するときは、shebang・settings.json の command・heredoc launcher など具体的な起動形にマッチを絞り、コメントや prose に出る bare な文字列言及を除外しないと偽陽性になる #703
 
 ## 棄却
 
