@@ -253,7 +253,7 @@
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-bash/issue_body_gate.py",
+            "command": "~/.claude/hooks/pre-bash/issue_body_gate.ts",
             "timeout": 30
           },
           {
@@ -263,7 +263,7 @@
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-bash/wiki_scene.py",
+            "command": "~/.claude/hooks/pre-bash/wiki_scene.ts",
             "timeout": 30
           }
         ]

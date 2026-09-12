@@ -106,9 +106,12 @@ const SKILL_SOURCES: SkillSource[] = [
 ];
 
 // The hook builds VALIDATOR from path segments rather than spelling a bare filename, so its
-// extraction anchors on the assignment itself: `VALIDATOR = ROOT / ... / "validate-issue-body.<ext>"`.
+// extraction anchors on the assignment itself: `VALIDATOR = ROOT / ... / "validate-issue-body.<ext>"`
+// (Python) or `VALIDATOR: string = join(ROOT, ..., "validate-issue-body.<ext>")` (TypeScript,
+// once the issue-body-gate hook itself retired to its own .ts port) -- `[^=\n]*`
+// between VALIDATOR and `=` admits either declaration's optional `: <type>`.
 function validatorPathExtension(source: string): string | null {
-  const m = source.match(/VALIDATOR\s*=[^\n]*"validate-issue-body\.(py|ts)"/);
+  const m = source.match(/VALIDATOR[^=\n]*=[^\n]*"validate-issue-body\.(py|ts)"/);
   return m ? m[1] : null;
 }
 
@@ -122,7 +125,7 @@ test("the en and ja issue and slice skill files invoke the issue scripts by thei
     assert.ok(!source.includes("python3"), `${label} still names python3`);
   }
 
-  const hookPath = "hooks/pre-bash/issue_body_gate.py";
+  const hookPath = "hooks/pre-bash/issue_body_gate.ts";
   const hookSource = readFileSync(join(REPO_ROOT, hookPath), "utf8");
   const validatorExt = validatorPathExtension(hookSource);
   assert.equal(

@@ -43,6 +43,8 @@
     "hooks/pre-bash/client_identifier_gate.ts",
     "hooks/pre-bash/package_manager_rewrite.ts",
     "hooks/pre-bash/body_proofread.ts",
+    "hooks/pre-bash/issue_body_gate.ts",
+    "hooks/pre-bash/wiki_scene.ts",
     "hooks/edit/mirror_prose_guard.ts",
     "skills/**/tests/**/*.test.{js,ts}",
     "skills/_lib/harness_hash.ts",

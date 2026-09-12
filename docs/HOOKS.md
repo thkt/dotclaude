@@ -50,10 +50,10 @@ for that group (`rust-edit.test.ts` covers the pre/post pair plus `_lib/rust_tar
 
 | Kind        | Shape                 | Example                     |
 | ----------- | --------------------- | --------------------------- |
-| Python hook | `<target>_<op>.py`    | `issue_body_gate.py`      |
+| Python hook | `<target>_<op>.py`    | `scribe_prompt.py`          |
 | shell hook  | `<target>-<op>.sh`    | `failure-alert.sh`          |
 | _lib module | `<noun>.py`           | `command_scan.py`           |
-| Python test | `<hook name>_test.py` | `issue_body_gate_test.py` |
+| Python test | `<hook name>_test.py` | `scribe_prompt_test.py`     |
 | shell test  | `<hook name>.test.sh` | `failure-alert.test.sh`     |
 
 ## Narrowing the work
@@ -97,7 +97,7 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | -------------------------- | ---------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed  | Convert package manager commands to the ni family. A manager's own flags, and bun's built-in test runner, pass through unchanged |
 | body_proofread.ts          | PreToolUse(Bash) | fail-closed  | Proofread a gh issue/pr create body and a commit message, with a structure check on the filing (advisory)                        |
-| issue_body_gate.py         | PreToolUse(Bash) | fail-closed  | Deny a `gh issue create` whose body leaves the template skeleton                                                                 |
+| issue_body_gate.ts         | PreToolUse(Bash) | fail-closed  | Deny a `gh issue create` whose body leaves the template skeleton                                                                 |
 
 ### edit/
 
@@ -138,18 +138,19 @@ Shared code the hooks pull in, never registered on its own. `japanese.py` judges
 itself; `mirror_prose.ts` inspects what sits under `.ja/`. The first is a predicate any file can
 take, the second takes the mirror alone as its subject.
 
-| Module          | Used by                                                        |
-| --------------- | -------------------------------------------------------------- |
-| command_scan.py | issue_body_gate, body_proofread, and the three security hooks  |
-| gh_filing.py    | issue_body_gate, body_proofread                                |
-| hook_payload.py | body_proofread, scribe_prompt, and the hooks still on Python   |
-| hook_payload.ts | mirror_prose, rust_target, recall_index, and the four edit hooks |
-| mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                      |
-| japanese.py     | body_proofread                                                  |
-| japanese.ts     | mirror_prose, textlint_fix                                      |
-| textlint.py     | body_proofread                                                  |
-| textlint.ts     | textlint_fix                                                    |
-| rust_target.ts  | rust_pre_edit, rust_post_edit                                   |
+| Module          | Used by                                                          |
+| --------------- | ---------------------------------------------------------------- |
+| command_scan.py | scribe_trigger                                                   |
+| command_scan.ts | body_proofread, wiki_scene, gh_filing, and the three security hooks |
+| gh_filing.ts    | body_proofread, issue_body_gate                                  |
+| hook_payload.py | scribe_prompt, amphetamine                                       |
+| hook_payload.ts | every .ts hook, plus mirror_prose and rust_target                |
+| mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                       |
+| japanese.py     | none remain; residue a later slice removes                       |
+| japanese.ts     | body_proofread, mirror_prose, textlint_fix                       |
+| textlint.py     | none remain; residue a later slice removes                       |
+| textlint.ts     | textlint_fix                                                     |
+| rust_target.ts  | rust_pre_edit, rust_post_edit                                    |
 
 ## Quality Pipeline (Rust Binaries)
 

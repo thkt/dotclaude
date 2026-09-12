@@ -77,7 +77,7 @@ test("T-355 a path in RARE_BY_DESIGN classifies as measured rather than as a del
 });
 
 test("T-356 classify takes the window as an argument, so a caller can drive both sides of the boundary without patching a module binding", () => {
-  const path = "hooks/pre-bash/wiki_scene.py";
+  const path = "hooks/pre-bash/wiki_scene.ts";
   const now = new Date("2026-08-27T00:00:00.000Z");
   // 238 days before `now` (usage_counts_test.py's MeasurementWindow case uses the same shape:
   // a last_used date that a narrow window reports stale and a wide window reports current).
