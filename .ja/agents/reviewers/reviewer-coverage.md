@@ -72,6 +72,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。テストが範�
 | Prefix       | TC                                                                                              |
 | Location     | `test-file:line`                                                                                |
 | カテゴリ     | gap / quality / negative / regression                                                           |
-| Severity     | critical / high / medium / low                                                                  |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | call_site_check または pattern_search。このコード経路は既存のテストで実際に実行されるか         |
 | Extra        | related_code (`source-file:line`) は evidence に、criticality (クリティカリティ評価の 1-10) は reasoning に書く。呼び出し元の schema に追加キーは無い |

@@ -1,6 +1,6 @@
 # proofread-body
 
-`body_proofread.py` が gh issue/pr create の校正結果に添えて送る構造チェック。送るのは最初の `##` 見出しから下だけで、見出しより前のこの説明は送らない。
+`body_proofread.ts` が gh issue/pr create の校正結果に添えて送る構造チェック。送るのは最初の `##` 見出しから下だけで、見出しより前のこの説明は送らない。
 
 ## 構造レビュー
 

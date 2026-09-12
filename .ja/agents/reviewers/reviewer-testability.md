@@ -50,5 +50,5 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。コードが範�
 | ------------ | ----------------------------------------------------------------------------------------------------- |
 | Prefix       | TEST                                                                                                  |
 | カテゴリ     | di / separation / substitution / globals / coupling (preload される skill の Detection 表の TE1〜TE5)                               |
-| Severity     | critical / high / medium / low                                                                                   |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Verification | call_site_check または pattern_search。この依存は既存のテストで real や fake に置き換えられるか |

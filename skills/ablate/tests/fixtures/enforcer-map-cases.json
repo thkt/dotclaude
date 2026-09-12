@@ -10,7 +10,7 @@
       "<root>"
     ],
     "exit": 0,
-    "stdout": "[{\"file\": \"CLAUDE.md\", \"line_number\": 1, \"verdict\": \"ablation-residue\"}, {\"file\": \"rules/sample.md\", \"line_number\": 1, \"verdict\": \"delete-candidate\", \"enforcer\": \"hooks/edit/mirror_prose_guard.py\"}, {\"file\": \"rules/sample.md\", \"line_number\": 3, \"verdict\": \"ablation-residue\"}]\n"
+    "stdout": "[{\"file\": \"CLAUDE.md\", \"line_number\": 1, \"verdict\": \"ablation-residue\"}, {\"file\": \"rules/sample.md\", \"line_number\": 1, \"verdict\": \"delete-candidate\", \"enforcer\": \"hooks/edit/mirror_prose_guard.ts\"}, {\"file\": \"rules/sample.md\", \"line_number\": 3, \"verdict\": \"ablation-residue\"}]\n"
   },
   {
     "name": "missing_repo_root_argument_errors",

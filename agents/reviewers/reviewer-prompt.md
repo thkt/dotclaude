@@ -92,4 +92,4 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. Skip files whose typ
 | ---------- | ----------------------------------------------- |
 | Prefix     | PQ                                              |
 | Categories | token-efficiency / structure / format / clarity |
-| Severity   | critical / high / medium / low                             |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |

@@ -67,5 +67,5 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no React is in 
 | ------------ | ------------------------------------------------------------------------------------------------------ |
 | Prefix       | RP                                                                                                     |
 | Categories   | container / hook / state / anti-pattern / prop-forwarding / render / effect                            |
-| Severity     | critical / high / medium / low                                                                                    |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | pattern_search or call_site_check. Is this anti-pattern used consistently or is this an isolated case? |

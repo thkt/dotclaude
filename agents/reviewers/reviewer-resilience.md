@@ -62,6 +62,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no code is in r
 | ------------ | --------------------------------------------------------- |
 | Prefix       | CHX                                                       |
 | Categories   | data / resource / cascade / infra / state. infra covers Phase 1 single points of failure; cascade is Phase 3 only; the rest mirror Phases 2, 4, 5 |
-| Severity     | critical / high / medium / low, taken from Blast Radius Scoring |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields; take the concrete level from Blast Radius Scoring |
 | Verification | execution_trace. Does the trigger reach the failure the finding names? |
 | Extra        | failure (what breaks) and hypothesis (When X, system will Y) go into reasoning. The caller's schema carries no extra keys |

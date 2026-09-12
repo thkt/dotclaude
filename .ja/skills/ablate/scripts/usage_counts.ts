@@ -42,10 +42,10 @@ const _VARIABLE_PREFIX_RE = /^\$\{[A-Z_]+\}\//;
 // element として数える拡張子。一部の fire は path ではなく label を持つ (measured in this
 // session's transcripts: "formatter", "gates changed", "guardrails...")。label は harness
 // element を1つも指さないため、tally の外側に置く。
-export const ELEMENT_SUFFIXES: ReadonlySet<string> = new Set([".py", ".sh", ".js"]);
+export const ELEMENT_SUFFIXES: ReadonlySet<string> = new Set([".py", ".sh", ".js", ".ts"]);
 
 // 珍しい入力でしか発動しない safety net。fire が 0 件であることが未使用を意味しない。
-export const RARE_BY_DESIGN: ReadonlySet<string> = new Set(["hooks/security/rm_to_trash.py"]);
+export const RARE_BY_DESIGN: ReadonlySet<string> = new Set(["hooks/security/rm_to_trash.ts"]);
 
 // `now` から遡って何日以内なら、最新の fire がまだ observed と数えられるか。
 export const MEASUREMENT_WINDOW_DAYS = 90;

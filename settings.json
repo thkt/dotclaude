@@ -131,51 +131,51 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/rust_post_edit.py",
+            "command": "~/.claude/hooks/edit/rust_post_edit.ts",
             "if": "Write(**/*.rs)",
             "timeout": 30,
             "statusMessage": "cargo fmt..."
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/rust_post_edit.py",
+            "command": "~/.claude/hooks/edit/rust_post_edit.ts",
             "if": "Edit(**/*.rs)",
             "timeout": 30,
             "statusMessage": "cargo fmt..."
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/textlint_fix.py",
+            "command": "~/.claude/hooks/edit/textlint_fix.ts",
             "if": "Write(**/*.md)",
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/textlint_fix.py",
+            "command": "~/.claude/hooks/edit/textlint_fix.ts",
             "if": "Edit(**/*.md)",
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/rumdl_check.py",
+            "command": "~/.claude/hooks/edit/rumdl_check.ts",
             "if": "Write(**/*.md)",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/rumdl_check.py",
+            "command": "~/.claude/hooks/edit/rumdl_check.ts",
             "if": "Edit(**/*.md)",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/mirror_prose_guard.py",
+            "command": "~/.claude/hooks/edit/mirror_prose_guard.ts",
             "if": "Write(**/.ja/**)",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/mirror_prose_guard.py",
+            "command": "~/.claude/hooks/edit/mirror_prose_guard.ts",
             "if": "Edit(**/.ja/**)",
             "timeout": 10
           },
@@ -228,27 +228,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-bash/package_manager_rewrite.py",
+            "command": "~/.claude/hooks/pre-bash/package_manager_rewrite.ts",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/security/npm_install_guard.py",
+            "command": "~/.claude/hooks/security/npm_install_guard.ts",
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/security/rm_to_trash.py",
+            "command": "~/.claude/hooks/security/rm_to_trash.ts",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/security/git_sandbox_guard.py",
+            "command": "~/.claude/hooks/security/git_sandbox_guard.ts",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-bash/body_proofread.py",
+            "command": "~/.claude/hooks/pre-bash/body_proofread.ts",
             "timeout": 60
           },
           {
@@ -258,7 +258,7 @@
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/pre-bash/client_identifier_gate.py",
+            "command": "~/.claude/hooks/pre-bash/client_identifier_gate.ts",
             "timeout": 30
           },
           {
@@ -273,14 +273,14 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/rust_pre_edit.py",
+            "command": "~/.claude/hooks/edit/rust_pre_edit.ts",
             "if": "Write(**/*.rs)",
             "timeout": 60,
             "statusMessage": "clippy..."
           },
           {
             "type": "command",
-            "command": "~/.claude/hooks/edit/rust_pre_edit.py",
+            "command": "~/.claude/hooks/edit/rust_pre_edit.ts",
             "if": "Edit(**/*.rs)",
             "timeout": 60,
             "statusMessage": "clippy..."

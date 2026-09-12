@@ -72,6 +72,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no tests are in
 | Prefix       | TC                                                                                                      |
 | Location     | `test-file:line`                                                                                        |
 | Categories   | gap / quality / negative / regression                                                                   |
-| Severity     | critical / high / medium / low                                                                          |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | call_site_check or pattern_search. Is this code path actually exercised by any existing test?           |
 | Extra        | related_code (`source-file:line`) goes into evidence, criticality (1-10, from Criticality Rating) into reasoning. The caller's schema carries no extra keys |

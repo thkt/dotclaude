@@ -19,8 +19,8 @@ export const meta = {
 //    Challenge applies to Codex findings only.
 // 2. The gate is computed by schema + script rule from (build, tests, issues), never decoded
 //    from the enhancer's prose.
-// 3. worktree.ts / bootstrap.ts are deterministic; setup and cleanup derive the same branch /
-//    path from $CLAUDE_SESSION_ID.
+// 3. worktree.ts / bootstrap.ts are deterministic; Bootstrap derives branch/path from
+//    $CLAUDE_SESSION_ID once, and Cleanup reuses boot.worktree_path rather than re-deriving it.
 // 4. adversarial (codex 600s) starts with Evidence and runs behind Challenge / Triage; in a
 //    barrier the longest stage would block everything.
 // When OUTCOME.md is absent, no stub is generated: assert has no write side-effects on the
@@ -685,18 +685,29 @@ try {
   }
 } finally {
   // ---- Cleanup: tear down the worktree (always runs regardless of outcome) ----
+  // The cleanup target is resolved by the script itself, not left to the agent's own
+  // discretion: $CLAUDE_SESSION_ID is a shell variable the Cleanup agent step must expand on
+  // its own, and an environment where it comes back unset or wrong leaves the worktree behind
+  // no matter how compliant the agent is. boot.worktree_path is already known from Bootstrap
+  // (worktree.ts's own create() derived it from the same session id), so the id is recovered
+  // from it here and handed to the agent as a literal value instead.
   phase("Cleanup");
-  await agent(
-    anchor(
-      `You handle the Cleanup stage of assert. Tear down the assert worktree with node ${SCRIPTS}/worktree.ts --cleanup "$CLAUDE_SESSION_ID". If it fails, reporting it as a warning is enough (best-effort). Do not touch other files.`,
-    ),
-    {
-      agentType: "general-purpose",
-      phase: "Cleanup",
-      label: "cleanup",
-      model: "sonnet",
-    },
+  const worktreeIdMatch = /^\.claude\/worktrees\/assert-(.+)$/.exec(
+    String(boot.worktree_path || ""),
   );
+  if (worktreeIdMatch) {
+    await agent(
+      anchor(
+        `You handle the Cleanup stage of assert. Tear down the assert worktree at ${boot.worktree_path} with node ${SCRIPTS}/worktree.ts --cleanup "${worktreeIdMatch[1]}". Do not touch other files.`,
+      ),
+      {
+        agentType: "general-purpose",
+        phase: "Cleanup",
+        label: "cleanup",
+        model: "sonnet",
+      },
+    );
+  }
   // Placed in finally (not after the try block) so a throw inside try still leaves a row: the
   // finally block runs before the throw propagates out of the workflow.
   await recordRun();

@@ -42,9 +42,9 @@ const PROSE_LANGUAGE_ROW =
 // enforcer_map.py の ENFORCER_TABLE をそのまま複製している。
 export const ENFORCER_TABLE: Record<string, string> = {
   // settings.json はこのガードを両方の木で PostToolUse Edit/Write フックとして登録して
-  // おり、hooks/_lib/mirror_prose.py の警告はこの違反そのものに対して "(MIRROR.md)" を
+  // おり、hooks/_lib/mirror_prose.ts の警告はこの違反そのものに対して "(MIRROR.md)" を
   // 引用している。
-  [PROSE_LANGUAGE_ROW]: "hooks/edit/mirror_prose_guard.py",
+  [PROSE_LANGUAGE_ROW]: "hooks/edit/mirror_prose_guard.ts",
 };
 
 /** always-loaded なファイルの分類済みの行 1 件。`enforcer` は `verdict` が
