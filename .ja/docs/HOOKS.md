@@ -31,10 +31,10 @@ Python はアンダースコアで区切る。shell はハイフンで区切る�
 
 | 種別            | 形                  | 例                          |
 | --------------- | ------------------- | --------------------------- |
-| Python hook     | `<対象>_<操作>.py`  | `scribe_prompt.py`          |
+| Python hook     | `<対象>_<操作>.py`  | 現存せず (hook はすべて TypeScript) |
 | shell hook      | `<対象>-<操作>.sh`  | `failure-alert.sh`          |
-| _lib モジュール | `<名詞>.py`         | `command_scan.py`           |
-| Python テスト   | `<hook 名>_test.py` | `scribe_prompt_test.py`     |
+| _lib モジュール | `<名詞>.py`         | `japanese.py`               |
+| Python テスト   | `<hook 名>_test.py` | `japanese_test.py`          |
 | shell テスト    | `<hook 名>.test.sh` | `failure-alert.test.sh`     |
 
 ## 実行の絞り込み
@@ -102,7 +102,7 @@ Claude Code の外にあるアプリを動かす hook。対象のアプリが無
 
 | Hook                         | トリガー                            | 失敗モード  | 用途                                                        |
 | ---------------------------- | ----------------------------------- | ----------- | ----------------------------------------------------------- |
-| amphetamine_agent_session.py | UserPromptSubmit, PostToolUse, Stop | fail-closed | ターンが走る間 macOS を起こしたままにし、終わったら解放する |
+| amphetamine_agent_session.ts | UserPromptSubmit, PostToolUse, Stop | fail-closed | ターンが走る間 macOS を起こしたままにし、終わったら解放する |
 
 ### _lib/
 
@@ -110,11 +110,10 @@ hook が読み込む共有コード。単体では登録しない。`japanese.py
 
 | モジュール      | 利用元                                                      |
 | --------------- | ----------------------------------------------------------- |
-| command_scan.py | scribe_trigger                                              |
-| command_scan.ts | body_proofread, wiki_scene, gh_filing, security の 3 本      |
+| command_scan.ts | body_proofread, wiki_scene, scribe_trigger, gh_filing, security の 3 本 |
 | gh_filing.ts    | body_proofread, issue_body_gate                             |
-| hook_payload.py | scribe_prompt, amphetamine                                  |
-| hook_payload.ts | .ts の hook すべてと mirror_prose, rust_target              |
+| hook_payload.py | 現存せず。後続スライスが消す residue                        |
+| hook_payload.ts | hook すべてと mirror_prose, rust_target, amphetamine_state  |
 | mirror_prose.ts | mirror_prose_guard と .ja/ 一括検査テスト                   |
 | japanese.py     | 現存せず。後続スライスが消す residue                        |
 | japanese.ts     | body_proofread, mirror_prose, textlint_fix                  |

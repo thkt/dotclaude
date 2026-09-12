@@ -50,10 +50,10 @@ for that group (`rust-edit.test.ts` covers the pre/post pair plus `_lib/rust_tar
 
 | Kind        | Shape                 | Example                     |
 | ----------- | --------------------- | --------------------------- |
-| Python hook | `<target>_<op>.py`    | `scribe_prompt.py`          |
+| Python hook | `<target>_<op>.py` | none remain (every hook is TypeScript) |
 | shell hook  | `<target>-<op>.sh`    | `failure-alert.sh`          |
-| _lib module | `<noun>.py`           | `command_scan.py`           |
-| Python test | `<hook name>_test.py` | `scribe_prompt_test.py`     |
+| _lib module | `<noun>.py`           | `japanese.py`               |
+| Python test | `<hook name>_test.py` | `japanese_test.py`          |
 | shell test  | `<hook name>.test.sh` | `failure-alert.test.sh`     |
 
 ## Narrowing the work
@@ -130,7 +130,7 @@ Hooks driving an app outside Claude Code. Each one exits 0 when the app it targe
 
 | Hook                         | Trigger                             | Failure Mode | Purpose                                                     |
 | ---------------------------- | ----------------------------------- | ------------ | ----------------------------------------------------------- |
-| amphetamine_agent_session.py | UserPromptSubmit, PostToolUse, Stop | fail-closed  | Hold macOS awake while a turn runs, release it when it ends |
+| amphetamine_agent_session.ts | UserPromptSubmit, PostToolUse, Stop | fail-closed  | Hold macOS awake while a turn runs, release it when it ends |
 
 ### _lib/
 
@@ -140,11 +140,10 @@ take, the second takes the mirror alone as its subject.
 
 | Module          | Used by                                                          |
 | --------------- | ---------------------------------------------------------------- |
-| command_scan.py | scribe_trigger                                                   |
-| command_scan.ts | body_proofread, wiki_scene, gh_filing, and the three security hooks |
+| command_scan.ts | body_proofread, wiki_scene, scribe_trigger, gh_filing, and the three security hooks |
 | gh_filing.ts    | body_proofread, issue_body_gate                                  |
-| hook_payload.py | scribe_prompt, amphetamine                                       |
-| hook_payload.ts | every .ts hook, plus mirror_prose and rust_target                |
+| hook_payload.py | none remain; residue a later slice removes                       |
+| hook_payload.ts | every hook, plus mirror_prose, rust_target and amphetamine_state |
 | mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                       |
 | japanese.py     | none remain; residue a later slice removes                       |
 | japanese.ts     | body_proofread, mirror_prose, textlint_fix                       |

@@ -1,9 +1,7 @@
 /// <reference types="node" />
-// Command-position scanning shared by the PreToolUse hooks. The TypeScript side of
-// hooks/_lib/command_scan.py (DR-0112's TypeScript migration); command_scan.py stays in the
-// tree because the hooks that still parse a raw Bash string (shlex tokenizing, heredoc and
-// line-continuation handling) keep importing it, so both live side by side until every caller
-// moves over.
+// Command-position scanning shared by the PreToolUse hooks. The TypeScript replacement for the
+// retired command_scan Python module (DR-0112's migration): every hook that parses a raw Bash
+// string (shlex tokenizing, heredoc and line-continuation handling) imports this file.
 //
 // Most of this module works on an already-tokenized command (a list of strings a caller such as
 // npm_install_guard or git_sandbox_guard hands in) -- never shlex. commands() and
@@ -130,14 +128,14 @@ export function git_clean_only_lists(rest: readonly string[]): boolean {
 }
 
 // --- commands() / commands_with_env() -------------------------------------------------------
-// Ports command_scan.py's shlex-based tokenizing (DR-0112): no node:* API is equivalent
-// to shlex.shlex(posix=True, punctuation_chars=..., whitespace_split=True), so
-// _lex()/_resolve() below hand-roll that state machine instead of reaching for one.
+// Ports the retired Python module's shlex-based tokenizing (DR-0112): no node:* API is
+// equivalent to Python's shlex.shlex(posix=True, punctuation_chars=..., whitespace_split=True),
+// so _lex()/_resolve() below hand-roll that state machine instead of reaching for one.
 // hooks/_lib/tests/command-scan-tokens.test.ts diffs the result against
-// hooks/_lib/tests/fixtures/command-scan-tokens.json, a table frozen from command_scan.py.
+// hooks/_lib/tests/fixtures/command-scan-tokens.json, a table frozen before the retirement.
 
 /** An assignment ahead of a command sets the environment for it, the same position `env` takes
- * (command_scan.py's ENV_ASSIGNMENT). */
+ * (the retired Python module's ENV_ASSIGNMENT). */
 const ENV_ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
 
 // Not left as whitespace, which the lexer would drop and join the lines on either side into one

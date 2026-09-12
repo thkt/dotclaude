@@ -4,7 +4,7 @@ Run: python3 hooks/_lib/tests/shebang_test.py
 
 settings.json registers a hook by its bare path (`~/.claude/hooks/.../foo.py`), so the
 kernel resolves the interpreter straight from the shebang line -- it never sees the mise
-shim on PATH. `hooks/_lib/scribe_trigger.py`'s DEFAULT_GH already reads a PATH-sensitive
+shim on PATH. `hooks/_lib/scribe_trigger.ts`'s DEFAULT_GH already reads a PATH-sensitive
 binary by absolute path for the same reason (settings.json runs on a truncated PATH); this
 module applies the same fix to the python3 on line 1. Docs: docs/wiki/silent-hook-failure.md
 (#534) -- a hook without the execute bit does not start at all when settings.json names it

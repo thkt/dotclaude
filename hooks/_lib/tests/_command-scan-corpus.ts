@@ -1,12 +1,12 @@
 /// <reference types="node" />
-// Shared, `_`-prefixed input-list generator for hooks/_lib/tests/fixtures/command-scan-tokens.json
-// and for the differential test that diffs command_scan.py's and
-// command_scan.ts's commands_with_env() against that frozen table. Follows the same `_`-prefix,
-// no-.ja-mirror shape as hooks/_lib/tests/_hook-harness.ts and workflows/_lib/tests/_retirement.ts:
-// a pure helper other test files import from, not a test file of its own.
+// Shared, `_`-prefixed input-list generator for hooks/_lib/tests/fixtures/command-scan-tokens.json,
+// the frozen table command-scan-corpus.test.ts and command-scan-tokens.test.ts both check
+// command_scan.ts's commands_with_env() against. Follows the same `_`-prefix, no-.ja-mirror
+// shape as hooks/_lib/tests/_hook-harness.ts and workflows/_lib/tests/_retirement.ts: a pure
+// helper other test files import from, not a test file of its own.
 //
 // commandScanCorpus() is the one derivation the frozen-behavior test
-// (command-scan-corpus.test.ts) and the differential test both read, so the input list is
+// (command-scan-corpus.test.ts) and command-scan-tokens.test.ts both read, so the input list is
 // never hand-enumerated twice. It concatenates three products plus the curated set the
 // unit's contract names:
 //   - lexicalCases(): the 14 special characters `( ) ; < > | & # \ ' " space newline
@@ -17,7 +17,7 @@
 //     marker that only looks real inside quotes, each with and without a closing line -- 10
 //     cases.
 //   - resolveCases(): WRAPPERS x 3 forms, EXEC_FLAGS x 3 forms, and 4 env-assignment forms
-//     that _resolve() in command_scan.py reads -- 40 cases.
+//     that _resolve() in command_scan.ts reads -- 40 cases.
 //   - curatedCases(): every command string hooks/_lib/tests/command_scan_test.py and the 3
 //     security hook tests (hooks/security/tests/npm_install_guard_test.py,
 //     hooks/security/tests/rm_to_trash_test.py, hooks/security/tests/git_sandbox_guard_test.py)
@@ -135,7 +135,7 @@ function realHeredoc(marker: string, terminated: boolean): string {
   return lines.join("\n");
 }
 
-// _HEREDOC in command_scan.py matches `<<` textually, with no quote-awareness, so a line that
+// _HEREDOC in command_scan.ts matches `<<` textually, with no quote-awareness, so a line that
 // merely looks like a heredoc opener inside quotes (command_scan_test.py's T-016) still starts
 // the same closing-line search. Terminated here finds a later line that happens to equal the
 // looked-for marker; unterminated does not, so nothing is dropped (T-016's own case).
@@ -210,7 +210,7 @@ function envAssignmentCases(): CorpusCase[] {
 }
 
 /** WRAPPERS x 3 forms, EXEC_FLAGS x 3 forms, and 4 env-assignment forms: 8*3 + 4*3 + 4 = 40
- * cases, covering what _resolve() in command_scan.py reads ahead of the real command. */
+ * cases, covering what _resolve() in command_scan.ts reads ahead of the real command. */
 export function resolveCases(): CorpusCase[] {
   const cases: CorpusCase[] = [];
   for (const wrapper of WRAPPERS) {
