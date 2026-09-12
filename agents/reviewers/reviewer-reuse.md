@@ -63,6 +63,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no code is in r
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | Prefix       | REUSE                                                                                                                             |
 | Categories   | utility / pattern / inline / unused_import / stdlib / native / dependency                                                                      |
-| Severity     | critical / high / medium / low                                                                                                               |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Disposition  | Reviewer-settable override of the default, with a disposition_reason. See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-disposition.md § Disposition |
 | Verification | pattern_search. Does the existing utility cover all edge cases of new code?                                                       |

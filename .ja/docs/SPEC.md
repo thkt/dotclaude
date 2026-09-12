@@ -307,9 +307,9 @@ workflow は他の workflow を 1 階層だけ入れ子にできる。ルーテ�
 
 | ステップ      | コマンド                                                                                     |
 | ------------- | -------------------------------------------------------------------------------------------- |
-| Node tests    | `node --test` を `tests/`, `agents/**/tests/`, `hooks/**/tests/`, `skills/**/tests/`, `workflows/**/tests/` に対して実行 |
+| Node tests    | `node --test` を `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"`, `"workflows/**/tests/*.test.js"`, `"workflows/**/tests/*.test.ts"` に対して実行 |
 | Python tests  | `find agents hooks skills workflows -name '*_test.py'` を 1 ファイルずつ実行                  |
-| Shell tests   | `find hooks -name '*.test.sh'` を 1 ファイルずつ bash で実行                                  |
+| Shell tests   | `find hooks sandbox -name '*.test.sh'` を 1 ファイルずつ bash で実行                          |
 | oxlint        | `npx oxlint`                                                                                  |
 | textlint      | `npx textlint '.ja/**/*.md'`                                                                  |
 | ruff          | `pipx run --spec ruff==0.16.4 ruff check .`                                                   |
@@ -372,9 +372,9 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 
 | 追加するもの | 触るファイル                                                            | 確認                                        |
 | ------------ | ----------------------------------------------------------------------- | ------------------------------------------- |
-| hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `find hooks -name '*_test.py'` と `find hooks -name '*.test.sh'` |
-| skill        | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js"`   |
-| agent        | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js"`   |
-| workflow     | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`             | `node --test "workflows/**/tests/*.test.js"`|
+| hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `find hooks -name '*_test.py'` と `find hooks sandbox -name '*.test.sh'` |
+| skill        | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
+| agent        | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
+| workflow     | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`             | `node --test "workflows/**/tests/*.test.js" "workflows/**/tests/*.test.ts"` |
 | DR           | `docs/decisions/NNNN-*.md`                                              | `node --test tests/decision-records.test.js`|
 | 文書         | `.ja/docs/<NAME>.md` を先、`docs/<NAME>.md` を同一コミットで            | `npx textlint '.ja/**/*.md'` と `rumdl check .` |

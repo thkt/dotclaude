@@ -51,5 +51,5 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no code is in r
 | ------------ | ------------------------------------------------------------------------------------------ |
 | Prefix       | SF                                                                                         |
 | Categories   | catch / promise / async / ui-feedback / fallback                                           |
-| Severity     | critical / high / medium / low                                                             |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | error_propagation or pattern_search. Does this error surface to the user or remain silent? |

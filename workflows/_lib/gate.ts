@@ -45,7 +45,8 @@ import { constants as osConstants } from "node:os";
 import { isAbsolute } from "node:path";
 import { isMainModule } from "./entry-point.ts";
 
-export const REPORT_PROTOCOL = "claude-code-gate/v1";
+// Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts).
+const REPORT_PROTOCOL = "claude-code-gate/v1";
 export const DEFAULT_TIMEOUT_MS = 600_000;
 export const DEFAULT_TAIL_BYTES = 12_000;
 
@@ -60,7 +61,8 @@ const SINGLE_FLAGS = new Set([
 ]);
 const REPEATABLE_FLAGS = new Set(["--require-output", "--forbid-output", "--planned-test"]);
 const BOOLEAN_FLAGS = new Set(["--calibrate"]);
-export const GATE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
+// Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts).
+const GATE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const ROUTE_PATTERN =
   /^(?:blocked|triage|(?:red|green|direct):[A-Za-z0-9][A-Za-z0-9._-]*|cleanup:[A-Za-z0-9][A-Za-z0-9._-]*)$/;
 const LINE_SPLIT = /\r\n|\r|\n/;
@@ -182,7 +184,8 @@ export function hasExactOutputLine(stdout: string, stderr: string, evidence: str
 }
 
 // Every line of one stream, addressed so a caller can name one without retyping it.
-export function outputLines(stream: "stdout" | "stderr", text: string): CandidateLine[] {
+// Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts).
+function outputLines(stream: "stdout" | "stderr", text: string): CandidateLine[] {
   const lines: CandidateLine[] = [];
   const raws = text.split(LINE_SPLIT);
   for (let index = 0; index < raws.length; index += 1) {
@@ -222,7 +225,8 @@ function locateName(line: string, name: string): { at: number; length: number } 
 //
 // The name is cut out before the marker is looked for. A test whose own name contains
 // "error" would otherwise satisfy the marker on the strength of its name alone.
-export function namesPlannedFailure(line: string, name: string): boolean {
+// Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts).
+function namesPlannedFailure(line: string, name: string): boolean {
   const found = locateName(line, name);
   if (found === null) {
     return false;
@@ -262,7 +266,8 @@ export function calibrationCandidates(
   return candidates;
 }
 
-export function positiveInt(value: string, flag: string): number {
+// Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts).
+function positiveInt(value: string, flag: string): number {
   const trimmed = value.trim();
   const parsed = Number(trimmed);
   if (!/^[+-]?\d+$/.test(trimmed) || !Number.isSafeInteger(parsed) || parsed <= 0) {
@@ -272,8 +277,9 @@ export function positiveInt(value: string, flag: string): number {
 }
 
 /** A stat failing for a reason other than absence keeps that reason: reporting EACCES as
- * absence tells the caller the path is not a directory when the path is unreadable. */
-export function isExistingDirectory(path: string): boolean {
+ * absence tells the caller the path is not a directory when the path is unreadable.
+ * Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts). */
+function isExistingDirectory(path: string): boolean {
   try {
     return statSync(path).isDirectory();
   } catch (error) {
@@ -410,7 +416,8 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   };
 }
 
-export function signalNumber(name: string): number | undefined {
+// Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts).
+function signalNumber(name: string): number | undefined {
   return (osConstants.signals as unknown as Record<string, number>)[name];
 }
 

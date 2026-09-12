@@ -307,9 +307,9 @@ External binaries run right after an edit and after a Bash call. `gates` has a 1
 
 | Step          | Command                                                                                      |
 | ------------- | -------------------------------------------------------------------------------------------- |
-| Node tests    | `node --test` over `tests/`, `agents/**/tests/`, `hooks/**/tests/`, `skills/**/tests/`, `workflows/**/tests/` |
+| Node tests    | `node --test` over `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"`, `"workflows/**/tests/*.test.js"`, `"workflows/**/tests/*.test.ts"` |
 | Python tests  | `find agents hooks skills workflows -name '*_test.py'`, one file per invocation               |
-| Shell tests   | `find hooks -name '*.test.sh'`, one file per bash invocation                                  |
+| Shell tests   | `find hooks sandbox -name '*.test.sh'`, one file per bash invocation                          |
 | oxlint        | `npx oxlint`                                                                                  |
 | textlint      | `npx textlint '.ja/**/*.md'`                                                                  |
 | ruff          | `pipx run --spec ruff==0.16.4 ruff check .`                                                   |
@@ -372,9 +372,9 @@ Here are the files a new component touches, and the command that confirms the ad
 
 | Adding   | Files to touch                                                          | Confirmation                                |
 | -------- | ----------------------------------------------------------------------- | ------------------------------------------- |
-| A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `find hooks -name '*_test.py'` and `find hooks -name '*.test.sh'` |
-| A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js"`   |
-| An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js"`   |
-| A workflow | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`           | `node --test "workflows/**/tests/*.test.js"`|
+| A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `find hooks -name '*_test.py'` and `find hooks sandbox -name '*.test.sh'` |
+| A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
+| An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
+| A workflow | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`           | `node --test "workflows/**/tests/*.test.js" "workflows/**/tests/*.test.ts"` |
 | A DR     | `docs/decisions/NNNN-*.md`                                              | `node --test tests/decision-records.test.js`|
 | A document | `.ja/docs/<NAME>.md` first, `docs/<NAME>.md` in the same commit       | `npx textlint '.ja/**/*.md'` and `rumdl check .` |

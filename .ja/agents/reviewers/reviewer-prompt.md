@@ -92,4 +92,4 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。ファイル種�
 | ---------- | ----------------------------------------------- |
 | Prefix     | PQ                                              |
 | カテゴリ   | token-efficiency / structure / format / clarity |
-| Severity   | critical / high / medium / low                             |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |

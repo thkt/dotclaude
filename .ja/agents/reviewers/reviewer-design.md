@@ -66,6 +66,6 @@ ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md に従う。モジュール�
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Prefix       | DP                                                                                                                                             |
 | カテゴリ     | module-depth (単一カテゴリ。1:1 転送や設定の素通しなど、浅いパターンの名前を evidence に記載)                                                                                      |
-| Severity     | critical / high / medium / low                                                                                                                   |
+| Severity     | ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields を参照 |
 | Disposition  | reviewer によるデフォルトの上書き。上書き時は disposition_reason を伴う。詳細は ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-disposition.md § Disposition を参照 |
 | Verification | deletion_trace。モジュールを削除したら呼び出し箇所で何が再出現するかを明示する                                                                 |

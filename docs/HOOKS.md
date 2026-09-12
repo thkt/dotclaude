@@ -50,9 +50,9 @@ for that group (`rust-edit.test.ts` covers the pre/post pair plus `_lib/rust_tar
 
 | Kind        | Shape                 | Example                     |
 | ----------- | --------------------- | --------------------------- |
-| Python hook | `<target>_<op>.py`    | none remain (all ported to TypeScript) |
+| Python hook | `<target>_<op>.py` | none remain (every hook is TypeScript) |
 | shell hook  | `<target>-<op>.sh`    | `failure-alert.sh`          |
-| _lib module | `<noun>.py`           | `japanese.py`                |
+| _lib module | `<noun>.py`           | `japanese.py`               |
 | Python test | `<hook name>_test.py` | `japanese_test.py`          |
 | shell test  | `<hook name>.test.sh` | `failure-alert.test.sh`     |
 
@@ -138,18 +138,18 @@ Shared code the hooks pull in, never registered on its own. `japanese.py` judges
 itself; `mirror_prose.ts` inspects what sits under `.ja/`. The first is a predicate any file can
 take, the second takes the mirror alone as its subject.
 
-| Module          | Used by                                                        |
-| --------------- | -------------------------------------------------------------- |
-| command_scan.ts | issue_body_gate, body_proofread, and the three security hooks  |
-| gh_filing.ts    | issue_body_gate, body_proofread                                |
-| hook_payload.py | none remain; the module is residue a later slice removes        |
-| hook_payload.ts | mirror_prose, rust_target, recall_index, and the four edit hooks |
-| mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                      |
-| japanese.py     | body_proofread                                                  |
-| japanese.ts     | mirror_prose, textlint_fix                                      |
-| textlint.py     | body_proofread                                                  |
-| textlint.ts     | textlint_fix                                                    |
-| rust_target.ts  | rust_pre_edit, rust_post_edit                                   |
+| Module          | Used by                                                          |
+| --------------- | ---------------------------------------------------------------- |
+| command_scan.ts | body_proofread, wiki_scene, scribe_trigger, gh_filing, and the three security hooks |
+| gh_filing.ts    | body_proofread, issue_body_gate                                  |
+| hook_payload.py | none remain; residue a later slice removes                       |
+| hook_payload.ts | every hook, plus mirror_prose, rust_target and amphetamine_state |
+| mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                       |
+| japanese.py     | none remain; residue a later slice removes                       |
+| japanese.ts     | body_proofread, mirror_prose, textlint_fix                       |
+| textlint.py     | none remain; residue a later slice removes                       |
+| textlint.ts     | textlint_fix                                                     |
+| rust_target.ts  | rust_pre_edit, rust_post_edit                                    |
 
 ## Quality Pipeline (Rust Binaries)
 

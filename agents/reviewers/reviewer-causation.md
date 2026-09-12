@@ -64,6 +64,6 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no code is in r
 | ------------ | ---------------------------------------------------------------------------------------------- |
 | Prefix       | RC                                                                                             |
 | Categories   | symptom / state-sync / race / workaround                                                       |
-| Severity     | critical / high / medium / low                                                                 |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | execution_trace or pattern_search. Does the root cause actually produce the described symptom? |
 | Required     | five_whys (5-step chain from observable fact to root cause, appended to evidence), root_cause (fundamental issue, written into reasoning). The caller's schema carries no extra keys |

@@ -1,0 +1,167 @@
+{
+  "run_date": "2026-09-12",
+  "skill": "use-context-reviewer-security",
+  "agent": "reviewer-security",
+  "model": "opus-5",
+  "definition_sha256": "a55456b6357f2db24dbd077c3c360453543cd856d4b50c522eaef8e87dc00113",
+  "skill_sha256": "ae84e04d0c6cfe63217563d578fb4f82f15200c7f6b0a34102888e8a60c218f7",
+  "corpus_sha256": "13918e0c60afd3da2a0072a8382bfc64c6bcb1f403b6537168350a109dacacbf",
+  "invocation": "Agent tool, direct subagent. BLIND protocol: 21 files copied to a temp dir under case-NN names in the 2026-08-24 order, the paired route as case-21; the dispatch prompt carried the target directory, the pairing of case-20 / case-21, and the instruction to return findings in the definition's format, and nothing else.",
+  "protocol_note": "The judging rules were fixed before the output was read, carried over from the 2026-09-02 run so the two compare: a category other than the expected one is other_finding even when the defect was found; LLM01 counts as the expected category for the prompt-injection cases the corpus labels A03; a finding on the paired route does not count toward the middleware. This run measures the definition #655 ships, whose severity row points at finding-schema.md's enum instead of restating it.",
+  "counts": {
+    "flagged": 12,
+    "clean": 8,
+    "hit": 9,
+    "below_severity": 1,
+    "other_finding": 1,
+    "miss": 0,
+    "false_positive": 0,
+    "below_min_findings": 1
+  },
+  "metrics": {
+    "recall_detection": 0.917,
+    "recall_expected": 0.833,
+    "recall_strict": 0.75,
+    "fp_rate": 0
+  },
+  "byCategory": {
+    "A03": {
+      "total": 9,
+      "hit": 8,
+      "recall_strict": 0.889
+    },
+    "A02": {
+      "total": 1,
+      "hit": 0,
+      "recall_strict": 0
+    },
+    "A01": {
+      "total": 1,
+      "hit": 0,
+      "recall_strict": 0
+    },
+    "A10": {
+      "total": 1,
+      "hit": 1,
+      "recall_strict": 1
+    }
+  },
+  "diff": {
+    "recall_detection": 0,
+    "recall_expected": 0,
+    "recall_strict": 0.167,
+    "fp_rate": 0
+  },
+  "diff_note": "Against 2026-09-02-blind-rerun2. recall_strict rises 0.583 -> 0.75: case-19 (prompt-injection-system-spoof) reached its two findings this time, where the previous run left it below_min_findings. recall_detection, recall_expected and fp_rate are unchanged.",
+  "observations": [
+    "case-05 (hardcoded-key) reported A05 where the corpus expects A02, so it scores other_finding: the key was found, the category was not the one recorded.",
+    "case-07 (fake-escape) was reported at medium against a high severity_min, so it scores below_severity.",
+    "case-20 (middleware) drew one finding at or above severity_min on its own file; the second finding landed on the paired route, which the rules do not count toward it.",
+    "No clean case drew a finding: fp_rate stays 0 across both runs."
+  ],
+  "blind_mapping": {
+    "case-01.ts": "cases/vuln/sql-injection.ts",
+    "case-02.ts": "cases/safe/parameterized-query.ts",
+    "case-03.tsx": "cases/vuln/dangerous-html.tsx",
+    "case-04.tsx": "cases/safe/sanitized-html.tsx",
+    "case-05.ts": "cases/vuln/hardcoded-key.ts",
+    "case-06.ts": "cases/safe/env-key.ts",
+    "case-07.ts": "cases/hard-vuln/fake-escape.ts",
+    "case-08.ts": "cases/hard-safe/parameterized-like.ts",
+    "case-09.tsx": "cases/hard-vuln/indirect-xss.tsx",
+    "case-10.tsx": "cases/hard-safe/wrapped-sanitize.tsx",
+    "case-11.ts": "cases/hard-vuln/ssrf.ts",
+    "case-12.ts": "cases/hard-safe/allowlist-fetch.ts",
+    "case-13.ts": "cases/hard-vuln/second-order-injection.ts",
+    "case-14.ts": "cases/safe/prompt-injection-isolated.ts",
+    "case-15.ts": "cases/vuln/prompt-injection-rag.ts",
+    "case-16.ts": "cases/hard-safe/prompt-injection-explainer.ts",
+    "case-17.ts": "cases/vuln/prompt-injection-doc-trailer.ts",
+    "case-18.ts": "cases/hard-vuln/prompt-injection-exfiltration.ts",
+    "case-19.ts": "cases/hard-vuln/prompt-injection-system-spoof.ts",
+    "case-20.ts": "cases/cross-file/middleware.ts",
+    "case-21.ts": "cases/cross-file/analytics-route.ts"
+  },
+  "results": [
+    {
+      "file": "cases/vuln/sql-injection.ts",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/safe/parameterized-query.ts",
+      "verdict": "pass"
+    },
+    {
+      "file": "cases/vuln/dangerous-html.tsx",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/safe/sanitized-html.tsx",
+      "verdict": "pass"
+    },
+    {
+      "file": "cases/vuln/hardcoded-key.ts",
+      "verdict": "other_finding"
+    },
+    {
+      "file": "cases/safe/env-key.ts",
+      "verdict": "pass"
+    },
+    {
+      "file": "cases/cross-file/middleware.ts",
+      "verdict": "below_min_findings"
+    },
+    {
+      "file": "cases/hard-vuln/fake-escape.ts",
+      "verdict": "below_severity"
+    },
+    {
+      "file": "cases/hard-vuln/indirect-xss.tsx",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/hard-vuln/ssrf.ts",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/hard-vuln/second-order-injection.ts",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/hard-safe/parameterized-like.ts",
+      "verdict": "pass"
+    },
+    {
+      "file": "cases/hard-safe/wrapped-sanitize.tsx",
+      "verdict": "pass"
+    },
+    {
+      "file": "cases/hard-safe/allowlist-fetch.ts",
+      "verdict": "pass"
+    },
+    {
+      "file": "cases/vuln/prompt-injection-rag.ts",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/vuln/prompt-injection-doc-trailer.ts",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/safe/prompt-injection-isolated.ts",
+      "verdict": "pass"
+    },
+    {
+      "file": "cases/hard-vuln/prompt-injection-exfiltration.ts",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/hard-vuln/prompt-injection-system-spoof.ts",
+      "verdict": "hit"
+    },
+    {
+      "file": "cases/hard-safe/prompt-injection-explainer.ts",
+      "verdict": "pass"
+    }
+  ]
+}

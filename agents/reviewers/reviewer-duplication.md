@@ -68,5 +68,5 @@ Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. When no code is in r
 | ------------ | ----------------------------------------------------------------- |
 | Prefix       | DRY                                                               |
 | Categories   | exact / near-duplicate / pattern / reimplementation / arg-variant |
-| Severity     | critical / high / medium / low                                               |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
 | Verification | pattern_search. Are there more occurrences beyond the ones found? |
