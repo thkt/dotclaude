@@ -155,9 +155,27 @@ const PLANNED_FILES_INCLUDES = [
   "!skills/*/test/cases/**",
 ];
 
-test("T-005 biome.json keeps noExcessiveCognitiveComplexity at a level other than off with maxAllowedComplexity at most 15", () => {
+// Every way a biome.json edit can stop the rule from reaching the tracked tree, as a list of
+// names so the positive controls below can say which hole a mutation opened. Each entry was
+// confirmed against biome 2.5.12 to skip files or silence the rule: `linter.enabled: false`
+// lints nothing, `linter.includes` excludes paths just as `files.includes` does, an `overrides`
+// entry can turn the linter off per path, and `level: "info"` reports as a notice that
+// `--error-on-warnings` never fails on.
+function biomeHoles(config) {
+  const holes = [];
+  const rule = config.linter?.rules?.complexity?.noExcessiveCognitiveComplexity;
+  if (config.linter?.enabled === false) holes.push("linter.enabled is false");
+  if (Object.hasOwn(config.linter ?? {}, "includes")) holes.push("linter.includes is set");
+  if (!rule || !["warn", "error"].includes(rule.level))
+    holes.push("rule level is not warn or error");
+  if (!(rule?.options?.maxAllowedComplexity <= 15)) holes.push("maxAllowedComplexity exceeds 15");
+  if (Object.hasOwn(config, "overrides")) holes.push("overrides is set");
+  return holes;
+}
+
+test("T-005 biome.json keeps noExcessiveCognitiveComplexity at warn or error with maxAllowedComplexity at most 15", () => {
   const rule = biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity;
-  assert.notEqual(rule.level, "off");
+  assert.ok(["warn", "error"].includes(rule.level), `level is ${rule.level}`);
   assert.ok(
     rule.options.maxAllowedComplexity <= 15,
     `maxAllowedComplexity ${rule.options.maxAllowedComplexity} exceeds 15`,
@@ -167,4 +185,36 @@ test("T-005 biome.json keeps noExcessiveCognitiveComplexity at a level other tha
 test("T-006 biome.json's files.includes equals the five planned entries exactly and the file carries no overrides key", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
   assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
+});
+
+test("T-019 biome.json opens none of the holes the config check names", () => {
+  assert.deepEqual(biomeHoles(biomeConfig), []);
+});
+
+// T-020's positive controls: one mutation per hole, applied to a copy of the committed config.
+// A mutation the check does not name would leave this list short of the holes it claims to cover.
+const BIOME_MUTATIONS = [
+  ["linter.enabled is false", (c) => (c.linter.enabled = false)],
+  ["linter.includes is set", (c) => (c.linter.includes = ["**", "!hooks/**"])],
+  [
+    "rule level is not warn or error",
+    (c) => (c.linter.rules.complexity.noExcessiveCognitiveComplexity.level = "info"),
+  ],
+  [
+    "maxAllowedComplexity exceeds 15",
+    (c) =>
+      (c.linter.rules.complexity.noExcessiveCognitiveComplexity.options.maxAllowedComplexity = 16),
+  ],
+  [
+    "overrides is set",
+    (c) => (c.overrides = [{ includes: ["hooks/**"], linter: { enabled: false } }]),
+  ],
+];
+
+test("T-020 each biome.json mutation that hides files or silences the rule is named by the config check", () => {
+  for (const [hole, mutate] of BIOME_MUTATIONS) {
+    const copy = structuredClone(biomeConfig);
+    mutate(copy);
+    assert.deepEqual(biomeHoles(copy), [hole]);
+  }
 });
