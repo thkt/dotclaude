@@ -117,6 +117,23 @@ function gitTopLevel(): GitTopLevelResult {
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };
 }
 
+/** drDir 配下の既存 DR (markdownFilesUnder、ソート済み) のうち、最初の heading が title に
+ * 対して threshold 以上のスコアを持つものすべてを、formatScore(score) と既存の heading
+ * テキストを添えて返す -- threshold 以上の *.md が drDir に無ければ空になる。main() から
+ * 呼ばれる。 */
+function collectSimilarDrs(title: string, drDir: string, threshold: number): SimilarDr[] {
+  const similarDrs: SimilarDr[] = [];
+  for (const drFile of markdownFilesUnder(drDir).sort()) {
+    const existing = firstHeading(drFile);
+    if (!existing) continue;
+    const score = similarity(title, existing);
+    if (score >= threshold) {
+      similarDrs.push({ file: basename(drFile), similarity: formatScore(score), title: existing });
+    }
+  }
+  return similarDrs;
+}
+
 // Python の main() は自身の argv を取らない (title は sys.argv[1] から来る)。この main(argv)
 // は harness_hash.ts の main() と同じ process.argv.slice(2) の慣習を保つ。
 export function main(argv: string[]): number {
@@ -166,15 +183,7 @@ export function main(argv: string[]): number {
     .replace(/-{2,}/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  const similarDrs: SimilarDr[] = [];
-  for (const drFile of markdownFilesUnder(drDir).sort()) {
-    const existing = firstHeading(drFile);
-    if (!existing) continue;
-    const score = similarity(title, existing);
-    if (score >= threshold) {
-      similarDrs.push({ file: basename(drFile), similarity: formatScore(score), title: existing });
-    }
-  }
+  const similarDrs = collectSimilarDrs(title, drDir, threshold);
 
   const now = new Date();
   const date = [
