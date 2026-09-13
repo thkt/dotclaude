@@ -58,46 +58,33 @@ function createRealWorktree(home, repo, sessionId) {
 const worktreeList = (repo) =>
   spawnSync("git", ["-C", repo, "worktree", "list"], { encoding: "utf8" }).stdout;
 
-// Defaults that carry no per-run override live outside the stub, mirroring
-// workflows/polish/tests/polish.rejudge.test.js's agentStub.
-const TEST_EXEC_NO_RUNNER = { outcome: "no-runner" };
-const ADVERSARIAL_SKIPPED = { ran: false, notes: "stub" };
-const CODEX_REVIEW_SKIPPED = { ran: false, findings: [] };
-const SYNTHESIZE_STUB = { issues: [], root_causes: [], report: "stub" };
-
 // Reused by both tests, so a stub that swept more than the one worktree it was told about would
-// show up the same way in either test. Rows are [predicate on label, responder], tried in order
-// and the first match wins, mirroring workflows/build/tests/build.behavior.test.js's KIND_RULES.
+// show up the same way in either test. Responders are looked up by label; an unknown label
+// answers undefined.
 const cleanupCapableAgentStub = (repo, worktreePathA) => {
-  const rules = [
-    [
-      (label) => label === "bootstrap",
-      () => ({ ...bootOk, worktree_path: worktreePathA, scope_files: [] }),
-    ],
-    [(label) => label === "test-exec", () => TEST_EXEC_NO_RUNNER],
-    [(label) => label === "adversarial", () => ADVERSARIAL_SKIPPED],
-    [(label) => label === "codex-review", () => CODEX_REVIEW_SKIPPED],
-    [(label) => label === "synthesize", () => SYNTHESIZE_STUB],
-    [
-      (label) => label === "cleanup",
-      (prompt) => {
-        const match = /\.claude\/worktrees\/assert-[A-Za-z0-9._-]+/.exec(prompt);
-        // No concrete path in the prompt (the pre-fix text names only the unresolved
-        // "$CLAUDE_SESSION_ID"): nothing for this stub to act on, so it does nothing -- and its
-        // own return to the script is nothing either way, per this unit's T-439.
-        if (!match) return undefined;
-        const path = match[0];
-        const branch = path.split("/").pop();
-        spawnSync("git", ["-C", repo, "worktree", "remove", path, "--force"], { encoding: "utf8" });
-        spawnSync("git", ["-C", repo, "branch", "-D", branch], { encoding: "utf8" });
-        return undefined;
-      },
-    ],
-  ];
+  const responders = {
+    bootstrap: () => ({ ...bootOk, worktree_path: worktreePathA, scope_files: [] }),
+    "test-exec": () => ({ outcome: "no-runner" }),
+    adversarial: () => ({ ran: false, notes: "stub" }),
+    "codex-review": () => ({ ran: false, findings: [] }),
+    synthesize: () => ({ issues: [], root_causes: [], report: "stub" }),
+    cleanup: (prompt) => {
+      const match = /\.claude\/worktrees\/assert-[A-Za-z0-9._-]+/.exec(prompt);
+      // No concrete path in the prompt (the pre-fix text names only the unresolved
+      // "$CLAUDE_SESSION_ID"): nothing for this stub to act on, so it does nothing -- and its
+      // own return to the script is nothing either way, per this unit's T-439.
+      if (!match) return undefined;
+      const path = match[0];
+      const branch = path.split("/").pop();
+      spawnSync("git", ["-C", repo, "worktree", "remove", path, "--force"], { encoding: "utf8" });
+      spawnSync("git", ["-C", repo, "branch", "-D", branch], { encoding: "utf8" });
+      return undefined;
+    },
+  };
   return (prompt, opts) => {
     const label = opts && opts.label;
-    const rule = rules.find(([matches]) => matches(label));
-    return rule ? rule[1](prompt) : undefined;
+    const respond = Object.hasOwn(responders, label) ? responders[label] : undefined;
+    return respond ? respond(prompt) : undefined;
   };
 };
 

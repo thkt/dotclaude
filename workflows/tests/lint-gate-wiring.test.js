@@ -46,8 +46,9 @@ function listWorkflowScripts(dir) {
     .map((entry) => path.posix.join(dir, entry.name));
 }
 
-// The scope Rules narrows T-020 to: tracked workflows/**/tests/, workflows/tests/, and tests/
-// files, by extension. hooks/**/tests/ is #712's range and this pattern excludes it already.
+// T-020 covers tracked workflows/**/tests/, workflows/tests/, and tests/ files, by extension;
+// hooks/**/tests/ is #712's range. Once #710 raises the rule to error, T-016 (bare `biome lint`
+// from the root exits zero) carries this check and T-020 retires.
 const T020_SCOPE_RE = /^(workflows\/.*\/tests\/|workflows\/tests\/|tests\/)/;
 const T020_EXT_RE = /\.(js|ts|tsx|json)$/;
 

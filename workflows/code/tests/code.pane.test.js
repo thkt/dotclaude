@@ -47,47 +47,36 @@ const twoPlan = {
   ],
 };
 
-// Defaults that carry no per-scenario override live outside the stub, mirroring
-// workflows/polish/tests/polish.rejudge.test.js's agentStub.
-const HERDR_CHECK_OK = { herdr_available: true, notes: "" };
-const PANE_CLOSE_OK = { closed: true, notes: "" };
-const RED_OK = { red_confirmed: true, test_files: ["t.test.js"], notes: "", evidence: [] };
-const GREEN_OK = { green: true, notes: "", deferred: [] };
-const VERIFY_OK = { tests_pass: true, gates_pass: true, output_tail: "" };
-
 // Fails loudly on any label this scenario should never reach, instead of letting a stray
 // call return undefined and mask a wiring mistake as a pass. coderStarted: false reproduces
 // the second pane's `agent start` failing (agent_not_ready) after the first pane's split /
-// start already succeeded. Rows are [predicate on label, responder], tried in order and the
-// first match wins, mirroring workflows/build/tests/build.behavior.test.js's KIND_RULES.
-const paneStub =
-  ({ testerPaneId = "pane-tester-1", coderPaneId = "pane-coder-1", coderStarted = true } = {}) => {
-    const rules = [
-      [(label) => label === "herdr-check", () => HERDR_CHECK_OK],
-      [
-        (label) => label === "pane-start:tester",
-        () => ({ pane_id: testerPaneId, started: true, notes: "" }),
-      ],
-      [
-        (label) => label === "pane-start:coder",
-        () =>
-          coderStarted
-            ? { pane_id: coderPaneId, started: true, notes: "" }
-            : { pane_id: "", started: false, notes: "agent start failed: agent_not_ready" },
-      ],
-      [(label) => label === "pane-close:tester", () => PANE_CLOSE_OK],
-      [(label) => label === "pane-close:coder", () => PANE_CLOSE_OK],
-      [(label) => label.startsWith("red:"), () => RED_OK],
-      [(label) => label.startsWith("green:"), () => GREEN_OK],
-      [(label) => label === "verify", () => VERIFY_OK],
-    ];
-    return (prompt, opts) => {
-      const label = opts.label ?? "";
-      const rule = rules.find(([matches]) => matches(label));
-      if (!rule) throw new Error(`unexpected label: ${label}`);
-      return rule[1]();
-    };
+// start already succeeded. Responders are looked up by label; the per-unit red:/green: labels
+// match on their prefix.
+const paneStub = ({
+  testerPaneId = "pane-tester-1",
+  coderPaneId = "pane-coder-1",
+  coderStarted = true,
+} = {}) => {
+  const responders = {
+    "herdr-check": () => ({ herdr_available: true, notes: "" }),
+    "pane-start:tester": () => ({ pane_id: testerPaneId, started: true, notes: "" }),
+    "pane-start:coder": () =>
+      coderStarted
+        ? { pane_id: coderPaneId, started: true, notes: "" }
+        : { pane_id: "", started: false, notes: "agent start failed: agent_not_ready" },
+    "pane-close:tester": () => ({ closed: true, notes: "" }),
+    "pane-close:coder": () => ({ closed: true, notes: "" }),
+    "red:": () => ({ red_confirmed: true, test_files: ["t.test.js"], notes: "", evidence: [] }),
+    "green:": () => ({ green: true, notes: "", deferred: [] }),
+    verify: () => ({ tests_pass: true, gates_pass: true, output_tail: "" }),
   };
+  return (prompt, opts) => {
+    const label = opts.label ?? "";
+    const key = Object.hasOwn(responders, label) ? label : `${label.split(":")[0]}:`;
+    if (!Object.hasOwn(responders, key)) throw new Error(`unexpected label: ${label}`);
+    return responders[key]();
+  };
+};
 
 test("T-006 codex-herdr opens two panes, tester and coder", async () => {
   const { calls } = await runWorkflow(codeJs, {
