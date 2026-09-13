@@ -172,20 +172,20 @@ test("T-022 biome lint --error-on-warnings over every tracked JS and TS file und
   );
 });
 
-// Every tracked .js/.ts file under skills/ or .ja/skills/ whose path carries no "test" or
-// "tests" path segment (a plain filename such as "latest.ts" does not count -- the segment
-// must sit between slashes or at a path boundary). skills/*/test/cases/** (biome.json's own
-// ignore) falls out of this the same way skills/*/tests/*.test.ts does.
-const SKILLS_TEST_SEGMENT = /(^|\/)tests?(\/|$)/;
+// Every tracked source file under skills/ or .ja/skills/ outside a test or tests directory,
+// by extension. skills/*/test/cases/** (biome.json's own ignore) falls out of this the same
+// way skills/*/tests/*.test.ts does.
+const SKILLS_SOURCE_RE = /^(\.ja\/)?skills\//;
+const SKILLS_TEST_SEGMENT = /\/tests?\//;
+const SKILLS_EXT_RE = /\.(js|mjs|cjs|ts|mts|cts)$/;
 
 function trackedSkillsFilesOutsideTests() {
-  return execFileSync(
-    "git",
-    ["ls-files", "-z", "skills/**/*.ts", "skills/**/*.js", ".ja/skills/**/*.ts", ".ja/skills/**/*.js"],
-    { cwd: ROOT, encoding: "utf8" },
-  )
+  return execFileSync("git", ["ls-files", "-z"], { cwd: ROOT, encoding: "utf8" })
     .split("\0")
-    .filter((file) => file !== "" && !SKILLS_TEST_SEGMENT.test(file));
+    .filter(
+      (file) =>
+        SKILLS_SOURCE_RE.test(file) && !SKILLS_TEST_SEGMENT.test(file) && SKILLS_EXT_RE.test(file),
+    );
 }
 
 // Same shape as runFromRoot, but keeps stdout so T-023 can read the "Checked N files" line
@@ -206,20 +206,16 @@ function runCaptureFromRoot(bin, args) {
   }
 }
 
-test(
-  "T-023 biome lint --error-on-warnings over every tracked JS and TS file under skills " +
-    "outside test directories exits zero after checking every listed file",
-  () => {
-    const files = trackedSkillsFilesOutsideTests();
-    assert.ok(files.length > 0, "the tracked file list under skills/ is non-empty");
-    const { status, stdout } = runCaptureFromRoot(BIOME_BIN, ["lint", "--error-on-warnings", ...files]);
-    assert.equal(status, 0, `exit code (stdout: ${stdout})`);
-    const checked = stdout.match(/Checked (\d+) files?/);
-    assert.ok(checked, `stdout carries no "Checked N files" line: ${stdout}`);
-    assert.equal(
-      Number(checked[1]),
-      files.length,
-      "biome did not check every listed file",
-    );
-  },
-);
+test("T-023 biome lint --error-on-warnings over every tracked JS and TS file under skills outside test directories exits zero after checking every listed file", () => {
+  const files = trackedSkillsFilesOutsideTests();
+  assert.ok(files.length > 0, "the tracked file list under skills/ is non-empty");
+  const { status, stdout } = runCaptureFromRoot(BIOME_BIN, [
+    "lint",
+    "--error-on-warnings",
+    ...files,
+  ]);
+  assert.equal(status, 0, `exit code (stdout: ${stdout})`);
+  const checked = stdout.match(/Checked (\d+) files?/);
+  assert.ok(checked, `stdout carries no "Checked N files" line: ${stdout}`);
+  assert.equal(Number(checked[1]), files.length, "biome did not check every listed file");
+});

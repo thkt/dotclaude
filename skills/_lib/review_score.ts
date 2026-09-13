@@ -72,9 +72,6 @@ export interface Report {
   byCategory: Record<string, Category>;
   diff: Metrics | null;
   unknownVerdicts: (string | null)[];
-  // A full tally, not part of main()'s printed JSON: printing it would add a key no frozen
-  // case in review-score-cases.json expects.
-  countVerdicts: Map<string | null, number>;
 }
 
 /** Python's `round(x, 3)`: a value landing exactly halfway goes to the even digit, where
@@ -96,7 +93,7 @@ function ratio(hit: number, total: number): number | null {
 /** Every verdict `results` carries, tallied in first-occurrence order (a missing verdict
  * counts under the `null` key). Map insertion order mirrors Python's `dict.fromkeys(...)`,
  * so `score` can filter these keys down to the ones VERDICTS does not name. */
-function countVerdicts(results: readonly Outcome[]): Map<string | null, number> {
+function tallyVerdicts(results: readonly Outcome[]): Map<string | null, number> {
   const counted = new Map<string | null, number>();
   for (const r of results) {
     const verdict = r.verdict ?? null;
@@ -107,7 +104,7 @@ function countVerdicts(results: readonly Outcome[]): Map<string | null, number> 
 
 /** The verdicts `counts` carries that VERDICTS does not name, including the `null` key a
  * missing verdict counts under. */
-function unknownVerdicts(counts: Map<string | null, number>): (string | null)[] {
+function collectUnknownVerdicts(counts: Map<string | null, number>): (string | null)[] {
   const unknown: (string | null)[] = [];
   for (const verdict of counts.keys()) {
     if (verdict === null || !(verdict in VERDICTS)) unknown.push(verdict);
@@ -183,8 +180,7 @@ export function score(
     verdictByFile.set(r.file, r.verdict);
   }
 
-  const verdictCounts = countVerdicts(results);
-  const unknown = unknownVerdicts(verdictCounts);
+  const unknown = collectUnknownVerdicts(tallyVerdicts(results));
 
   const flagged = expected.filter((e) => e.expected === "detected");
   const clean = expected.filter((e) => e.expected === "no_finding");
@@ -204,7 +200,7 @@ export function score(
   const byCategory = byCategoryOf(flagged, verdictByFile);
   const diff = diffOf(metrics, previous);
 
-  return { counts, metrics, byCategory, diff, unknownVerdicts: unknown, countVerdicts: verdictCounts };
+  return { counts, metrics, byCategory, diff, unknownVerdicts: unknown };
 }
 
 function load(path: string): unknown {
@@ -230,12 +226,9 @@ export function main(argv: string[]): number {
     rows as Outcome[],
     argv.length > 2 ? (load(argv[2]) as Previous) : null,
   );
-  // countVerdicts stays off stdout: printing the whole Report would add a key no frozen case
-  // in review-score-cases.json expects.
-  const { counts, metrics, byCategory, diff, unknownVerdicts } = report;
-  const printed = { counts, metrics, byCategory, diff, unknownVerdicts };
-  process.stdout.write(`${JSON.stringify(printed, null, 2)}\n`);
-  return unknownVerdicts.length > 0 ? 1 : 0;
+  process.stdout.write(`${JSON.stringify(report, null, 2)}
+`);
+  return report.unknownVerdicts.length > 0 ? 1 : 0;
 }
 
 if (isMainModule(import.meta.url)) {

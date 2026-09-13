@@ -67,8 +67,7 @@ test("T-350 the frozen CLI cases replay through the .ts entry point", () => {
   replayTreeFixtures(CASES, "harness-elements-cli", (argv, root) => runCli(SCRIPT, root, "", argv));
 });
 
-// T-351/T-352/T-353 call _read_array directly (U-009): the three routes it returns an empty
-// list from, unchanged by the inlineArray/listItems split this unit's Green step makes.
+// T-351/T-352/T-353 call _read_array directly: the three shapes it answers with an empty list.
 test("T-351 an inline JSON value that is not an array yields an empty list", () => {
   assert.deepEqual(_read_array(['globs: {"a": 1}'], "globs"), []);
 });

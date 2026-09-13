@@ -73,9 +73,6 @@ export interface Report {
   byCategory: Record<string, Category>;
   diff: Metrics | null;
   unknownVerdicts: (string | null)[];
-  // 全 verdict の集計であり、main() が出力する JSON には含めない。含めると
-  // review-score-cases.json の固定された case が期待しないキーが増える。
-  countVerdicts: Map<string | null, number>;
 }
 
 /** Python の `round(x, 3)` に相当する。ちょうど中間に来た値は偶数側へ丸める。`Math.round` は
@@ -97,7 +94,7 @@ function ratio(hit: number, total: number): number | null {
 /** `results` が持つ全ての verdict を初出順で集計する（verdict が無い行は `null` キーで
  * 数える）。Map の挿入順は Python の `dict.fromkeys(...)` と同じなので、`score` は
  * このキーを VERDICTS に無いものだけへ絞り込める。 */
-function countVerdicts(results: readonly Outcome[]): Map<string | null, number> {
+function tallyVerdicts(results: readonly Outcome[]): Map<string | null, number> {
   const counted = new Map<string | null, number>();
   for (const r of results) {
     const verdict = r.verdict ?? null;
@@ -108,7 +105,7 @@ function countVerdicts(results: readonly Outcome[]): Map<string | null, number> 
 
 /** `counts` が持つ verdict のうち VERDICTS に無いもの。verdict が無い行が数えられる
  * `null` キーも含む。 */
-function unknownVerdicts(counts: Map<string | null, number>): (string | null)[] {
+function collectUnknownVerdicts(counts: Map<string | null, number>): (string | null)[] {
   const unknown: (string | null)[] = [];
   for (const verdict of counts.keys()) {
     if (verdict === null || !(verdict in VERDICTS)) unknown.push(verdict);
@@ -184,8 +181,7 @@ export function score(
     verdictByFile.set(r.file, r.verdict);
   }
 
-  const verdictCounts = countVerdicts(results);
-  const unknown = unknownVerdicts(verdictCounts);
+  const unknown = collectUnknownVerdicts(tallyVerdicts(results));
 
   const flagged = expected.filter((e) => e.expected === "detected");
   const clean = expected.filter((e) => e.expected === "no_finding");
@@ -205,7 +201,7 @@ export function score(
   const byCategory = byCategoryOf(flagged, verdictByFile);
   const diff = diffOf(metrics, previous);
 
-  return { counts, metrics, byCategory, diff, unknownVerdicts: unknown, countVerdicts: verdictCounts };
+  return { counts, metrics, byCategory, diff, unknownVerdicts: unknown };
 }
 
 function load(path: string): unknown {
@@ -231,12 +227,9 @@ export function main(argv: string[]): number {
     rows as Outcome[],
     argv.length > 2 ? (load(argv[2]) as Previous) : null,
   );
-  // countVerdicts は stdout に出さない。Report をまるごと出力すると、
-  // review-score-cases.json の固定された case が期待しないキーが増える。
-  const { counts, metrics, byCategory, diff, unknownVerdicts } = report;
-  const printed = { counts, metrics, byCategory, diff, unknownVerdicts };
-  process.stdout.write(`${JSON.stringify(printed, null, 2)}\n`);
-  return unknownVerdicts.length > 0 ? 1 : 0;
+  process.stdout.write(`${JSON.stringify(report, null, 2)}
+`);
+  return report.unknownVerdicts.length > 0 ? 1 : 0;
 }
 
 if (isMainModule(import.meta.url)) {
