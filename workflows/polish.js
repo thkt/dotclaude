@@ -210,9 +210,10 @@ let rejudgeNotes = "";
 // conclusion, not a degradation).
 let reviewDied = false;
 
-// Loop-only helper (func-style expression form per .oxlintrc.json): the caller receives its
-// return value and drops one nesting level instead of pushing into two outer arrays in place.
-const triage = (verdicts, byId) => {
+// Sorts the challenge verdicts into the P1/P2 findings to fix (survivors) and the ones a human
+// has to settle (needsContext). disputed is dropped; downgraded takes the lowered severity.
+const triage = (findings, verdicts) => {
+  const byId = new Map(findings.map((f) => [f.id, f]));
   const out = { survivors: [], needsContext: [] };
   for (const v of verdicts) {
     const f = byId.get(v.id);
@@ -314,8 +315,7 @@ if (mode !== "cleanup") {
     // The script triages deterministically: confirmed / downgraded become fix
     // candidates, disputed is dropped, needs_context surfaces to the caller.
     // Fix candidates are P1/P2 only (P3 is cleanup territory).
-    const byId = new Map(codex.findings.map((f) => [f.id, f]));
-    ({ survivors, needsContext } = triage(verdicts, byId));
+    ({ survivors, needsContext } = triage(codex.findings, verdicts));
     log(
       `triage: ${survivors.length} survived / ${needsContext.length} needs_context / ${codex.findings.length - survivors.length - needsContext.length} dropped`,
     );

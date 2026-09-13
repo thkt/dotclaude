@@ -748,8 +748,8 @@ if (revalidationTargets.length) {
         model: "haiku",
       },
     );
-    for (const r of Array.isArray(retry?.results) ? retry.results : [])
-      resultByKey.set(keyOf(r), r);
+    const retried = Array.isArray(retry?.results) ? retry.results : [];
+    for (const r of retried) resultByKey.set(keyOf(r), r);
     unreported = preconditions.filter((pc) => !resultByKey.has(keyOf(pc)));
     if (unreported.length) {
       return await stop("revalidate-incomplete", {
@@ -1171,7 +1171,8 @@ if (slots.length) {
   );
   const out = translated && translated.translations;
   const byId = new Map();
-  for (const o of Array.isArray(out) ? out : [])
+  const translations = Array.isArray(out) ? out : [];
+  for (const o of translations)
     if (o && Number.isInteger(o.id) && typeof o.text === "string" && o.text.trim())
       byId.set(o.id, o.text);
   if (slots.every((_, i) => byId.has(i))) {
