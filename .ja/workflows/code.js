@@ -901,8 +901,6 @@ for (const [index, unit] of units.entries()) {
       );
     }
     redConfirmed = calibration.verdict === "pass";
-    // calibration が示したのは suite が失敗することだけである。seal した行に対して走らせ直して
-    // はじめて、計画した理由で失敗していることが示される。
     const stopped = redConfirmed ? await confirmRedAnchor(unit, calibration) : null;
     if (stopped) return stopped;
     if (!redConfirmed) {

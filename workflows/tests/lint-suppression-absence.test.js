@@ -1,15 +1,10 @@
-// Whether any tracked file silences the two nesting checks with a suppression comment. Biome's
-// suppression comment comes in a bare form (the `lint:` keyword alone, silencing every rule), a
-// rule-qualified form (`lint/<group>/<rule>:`), and the file-wide `-all` and range `-start`
-// variants; oxlint accepts the eslint-style disable comments naming `max-depth`. A scan for the
-// rule-qualified form alone would pass the bare one, which is the one an agent reaches for first.
-// The forms are spelled out only inside the fixtures below, in halves, for the reason given there.
-//
-// The fixtures follow docs/wiki/absence-test-positive-control-fixture.md: a positive control per
-// form, and a copy of the first one with its comment removed. T-014 reads every tracked file,
-// this one included, so each fixture's comment is assembled from two string halves at the point
-// of use rather than written whole: the halves are still literals, independent of the patterns
-// the scan searches with, and this file itself stays free of a suppression the scan would flag.
+// Whether any tracked file silences the two nesting checks with a suppression comment. Biome
+// reads a bare form (the `lint:` keyword alone, silencing every rule), a rule-qualified form,
+// and the file-wide `-all` and range `-start` variants; oxlint reads the eslint-style disable
+// comments naming `max-depth`. Fixtures follow docs/wiki/absence-test-positive-control-fixture.md:
+// one positive control per form and a copy of the first with its comment removed. T-014 reads
+// every tracked file, this one included, so each fixture's comment is spelled in two literal
+// halves and this file carries no whole suppression the scan would flag.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -23,10 +18,10 @@ const ROOT = path.resolve(TEST_DIR, "..", "..");
 // Both linters read a suppression only out of a comment, so each pattern starts at the comment
 // marker. Prose that merely names the form, such as T-011's own title below, stays unflagged.
 const BIOME_SUPPRESSION = /(\/\/|\/\*)\s*biome-ignore(-all|-start)?\s+lint(\/[\w/]+)?\s*:/;
-const OXLINT_SUPPRESSION = /(\/\/|\/\*)\s*(oxlint|eslint)-disable(-next-line|-line)?\b[^\n]*max-depth/;
+const OXLINT_SUPPRESSION =
+  /(\/\/|\/\*)\s*(oxlint|eslint)-disable(-next-line|-line)?\b[^\n]*max-depth/;
 
-// The first suppression comment found in `source`, or null. The scan reads content, not paths,
-// so a fixture handed in as a string and a tracked file read from disk go through the same check.
+// The first suppression comment in `source`, or null.
 function suppressionIn(source) {
   const match = BIOME_SUPPRESSION.exec(source) || OXLINT_SUPPRESSION.exec(source);
   return match ? match[0] : null;

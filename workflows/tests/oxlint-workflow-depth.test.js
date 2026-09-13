@@ -1,10 +1,7 @@
-// Whether the repository's own `.oxlintrc.json` limits nesting depth for `workflows/*.js`
-// scripts, read by running oxlint rather than by reimplementing its rule matching here.
-//
-// The fixtures are written into a temp directory rather than committed, for the same reason
-// oxlint-runtime-discipline.test.js gives: CI runs `npx oxlint` bare at the repository root, so
-// a tracked file carrying the violation would keep that step red forever. The config is copied
-// from disk so the rule text lives in one place.
+// Whether the repository's `.oxlintrc.json` limits nesting depth for `workflows/*.js`, read by
+// running oxlint rather than by reimplementing its rule matching. Fixtures live in a temp
+// directory (a tracked violation would keep the CI oxlint step red forever); the config is
+// copied from disk.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -26,11 +23,9 @@ const ROOT = path.resolve(TEST_DIR, "..", "..");
 const OXLINT_BIN = path.join(ROOT, "node_modules", ".bin", "oxlint");
 const OXLINTRC = path.join(ROOT, ".oxlintrc.json");
 
-// T-007's positive control: 4 nested `if`s. Written as an arrow function assigned to `const`
-// (not a `function` declaration) so the workflows/*.js override's existing `func-style:
-// ["error", "expression"]` rule stays silent and depth is the only thing this fixture violates.
-// Calibrated against the real `oxlint` binary under the `max-depth: ["warn", 3]` override (`Blocks are nested too deeply (4). Maximum allowed is 3.`), not computed from the
-// rule's description alone.
+// T-007's positive control: 4 nested `if`s in an arrow function assigned to `const`, so the
+// override's `func-style: ["error", "expression"]` stays silent and depth is the only violation.
+// The real binary reports `Blocks are nested too deeply (4). Maximum allowed is 3.`
 const FOUR_NESTED_BLOCKS = `export const nested = (a, b, c, d) => {
   if (a) {
     if (b) {
@@ -45,10 +40,8 @@ const FOUR_NESTED_BLOCKS = `export const nested = (a, b, c, d) => {
 };
 `;
 
-// T-008: FOUR_NESTED_BLOCKS with its innermost `if` removed, per
-// docs/wiki/absence-test-positive-control-fixture.md's copy-minus-clue step. The remaining 3
-// nested `if`s score depth 3, calibrated the same way (no diagnostic emitted for this fixture
-// where FOUR_NESTED_BLOCKS emits one).
+// T-008: FOUR_NESTED_BLOCKS minus the innermost `if`, per the copy-minus-clue step of
+// docs/wiki/absence-test-positive-control-fixture.md. Depth 3, no diagnostic.
 const THREE_NESTED_BLOCKS = `export const nested = (a, b, c) => {
   if (a) {
     if (b) {
@@ -61,13 +54,8 @@ const THREE_NESTED_BLOCKS = `export const nested = (a, b, c) => {
 };
 `;
 
-// oxlint exits non-zero only when a configured rule fires on the given file, so each fixture's
-// exit code is what this suite reads. The `max-depth` rule sits at "warn", so
-// `--deny-warnings` is what turns that warning into a non-zero exit; without it every fixture
-// here would exit 0 regardless of nesting. One directory serves every case, and each fixture is
-// linted once, mirroring oxlint-runtime-discipline.test.js's lint(). The fixture's parent
-// directory (workflows/, src/) is created inside the workspace before the write, mirroring
-// biome-cognitive-complexity-discipline.test.js's lint().
+// `max-depth` sits at "warn", so `--deny-warnings` is what turns a hit into a non-zero exit.
+// The fixture's parent directory (workflows/, src/) is what the override's glob matches against.
 let workspace;
 const cache = new Map();
 
@@ -113,9 +101,7 @@ test("T-009 the four-block script placed outside workflows/ exits zero", () => {
   assert.equal(lint("four-nested-src", "src/four-nested.js", FOUR_NESTED_BLOCKS), 0);
 });
 
-// T-010 reads .oxlintrc.json directly via JSON.parse instead of going through lint(), mirroring
-// biome-cognitive-complexity-discipline.test.js's direct config read: a static read of the
-// config is the direct check for a rule's level and its threshold.
+// T-010 reads .oxlintrc.json itself for the rule's level and limit.
 const oxlintConfig = JSON.parse(readFileSync(OXLINTRC, "utf8"));
 
 function findWorkflowsOverride(config) {

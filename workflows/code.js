@@ -904,8 +904,6 @@ for (const [index, unit] of units.entries()) {
       return stopUnit("red-failed", unit, "the Red calibration gate returned no parseable report");
     }
     redConfirmed = calibration.verdict === "pass";
-    // Calibration only established that the suite fails. Re-running it against the sealed
-    // line is what establishes that it fails for the planned reason.
     const stopped = redConfirmed ? await confirmRedAnchor(unit, calibration) : null;
     if (stopped) return stopped;
     if (!redConfirmed) {

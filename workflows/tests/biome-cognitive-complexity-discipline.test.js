@@ -1,13 +1,8 @@
-// Whether the repository's own `biome.json` both catches an over-complex function and leaves
-// a workflow script's top-level `return` alone, read by running biome rather than by
-// reimplementing its cognitive-complexity count or its parser's module/script decision here.
-//
-// The fixtures are written into a temp directory rather than committed, for the same reason
-// oxlint-runtime-discipline.test.js gives: a tracked file carrying the violation would keep the
-// repository's own `npx biome lint` step red forever, and `files.includes` in the copied
-// config decides what gets linted at all, so the fixture's path under the temp workspace has to
-// mirror the real directory names (`workflows/`, `src/`) the config's globs match against. The
-// config is copied from disk so the threshold and the includes list live in one place.
+// Whether the repository's `biome.json` flags an over-complex function and leaves a workflow
+// script's top-level `return` alone, read by running biome rather than by reimplementing its
+// complexity count or its parser's module/script decision. Fixtures live in a temp directory
+// (a tracked violation would keep the CI biome step red forever) under the real directory
+// names the config's `files.includes` globs match. The config is copied from disk.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -29,10 +24,8 @@ const ROOT = path.resolve(TEST_DIR, "..", "..");
 const BIOME_BIN = path.join(ROOT, "node_modules", ".bin", "biome");
 const BIOME_JSON = path.join(ROOT, "biome.json");
 
-// T-001's positive control: 5 nested `if`s (cognitive complexity 1+2+3+4+5 = 15, one point per
-// nesting level) plus one more `if` at nesting level 0 (+1, no nesting bonus) = 16. Calibrated
-// against the real `biome` binary (`Excessive complexity of 16 detected (max: 15)`), not
-// computed from the rule's description alone.
+// T-001's positive control: 5 nested `if`s (1+2+3+4+5 = 15) plus one flat `if` = 16, as the
+// real biome binary reports it (`Excessive complexity of 16 detected (max: 15)`).
 const COMPLEXITY_16 = `export function nested(a, b, c, d, e, f) {
   if (a) {
     if (b) {
@@ -52,10 +45,8 @@ const COMPLEXITY_16 = `export function nested(a, b, c, d, e, f) {
 }
 `;
 
-// T-002: COMPLEXITY_16 with only the flat trailing `if (f)` removed, per
-// docs/wiki/absence-test-positive-control-fixture.md's copy-minus-clue step. The remaining 5
-// nested `if`s alone score 15, calibrated the same way (no diagnostic emitted for this fixture
-// where COMPLEXITY_16 emits one).
+// T-002: COMPLEXITY_16 minus the flat `if (f)`, per the copy-minus-clue step of
+// docs/wiki/absence-test-positive-control-fixture.md. Scores 15, no diagnostic.
 const COMPLEXITY_15 = `export function nested(a, b, c, d, e) {
   if (a) {
     if (b) {
@@ -72,28 +63,19 @@ const COMPLEXITY_15 = `export function nested(a, b, c, d, e) {
 }
 `;
 
-// T-003/T-004's shared script: a bare top-level `return` guarding an early exit, the same shape
-// `workflows/adrift.js` itself uses at its own top level (that file is run as a script body by
-// the harness, not parsed as a standalone module). Placed under `workflows/` it must stay free
-// of a parse diagnostic; placed under `src/` (standing in for anywhere the harness does not run
-// a file as a script body) the identical source is expected to surface one, which is what proves
-// T-003's silence is a workflows-specific accommodation rather than the fixture being harmless
-// everywhere.
+// T-003/T-004's shared script: a bare top-level `return`, the shape workflows/adrift.js uses
+// (the harness runs it as a function body). Under `workflows/` biome must skip it; under `src/`
+// the same source must raise a parse diagnostic, which proves the skip is path-specific.
 const TOP_LEVEL_RETURN_SCRIPT = `if (typeof shouldSkip === "undefined") {
   return;
 }
 console.log("done");
 `;
 
-// biome exits non-zero both when a configured rule fires and when a real parse error occurs, so
-// most fixtures here are told apart by exit code alone, mirroring
-// oxlint-runtime-discipline.test.js's lint(). T-003/T-004 need one more distinction biome's exit
-// code cannot make on its own: it also exits 1 for "No files were processed" (a path the
-// config's `files.includes` does not match), which is a different failure than a parse error but
-// has the identical exit code. `--reporter=github` prints a `title=parse` annotation line only
-// for an actual parse error, so lint() caches each fixture's stdout alongside its exit code and
-// T-003/T-004 read that instead of the exit code, which is why this lint() returns
-// {exitCode, output} where oxlint-runtime-discipline.test.js's returns the exit code alone.
+// Exit code tells most fixtures apart, as in oxlint-runtime-discipline.test.js. Biome also
+// exits 1 for "No files were processed" (a path `files.includes` excludes), the same code as a
+// parse error, so lint() keeps the `--reporter=github` stdout too: only a real parse error
+// prints a `title=parse` line, and T-003/T-004 read that.
 let workspace;
 const cache = new Map();
 
@@ -159,15 +141,12 @@ test("T-004 the same script placed under src/ yields a parse diagnostic", () => 
   assert.ok(output.includes("title=parse"), `expected a parse diagnostic, got: ${output}`);
 });
 
-// T-005/T-006 read biome.json directly via JSON.parse instead of going through lint(): the
-// contract (docs/wiki/count-comparison-masks-filtered-set-drift.md) calls for comparing
-// files.includes as the set of five literal entries with assert.deepEqual rather than a count,
-// so there is no lint run whose output would answer that; a static read of the config is the
-// direct check for a rule's level, its threshold, and the absence of an `overrides` key too.
+// T-005/T-006 read biome.json itself: the rule's level, its threshold, the exact
+// `files.includes` (compared as a list, not a count, per
+// docs/wiki/count-comparison-masks-filtered-set-drift.md), and the absence of `overrides`.
 const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 
-// The five entries the config is expected to lint, held here as a literal list so this test's
-// own copy cannot drift toward whatever files.includes currently contains.
+// Held as a literal so this copy cannot drift toward whatever files.includes contains.
 const PLANNED_FILES_INCLUDES = [
   "**",
   "!workflows/*.js",

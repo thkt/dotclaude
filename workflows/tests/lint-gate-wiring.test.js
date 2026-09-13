@@ -1,14 +1,8 @@
-// Whether the two nesting checks reach CI and the whole tracked tree: the CI workflow invokes
-// both linters with their GitHub annotation output, each linter runs clean from the repository
-// root under the committed config, and `.gitignore` hides no lintable tracked file from Biome
-// (biome.json's `vcs.useIgnoreFile` skips whatever git ignores, so an ignored-but-tracked file
-// would drop out of the lint silently while staying in the tree).
-//
-// test.yml is read as text, not through a YAML library: this repository's package.json carries
-// no YAML parser (the same reason spec-commands.test.ts gives), and both commands are literal
-// `run:` lines a regex reads directly. The root runs mirror tsconfig-scope.test.js's
-// listTypeCheckedFiles: the real binary from node_modules/.bin, run once with the repository
-// root as cwd, judged by its exit code.
+// Whether the two nesting checks reach CI and the whole tracked tree: test.yml invokes both
+// linters with GitHub annotation output, each runs clean from the repository root under the
+// committed config, and `.gitignore` hides no lintable tracked file (`vcs.useIgnoreFile` makes
+// biome skip whatever git ignores). test.yml is read as text: package.json carries no YAML
+// parser, and both commands are literal `run:` lines.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
