@@ -3,6 +3,11 @@
 // committed config, and `.gitignore` hides no lintable tracked file (`vcs.useIgnoreFile` makes
 // biome skip whatever git ignores). test.yml is read as text: package.json carries no YAML
 // parser, and both commands are literal `run:` lines.
+//
+// T-021 additionally pins hooks/ under --error-on-warnings: unit U-006 moves the settings.json
+// hook-command-scanning duplicated across hooks/_lib/tests/*-retirement.test.ts and
+// hooks/pre-bash/tests/*-retirement.test.ts into one shared helper, and this is the check that
+// keeps a regression back to duplicated, over-complex scanning functions from passing lint.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -51,6 +56,21 @@ function listWorkflowScripts(dir) {
 // from the root exits zero) carries this check and T-020 retires.
 const T020_SCOPE_RE = /^(workflows\/.*\/tests\/|workflows\/tests\/|tests\/)/;
 const T020_EXT_RE = /\.(js|ts|tsx|json)$/;
+
+// Exit code and stdout of `bin args` run from the repository root, for a caller (T-021) that
+// needs to read what the command reported rather than only whether it exited zero.
+function runFromRootCapturingStdout(bin, args) {
+  assert.ok(
+    existsSync(bin),
+    `${bin} is missing: run the repository's install step (bun install) before this suite`,
+  );
+  try {
+    const stdout = execFileSync(bin, args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    return { status: 0, stdout };
+  } catch (error) {
+    return { status: typeof error.status === "number" ? error.status : 1, stdout: error.stdout ?? "" };
+  }
+}
 
 test("T-015 test.yml runs biome lint with --reporter=github in a step after an oxlint step that passes --format=github", () => {
   const source = readFileSync(TEST_YML, "utf8");
@@ -108,4 +128,29 @@ test("T-020 biome lint --error-on-warnings over every tracked test file under wo
     "biome checked a different count than the list supplies",
   );
   assert.equal(code, 0);
+});
+
+test("T-021 biome lint --error-on-warnings over every tracked JS and TS file under hooks/ exits zero after checking every listed file", () => {
+  const trackedHooksJsAndTs = execFileSync("git", ["ls-files", "-z", "--", "hooks"], {
+    cwd: ROOT,
+    encoding: "utf8",
+  })
+    .split("\0")
+    .filter((file) => /\.(js|mjs|cjs|jsx|ts|mts|cts|tsx)$/.test(file));
+  assert.ok(trackedHooksJsAndTs.length > 0, "expected at least one tracked JS/TS file under hooks/");
+
+  const { status, stdout } = runFromRootCapturingStdout(BIOME_BIN, [
+    "lint",
+    "--error-on-warnings",
+    "hooks/",
+  ]);
+  assert.equal(status, 0, `biome lint --error-on-warnings hooks/ must exit zero, stdout:\n${stdout}`);
+
+  const checked = stdout.match(/Checked (\d+) files?/);
+  assert.ok(checked, `expected a "Checked N files" line in stdout, got:\n${stdout}`);
+  assert.ok(
+    Number(checked[1]) >= trackedHooksJsAndTs.length,
+    `biome reported checking ${checked[1]} files, fewer than the ${trackedHooksJsAndTs.length} ` +
+      "tracked JS/TS files under hooks/",
+  );
 });

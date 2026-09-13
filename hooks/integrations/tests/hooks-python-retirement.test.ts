@@ -14,6 +14,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { hookCommands } from "../../_lib/tests/_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -70,34 +71,6 @@ test("T-401 no tracked file outside the historical directories names the five re
   );
 });
 
-/** The `command` string of every hook settings.json's `eventName` array registers, across every
- * matcher group under that event. */
-function eventCommands(settings: unknown, eventName: string): string[] {
-  const hooksNode =
-    settings !== null && typeof settings === "object"
-      ? (settings as Record<string, unknown>).hooks
-      : undefined;
-  const eventNode =
-    hooksNode !== null && typeof hooksNode === "object"
-      ? (hooksNode as Record<string, unknown>)[eventName]
-      : undefined;
-  const commands: string[] = [];
-  if (!Array.isArray(eventNode)) return commands;
-  for (const group of eventNode) {
-    if (group === null || typeof group !== "object") continue;
-    const groupHooks = (group as Record<string, unknown>).hooks;
-    if (!Array.isArray(groupHooks)) continue;
-    for (const hook of groupHooks) {
-      const command =
-        hook !== null && typeof hook === "object"
-          ? (hook as Record<string, unknown>).command
-          : undefined;
-      if (typeof command === "string") commands.push(command);
-    }
-  }
-  return commands;
-}
-
 /** The command among `commands` whose executable token names `stem`, regardless of extension. */
 function commandNaming(commands: string[], stem: string): string | undefined {
   const pattern = new RegExp(`(^|[/\\s])${stem}\\.\\w+($|\\s)`);
@@ -118,7 +91,7 @@ test("T-400 the three events settings.json registers for the amphetamine hook pa
   const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
 
   for (const [event, action] of EVENT_ACTIONS) {
-    const commands = eventCommands(settings, event);
+    const commands = hookCommands(settings, event);
     const command = commandNaming(commands, "amphetamine_agent_session");
     assert.ok(
       command,
