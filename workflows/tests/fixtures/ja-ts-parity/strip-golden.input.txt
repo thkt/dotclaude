@@ -1,0 +1,7 @@
+const value = a / b / c;// legitimate division, not regex
+let x =
+/ not a regex due to newline
+y;
+const tpl = `template with "quotes" and 'apostrophes' inside`;
+/* unterminated block comment
+swallows the remainder of this file

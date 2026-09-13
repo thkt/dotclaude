@@ -198,3 +198,14 @@ test("T-020 a regex literal holding an escaped slash keeps its flag and its trai
   assert.equal(extractBody(en), String.raw`export const PROTOCOL = /https?:\/\//g;`);
   assert.equal(extractBody(ja), String.raw`export const PROTOCOL = /https?:\/\//i;`);
 });
+
+// Splitting the one while loop into per-token readers must not move stripComments's output by a
+// single character. The golden input packs the four forms the split has to keep reading alike:
+// an unterminated `/*` that runs to end of input, a `/` that opensRegexLiteral correctly reads as
+// division rather than a literal, a `/` that opens a regex literal but is cut short by a newline,
+// and quotes sitting inside a template literal.
+test("T-021 stripComments over the golden input fixture yields exactly the recorded expected text", () => {
+  const input = read("strip-golden.input.txt");
+  const expected = read("strip-golden.expected.txt");
+  assert.equal(stripComments(input), expected);
+});
