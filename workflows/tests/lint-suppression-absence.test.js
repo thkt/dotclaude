@@ -1,8 +1,9 @@
-// Whether any tracked file silences the two nesting checks with a suppression comment. Biome
-// accepts `// biome-ignore lint: <reason>` (every rule), `// biome-ignore lint/<group>/<rule>:`,
-// and the file-wide `biome-ignore-all` / range `biome-ignore-start` variants; oxlint accepts the
-// eslint-style `oxlint-disable` family naming `max-depth`. A scan for the rule-qualified form
-// alone would pass the bare `lint:` form, which is the one an agent reaches for first.
+// Whether any tracked file silences the two nesting checks with a suppression comment. Biome's
+// suppression comment comes in a bare form (the `lint:` keyword alone, silencing every rule), a
+// rule-qualified form (`lint/<group>/<rule>:`), and the file-wide `-all` and range `-start`
+// variants; oxlint accepts the eslint-style disable comments naming `max-depth`. A scan for the
+// rule-qualified form alone would pass the bare one, which is the one an agent reaches for first.
+// The forms are spelled out only inside the fixtures below, in halves, for the reason given there.
 //
 // The fixtures follow docs/wiki/absence-test-positive-control-fixture.md: a positive control per
 // form, and a copy of the first one with its comment removed. T-014 reads every tracked file,
