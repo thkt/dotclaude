@@ -169,11 +169,11 @@ const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 // The five entries the config is expected to lint, held here as a literal list so this test's
 // own copy cannot drift toward whatever files.includes currently contains.
 const PLANNED_FILES_INCLUDES = [
-  "hooks/**/*.ts",
-  "skills/**/*.ts",
-  "workflows/**/*.ts",
-  "tests/**/*.ts",
-  "agents/**/*.ts",
+  "**",
+  "!workflows/*.js",
+  "!.ja/workflows/*.js",
+  "!plugins/**",
+  "!skills/*/test/cases/**",
 ];
 
 test("biome.json keeps noExcessiveCognitiveComplexity at a level other than off with maxAllowedComplexity at most 15", () => {

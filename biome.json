@@ -7,11 +7,11 @@
   },
   "files": {
     "includes": [
-      "hooks/**/*.ts",
-      "skills/**/*.ts",
-      "workflows/**/*.ts",
-      "tests/**/*.ts",
-      "agents/**/*.ts"
+      "**",
+      "!workflows/*.js",
+      "!.ja/workflows/*.js",
+      "!plugins/**",
+      "!skills/*/test/cases/**"
     ]
   },
   "formatter": {
