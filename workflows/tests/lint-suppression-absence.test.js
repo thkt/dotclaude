@@ -20,9 +20,10 @@ import { fileURLToPath } from "node:url";
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(TEST_DIR, "..", "..");
 
-// Both patterns as the plan's Rules state them.
-const BIOME_SUPPRESSION = /biome-ignore(-all|-start)?\s+lint(\/[\w/]+)?\s*:/;
-const OXLINT_SUPPRESSION = /(oxlint|eslint)-disable(-next-line|-line)?\b[^\n]*max-depth/;
+// Both linters read a suppression only out of a comment, so each pattern starts at the comment
+// marker. Prose that merely names the form, such as T-011's own title below, stays unflagged.
+const BIOME_SUPPRESSION = /(\/\/|\/\*)\s*biome-ignore(-all|-start)?\s+lint(\/[\w/]+)?\s*:/;
+const OXLINT_SUPPRESSION = /(\/\/|\/\*)\s*(oxlint|eslint)-disable(-next-line|-line)?\b[^\n]*max-depth/;
 
 // The first suppression comment found in `source`, or null. The scan reads content, not paths,
 // so a fixture handed in as a string and a tracked file read from disk go through the same check.
