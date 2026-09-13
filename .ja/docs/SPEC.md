@@ -31,7 +31,7 @@
 | `ast-grep`                                  | Rust バイナリ                           | `brew install ast-grep`         |
 | `codegraph`                                 | mise shim 経由のバイナリ                | mise                            |
 | `hooks/herdr-agent-state.sh`                | herdr が生成したファイル                | herdr (再インストールで上書き) |
-| `textlint`, `oxlint`, `oxfmt`               | devDependencies                         | `bun install`                   |
+| `textlint`, `oxlint`, `oxfmt`, `biome`      | devDependencies                         | `bun install`                   |
 | `ruff`, `rumdl`                             | Python 製 linter                        | pipx (CI は版固定)              |
 | Amphetamine                                 | macOS アプリ                            | 外部アプリ                      |
 
@@ -310,7 +310,8 @@ workflow は他の workflow を 1 階層だけ入れ子にできる。ルーテ�
 | Node tests    | `node --test` を `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"`, `"workflows/**/tests/*.test.js"`, `"workflows/**/tests/*.test.ts"` に対して実行 |
 | Python tests  | `find agents hooks skills workflows -name '*_test.py'` を 1 ファイルずつ実行                  |
 | Shell tests   | `find hooks sandbox -name '*.test.sh'` を 1 ファイルずつ bash で実行                          |
-| oxlint        | `npx oxlint`                                                                                  |
+| oxlint        | `npx oxlint --format=github`                                                                  |
+| biome         | `npx biome lint --reporter=github`                                                            |
 | textlint      | `npx textlint '.ja/**/*.md'`                                                                  |
 | ruff          | `pipx run --spec ruff==0.16.4 ruff check .`                                                   |
 | ruff format   | `pipx run --spec ruff==0.16.4 ruff format --check .`                                          |
@@ -325,6 +326,7 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | `.textlintrc.json`    | 日本語の文長上限、読点数の上限、である調の統一、半角と全角の間の空白    |
 | `.rumdl.toml`         | Markdown 検査で無効にする規則                                           |
 | `.oxlintrc.json`      | JavaScript の静的検査                                                   |
+| `biome.json`          | 認知的複雑度の上限。規則はこの 1 本だけで、formatter と他の規則は止めている |
 | `.guardrails.json`    | guardrails の規則と、意図的に脆弱な fixture への除外                    |
 | `ruff.toml`           | Python の検査と整形                                                     |
 | `pyrightconfig.json`  | Python の型検査                                                         |
