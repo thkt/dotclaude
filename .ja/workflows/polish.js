@@ -205,6 +205,24 @@ let rejudgeNotes = "";
 // available: false で答えた場合 (codex CLI なしという確定した結論) には立てない。
 let reviewDied = false;
 
+// ループだけを担う helper (func-style は .oxlintrc.json の expression 形)。呼び出し側は
+// 戻り値を受けて、外側の 2 つの配列へ直接 push するより 1 段浅くなる。
+const triage = (verdicts, byId) => {
+  const out = { survivors: [], needsContext: [] };
+  for (const v of verdicts) {
+    const f = byId.get(v.id);
+    if (!f) continue;
+    if (v.verdict === "needs_context") {
+      out.needsContext.push({ ...f, why: v.why || "" });
+      continue;
+    }
+    if (v.verdict === "disputed") continue;
+    const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
+    if (severity === "P1" || severity === "P2") out.survivors.push({ ...f, severity });
+  }
+  return out;
+};
+
 if (mode !== "cleanup") {
   // ---- Review: 外部 Codex レンズ ----
   phase("Review");
@@ -287,17 +305,7 @@ if (mode !== "cleanup") {
     // triage は script が決定論的に行う。confirmed / downgraded が fix 候補、disputed は落とす、
     // needs_context は呼び出し元に表面化する。fix 候補は P1/P2 のみ (P3 は cleanup 領分)。
     const byId = new Map(codex.findings.map((f) => [f.id, f]));
-    for (const v of verdicts) {
-      const f = byId.get(v.id);
-      if (!f) continue;
-      if (v.verdict === "needs_context") {
-        needsContext.push({ ...f, why: v.why || "" });
-        continue;
-      }
-      if (v.verdict === "disputed") continue;
-      const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
-      if (severity === "P1" || severity === "P2") survivors.push({ ...f, severity });
-    }
+    ({ survivors, needsContext } = triage(verdicts, byId));
     log(
       `triage: 生存 ${survivors.length} / needs_context ${needsContext.length} / 棄却 ${codex.findings.length - survivors.length - needsContext.length}`,
     );

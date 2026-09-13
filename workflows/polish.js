@@ -210,6 +210,24 @@ let rejudgeNotes = "";
 // conclusion, not a degradation).
 let reviewDied = false;
 
+// Loop-only helper (func-style expression form per .oxlintrc.json): the caller receives its
+// return value and drops one nesting level instead of pushing into two outer arrays in place.
+const triage = (verdicts, byId) => {
+  const out = { survivors: [], needsContext: [] };
+  for (const v of verdicts) {
+    const f = byId.get(v.id);
+    if (!f) continue;
+    if (v.verdict === "needs_context") {
+      out.needsContext.push({ ...f, why: v.why || "" });
+      continue;
+    }
+    if (v.verdict === "disputed") continue;
+    const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
+    if (severity === "P1" || severity === "P2") out.survivors.push({ ...f, severity });
+  }
+  return out;
+};
+
 if (mode !== "cleanup") {
   // ---- Review: external Codex lens ----
   phase("Review");
@@ -297,17 +315,7 @@ if (mode !== "cleanup") {
     // candidates, disputed is dropped, needs_context surfaces to the caller.
     // Fix candidates are P1/P2 only (P3 is cleanup territory).
     const byId = new Map(codex.findings.map((f) => [f.id, f]));
-    for (const v of verdicts) {
-      const f = byId.get(v.id);
-      if (!f) continue;
-      if (v.verdict === "needs_context") {
-        needsContext.push({ ...f, why: v.why || "" });
-        continue;
-      }
-      if (v.verdict === "disputed") continue;
-      const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
-      if (severity === "P1" || severity === "P2") survivors.push({ ...f, severity });
-    }
+    ({ survivors, needsContext } = triage(verdicts, byId));
     log(
       `triage: ${survivors.length} survived / ${needsContext.length} needs_context / ${codex.findings.length - survivors.length - needsContext.length} dropped`,
     );
