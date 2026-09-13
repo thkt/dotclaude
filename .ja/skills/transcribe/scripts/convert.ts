@@ -167,19 +167,64 @@ export interface Sheet {
   rows: unknown[][];
 }
 
+interface RowSpan {
+  lines: string[];
+  next: number;
+}
+
+/** doc-header ブロック: 先頭 3 行までを " / " で結び "> " で引用する。プロファイルが
+ * 期待する先頭セルでシート自身の先頭セルが始まっていなければ飛ばす。 */
+function docHeaderLines(rows: CellInfo[][], profile: Profile): RowSpan | null {
+  if (!profile.docHeaderFirstCell || rows[0]?.[0]?.text !== profile.docHeaderFirstCell) {
+    return null;
+  }
+  const meta: string[] = [];
+  for (const row of rows.slice(0, 3)) {
+    if (!row.length || isColumnRuler(textsOf(row))) continue;
+    meta.push(row.map((cell) => cell.text).join(" / "));
+  }
+  const lines: string[] = [];
+  if (meta.length) lines.push(`> ${meta.join("  \n> ")}`, "");
+  return { lines, next: 3 };
+}
+
+/** 行 `i` から開く 2 段ヘッダの表: ヘッダ行 (と直下の任意の 2 段目サブヘッダ行) から
+ * 列を組み立て、次の見出し・テーブルヘッダ・空行に出会うまで本文行を読み、
+ * ブロック全体を markdown の表行として描画する。 */
+function tableBlock(rows: CellInfo[][], i: number, head: CellInfo[], profile: Profile): RowSpan {
+  let next = i + 1;
+  let sub: CellInfo[] = [];
+  // データ行は必ず先頭列から始まるので、そこが空の行を 2 段目のヘッダとみなす。
+  if (rows[next]?.length && rows[next][0].col > head[0].col) {
+    sub = rows[next];
+    next++;
+  }
+  const columns = buildColumns(head, sub);
+  const body: string[][] = [];
+  while (next < rows.length) {
+    const row = rows[next];
+    if (!row.length) break;
+    if (profile.heading && profile.heading.test(row[0].text) && row.length <= 2) break;
+    if (isTableHead(row, profile)) break;
+    body.push(rowToCells(row, columns, profile.nestColumnLabel));
+    next++;
+  }
+  const labels = columns.map((column) => escapeCell(column.label));
+  const lines: string[] = [`| ${labels.join(" | ")} |`, `| ${labels.map(() => "---").join(" | ")} |`];
+  for (const row of body) lines.push(`| ${row.join(" | ")} |`);
+  lines.push("");
+  return { lines, next };
+}
+
 export function sheetToMarkdown(sheet: Sheet, profile: Profile = profiles.generic): string {
   const rows = sheet.rows.map(cellsOf);
   const lines: string[] = [`# ${sheet.name}`, ""];
   let i = 0;
 
-  if (profile.docHeaderFirstCell && rows[0]?.[0]?.text === profile.docHeaderFirstCell) {
-    const meta: string[] = [];
-    for (const row of rows.slice(0, 3)) {
-      if (!row.length || isColumnRuler(textsOf(row))) continue;
-      meta.push(row.map((cell) => cell.text).join(" / "));
-    }
-    if (meta.length) lines.push(`> ${meta.join("  \n> ")}`, "");
-    i = 3;
+  const header = docHeaderLines(rows, profile);
+  if (header) {
+    lines.push(...header.lines);
+    i = header.next;
   }
 
   let code: string[] = [];
@@ -207,30 +252,9 @@ export function sheetToMarkdown(sheet: Sheet, profile: Profile = profiles.generi
 
     if (isTableHead(cells, profile)) {
       flushCode();
-      const head = cells;
-      let next = i + 1;
-      let sub: CellInfo[] = [];
-      // データ行は必ず先頭列から始まるので、そこが空の行を 2 段目のヘッダとみなす。
-      if (rows[next]?.length && rows[next][0].col > head[0].col) {
-        sub = rows[next];
-        next++;
-      }
-      const columns = buildColumns(head, sub);
-      const body: string[][] = [];
-      while (next < rows.length) {
-        const row = rows[next];
-        if (!row.length) break;
-        if (profile.heading && profile.heading.test(row[0].text) && row.length <= 2) break;
-        if (isTableHead(row, profile)) break;
-        body.push(rowToCells(row, columns, profile.nestColumnLabel));
-        next++;
-      }
-      const labels = columns.map((column) => escapeCell(column.label));
-      lines.push(`| ${labels.join(" | ")} |`);
-      lines.push(`| ${labels.map(() => "---").join(" | ")} |`);
-      for (const row of body) lines.push(`| ${row.join(" | ")} |`);
-      lines.push("");
-      i = next;
+      const block = tableBlock(rows, i, cells, profile);
+      lines.push(...block.lines);
+      i = block.next;
       continue;
     }
 

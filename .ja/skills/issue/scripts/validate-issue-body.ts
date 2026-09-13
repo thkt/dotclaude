@@ -236,6 +236,73 @@ export function contentOnlyReport(bodyPath: string): number {
   return report(results);
 }
 
+/** タイトルの角括弧付き type とテンプレート自身の名前を比べる。食い違えば不一致を、
+ * タイトルに角括弧付き接頭辞が無ければそれ自体をエラーへ積む。 */
+function checkTypePrefix(title: string, templateType: string, results: ValidationResults): void {
+  const titleMatch = TYPE_PREFIX.exec(title);
+  if (!titleMatch) {
+    results.errors.push("type_mismatch:title has no bracketed type prefix");
+    return;
+  }
+  const titleType = titleMatch[1].toLowerCase();
+  if (titleType !== templateType) {
+    results.errors.push(`type_mismatch:title=${titleType} template=${templateType}`);
+  } else {
+    results.checks.push(`type_match:${titleType}=ok`);
+  }
+}
+
+/** 骨格の必須節に加え、テンプレート自身の必須節と本文だけではまだ満たされない floor 節を
+ * 補い、それぞれ本文に存在するか検査する。呼び出し側が未記入検査にも使えるよう、
+ * 必須節の全名を返す。 */
+function checkRequiredSections(
+  sections: Array<[string, boolean]>,
+  templateType: string,
+  present: Set<string>,
+  results: ValidationResults,
+): string[] {
+  const required = sections.filter(([, optional]) => !optional).map(([name]) => name);
+  const known = new Set([...present, ...required].map((n) => n.toLowerCase()));
+  for (const name of FLOOR[templateType] ?? []) {
+    const names = [name, ...(FLOOR_ALIASES[name] ?? [])];
+    if (!names.some((n) => known.has(n.toLowerCase()))) {
+      required.push(name);
+    }
+  }
+  for (const name of required) {
+    if (present.has(name)) {
+      results.checks.push(`section:${name}=ok`);
+    } else {
+      results.errors.push(`missing_section:${name}`);
+    }
+  }
+  return required;
+}
+
+/** 骨格自身の名前 (と ALLOWED_EXTRA) の外にある本文の節。リポジトリ側のテンプレートでは
+ * 飛ばす: それは web UI が埋めさせる最小要件なので、CLI 起票が節を足すのは逸脱ではない。
+ * 閉じた集合として扱うのは skill 自身のテンプレートだけ。 */
+function checkUnknownSections(
+  sections: Array<[string, boolean]>,
+  present: Set<string>,
+  isForm: boolean,
+  ownTemplate: boolean,
+  results: ValidationResults,
+): void {
+  if (isForm || !ownTemplate) {
+    results.checks.push("unknown_section=skipped (repository template)");
+    return;
+  }
+  const knownNames = new Set([...sections.map(([name]) => name), ...ALLOWED_EXTRA]);
+  const extra = [...present].filter((name) => !knownNames.has(name)).sort();
+  for (const name of extra) {
+    results.errors.push(`unknown_section:${name}`);
+  }
+  if (extra.length === 0) {
+    results.checks.push("unknown_section=none");
+  }
+}
+
 export function main(argv: string[]): number {
   // 番号経路は骨格が分からないので、骨格を要らない検査だけを走らせる。
   if (argv.length > 1 && argv[0] === "--content-only") {
@@ -252,19 +319,9 @@ export function main(argv: string[]): number {
 
   const results: ValidationResults = { errors: [], warnings: [], checks: [] };
 
-  const titleMatch = TYPE_PREFIX.exec(title);
   const parsedTemplate = parse(templatePath);
   const templateType = parsedTemplate.name;
-  if (titleMatch) {
-    const titleType = titleMatch[1].toLowerCase();
-    if (titleType !== templateType) {
-      results.errors.push(`type_mismatch:title=${titleType} template=${templateType}`);
-    } else {
-      results.checks.push(`type_match:${titleType}=ok`);
-    }
-  } else {
-    results.errors.push("type_mismatch:title has no bracketed type prefix");
-  }
+  checkTypePrefix(title, templateType, results);
 
   const isForm = FORM_SUFFIXES.includes(parsedTemplate.ext);
   const ownTemplate = /^## Template\s*$/m.test(templateText);
@@ -274,37 +331,10 @@ export function main(argv: string[]): number {
   if (sections.length === 0) {
     results.errors.push(`unreadable_skeleton:${parsedTemplate.base}`);
   }
-  const required = sections.filter(([, optional]) => !optional).map(([name]) => name);
   const present = bodySectionNames(bodyText);
-  const known = new Set([...present, ...required].map((n) => n.toLowerCase()));
-  for (const name of FLOOR[templateType] ?? []) {
-    const names = [name, ...(FLOOR_ALIASES[name] ?? [])];
-    if (!names.some((n) => known.has(n.toLowerCase()))) {
-      required.push(name);
-    }
-  }
-  for (const name of required) {
-    if (present.has(name)) {
-      results.checks.push(`section:${name}=ok`);
-    } else {
-      results.errors.push(`missing_section:${name}`);
-    }
-  }
+  const required = checkRequiredSections(sections, templateType, present, results);
 
-  // リポジトリ側のテンプレートは web UI が埋めさせる最小要件なので、CLI 起票が節を
-  // 足すのは逸脱ではない。閉じた集合として扱うのは skill 自身のテンプレートだけ。
-  if (isForm || !ownTemplate) {
-    results.checks.push("unknown_section=skipped (repository template)");
-  } else {
-    const knownNames = new Set([...sections.map(([name]) => name), ...ALLOWED_EXTRA]);
-    const extra = [...present].filter((name) => !knownNames.has(name)).sort();
-    for (const name of extra) {
-      results.errors.push(`unknown_section:${name}`);
-    }
-    if (extra.length === 0) {
-      results.checks.push("unknown_section=none");
-    }
-  }
+  checkUnknownSections(sections, present, isForm, ownTemplate, results);
 
   recordPlaceholders(bodyText, isForm ? "" : skeletonText(templateText), results);
 

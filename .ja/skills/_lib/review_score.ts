@@ -106,6 +106,74 @@ function countVerdicts(results: readonly Outcome[]): Map<string | null, number> 
   return counted;
 }
 
+/** `counts` が持つ verdict のうち VERDICTS に無いもの。verdict が無い行が数えられる
+ * `null` キーも含む。 */
+function unknownVerdicts(counts: Map<string | null, number>): (string | null)[] {
+  const unknown: (string | null)[] = [];
+  for (const verdict of counts.keys()) {
+    if (verdict === null || !(verdict in VERDICTS)) unknown.push(verdict);
+  }
+  return unknown;
+}
+
+// verdict の無いケースは脱落でなく miss として数える。落とすと分母が縮んで recall が上がり、
+// 退行を隠す方向へ倒れる。
+function verdictOf(
+  entry: Case,
+  verdictByFile: Map<string | undefined, string | null | undefined>,
+): string {
+  const fallback = entry.expected === "detected" ? "miss" : "pass";
+  return verdictByFile.get(entry.file) || fallback;
+}
+
+function countsOf(
+  flagged: readonly Case[],
+  clean: readonly Case[],
+  verdictByFile: Map<string | undefined, string | null | undefined>,
+): Counts {
+  return {
+    flagged: flagged.length,
+    clean: clean.length,
+    hit: flagged.filter((e) => verdictOf(e, verdictByFile) === "hit").length,
+    below_severity: flagged.filter((e) => verdictOf(e, verdictByFile) === "below_severity").length,
+    other_finding: flagged.filter((e) => verdictOf(e, verdictByFile) === "other_finding").length,
+    miss: flagged.filter((e) => verdictOf(e, verdictByFile) === "miss").length,
+    false_positive: clean.filter((e) => verdictOf(e, verdictByFile) === "false_positive").length,
+    below_min_findings: flagged.filter((e) => verdictOf(e, verdictByFile) === "below_min_findings")
+      .length,
+  };
+}
+
+function byCategoryOf(
+  flagged: readonly Case[],
+  verdictByFile: Map<string | undefined, string | null | undefined>,
+): Record<string, Category> {
+  const byCategory: Record<string, Category> = {};
+  for (const entry of flagged) {
+    const key = entry.category || "uncategorized";
+    const bucket = (byCategory[key] ??= { total: 0, hit: 0, recall_strict: null });
+    bucket.total += 1;
+    if (verdictOf(entry, verdictByFile) === "hit") bucket.hit += 1;
+  }
+  for (const bucket of Object.values(byCategory)) {
+    bucket.recall_strict = ratio(bucket.hit, bucket.total);
+  }
+  return byCategory;
+}
+
+// `baseline == null` ではない。過去のログは指標を文章で書いており、それを引き算すると
+// 採点全体が壊れてしまう。
+function diffOf(metrics: Metrics, previous?: Previous | null): Metrics | null {
+  if (previous == null) return null;
+  const before = previous.metrics ?? {};
+  const diff: Metrics = {};
+  for (const [key, value] of Object.entries(metrics)) {
+    const baseline = before[key];
+    diff[key] = value === null || typeof baseline !== "number" ? null : round3(value - baseline);
+  }
+  return diff;
+}
+
 export function score(
   expected: readonly Case[],
   results: readonly Outcome[],
@@ -117,31 +185,12 @@ export function score(
   }
 
   const verdictCounts = countVerdicts(results);
-  const unknown: (string | null)[] = [];
-  for (const verdict of verdictCounts.keys()) {
-    if (verdict === null || !(verdict in VERDICTS)) unknown.push(verdict);
-  }
+  const unknown = unknownVerdicts(verdictCounts);
 
   const flagged = expected.filter((e) => e.expected === "detected");
   const clean = expected.filter((e) => e.expected === "no_finding");
 
-  // verdict の無いケースは脱落でなく miss として数える。落とすと分母が縮んで recall が上がり、
-  // 退行を隠す方向へ倒れる。
-  function verdictOf(entry: Case): string {
-    const fallback = entry.expected === "detected" ? "miss" : "pass";
-    return verdictByFile.get(entry.file) || fallback;
-  }
-
-  const counts: Counts = {
-    flagged: flagged.length,
-    clean: clean.length,
-    hit: flagged.filter((e) => verdictOf(e) === "hit").length,
-    below_severity: flagged.filter((e) => verdictOf(e) === "below_severity").length,
-    other_finding: flagged.filter((e) => verdictOf(e) === "other_finding").length,
-    miss: flagged.filter((e) => verdictOf(e) === "miss").length,
-    false_positive: clean.filter((e) => verdictOf(e) === "false_positive").length,
-    below_min_findings: flagged.filter((e) => verdictOf(e) === "below_min_findings").length,
-  };
+  const counts = countsOf(flagged, clean, verdictByFile);
 
   const metrics: Metrics = {
     recall_detection: ratio(
@@ -153,28 +202,8 @@ export function score(
     fp_rate: ratio(counts.false_positive, counts.clean),
   };
 
-  const byCategory: Record<string, Category> = {};
-  for (const entry of flagged) {
-    const key = entry.category || "uncategorized";
-    const bucket = (byCategory[key] ??= { total: 0, hit: 0, recall_strict: null });
-    bucket.total += 1;
-    if (verdictOf(entry) === "hit") bucket.hit += 1;
-  }
-  for (const bucket of Object.values(byCategory)) {
-    bucket.recall_strict = ratio(bucket.hit, bucket.total);
-  }
-
-  let diff: Metrics | null = null;
-  if (previous != null) {
-    const before = previous.metrics ?? {};
-    diff = {};
-    for (const [key, value] of Object.entries(metrics)) {
-      const baseline = before[key];
-      // `baseline == null` ではない。過去のログは指標を文章で書いており、それを引き算すると
-      // 採点全体が壊れてしまう。
-      diff[key] = value === null || typeof baseline !== "number" ? null : round3(value - baseline);
-    }
-  }
+  const byCategory = byCategoryOf(flagged, verdictByFile);
+  const diff = diffOf(metrics, previous);
 
   return { counts, metrics, byCategory, diff, unknownVerdicts: unknown, countVerdicts: verdictCounts };
 }
