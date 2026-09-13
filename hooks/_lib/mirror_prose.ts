@@ -80,11 +80,204 @@ function cleandoc(text: string): string[] {
 }
 
 const DEF_OR_CLASS_HEADER = /^(async\s+def|def|class)\b.*:$/;
+const isIdentChar = (c: string) => /[A-Za-z0-9_]/.test(c);
+
+/** Whether position `i` in `src` starts a Python string literal: 0-2 prefix letters (r/b/f/u,
+ * any case) then a quote, with the run beginning at a word boundary -- otherwise it is the tail
+ * of a longer identifier, not a prefix. Split out of pythonProse (unit U-006) so the quote /
+ * triple-quote detection carries its own name instead of sitting inline in the scan loop. */
+function matchStringStart(
+  src: string,
+  i: number,
+): { contentStart: number; quoteChar: string; triple: boolean } | null {
+  const prevChar = i > 0 ? src[i - 1] : "";
+  let prefixLen = 0;
+  while (prefixLen < 2 && /[rRbBfFuU]/.test(src[i + prefixLen] ?? "")) prefixLen++;
+  const quoteAt = i + prefixLen;
+  const quoteChar = src[quoteAt];
+  if ((quoteChar !== '"' && quoteChar !== "'") || isIdentChar(prevChar)) return null;
+  const triple = src[quoteAt + 1] === quoteChar && src[quoteAt + 2] === quoteChar;
+  const contentStart = triple ? quoteAt + 3 : quoteAt + 1;
+  return { contentStart, quoteChar, triple };
+}
+
+/** The literal's content and the index right after its closing quote(s), scanning from
+ * `contentStart` (just past the opening quote(s)). An unterminated literal runs to the first
+ * unescaped newline (single/double-quoted) or to end of source (triple-quoted), the same as the
+ * inline scan this was split out of (unit U-006) ran. */
+function readStringLiteral(
+  src: string,
+  contentStart: number,
+  quoteChar: string,
+  triple: boolean,
+): { content: string; end: number } {
+  const n = src.length;
+  let k = contentStart;
+  let closed = false;
+  while (k < n) {
+    const c = src[k];
+    if (c === "\\") {
+      k += 2;
+      continue;
+    }
+    if (triple) {
+      if (c === quoteChar && src[k + 1] === quoteChar && src[k + 2] === quoteChar) {
+        closed = true;
+        break;
+      }
+    } else if (c === quoteChar || c === "\n") {
+      closed = c === quoteChar;
+      break;
+    }
+    k++;
+  }
+  const content = src.slice(contentStart, k);
+  const end = closed ? k + (triple ? 3 : 1) : k;
+  return { content, end };
+}
+
+/** The comment text (from `#` at `i` to end of line, exclusive), and the index of that end. */
+function readComment(src: string, i: number): { text: string; end: number } {
+  const n = src.length;
+  let j = i;
+  while (j < n && src[j] !== "\n") j++;
+  return { text: src.slice(i, j), end: j };
+}
+
+// Per-logical-line scan state. A logical line ends at a newline that is not inside a string --
+// a triple-quoted string's interior newlines are consumed inside the string scan and never reach
+// the newline check.
+interface LineScanState {
+  atModuleStart: boolean; // true until the file's first statement is processed
+  afterHeader: boolean; // true only for the logical line right after a def/class header
+  noTokenYet: boolean; // no non-whitespace token seen yet on the current logical line
+  leadsWithString: boolean; // this line's first token is a string literal
+  stringIsAlone: boolean; // no other code token has followed that leading string
+  pendingDoc: string[] | null; // that leading string's cleaned lines, if any
+  codeText: string; // the line's code with string interiors blanked to "S", for the header check
+}
+
+function initialLineScanState(): LineScanState {
+  return {
+    atModuleStart: true,
+    afterHeader: false,
+    noTokenYet: true,
+    leadsWithString: false,
+    stringIsAlone: true,
+    pendingDoc: null,
+    codeText: "",
+  };
+}
+
+/** Applied at each newline that ends a logical line (and once more at end of file): mutates
+ * `state` in place for the line that follows, and appends the line's pending docstring to
+ * `docstrings` when it qualifies as one (module/def/class docstring position, alone on its
+ * line). Split out of pythonProse's own `endLine` closure (unit U-006) so its docstring-
+ * qualifying logic carries its own name instead of closing over pythonProse's locals. */
+function endLogicalLine(state: LineScanState, docstrings: string[]): void {
+  if (!state.noTokenYet) {
+    if (
+      state.leadsWithString &&
+      state.stringIsAlone &&
+      state.pendingDoc &&
+      (state.atModuleStart || state.afterHeader)
+    ) {
+      docstrings.push(...state.pendingDoc);
+    }
+    state.afterHeader = DEF_OR_CLASS_HEADER.test(state.codeText.trim());
+    state.atModuleStart = false;
+  }
+  state.noTokenYet = true;
+  state.leadsWithString = false;
+  state.stringIsAlone = true;
+  state.pendingDoc = null;
+  state.codeText = "";
+}
+
+/** A string literal's `content` reached the scan at a point where `state.noTokenYet` says
+ * whether it leads its logical line: leading, it becomes that line's docstring candidate;
+ * otherwise its presence only clears `stringIsAlone` for a docstring the line already leads
+ * with. Split out of pythonProse (unit U-006) to keep the noTokenYet/leadsWithString branch out
+ * of the main scan loop. */
+function applyStringToken(state: LineScanState, content: string): void {
+  if (state.noTokenYet) {
+    state.leadsWithString = true;
+    state.pendingDoc = cleandoc(content);
+  } else {
+    state.stringIsAlone = false;
+  }
+  state.noTokenYet = false;
+}
+
+// The five scanToken branches below (unit U-006 split) each answer null when the character at
+// `i` is not theirs to handle, or the next scan index once they have consumed it -- the same
+// per-character dispatch pythonProse's own if/else-if chain ran, just as one small function per
+// branch instead of one large one.
+
+function tryNewline(src: string, i: number, state: LineScanState, docstrings: string[]): number | null {
+  if (src[i] !== "\n") return null;
+  endLogicalLine(state, docstrings);
+  return i + 1;
+}
+
+function tryBlank(src: string, i: number, state: LineScanState): number | null {
+  const ch = src[i];
+  if (ch !== " " && ch !== "\t" && ch !== "\r") return null;
+  state.codeText += " ";
+  return i + 1;
+}
+
+function tryComment(src: string, i: number, comments: string[]): number | null {
+  if (src[i] !== "#") return null;
+  const comment = readComment(src, i);
+  if (!comment.text.startsWith("#!")) comments.push(comment.text);
+  return comment.end;
+}
+
+function tryStringToken(src: string, i: number, state: LineScanState): number | null {
+  const stringStart = matchStringStart(src, i);
+  if (stringStart === null) return null;
+  const literal = readStringLiteral(
+    src,
+    stringStart.contentStart,
+    stringStart.quoteChar,
+    stringStart.triple,
+  );
+  applyStringToken(state, literal.content);
+  state.codeText += "S";
+  return literal.end;
+}
+
+// The fallback branch: an ordinary code character, always consumed.
+function scanPlainChar(src: string, i: number, state: LineScanState): number {
+  if (state.leadsWithString) state.stringIsAlone = false;
+  state.noTokenYet = false;
+  state.codeText += src[i];
+  return i + 1;
+}
+
+function scanToken(
+  src: string,
+  i: number,
+  state: LineScanState,
+  docstrings: string[],
+  comments: string[],
+): number {
+  return (
+    tryNewline(src, i, state, docstrings) ??
+    tryBlank(src, i, state) ??
+    tryComment(src, i, comments) ??
+    tryStringToken(src, i, state) ??
+    scanPlainChar(src, i, state)
+  );
+}
 
 /** The original Python module's lines 44-70, `_python_prose`, ported by U-002 (hooks/_lib/tests/mirror-prose-
  * python.test.ts) as a string-state scan: node has neither `ast` nor `tokenize`, so this walks
  * the source a character at a time, tracking triple-quoted / single-quoted / prefixed string
- * literals and the module / def / class docstring position by hand instead.
+ * literals and the module / def / class docstring position by hand instead. matchStringStart /
+ * readStringLiteral / readComment / scanToken above carry the per-token scanning; this function
+ * only drives the scan loop and returns the collected docstrings and comments.
  *
  * Docstrings collect before comments, mirroring `_python_prose`'s own two separate passes
  * (`ast.walk` over every docstring, then a `tokenize` pass over every comment) rather than the
@@ -98,111 +291,14 @@ const DEF_OR_CLASS_HEADER = /^(async\s+def|def|class)\b.*:$/;
 function pythonProse(src: string): string[] {
   const docstrings: string[] = [];
   const comments: string[] = [];
-
-  // Per-logical-line state. A logical line ends at a newline that is not inside a string --
-  // a triple-quoted string's interior newlines are consumed inside the string scan below and
-  // never reach the newline check.
-  let atModuleStart = true; // true until the file's first statement is processed
-  let afterHeader = false; // true only for the logical line right after a def/class header
-  let noTokenYet = true; // no non-whitespace token seen yet on the current logical line
-  let leadsWithString = false; // this line's first token is a string literal
-  let stringIsAlone = true; // no other code token has followed that leading string
-  let pendingDoc: string[] | null = null; // that leading string's cleaned lines, if any
-  let codeText = ""; // the line's code with string interiors blanked to "S", for the header check
-
-  const isIdentChar = (c: string) => /[A-Za-z0-9_]/.test(c);
-
-  function endLine(): void {
-    if (!noTokenYet) {
-      if (leadsWithString && stringIsAlone && pendingDoc && (atModuleStart || afterHeader)) {
-        docstrings.push(...pendingDoc);
-      }
-      afterHeader = DEF_OR_CLASS_HEADER.test(codeText.trim());
-      atModuleStart = false;
-    }
-    noTokenYet = true;
-    leadsWithString = false;
-    stringIsAlone = true;
-    pendingDoc = null;
-    codeText = "";
-  }
+  const state = initialLineScanState();
 
   const n = src.length;
   let i = 0;
   while (i < n) {
-    const ch = src[i];
-
-    if (ch === "\n") {
-      endLine();
-      i++;
-      continue;
-    }
-    if (ch === " " || ch === "\t" || ch === "\r") {
-      codeText += " ";
-      i++;
-      continue;
-    }
-    if (ch === "#") {
-      let j = i;
-      while (j < n && src[j] !== "\n") j++;
-      const text = src.slice(i, j);
-      if (!text.startsWith("#!")) comments.push(text);
-      i = j;
-      continue;
-    }
-
-    // A string literal: 0-2 prefix letters (r/b/f/u, any case) then a quote, and the run must
-    // start at a word boundary -- otherwise it is the tail of a longer identifier, not a prefix.
-    const prevChar = i > 0 ? src[i - 1] : "";
-    let prefixLen = 0;
-    while (prefixLen < 2 && /[rRbBfFuU]/.test(src[i + prefixLen] ?? "")) prefixLen++;
-    const quoteAt = i + prefixLen;
-    const quoteChar = src[quoteAt];
-    const isStringStart = (quoteChar === '"' || quoteChar === "'") && !isIdentChar(prevChar);
-
-    if (isStringStart) {
-      const triple = src[quoteAt + 1] === quoteChar && src[quoteAt + 2] === quoteChar;
-      const contentStart = triple ? quoteAt + 3 : quoteAt + 1;
-      let k = contentStart;
-      let closed = false;
-      while (k < n) {
-        const c = src[k];
-        if (c === "\\") {
-          k += 2;
-          continue;
-        }
-        if (triple) {
-          if (c === quoteChar && src[k + 1] === quoteChar && src[k + 2] === quoteChar) {
-            closed = true;
-            break;
-          }
-        } else if (c === quoteChar || c === "\n") {
-          closed = c === quoteChar;
-          break;
-        }
-        k++;
-      }
-      const content = src.slice(contentStart, k);
-      const end = closed ? k + (triple ? 3 : 1) : k;
-
-      if (noTokenYet) {
-        leadsWithString = true;
-        pendingDoc = cleandoc(content);
-      } else {
-        stringIsAlone = false;
-      }
-      noTokenYet = false;
-      codeText += "S";
-      i = end;
-      continue;
-    }
-
-    if (leadsWithString) stringIsAlone = false;
-    noTokenYet = false;
-    codeText += ch;
-    i++;
+    i = scanToken(src, i, state, docstrings, comments);
   }
-  endLine();
+  endLogicalLine(state, docstrings);
 
   return [...docstrings, ...comments];
 }
