@@ -84,8 +84,7 @@ const isIdentChar = (c: string) => /[A-Za-z0-9_]/.test(c);
 
 /** Whether position `i` in `src` starts a Python string literal: 0-2 prefix letters (r/b/f/u,
  * any case) then a quote, with the run beginning at a word boundary -- otherwise it is the tail
- * of a longer identifier, not a prefix. Split out of pythonProse (unit U-006) so the quote /
- * triple-quote detection carries its own name instead of sitting inline in the scan loop. */
+ * of a longer identifier, not a prefix. */
 function matchStringStart(
   src: string,
   i: number,
@@ -103,8 +102,7 @@ function matchStringStart(
 
 /** The literal's content and the index right after its closing quote(s), scanning from
  * `contentStart` (just past the opening quote(s)). An unterminated literal runs to the first
- * unescaped newline (single/double-quoted) or to end of source (triple-quoted), the same as the
- * inline scan this was split out of (unit U-006) ran. */
+ * unescaped newline (single/double-quoted) or to end of source (triple-quoted). */
 function readStringLiteral(
   src: string,
   contentStart: number,
@@ -172,8 +170,7 @@ function initialLineScanState(): LineScanState {
 /** Applied at each newline that ends a logical line (and once more at end of file): mutates
  * `state` in place for the line that follows, and appends the line's pending docstring to
  * `docstrings` when it qualifies as one (module/def/class docstring position, alone on its
- * line). Split out of pythonProse's own `endLine` closure (unit U-006) so its docstring-
- * qualifying logic carries its own name instead of closing over pythonProse's locals. */
+ * line). */
 function endLogicalLine(state: LineScanState, docstrings: string[]): void {
   if (!state.noTokenYet) {
     if (
@@ -197,8 +194,7 @@ function endLogicalLine(state: LineScanState, docstrings: string[]): void {
 /** A string literal's `content` reached the scan at a point where `state.noTokenYet` says
  * whether it leads its logical line: leading, it becomes that line's docstring candidate;
  * otherwise its presence only clears `stringIsAlone` for a docstring the line already leads
- * with. Split out of pythonProse (unit U-006) to keep the noTokenYet/leadsWithString branch out
- * of the main scan loop. */
+ * with. */
 function applyStringToken(state: LineScanState, content: string): void {
   if (state.noTokenYet) {
     state.leadsWithString = true;
@@ -209,12 +205,17 @@ function applyStringToken(state: LineScanState, content: string): void {
   state.noTokenYet = false;
 }
 
-// The five scanToken branches below (unit U-006 split) each answer null when the character at
+// The five scanToken branches below each answer null when the character at
 // `i` is not theirs to handle, or the next scan index once they have consumed it -- the same
 // per-character dispatch pythonProse's own if/else-if chain ran, just as one small function per
 // branch instead of one large one.
 
-function tryNewline(src: string, i: number, state: LineScanState, docstrings: string[]): number | null {
+function tryNewline(
+  src: string,
+  i: number,
+  state: LineScanState,
+  docstrings: string[],
+): number | null {
   if (src[i] !== "\n") return null;
   endLogicalLine(state, docstrings);
   return i + 1;

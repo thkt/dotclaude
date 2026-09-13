@@ -1,14 +1,7 @@
 /// <reference types="node" />
-// Guards hooks/_lib/tests/_settings-hooks.ts's hookCommands(), the shared helper unit U-006 gives
-// the six settings.json hook-command-scanning test files (mirror-prose-retirement.test.ts,
-// recall-index-retirement.test.ts, security-hooks-retirement.test.ts,
-// hooks-python-retirement.test.ts, pre-bash-hooks-retirement.test.ts,
-// pre-bash-skill-hooks-retirement.test.ts) to import instead of each re-deriving its own
-// eventCommands / preToolUseBashCommands / sessionStartCommands / mirrorProseGuardCommands.
-// hookCommands is hooks-python-retirement.test.ts's own eventCommands with an optional matcher
-// argument added, so a caller that needs only one matcher's groups (the PreToolUse "Bash"
-// filter every pre-bash/security retirement test hand-rolled) passes it instead of filtering the
-// full per-event list itself.
+// Pins hookCommands() in hooks/_lib/tests/_settings-hooks.ts, the settings.json hook-command
+// reader the retirement tests under hooks/ share: every group's command strings under an event,
+// the optional narrowing to one matcher, and the empty answer for a shape that is not an array.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { hookCommands } from "./_settings-hooks.ts";

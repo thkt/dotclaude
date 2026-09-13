@@ -110,15 +110,15 @@ export function staleShebangOffenders(
 
 /** Every string a settings tree names under a `command` key, collected by walking every array
  * and object recursively regardless of where in the tree it sits. */
-function hookCommands(node: unknown, out: string[]): void {
+function collectCommandScripts(node: unknown, out: string[]): void {
   if (Array.isArray(node)) {
-    for (const item of node) hookCommands(item, out);
+    for (const item of node) collectCommandScripts(item, out);
     return;
   }
   if (node !== null && typeof node === "object") {
     const record = node as Record<string, unknown>;
     if (typeof record.command === "string") out.push(record.command);
-    for (const value of Object.values(record)) hookCommands(value, out);
+    for (const value of Object.values(record)) collectCommandScripts(value, out);
   }
 }
 
@@ -145,7 +145,7 @@ export function settingsCommandShebangOffenders(settings: unknown, shebang: stri
       ? (settings as Record<string, unknown>).hooks
       : undefined;
   const commands: string[] = [];
-  hookCommands(hooksNode ?? {}, commands);
+  collectCommandScripts(hooksNode ?? {}, commands);
   const scripts = settingsCommandScripts(commands);
 
   const trackedModes = new Map(

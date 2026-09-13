@@ -5,7 +5,9 @@
 // `command` string of every hook group registered under `eventName` in a parsed settings.json
 // tree, optionally narrowed to the groups whose `matcher` equals the one given.
 function record(node: unknown, key: string): unknown {
-  return node !== null && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined;
+  return node !== null && typeof node === "object"
+    ? (node as Record<string, unknown>)[key]
+    : undefined;
 }
 
 function asArray(value: unknown): unknown[] {
@@ -23,6 +25,8 @@ function groupCommands(group: unknown, matcher: string | undefined): string[] {
     .filter((command): command is string => typeof command === "string");
 }
 
+/** The `command` strings of every hook group registered under `eventName` in a parsed
+ * settings.json tree, in file order; with `matcher`, only the groups whose matcher equals it. */
 export function hookCommands(settings: unknown, eventName: string, matcher?: string): string[] {
   const eventNode = record(record(settings, "hooks"), eventName);
   return asArray(eventNode).flatMap((group) => groupCommands(group, matcher));
