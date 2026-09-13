@@ -144,3 +144,35 @@ test("T-250 sheetFileName pads the index to two digits and replaces every path-u
   assert.equal(sheetFileName(1, "Sheet/One"), "01_Sheet_One.md");
   assert.equal(sheetFileName(12, 'A:B*C?D"E<F>G|H\\I'), "12_A_B_C_D_E_F_G_H_I.md");
 });
+
+// Pins sheetToMarkdown's doc-header block ahead of the docHeaderLines/tableBlock split: the
+// column-ruler row sits among the first three rows and must not become a third meta line.
+test("T-251 a sheet whose first cell is the profile's docHeaderFirstCell renders the first three rows as a quoted meta block, skipping a column-ruler row", () => {
+  const ruler = Array.from({ length: 12 }, (_, i) => String(i + 1));
+  const markdown = sheetToMarkdown(
+    sheetOf(row([0, "案件名"], [2, "サンプルAPI"]), ruler, row([0, "バージョン"], [2, "1.0"])),
+    profiles["ja-api-spec"],
+  );
+
+  const metaLines = markdown.match(/^> .*$/gm) ?? [];
+  assert.equal(metaLines.length, 2);
+  assert.match(markdown, /> 案件名 \/ サンプルAPI/);
+  assert.match(markdown, /> バージョン \/ 1\.0/);
+});
+
+// Pins sheetToMarkdown's second-header-tier merge ahead of the docHeaderLines/tableBlock split:
+// the row right after the table head starts past the head's first column, so buildColumns folds
+// it in as child labels instead of treating it as a body row.
+test("T-252 a row right after the table head whose first cell starts beyond the head's column is merged into the column labels as the second header tier", () => {
+  const markdown = sheetToMarkdown(
+    sheetOf(
+      row([2, "項番"], [4, "パラメータ名"], [12, "バリデーション"], [18, "説明"]),
+      row([12, "必須"], [14, "重複"]),
+      row([2, "1"], [4, "password"], [12, "○"], [18, "パスワード"]),
+    ),
+    profiles["ja-api-spec"],
+  );
+
+  assert.match(markdown, /\| 項番 \| パラメータ名 \| 必須 \| 重複 \| 説明 \|/);
+  assert.match(markdown, /\| 1 \| password \| ○ \|  \| パスワード \|/);
+});
