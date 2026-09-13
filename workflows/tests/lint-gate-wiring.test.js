@@ -6,7 +6,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,6 +29,14 @@ function runFromRoot(bin, args) {
   } catch (error) {
     return typeof error.status === "number" ? error.status : 1;
   }
+}
+
+// The list a hand-written array could drift from silently. readdirSync reads the same directory
+// entries oxlint's own `workflows/*.js` / `.ja/workflows/*.js` overrides match, one level deep.
+function listWorkflowScripts(dir) {
+  return readdirSync(path.join(ROOT, dir), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".js"))
+    .map((entry) => path.posix.join(dir, entry.name));
 }
 
 test("T-015 test.yml runs biome lint with --reporter=github in a step after an oxlint step that passes --format=github", () => {
@@ -56,4 +64,15 @@ test("T-018 no tracked .js or .ts file is hidden from Biome by .gitignore", () =
     .split("\0")
     .filter((file) => /\.(js|mjs|cjs|jsx|ts|mts|cts|tsx)$/.test(file));
   assert.deepEqual(ignoredTracked, []);
+});
+
+// max-depth sits at "warn" in the workflows/.ja overrides (T-010), so only --deny-warnings turns
+// a nesting hit into a non-zero exit; T-017's bare run stays green through it. This pins every
+// workflow script's nesting to the override's limit, not just the fixtures oxlint-workflow-depth
+// exercises. If #710 promotes max-depth to error, T-017's bare run would carry the same role and
+// this check retires.
+test("T-019 oxlint --deny-warnings over every workflow script in workflows/ and .ja/workflows/ exits zero", () => {
+  const scripts = [...listWorkflowScripts("workflows"), ...listWorkflowScripts(".ja/workflows")];
+  assert.ok(scripts.length > 0, "no *.js file found directly under workflows/ or .ja/workflows/");
+  assert.equal(runFromRoot(OXLINT_BIN, ["--deny-warnings", ...scripts]), 0);
 });
