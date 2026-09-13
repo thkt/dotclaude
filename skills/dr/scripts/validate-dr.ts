@@ -43,6 +43,12 @@ export const RECOMMENDED_SECTIONS = ["Reassessment Triggers"] as const;
 export const STATUS_VALUES: RegExp =
   /^(?:proposed|accepted|rejected|deprecated|superseded by DR-\d{4})$/;
 
+interface Results {
+  errors: string[];
+  warnings: string[];
+  checks: string[];
+}
+
 /** The retired Python validate-dr's count_options: bullets or numbered items directly under the
  * Considered Options heading. A heading of the same or shallower depth ends the count; a deeper
  * heading is a subsection of Considered Options, so its bullets still count. */
@@ -110,22 +116,9 @@ function isFile(path: string): boolean {
   }
 }
 
-/** The retired Python validate-dr's main: reads argv[0] as a dr-file path, prints the validation
- * JSON (indent 2), and exits 1 only when results.errors is non-empty. */
-export function main(argv: string[]): number {
-  const drFile = argv[0] ?? "";
-  if (!isFile(drFile)) {
-    fail(`Error: file not found: ${drFile}`);
-  }
-
-  const text = readFileSync(drFile, "utf8");
-  const lines = text.split("\n");
-  const results: { errors: string[]; warnings: string[]; checks: string[] } = {
-    errors: [],
-    warnings: [],
-    checks: [],
-  };
-
+/** REQUIRED_SECTIONS then RECOMMENDED_SECTIONS: a heading present pushes a check, a missing
+ * required one an error, a missing recommended one a warning. */
+function checkSections(text: string, results: Results): void {
   for (const section of [...REQUIRED_SECTIONS, ...RECOMMENDED_SECTIONS]) {
     const escaped = section.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const found = new RegExp(`^#{2,3} ${escaped}\\s*$`, "m").test(text);
@@ -137,8 +130,10 @@ export function main(argv: string[]): number {
       results.warnings.push(`missing_section:${section} (recommended)`);
     }
   }
+}
 
-  // MADR v4 frontmatter: status and date are optional but recommended
+/** MADR v4 frontmatter: status and date are optional but recommended. */
+function checkFrontmatter(text: string, results: Results): void {
   const [frontmatter] = splitFrontmatter(text);
   if (frontmatter.length > 0) {
     results.checks.push("frontmatter=present");
@@ -160,7 +155,11 @@ export function main(argv: string[]): number {
         " for status/date/decision-makers)",
     );
   }
+}
 
+/** countOptions read against its 2+/1/0 thresholds: a check at 2 or more, a warning at exactly
+ * one, an error at zero. */
+function checkOptions(lines: readonly string[], results: Results): void {
   const optionsCount = countOptions(lines);
   if (optionsCount >= 2) {
     results.checks.push(`options_count=${optionsCount}`);
@@ -169,6 +168,23 @@ export function main(argv: string[]): number {
   } else {
     results.errors.push("options_count=0");
   }
+}
+
+/** The retired Python validate-dr's main: reads argv[0] as a dr-file path, prints the validation
+ * JSON (indent 2), and exits 1 only when results.errors is non-empty. */
+export function main(argv: string[]): number {
+  const drFile = argv[0] ?? "";
+  if (!isFile(drFile)) {
+    fail(`Error: file not found: ${drFile}`);
+  }
+
+  const text = readFileSync(drFile, "utf8");
+  const lines = text.split("\n");
+  const results: Results = { errors: [], warnings: [], checks: [] };
+
+  checkSections(text, results);
+  checkFrontmatter(text, results);
+  checkOptions(lines, results);
 
   if (lines.some((line) => line.startsWith("# "))) {
     results.checks.push("title_heading=ok");
