@@ -210,6 +210,25 @@ let rejudgeNotes = "";
 // conclusion, not a degradation).
 let reviewDied = false;
 
+// Sorts the challenge verdicts into the P1/P2 findings to fix (survivors) and the ones a human
+// has to settle (needsContext). disputed is dropped; downgraded takes the lowered severity.
+const triage = (findings, verdicts) => {
+  const byId = new Map(findings.map((f) => [f.id, f]));
+  const out = { survivors: [], needsContext: [] };
+  for (const v of verdicts) {
+    const f = byId.get(v.id);
+    if (!f) continue;
+    if (v.verdict === "needs_context") {
+      out.needsContext.push({ ...f, why: v.why || "" });
+      continue;
+    }
+    if (v.verdict === "disputed") continue;
+    const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
+    if (severity === "P1" || severity === "P2") out.survivors.push({ ...f, severity });
+  }
+  return out;
+};
+
 if (mode !== "cleanup") {
   // ---- Review: external Codex lens ----
   phase("Review");
@@ -296,18 +315,7 @@ if (mode !== "cleanup") {
     // The script triages deterministically: confirmed / downgraded become fix
     // candidates, disputed is dropped, needs_context surfaces to the caller.
     // Fix candidates are P1/P2 only (P3 is cleanup territory).
-    const byId = new Map(codex.findings.map((f) => [f.id, f]));
-    for (const v of verdicts) {
-      const f = byId.get(v.id);
-      if (!f) continue;
-      if (v.verdict === "needs_context") {
-        needsContext.push({ ...f, why: v.why || "" });
-        continue;
-      }
-      if (v.verdict === "disputed") continue;
-      const severity = v.verdict === "downgraded" && v.severity ? v.severity : f.severity;
-      if (severity === "P1" || severity === "P2") survivors.push({ ...f, severity });
-    }
+    ({ survivors, needsContext } = triage(codex.findings, verdicts));
     log(
       `triage: ${survivors.length} survived / ${needsContext.length} needs_context / ${codex.findings.length - survivors.length - needsContext.length} dropped`,
     );
