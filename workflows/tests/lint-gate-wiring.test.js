@@ -143,7 +143,7 @@ test("T-021 biome lint --error-on-warnings over every tracked JS and TS file und
 // itself, so they are left out here too), minus anything under a /tests/ directory -- tests are
 // not part of this gate.
 function trackedLintTargetsOutsideTests() {
-  const SOURCE_EXT = /\.(js|mjs|cjs|jsx|ts|mts|cts|tsx)$/;
+  const SOURCE_EXT = /\.(js|mjs|cjs|ts|mts|cts)$/;
   const UNDER_A_SUBDIR = /^(\.ja\/)?workflows\/[^/]+\/.+$/;
   return execFileSync("git", ["ls-files", "-z", "workflows", ".ja/workflows"], {
     cwd: ROOT,

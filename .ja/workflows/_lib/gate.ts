@@ -287,7 +287,6 @@ function isExistingDirectory(path: string): boolean {
   }
 }
 
-// argv を 1 flag ずつ読み、ParsedOptions を組み立てる。個々の flag の受理判定はここで行う。
 // consumeFlags の flag 1 個あたり 1 回のみ許可するガード。下の boolean-flag 分岐と
 // single-value-flag 分岐の両方から共有される。
 function assertUnseen(seen: Set<string>, flag: string): void {
@@ -341,6 +340,7 @@ function applyFlagValue(options: ParsedOptions, flag: string, value: string): vo
   }
 }
 
+// argv を 1 flag ずつ読み、ParsedOptions を組み立てる。個々の flag の受理判定はここで行う。
 function consumeFlags(argv: string[]): ParsedOptions {
   const options: ParsedOptions = {
     gate_id: "gate",

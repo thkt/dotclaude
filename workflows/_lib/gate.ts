@@ -290,8 +290,6 @@ function isExistingDirectory(path: string): boolean {
   }
 }
 
-// Reads argv one flag at a time and builds ParsedOptions. Per-flag acceptance validation
-// happens here.
 // consumeFlags's once-per-flag guard, shared by the boolean-flag branch and the
 // single-value-flag branch below it.
 function assertUnseen(seen: Set<string>, flag: string): void {
@@ -345,6 +343,8 @@ function applyFlagValue(options: ParsedOptions, flag: string, value: string): vo
   }
 }
 
+// Reads argv one flag at a time and builds ParsedOptions. Per-flag acceptance validation
+// happens here.
 function consumeFlags(argv: string[]): ParsedOptions {
   const options: ParsedOptions = {
     gate_id: "gate",

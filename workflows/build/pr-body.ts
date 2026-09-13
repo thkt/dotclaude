@@ -264,9 +264,9 @@ function section(
   return `**${label}**\n${lines.join("\n")}`;
 }
 
-// The count when the check ran, "not run" when it did not, "" when there is nothing to show.
-// A payload without the status key comes from a caller that predates them, so its counts are
-// taken at face value.
+/** The count when the check ran, "not run" when it did not, "" when there is nothing to show.
+ * A payload without the status key comes from a caller that predates them, so its counts are
+ * taken at face value. */
 function summaryCell(
   payload: Record<string, unknown>,
   L: Record<string, string>,

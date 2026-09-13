@@ -303,12 +303,11 @@ test("stubs.workflow throws the message build.js's sibling() matches on an unres
   }
 });
 
-// T-434..T-437: createStubs's attempt loop (timeout / non-zero exit / missing output file /
-// schema-violation retry / ATTEMPTS exceeded) pinned through an injectable `runOnce`, so these
-// five paths are fixed without spawning the real codex binary. workflows/_lib/codex-run.ts does
-// not wire runOnce into the loop yet (U-001's Green step), so stubs.agent() below still falls
-// through to the real runCodexOnce -- PATH is blanked around that call so its spawn("codex", ...)
-// fails fast via ENOENT instead of reaching a real process or the network.
+// T-434..T-437 pin createStubs's attempt loop (timeout / non-zero exit / missing output file /
+// schema-violation retry / ATTEMPTS exceeded) through the injectable `runOnce`, so no real codex
+// binary is spawned. PATH is blanked around each run all the same: a stub that fell through to
+// the real runCodexOnce would then fail fast with ENOENT instead of reaching a process or the
+// network.
 async function withoutCodexOnPath(fn) {
   const original = process.env.PATH;
   process.env.PATH = "";
@@ -340,7 +339,12 @@ test("T-434 a timed-out codex run is retried once and the second answer is retur
       writeFileSync(spec.outPath, "second answer");
       return { code: 0, stderr: "", timedOut: false };
     };
-    const stubs = createStubs({ repo: "/tmp/does-not-exist", tmp, onLog: (m) => logs.push(m), runOnce });
+    const stubs = createStubs({
+      repo: "/tmp/does-not-exist",
+      tmp,
+      onLog: (m) => logs.push(m),
+      runOnce,
+    });
 
     const result = await withoutCodexOnPath(() => stubs.agent("do the thing", { label: "t434" }));
 
@@ -361,7 +365,12 @@ test("T-435 a non-zero codex exit logs the stderr tail and is retried without th
       writeFileSync(spec.outPath, "retried answer");
       return { code: 0, stderr: "", timedOut: false };
     };
-    const stubs = createStubs({ repo: "/tmp/does-not-exist", tmp, onLog: (m) => logs.push(m), runOnce });
+    const stubs = createStubs({
+      repo: "/tmp/does-not-exist",
+      tmp,
+      onLog: (m) => logs.push(m),
+      runOnce,
+    });
 
     const result = await withoutCodexOnPath(() => stubs.agent("do the thing", { label: "t435" }));
 
@@ -384,7 +393,12 @@ test("T-436 a schema violation on the first answer is retried with the correctio
       }
       return { code: 0, stderr: "", timedOut: false };
     };
-    const stubs = createStubs({ repo: "/tmp/does-not-exist", tmp, onLog: (m) => logs.push(m), runOnce });
+    const stubs = createStubs({
+      repo: "/tmp/does-not-exist",
+      tmp,
+      onLog: (m) => logs.push(m),
+      runOnce,
+    });
 
     const result = await withoutCodexOnPath(() =>
       stubs.agent("do the thing", { label: "t436", schema: RUNONCE_SCHEMA }),
@@ -407,7 +421,12 @@ test("T-437 two failed attempts return null and log each attempt", () =>
       // Attempt 2: codex exits non-zero.
       return { code: 1, stderr: "boom", timedOut: false };
     };
-    const stubs = createStubs({ repo: "/tmp/does-not-exist", tmp, onLog: (m) => logs.push(m), runOnce });
+    const stubs = createStubs({
+      repo: "/tmp/does-not-exist",
+      tmp,
+      onLog: (m) => logs.push(m),
+      runOnce,
+    });
 
     const result = await withoutCodexOnPath(() => stubs.agent("do the thing", { label: "t437" }));
 
@@ -416,6 +435,8 @@ test("T-437 two failed attempts return null and log each attempt", () =>
     assert.ok(logs.some((line) => line.includes("[t437] codex wrote no final message.")));
     assert.ok(logs.some((line) => line.includes("[t437] codex exited 1. boom")));
     assert.ok(
-      logs.some((line) => line.includes("[t437] gave up after 2 attempts; the stage returns null.")),
+      logs.some((line) =>
+        line.includes("[t437] gave up after 2 attempts; the stage returns null."),
+      ),
     );
   }));

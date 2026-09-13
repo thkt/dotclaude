@@ -260,9 +260,9 @@ function section(
   return `**${label}**\n${lines.join("\n")}`;
 }
 
-// チェックが走ったときは件数、走らなかったときは "not run"、出すものが無いときは ""。
-// status キーを持たない payload はそれ以前の呼び出し元から来たものなので、その件数は
-// そのまま信じる。
+/** チェックが走ったときは件数、走らなかったときは "not run"、出すものが無いときは ""。
+ * status キーを持たない payload はそれ以前の呼び出し元から来たものなので、その件数は
+ * そのまま信じる。 */
 function summaryCell(
   payload: Record<string, unknown>,
   L: Record<string, string>,
