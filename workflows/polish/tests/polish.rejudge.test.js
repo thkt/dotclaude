@@ -156,3 +156,42 @@ test("T-005 does not start the rejudge agent in mode review", async () => {
   assert.equal(callOf(calls, "rejudge"), undefined);
   assert.equal(result.reopened, undefined, "the review return value carries no reopened");
 });
+
+test("T-006 a needs_context verdict lands in the result's needs_context with its why", async () => {
+  const { result } = await runWorkflow(polishJs, {
+    args: { repo: "/abs/target-repo" },
+    stubs: {
+      agent: agentStub({
+        challenge: {
+          verdicts: [
+            { id: "F1", verdict: "needs_context", why: "ambiguous ownership" },
+            { id: "F2", verdict: "confirmed" },
+          ],
+        },
+        rejudge: bothResolved,
+      }),
+    },
+  });
+  assert.deepEqual(
+    result.needs_context.map((n) => ({ id: n.id, why: n.why })),
+    [{ id: "F1", why: "ambiguous ownership" }],
+  );
+});
+
+test("T-007 a needs_context finding is left out of survivors and starts no rejudge agent", async () => {
+  const { calls, result } = await runWorkflow(polishJs, {
+    args: { repo: "/abs/target-repo" },
+    stubs: {
+      agent: agentStub({
+        challenge: {
+          verdicts: [
+            { id: "F1", verdict: "needs_context", why: "needs owner input" },
+            { id: "F2", verdict: "needs_context", why: "unclear scope" },
+          ],
+        },
+      }),
+    },
+  });
+  assert.equal(result.survivors, 0, "both findings went to needs_context, none survived");
+  assert.equal(callOf(calls, "rejudge"), undefined, "no survivor means no rejudge agent starts");
+});
