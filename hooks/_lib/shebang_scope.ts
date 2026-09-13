@@ -108,24 +108,32 @@ export function staleShebangOffenders(
   return offenders;
 }
 
-/** shebang_test.py's `_settings_command_scripts`: the repo-relative .ts paths a settings tree
- * names as a hook command. */
-function settingsCommandScripts(node: unknown, out: string[]): void {
+/** Every string a settings tree names under a `command` key, collected by walking every array
+ * and object recursively regardless of where in the tree it sits. */
+function hookCommands(node: unknown, out: string[]): void {
   if (Array.isArray(node)) {
-    for (const item of node) settingsCommandScripts(item, out);
+    for (const item of node) hookCommands(item, out);
     return;
   }
   if (node !== null && typeof node === "object") {
     const record = node as Record<string, unknown>;
-    if (typeof record.command === "string") {
-      for (const token of record.command.split(/\s+/)) {
-        if (token.startsWith("~/.claude/") && token.endsWith(".ts")) {
-          out.push(token.slice("~/.claude/".length));
-        }
+    if (typeof record.command === "string") out.push(record.command);
+    for (const value of Object.values(record)) hookCommands(value, out);
+  }
+}
+
+/** shebang_test.py's `_settings_command_scripts`: the repo-relative .ts paths a list of hook
+ * `command` strings names, read from each command's whitespace-split tokens. */
+function settingsCommandScripts(commands: readonly string[]): string[] {
+  const scripts: string[] = [];
+  for (const command of commands) {
+    for (const token of command.split(/\s+/)) {
+      if (token.startsWith("~/.claude/") && token.endsWith(".ts")) {
+        scripts.push(token.slice("~/.claude/".length));
       }
     }
-    for (const value of Object.values(record)) settingsCommandScripts(value, out);
   }
+  return scripts;
 }
 
 /** shebang_test.py's SettingsCommandShebang.test_T_003 with the settings tree as an argument, so
@@ -136,8 +144,9 @@ export function settingsCommandShebangOffenders(settings: unknown, shebang: stri
     settings !== null && typeof settings === "object"
       ? (settings as Record<string, unknown>).hooks
       : undefined;
-  const scripts: string[] = [];
-  settingsCommandScripts(hooksNode ?? {}, scripts);
+  const commands: string[] = [];
+  hookCommands(hooksNode ?? {}, commands);
+  const scripts = settingsCommandScripts(commands);
 
   const trackedModes = new Map(
     trackedEntries("hooks/*.ts").map(([mode, absolutePath]) => [relative(absolutePath), mode]),
