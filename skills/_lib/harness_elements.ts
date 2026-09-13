@@ -84,6 +84,36 @@ export function _unquote(item: string): string {
   return item;
 }
 
+/** The single-line JSON shape (`globs: ["a", "b"]`): the string items of the array sitting
+ * on the `key:` line's own remainder, or an empty list when that text is not JSON or the
+ * JSON value it parses to is not an array. */
+function inlineArray(rest: string): string[] {
+  let value: unknown;
+  try {
+    value = JSON.parse(rest);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((v): v is string => typeof v === "string");
+}
+
+/** The multi-line YAML dash-list shape (`paths:` followed by `  - "a"` lines): every
+ * unquoted item from `start` up to the first line that does not open with a dash. */
+function listItems(lines: string[], start: number): string[] {
+  const items: string[] = [];
+  for (let j = start; j < lines.length; j++) {
+    const stripped = lines[j].trim();
+    if (!stripped.startsWith("-")) {
+      break;
+    }
+    items.push(_unquote(stripped.slice(1).trim()));
+  }
+  return items;
+}
+
 /** Reads a frontmatter array in either shape this repo's harness files use: a single-line
  * JSON array (`globs: ["a", "b"]`) or a multi-line YAML dash list (`paths:` followed by
  * `  - "a"` lines). */
@@ -96,26 +126,9 @@ export function _read_array(lines: string[], key: string): string[] {
     }
     const rest = line.slice(prefix.length).trim();
     if (rest) {
-      let value: unknown;
-      try {
-        value = JSON.parse(rest);
-      } catch {
-        return [];
-      }
-      if (!Array.isArray(value)) {
-        return [];
-      }
-      return value.filter((v): v is string => typeof v === "string");
+      return inlineArray(rest);
     }
-    const items: string[] = [];
-    for (let j = i + 1; j < lines.length; j++) {
-      const stripped = lines[j].trim();
-      if (!stripped.startsWith("-")) {
-        break;
-      }
-      items.push(_unquote(stripped.slice(1).trim()));
-    }
-    return items;
+    return listItems(lines, i + 1);
   }
   return [];
 }
