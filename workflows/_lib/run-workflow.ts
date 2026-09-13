@@ -190,6 +190,16 @@ const partToString = (part: unknown): string => {
   }
 };
 
+// One step of matchBrace's scan while inside a string literal opened by `quote`: an escaped
+// character consumes the source character after it too, and the literal's own closing quote
+// clears `quote`. Returns how many source characters this step consumes (2 for an escape, 1
+// otherwise) and the quote still open afterward (null once closed).
+function stepInQuote(ch: string, quote: string): { consumed: number; quote: string | null } {
+  if (ch === "\\") return { consumed: 2, quote };
+  if (ch === quote) return { consumed: 1, quote: null };
+  return { consumed: 1, quote };
+}
+
 // Quote-aware, because a brace written inside a string literal need not be balanced and a plain
 // depth count would then close on the wrong one. meta's prose carries such braces.
 const matchBrace = (source: string, start: number): number => {
@@ -198,11 +208,9 @@ const matchBrace = (source: string, start: number): number => {
   for (let i = start; i < source.length; i++) {
     const ch = source[i];
     if (quote) {
-      if (ch === "\\") {
-        i++;
-        continue;
-      }
-      if (ch === quote) quote = null;
+      const step = stepInQuote(ch, quote);
+      i += step.consumed - 1;
+      quote = step.quote;
       continue;
     }
     if (ch === "'" || ch === '"' || ch === "`") {
