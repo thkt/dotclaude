@@ -371,6 +371,10 @@ interface CreateStubsOptions {
   concurrency?: number;
   onLog?: (message: string) => void;
   tmp: string;
+  // Injectable seam for the attempt loop below, defaulting to the real runCodexOnce. Tests pass
+  // a stub that answers in sequence to pin the five attempt-loop paths (workflows/_lib/tests/
+  // codex-run.test.js T-434..437) without spawning the codex binary.
+  runOnce?: (spec: CodexRunSpec) => Promise<CodexRunOutcome>;
 }
 
 // The pool belongs to one createStubs call. stubs.workflow hands the same stubs object to the
@@ -381,6 +385,7 @@ export function createStubs({
   concurrency = DEFAULT_CONCURRENCY,
   onLog = () => {},
   tmp,
+  runOnce = runCodexOnce,
 }: CreateStubsOptions): RunWorkflowStubs {
   const withSlot = makeSlots(concurrency);
   const stubs: RunWorkflowStubs = {};
@@ -407,7 +412,7 @@ export function createStubs({
 
       for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
         onLog(`[${label}] codex ${model}/${effort} ${sandbox} (attempt ${attempt}/${ATTEMPTS})`);
-        const run = await runCodexOnce({
+        const run = await runOnce({
           prompt: base + correction,
           model,
           effort,
