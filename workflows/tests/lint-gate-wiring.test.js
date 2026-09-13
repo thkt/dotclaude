@@ -37,7 +37,7 @@ function runFromRoot(bin, args) {
   }
 }
 
-test("test.yml runs biome lint with --reporter=github in a step after an oxlint step that passes --format=github", () => {
+test("T-015 test.yml runs biome lint with --reporter=github in a step after an oxlint step that passes --format=github", () => {
   const source = readFileSync(TEST_YML, "utf8");
   const oxlint = source.search(/^\s+run: npx oxlint --format=github\s*$/m);
   const biome = source.search(/^\s+run: npx biome lint --reporter=github\s*$/m);
@@ -46,15 +46,15 @@ test("test.yml runs biome lint with --reporter=github in a step after an oxlint 
   assert.ok(biome > oxlint, "the biome step comes before the oxlint step");
 });
 
-test("biome lint run bare from the repository root exits zero", () => {
+test("T-016 biome lint run bare from the repository root exits zero", () => {
   assert.equal(runFromRoot(BIOME_BIN, ["lint"]), 0);
 });
 
-test("oxlint run bare from the repository root exits zero", () => {
+test("T-017 oxlint run bare from the repository root exits zero", () => {
   assert.equal(runFromRoot(OXLINT_BIN, []), 0);
 });
 
-test("no tracked .js or .ts file is hidden from Biome by .gitignore", () => {
+test("T-018 no tracked .js or .ts file is hidden from Biome by .gitignore", () => {
   const ignoredTracked = execFileSync("git", ["ls-files", "-z", "-i", "-c", "--exclude-standard"], {
     cwd: ROOT,
     encoding: "utf8",

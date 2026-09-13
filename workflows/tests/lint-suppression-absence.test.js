@@ -55,21 +55,21 @@ const OTHER_FORMS = [
   ["// oxlint-", "disable-next-line max-depth\n"].join(""),
 ];
 
-test('a file carrying the bare "biome-ignore lint:" comment is reported by the suppression scan', () => {
+test('T-011 a file carrying the bare "biome-ignore lint:" comment is reported by the suppression scan', () => {
   assert.ok(suppressionIn(BARE_FORM + NESTED_FUNCTION));
 });
 
-test("the same file with the comment removed is not reported", () => {
+test("T-012 the same file with the comment removed is not reported", () => {
   assert.equal(suppressionIn(NESTED_FUNCTION), null);
 });
 
-test("the biome-ignore-all, biome-ignore-start, and oxlint-disable-next-line max-depth forms are each reported", () => {
+test("T-013 the biome-ignore-all, biome-ignore-start, and oxlint-disable-next-line max-depth forms are each reported", () => {
   for (const form of OTHER_FORMS) {
     assert.ok(suppressionIn(form + NESTED_FUNCTION), `not reported: ${form.trim()}`);
   }
 });
 
-test("no tracked file carries any suppression form the scan names", () => {
+test("T-014 no tracked file carries any suppression form the scan names", () => {
   const files = execFileSync("git", ["ls-files", "-z"], { cwd: ROOT, encoding: "utf8" })
     .split("\0")
     .filter(Boolean);

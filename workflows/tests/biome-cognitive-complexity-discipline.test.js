@@ -92,8 +92,8 @@ console.log("done");
 // config's `files.includes` does not match), which is a different failure than a parse error but
 // has the identical exit code. `--reporter=github` prints a `title=parse` annotation line only
 // for an actual parse error, so lint() caches each fixture's stdout alongside its exit code and
-// T-003/T-004 read that instead of the exit code. This return-shape difference from
-// oxlint-runtime-discipline.test.js's lint() is the deviation named in the plan.
+// T-003/T-004 read that instead of the exit code, which is why this lint() returns
+// {exitCode, output} where oxlint-runtime-discipline.test.js's returns the exit code alone.
 let workspace;
 const cache = new Map();
 
@@ -131,17 +131,17 @@ test.after(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
 });
 
-test("a function with cognitive complexity 16 exits non-zero under the repository's biome.json with --error-on-warnings", () => {
+test("T-001 a function with cognitive complexity 16 exits non-zero under the repository's biome.json with --error-on-warnings", () => {
   const { exitCode } = lint("complexity-16", "workflows/complexity-16.ts", COMPLEXITY_16);
   assert.notEqual(exitCode, 0);
 });
 
-test("the same function flattened to complexity 15 exits zero", () => {
+test("T-002 the same function flattened to complexity 15 exits zero", () => {
   const { exitCode } = lint("complexity-15", "workflows/complexity-15.ts", COMPLEXITY_15);
   assert.equal(exitCode, 0);
 });
 
-test("a script with a top-level return placed under workflows/ yields no parse diagnostic", () => {
+test("T-003 a script with a top-level return placed under workflows/ yields no parse diagnostic", () => {
   const { output } = lint(
     "top-level-return-workflows",
     "workflows/top-level-return.js",
@@ -150,7 +150,7 @@ test("a script with a top-level return placed under workflows/ yields no parse d
   assert.ok(!output.includes("title=parse"), `expected no parse diagnostic, got: ${output}`);
 });
 
-test("the same script placed under src/ yields a parse diagnostic", () => {
+test("T-004 the same script placed under src/ yields a parse diagnostic", () => {
   const { output } = lint(
     "top-level-return-src",
     "src/top-level-return.js",
@@ -176,7 +176,7 @@ const PLANNED_FILES_INCLUDES = [
   "!skills/*/test/cases/**",
 ];
 
-test("biome.json keeps noExcessiveCognitiveComplexity at a level other than off with maxAllowedComplexity at most 15", () => {
+test("T-005 biome.json keeps noExcessiveCognitiveComplexity at a level other than off with maxAllowedComplexity at most 15", () => {
   const rule = biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity;
   assert.notEqual(rule.level, "off");
   assert.ok(
@@ -185,7 +185,7 @@ test("biome.json keeps noExcessiveCognitiveComplexity at a level other than off 
   );
 });
 
-test("biome.json's files.includes equals the five planned entries exactly and the file carries no overrides key", () => {
+test("T-006 biome.json's files.includes equals the five planned entries exactly and the file carries no overrides key", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
   assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
 });

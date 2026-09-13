@@ -29,8 +29,7 @@ const OXLINTRC = path.join(ROOT, ".oxlintrc.json");
 // T-007's positive control: 4 nested `if`s. Written as an arrow function assigned to `const`
 // (not a `function` declaration) so the workflows/*.js override's existing `func-style:
 // ["error", "expression"]` rule stays silent and depth is the only thing this fixture violates.
-// Calibrated against the real `oxlint` binary under the planned `max-depth: ["warn", 3]`
-// override (`Blocks are nested too deeply (4). Maximum allowed is 3.`), not computed from the
+// Calibrated against the real `oxlint` binary under the `max-depth: ["warn", 3]` override (`Blocks are nested too deeply (4). Maximum allowed is 3.`), not computed from the
 // rule's description alone.
 const FOUR_NESTED_BLOCKS = `export const nested = (a, b, c, d) => {
   if (a) {
@@ -63,7 +62,7 @@ const THREE_NESTED_BLOCKS = `export const nested = (a, b, c) => {
 `;
 
 // oxlint exits non-zero only when a configured rule fires on the given file, so each fixture's
-// exit code is what this suite reads. The `max-depth` rule is planned at "warn", so
+// exit code is what this suite reads. The `max-depth` rule sits at "warn", so
 // `--deny-warnings` is what turns that warning into a non-zero exit; without it every fixture
 // here would exit 0 regardless of nesting. One directory serves every case, and each fixture is
 // linted once, mirroring oxlint-runtime-discipline.test.js's lint(). The fixture's parent
@@ -102,15 +101,15 @@ test.after(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
 });
 
-test("a workflow script nesting four blocks under workflows/ exits non-zero under the repository's .oxlintrc.json with --deny-warnings", () => {
+test("T-007 a workflow script nesting four blocks under workflows/ exits non-zero under the repository's .oxlintrc.json with --deny-warnings", () => {
   assert.notEqual(lint("four-nested-workflows", "workflows/four-nested.js", FOUR_NESTED_BLOCKS), 0);
 });
 
-test("the same script with three nested blocks exits zero", () => {
+test("T-008 the same script with three nested blocks exits zero", () => {
   assert.equal(lint("three-nested-workflows", "workflows/three-nested.js", THREE_NESTED_BLOCKS), 0);
 });
 
-test("the four-block script placed outside workflows/ exits zero", () => {
+test("T-009 the four-block script placed outside workflows/ exits zero", () => {
   assert.equal(lint("four-nested-src", "src/four-nested.js", FOUR_NESTED_BLOCKS), 0);
 });
 
@@ -123,7 +122,7 @@ function findWorkflowsOverride(config) {
   return config.overrides.find((override) => override.files.includes("workflows/*.js"));
 }
 
-test(".oxlintrc.json keeps max-depth in the workflows override at a level other than off with a limit of at most 3", () => {
+test("T-010 .oxlintrc.json keeps max-depth in the workflows override at a level other than off with a limit of at most 3", () => {
   const override = findWorkflowsOverride(oxlintConfig);
   assert.ok(override, "no override in .oxlintrc.json matches workflows/*.js");
   const rule = override.rules["max-depth"];
