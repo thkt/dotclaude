@@ -892,3 +892,45 @@ test("T-265 a missing argument writes the whole usage text to stderr and exits 1
       "exit: 0 if no errors (warnings allowed), 1 if errors\n\n",
   );
 });
+
+// T-003/T-018 cover a title carrying a bracketed type that disagrees with the template. Neither
+// covers a title with no bracket at all, so the path TYPE_PREFIX fails to match on had no test of
+// its own pinning it to type_mismatch rather than, say, a silent type_match.
+test("T-266 a title without a bracketed type prefix is reported as type_mismatch and the checks still run", () => {
+  const body = [
+    "## What & Why",
+    "",
+    "Login fails for some users.",
+    "",
+    "## Steps to Reproduce",
+    "",
+    "1. Open app",
+    "2. Log in",
+    "",
+    "## Expected vs Actual",
+    "",
+    "- Expected: 200 OK",
+    "- Actual: 500 error",
+    "",
+    "## Scope",
+    "",
+    "- In scope: login flow",
+    "- Out of scope: signup flow",
+    "",
+  ].join("\n");
+  const { status, out } = runValidate(bugTemplate, "Login fails for some users", body);
+  assert.ok(out, "stdout parses as JSON");
+  assert.equal(status, 1, "a run carrying type_mismatch exits 1");
+  assert.ok(
+    out.errors.includes("type_mismatch:title has no bracketed type prefix"),
+    `errors carries type_mismatch:title has no bracketed type prefix (actual: ${JSON.stringify(out.errors)})`,
+  );
+  assert.ok(
+    out.checks.includes("unknown_section=none"),
+    `the unknown-section check still ran past the title check (actual: ${JSON.stringify(out.checks)})`,
+  );
+  assert.ok(
+    out.checks.includes("unfilled_section=none"),
+    `the unfilled-section check still ran past the title check (actual: ${JSON.stringify(out.checks)})`,
+  );
+});
