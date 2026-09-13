@@ -13,20 +13,25 @@ const DEFAULT_VERIFY = "verify pass output";
 
 // opt にキーを渡すことで既定応答を上書きできる。デフォルト引数 (opt.foo ?? default) は値が
 // undefined のときも発動してしまい「キーを渡さなかった」と「undefined を明示的に渡した」を
-// 区別できないため、`"key" in opt` でキーの有無を見て既定を分ける。
-export const defaultAgentStub =
-  (opt = {}) =>
-  (prompt, opts) => {
+// 区別できないため、`"key" in opt` でキーの有無を見て既定を分ける。Rows are [predicate on
+// label, responder], tried in order and the first match wins, mirroring
+// workflows/build/tests/build.behavior.test.js's KIND_RULES.
+export const defaultAgentStub = (opt = {}) => {
+  const rules = [
+    [(label) => label === "route", () => ("route" in opt ? opt.route : DEFAULT_ROUTE)],
+    [(label) => label === "security", () => ("security" in opt ? opt.security : DEFAULT_SECURITY)],
+    [(label) => label === "silence", () => ("silence" in opt ? opt.silence : DEFAULT_SILENCE)],
+    [(label) => label === "challenge", () => opt.challenge],
+    [(label) => label === "verify", () => ("verify" in opt ? opt.verify : DEFAULT_VERIFY)],
+    [(label) => label === "integrate", () => opt.integrate],
+    [(label) => label === "snapshot", () => opt.snapshot],
+  ];
+  return (prompt, opts) => {
     const label = opts && opts.label;
-    if (label === "route") return "route" in opt ? opt.route : DEFAULT_ROUTE;
-    if (label === "security") return "security" in opt ? opt.security : DEFAULT_SECURITY;
-    if (label === "silence") return "silence" in opt ? opt.silence : DEFAULT_SILENCE;
-    if (label === "challenge") return opt.challenge;
-    if (label === "verify") return "verify" in opt ? opt.verify : DEFAULT_VERIFY;
-    if (label === "integrate") return opt.integrate;
-    if (label === "snapshot") return opt.snapshot;
-    return undefined;
+    const rule = rules.find(([matches]) => matches(label));
+    return rule ? rule[1]() : undefined;
   };
+};
 
 export const callOf = (calls, label) => calls.agent.find((c) => c.opts && c.opts.label === label);
 
