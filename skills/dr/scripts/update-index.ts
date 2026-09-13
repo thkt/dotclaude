@@ -122,6 +122,52 @@ function gitTopLevel(): GitTopLevelResult {
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };
 }
 
+/** The DR List rows and the By Status buckets one pass over drDir's DR files produces: `rows`
+ * carries the table lines main() joins under HEADER, and `byStatus` carries each
+ * STATUS_SECTIONS key's [number, title] pairs for the By Status loop in main() to sort and
+ * render. */
+interface CollectRowsResult {
+  rows: string[];
+  byStatus: Map<string, Array<[number: string, title: string]>>;
+}
+
+/** Scans drDir for DR files (drFilesUnder, sorted by full path) and, for each, appends its DR
+ * List row and buckets its [number, title] under the first STATUS_SECTIONS key its status
+ * starts with. Called from main(). */
+function collectRows(drDir: string): CollectRowsResult {
+  const rows: string[] = [];
+  const byStatus = new Map<string, Array<[number: string, title: string]>>(
+    STATUS_SECTIONS.map(([key]) => [key, []]),
+  );
+  for (const drFile of drFilesUnder(drDir).sort()) {
+    const name = basename(drFile);
+    const number = name.slice(0, 4);
+    const [title, status, date] = parseDr(drFile);
+    rows.push(`| [${number}](${name}) | ${title} | ${status} | ${date} |`);
+    for (const [key] of STATUS_SECTIONS) {
+      const bucket = byStatus.get(key);
+      if (bucket && status.startsWith(key)) {
+        bucket.push([number, title]);
+        break;
+      }
+    }
+  }
+  return { rows, byStatus };
+}
+
+/** Python's sorted() on (number, title) tuples: number first, title as tiebreaker -- a
+ * tiebreaker that in practice never triggers, since a DR's 4-digit number is unique. Called
+ * from main() as the By Status entries' sort comparator. */
+function compareEntries(
+  [numA, titleA]: [number: string, title: string],
+  [numB, titleB]: [number: string, title: string],
+): number {
+  if (numA !== numB) return numA < numB ? -1 : 1;
+  if (titleA < titleB) return -1;
+  if (titleA > titleB) return 1;
+  return 0;
+}
+
 // Python's main() takes no argv of its own beyond the optional dr-directory positional
 // (sys.argv[1] if len(sys.argv) > 1 else None), the same process.argv.slice(2) convention
 // pre-check.ts's and validate-dr.ts's main(argv) already use.
@@ -143,33 +189,13 @@ export function main(argv: string[]): number {
   }
   guardSkillDir(drDir, "Set DR_DIR env var or pass an explicit DR archive path.");
 
-  const rows: string[] = [];
-  const byStatus = new Map<string, Array<[number: string, title: string]>>(
-    STATUS_SECTIONS.map(([key]) => [key, []]),
-  );
-  for (const drFile of drFilesUnder(drDir).sort()) {
-    const name = basename(drFile);
-    const number = name.slice(0, 4);
-    const [title, status, date] = parseDr(drFile);
-    rows.push(`| [${number}](${name}) | ${title} | ${status} | ${date} |`);
-    for (const [key] of STATUS_SECTIONS) {
-      const bucket = byStatus.get(key);
-      if (bucket && status.startsWith(key)) {
-        bucket.push([number, title]);
-        break;
-      }
-    }
-  }
+  const { rows, byStatus } = collectRows(drDir);
 
   const parts: string[] = [HEADER + rows.join("\n"), "\n## By Status\n"];
   for (const [key, heading] of STATUS_SECTIONS) {
     const entries = byStatus.get(key) ?? [];
     if (entries.length === 0) continue;
-    // Python's sorted() on (number, title) tuples: number first, title as tiebreaker -- a
-    // tiebreaker that in practice never triggers, since a DR's 4-digit number is unique.
-    const sorted = [...entries].sort(([numA, titleA], [numB, titleB]) =>
-      numA !== numB ? (numA < numB ? -1 : 1) : titleA < titleB ? -1 : titleA > titleB ? 1 : 0,
-    );
+    const sorted = [...entries].sort(compareEntries);
     const entryLines = sorted.map(([num, title]) => `- **${num}**: ${title}`).join("\n");
     parts.push(`### ${heading}\n\n${entryLines}\n`);
   }
