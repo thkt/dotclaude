@@ -11,7 +11,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -149,4 +157,35 @@ test("the same script placed under src/ yields a parse diagnostic", () => {
     TOP_LEVEL_RETURN_SCRIPT,
   );
   assert.ok(output.includes("title=parse"), `expected a parse diagnostic, got: ${output}`);
+});
+
+// T-005/T-006 read biome.json directly via JSON.parse instead of going through lint(): the
+// contract (docs/wiki/count-comparison-masks-filtered-set-drift.md) calls for comparing
+// files.includes as the set of five literal entries with assert.deepEqual rather than a count,
+// so there is no lint run whose output would answer that; a static read of the config is the
+// direct check for a rule's level, its threshold, and the absence of an `overrides` key too.
+const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
+
+// The five entries the config is expected to lint, held here as a literal list so this test's
+// own copy cannot drift toward whatever files.includes currently contains.
+const PLANNED_FILES_INCLUDES = [
+  "hooks/**/*.ts",
+  "skills/**/*.ts",
+  "workflows/**/*.ts",
+  "tests/**/*.ts",
+  "agents/**/*.ts",
+];
+
+test("biome.json keeps noExcessiveCognitiveComplexity at a level other than off with maxAllowedComplexity at most 15", () => {
+  const rule = biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity;
+  assert.notEqual(rule.level, "off");
+  assert.ok(
+    rule.options.maxAllowedComplexity <= 15,
+    `maxAllowedComplexity ${rule.options.maxAllowedComplexity} exceeds 15`,
+  );
+});
+
+test("biome.json's files.includes equals the five planned entries exactly and the file carries no overrides key", () => {
+  assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
+  assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
 });
