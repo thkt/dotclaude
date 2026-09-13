@@ -102,9 +102,18 @@ function subjectBlockers(subject: string): string[] {
   return blockers;
 }
 
-/** 置き換え元の Python 版 verify() が行っていたのと同じ 5 つの事後条件検査を実行し、
- * 同じ report 形状を同じ key 順で返す。 */
-export function verify(payload: unknown): Record<string, unknown> {
+interface ParsedPayload {
+  repo: string;
+  baselineHead: string;
+  body: string;
+  unitFiles: Set<string>;
+}
+
+/** `payload` を検証し、verify() が必要とする field を返す。fail() が起こしうる失敗条件
+ * (object でない、repo が絶対パスでない、baseline_head が空、body が空、unit_files が
+ * 空でない文字列の配列でない、unit_files が空) のいずれかで PayloadError を (fail() 経由で)
+ * throw する。 */
+function parsePayload(payload: unknown): ParsedPayload {
   if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
     fail("payload must be a JSON object");
   }
@@ -125,16 +134,23 @@ export function verify(payload: unknown): Record<string, unknown> {
   if (unitFiles.size === 0) {
     fail("unit_files must not be empty");
   }
+  return { repo, baselineHead, body, unitFiles };
+}
 
+/** commit の git 由来の状態を blocker list に変換する。HEAD/parent の lineage を
+ * baseline_head と、コミットされたパスを outside (すでに unit_files で絞り込み済み) と、
+ * メッセージを body の逐語と、subject の形を、この順に突き合わせる。 */
+function lineageBlockers(
+  head: string,
+  baselineHead: string,
+  parent: string | null,
+  paths: string[] | null,
+  outside: string[],
+  message: string | null,
+  body: string,
+  subject: string,
+): string[] {
   const blockers: string[] = [];
-  const head = gitText(repo, ["rev-parse", "HEAD"]);
-  if (head === null) {
-    fail("repo is not a readable Git worktree");
-  }
-  const parent = gitText(repo, ["rev-parse", "HEAD^"]);
-  const paths = committedPaths(repo);
-  const message = gitText(repo, ["show", "-s", "--format=%B", "HEAD"]);
-  const subject = (message ?? "").split("\n", 1)[0];
 
   if (head === baselineHead) {
     blockers.push("HEAD did not move, so no commit was created");
@@ -147,16 +163,12 @@ export function verify(payload: unknown): Record<string, unknown> {
     );
   }
 
-  let outside: string[] = [];
   if (paths === null) {
     blockers.push("the committed paths could not be read");
   } else if (paths.length === 0) {
     blockers.push("the commit is empty");
-  } else {
-    outside = paths.filter((path) => !unitFiles.has(path));
-    if (outside.length > 0) {
-      blockers.push(`committed paths outside the unit scope: ${outside.join(", ")}`);
-    }
+  } else if (outside.length > 0) {
+    blockers.push(`committed paths outside the unit scope: ${outside.join(", ")}`);
   }
 
   if (message === null) {
@@ -168,6 +180,36 @@ export function verify(payload: unknown): Record<string, unknown> {
     }
     blockers.push(...subjectBlockers(subject));
   }
+
+  return blockers;
+}
+
+/** unit コミットが workflow の宣言どおりに着地したことを検証する。parsePayload で payload を
+ * 検証し、git に問い合わせて head/parent/paths/message を集め、その結果を lineageBlockers で
+ * blocker に畳み込む。 */
+export function verify(payload: unknown): Record<string, unknown> {
+  const { repo, baselineHead, body, unitFiles } = parsePayload(payload);
+
+  const head = gitText(repo, ["rev-parse", "HEAD"]);
+  if (head === null) {
+    fail("repo is not a readable Git worktree");
+  }
+  const parent = gitText(repo, ["rev-parse", "HEAD^"]);
+  const paths = committedPaths(repo);
+  const outside = paths ? paths.filter((path) => !unitFiles.has(path)) : [];
+  const message = gitText(repo, ["show", "-s", "--format=%B", "HEAD"]);
+  const subject = (message ?? "").split("\n", 1)[0];
+
+  const blockers = lineageBlockers(
+    head,
+    baselineHead,
+    parent,
+    paths,
+    outside,
+    message,
+    body,
+    subject,
+  );
 
   return {
     protocol: PROTOCOL,
