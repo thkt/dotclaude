@@ -31,7 +31,11 @@
         ],
         "prefer-arrow-callback": "error",
         "no-var": "error",
-        "no-undef": "error"
+        "no-undef": "error",
+        "max-depth": [
+          "warn",
+          3
+        ]
       }
     },
     {

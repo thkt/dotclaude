@@ -344,6 +344,37 @@ const stopUnit = async (stopped, unit, why) => {
     ...herdrReport(),
   };
 };
+
+// calibration が pass した行を seal し、その行に対して Red gate を走らせ直す。suite が失敗する
+// ことだけでなく、計画した理由で失敗していることを結び付けるため。seal か本番の実行が失敗
+// したら unit の停止結果を返し、Red が確認できたら null を返す。
+const confirmRedAnchor = async (unit, calibration) => {
+  const sealed = await sealAnchor(unit, calibration);
+  if (!sealed.line) return stopUnit("red-failed", unit, sealed.why);
+  const official = await runGate(unit, "gate-red", [
+    "--command",
+    testCmd,
+    "--cwd",
+    repo,
+    "--expect",
+    "fail",
+    "--gate-id",
+    `${unit.id}.red`,
+    "--failure-route",
+    `red:${unit.id}`,
+    "--require-output",
+    sealed.line,
+  ]);
+  if (!official) return stopUnit("red-failed", unit, "Red gate が解釈可能な report を返さなかった");
+  if (official.verdict !== "pass") {
+    return stopUnit(
+      "red-failed",
+      unit,
+      `${official.classification}: seal した行が Red の失敗を特定しなかった`,
+    );
+  }
+  return null;
+};
 // 経路と呼び先をこの 1 関数だけで決める。
 const implementDestination = (role) =>
   implementer === "codex-herdr"
@@ -870,36 +901,9 @@ for (const [index, unit] of units.entries()) {
       );
     }
     redConfirmed = calibration.verdict === "pass";
-    if (redConfirmed) {
-      const sealed = await sealAnchor(unit, calibration);
-      if (!sealed.line) return stopUnit("red-failed", unit, sealed.why);
-      // calibration が示したのは suite が失敗することだけである。seal した行に対して走らせ直して
-      // はじめて、計画した理由で失敗していることが示される。
-      const official = await runGate(unit, "gate-red", [
-        "--command",
-        testCmd,
-        "--cwd",
-        repo,
-        "--expect",
-        "fail",
-        "--gate-id",
-        `${unit.id}.red`,
-        "--failure-route",
-        `red:${unit.id}`,
-        "--require-output",
-        sealed.line,
-      ]);
-      if (!official) {
-        return stopUnit("red-failed", unit, "Red gate が解釈可能な report を返さなかった");
-      }
-      if (official.verdict !== "pass") {
-        return stopUnit(
-          "red-failed",
-          unit,
-          `${official.classification}: seal した行が Red の失敗を特定しなかった`,
-        );
-      }
-    } else {
+    const stopped = redConfirmed ? await confirmRedAnchor(unit, calibration) : null;
+    if (stopped) return stopped;
+    if (!redConfirmed) {
       redWhy = `${calibration.classification}: Red calibration gate で suite が失敗しなかった`;
     }
   }
