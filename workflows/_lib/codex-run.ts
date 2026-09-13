@@ -169,6 +169,23 @@ function findArrayViolation(value: JsonValue, schema: JsonSchema, here: string):
   return "";
 }
 
+// findObjectViolation's required-key pass: a missing key or a disallowed null on a required
+// key is reported before any property recurses. Produces the same strings in the same order
+// the inline loop it replaces produced.
+function requiredKeyViolation(
+  value: Record<string, JsonValue>,
+  schema: JsonSchema,
+  path: string,
+): string {
+  const properties = schema.properties || {};
+  for (const key of schema.required || []) {
+    const childPath = path ? `${path}.${key}` : key;
+    if (!(key in value)) return `${childPath} is missing`;
+    if (value[key] === null && !acceptsNull(properties[key])) return `${childPath} is null`;
+  }
+  return "";
+}
+
 // findSchemaViolation's object branch: required keys are checked for presence and a disallowed
 // null before every property recurses back into findSchemaViolation. Produces the same strings
 // in the same order the inline branch it replaces produced.
@@ -180,12 +197,9 @@ function findObjectViolation(
 ): string {
   if (value === null) return acceptsNull(schema) ? "" : `${here} is null`;
   if (typeof value !== "object") return `${here} is not an object`;
+  const requiredViolation = requiredKeyViolation(value, schema, path);
+  if (requiredViolation) return requiredViolation;
   const properties = schema.properties || {};
-  for (const key of schema.required || []) {
-    const childPath = path ? `${path}.${key}` : key;
-    if (!(key in value)) return `${childPath} is missing`;
-    if (value[key] === null && !acceptsNull(properties[key])) return `${childPath} is null`;
-  }
   for (const [key, child] of Object.entries(value)) {
     const found = findSchemaViolation(child, properties[key], path ? `${path}.${key}` : key);
     if (found) return found;
@@ -462,6 +476,86 @@ const resolveWorkflowPath = (name: string): string => {
   return path;
 };
 
+interface AgentRunConfig {
+  label: string;
+  model: string;
+  effort: string;
+  sandbox: "read-only" | "workspace-write";
+  schema: JsonSchema | undefined;
+  schemaPath: string;
+  outPath: string;
+  base: string;
+}
+
+// Resolves the agent's label/preamble/model/sandbox/schema-file setup once per call, before
+// the attempt loop below starts spending attempts on it.
+function prepareAgentRun(
+  prompt: string,
+  opts: AgentOptions,
+  tmp: string,
+  id: number,
+  onLog: (message: string) => void,
+): AgentRunConfig {
+  const label = opts.label || opts.agentType || "agent";
+  const { preamble, readOnly, missing } = loadAgent(opts.agentType);
+  if (missing) {
+    onLog(`[${label}] agents/${opts.agentType}.md is missing; running with no preamble.`);
+  }
+  const model = (opts.model && MODEL_MAP[opts.model]) || MODEL_MAP.sonnet;
+  const effort = opts.effort || DEFAULT_EFFORT;
+  const sandbox = readOnly ? "read-only" : "workspace-write";
+  const schemaPath = opts.schema ? join(tmp, `schema-${id}.json`) : "";
+  const outPath = join(tmp, `out-${id}.json`);
+  if (opts.schema) writeFileSync(schemaPath, JSON.stringify(strictify(opts.schema)));
+  return {
+    label,
+    model,
+    effort,
+    sandbox,
+    schema: opts.schema,
+    schemaPath,
+    outPath,
+    base: withPreamble(preamble, prompt),
+  };
+}
+
+// Spends up to ATTEMPTS calls to runOnce, feeding each schema-violation correction into the
+// next prompt. Produces the same value and the same give-up log the inline loop it replaces
+// produced.
+async function runAgentAttempts(
+  config: AgentRunConfig,
+  repo: string,
+  runOnce: (spec: CodexRunSpec) => Promise<CodexRunOutcome>,
+  onLog: (message: string) => void,
+): Promise<JsonValue> {
+  let correction = "";
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    onLog(
+      `[${config.label}] codex ${config.model}/${config.effort} ${config.sandbox} ` +
+        `(attempt ${attempt}/${ATTEMPTS})`,
+    );
+    const outcome = await attemptOnce({
+      label: config.label,
+      model: config.model,
+      effort: config.effort,
+      schema: config.schema,
+      schemaPath: config.schemaPath,
+      outPath: config.outPath,
+      sandbox: config.sandbox,
+      repo,
+      prompt: config.base + correction,
+      runOnce,
+      onLog,
+    });
+    if (outcome.done) return outcome.value;
+    correction = outcome.correction;
+  }
+  // The Agent tool returns null when a subagent dies after its retries, and the workflow
+  // scripts branch on that null, so the same value is returned rather than a throw.
+  onLog(`[${config.label}] gave up after ${ATTEMPTS} attempts; the stage returns null.`);
+  return null;
+}
+
 interface CreateStubsOptions {
   repo: string;
   concurrency?: number;
@@ -490,44 +584,8 @@ export function createStubs({
   stubs.agent = async (prompt: string, opts: AgentOptions = {}) =>
     withSlot(async () => {
       const id = ++serial;
-      const label = opts.label || opts.agentType || "agent";
-      const { preamble, readOnly, missing } = loadAgent(opts.agentType);
-      if (missing) {
-        onLog(`[${label}] agents/${opts.agentType}.md is missing; running with no preamble.`);
-      }
-
-      const model = (opts.model && MODEL_MAP[opts.model]) || MODEL_MAP.sonnet;
-      const effort = opts.effort || DEFAULT_EFFORT;
-      const sandbox = readOnly ? "read-only" : "workspace-write";
-      const schemaPath = opts.schema ? join(tmp, `schema-${id}.json`) : "";
-      const outPath = join(tmp, `out-${id}.json`);
-      if (opts.schema) writeFileSync(schemaPath, JSON.stringify(strictify(opts.schema)));
-
-      const base = withPreamble(preamble, prompt);
-      let correction = "";
-
-      for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
-        onLog(`[${label}] codex ${model}/${effort} ${sandbox} (attempt ${attempt}/${ATTEMPTS})`);
-        const outcome = await attemptOnce({
-          label,
-          model,
-          effort,
-          schema: opts.schema,
-          schemaPath,
-          outPath,
-          sandbox,
-          repo,
-          prompt: base + correction,
-          runOnce,
-          onLog,
-        });
-        if (outcome.done) return outcome.value;
-        correction = outcome.correction;
-      }
-      // The Agent tool returns null when a subagent dies after its retries, and the workflow
-      // scripts branch on that null, so the same value is returned rather than a throw.
-      onLog(`[${label}] gave up after ${ATTEMPTS} attempts; the stage returns null.`);
-      return null;
+      const config = prepareAgentRun(prompt, opts, tmp, id, onLog);
+      return runAgentAttempts(config, repo, runOnce, onLog);
     });
 
   // build.js's sibling() falls back to the plugin namespace only when the message matches this

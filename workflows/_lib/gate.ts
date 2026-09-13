@@ -292,6 +292,59 @@ function isExistingDirectory(path: string): boolean {
 
 // Reads argv one flag at a time and builds ParsedOptions. Per-flag acceptance validation
 // happens here.
+// consumeFlags's once-per-flag guard, shared by the boolean-flag branch and the
+// single-value-flag branch below it.
+function assertUnseen(seen: Set<string>, flag: string): void {
+  if (seen.has(flag)) {
+    throw new UsageError(`${flag} may be provided only once`);
+  }
+}
+
+// consumeFlags's per-flag assignment: reached once a flag's existence, duplication, and
+// non-empty-value checks all pass. Produces the same assignment and the same --planned-test
+// shape check the inline switch it replaces produced.
+function applyFlagValue(options: ParsedOptions, flag: string, value: string): void {
+  switch (flag) {
+    case "--gate-id":
+      options.gate_id = value;
+      break;
+    case "--failure-route":
+      options.failure_route = value;
+      break;
+    case "--cwd":
+      options.cwd = value;
+      break;
+    case "--expect":
+      options.expect = value;
+      break;
+    case "--command":
+      options.command = value;
+      break;
+    case "--timeout-ms":
+      options.timeout_ms = positiveInt(value, flag);
+      break;
+    case "--tail-bytes":
+      // 0 keeps no tail at all, for a caller whose relay must never see command output
+      // inside the report.
+      options.tail_bytes = value.trim() === "0" ? 0 : positiveInt(value, flag);
+      break;
+    case "--require-output":
+      options.required_output.push(value);
+      break;
+    case "--forbid-output":
+      options.forbidden_output.push(value);
+      break;
+    case "--planned-test":
+      if (!value.includes(":")) {
+        throw new UsageError("--planned-test must be <test-id>:<test name>");
+      }
+      options.planned_tests.push(value);
+      break;
+    default:
+      throw new UsageError(`unknown argument: ${flag}`);
+  }
+}
+
 function consumeFlags(argv: string[]): ParsedOptions {
   const options: ParsedOptions = {
     gate_id: "gate",
@@ -308,9 +361,7 @@ function consumeFlags(argv: string[]): ParsedOptions {
   while (index < argv.length) {
     const flag = argv[index];
     if (BOOLEAN_FLAGS.has(flag)) {
-      if (seen.has(flag)) {
-        throw new UsageError(`${flag} may be provided only once`);
-      }
+      assertUnseen(seen, flag);
       options.calibrate = true;
       seen.add(flag);
       index += 1;
@@ -323,51 +374,11 @@ function consumeFlags(argv: string[]): ParsedOptions {
       throw new UsageError(`missing value for ${flag}`);
     }
     const value = argv[index + 1];
-    if (SINGLE_FLAGS.has(flag) && seen.has(flag)) {
-      throw new UsageError(`${flag} may be provided only once`);
-    }
+    if (SINGLE_FLAGS.has(flag)) assertUnseen(seen, flag);
     if (!value) {
       throw new UsageError(`${flag} must not be empty`);
     }
-    switch (flag) {
-      case "--gate-id":
-        options.gate_id = value;
-        break;
-      case "--failure-route":
-        options.failure_route = value;
-        break;
-      case "--cwd":
-        options.cwd = value;
-        break;
-      case "--expect":
-        options.expect = value;
-        break;
-      case "--command":
-        options.command = value;
-        break;
-      case "--timeout-ms":
-        options.timeout_ms = positiveInt(value, flag);
-        break;
-      case "--tail-bytes":
-        // 0 keeps no tail at all, for a caller whose relay must never see command output
-        // inside the report.
-        options.tail_bytes = value.trim() === "0" ? 0 : positiveInt(value, flag);
-        break;
-      case "--require-output":
-        options.required_output.push(value);
-        break;
-      case "--forbid-output":
-        options.forbidden_output.push(value);
-        break;
-      case "--planned-test":
-        if (!value.includes(":")) {
-          throw new UsageError("--planned-test must be <test-id>:<test name>");
-        }
-        options.planned_tests.push(value);
-        break;
-      default:
-        throw new UsageError(`unknown argument: ${flag}`);
-    }
+    applyFlagValue(options, flag, value);
     seen.add(flag);
     index += 2;
   }
