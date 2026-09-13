@@ -347,6 +347,37 @@ const stopUnit = async (stopped, unit, why) => {
     ...herdrReport(),
   };
 };
+
+// Re-runs the Red gate against the line sealed from a passing calibration, so the failure is
+// tied to the planned reason and not only to the suite failing. Returns the unit's stop result
+// when sealing or the official run fails, and null once the Red is confirmed.
+const confirmRedAnchor = async (unit, calibration) => {
+  const sealed = await sealAnchor(unit, calibration);
+  if (!sealed.line) return stopUnit("red-failed", unit, sealed.why);
+  const official = await runGate(unit, "gate-red", [
+    "--command",
+    testCmd,
+    "--cwd",
+    repo,
+    "--expect",
+    "fail",
+    "--gate-id",
+    `${unit.id}.red`,
+    "--failure-route",
+    `red:${unit.id}`,
+    "--require-output",
+    sealed.line,
+  ]);
+  if (!official) return stopUnit("red-failed", unit, "the Red gate returned no parseable report");
+  if (official.verdict !== "pass") {
+    return stopUnit(
+      "red-failed",
+      unit,
+      `${official.classification}: the sealed line did not identify the Red failure`,
+    );
+  }
+  return null;
+};
 // Decides the route and the destination alone.
 const implementDestination = (role) =>
   implementer === "codex-herdr"
@@ -873,36 +904,11 @@ for (const [index, unit] of units.entries()) {
       return stopUnit("red-failed", unit, "the Red calibration gate returned no parseable report");
     }
     redConfirmed = calibration.verdict === "pass";
-    if (redConfirmed) {
-      const sealed = await sealAnchor(unit, calibration);
-      if (!sealed.line) return stopUnit("red-failed", unit, sealed.why);
-      // Calibration only established that the suite fails. Re-running it against the sealed
-      // line is what establishes that it fails for the planned reason.
-      const official = await runGate(unit, "gate-red", [
-        "--command",
-        testCmd,
-        "--cwd",
-        repo,
-        "--expect",
-        "fail",
-        "--gate-id",
-        `${unit.id}.red`,
-        "--failure-route",
-        `red:${unit.id}`,
-        "--require-output",
-        sealed.line,
-      ]);
-      if (!official) {
-        return stopUnit("red-failed", unit, "the Red gate returned no parseable report");
-      }
-      if (official.verdict !== "pass") {
-        return stopUnit(
-          "red-failed",
-          unit,
-          `${official.classification}: the sealed line did not identify the Red failure`,
-        );
-      }
-    } else {
+    // Calibration only established that the suite fails. Re-running it against the sealed
+    // line is what establishes that it fails for the planned reason.
+    const stopped = redConfirmed ? await confirmRedAnchor(unit, calibration) : null;
+    if (stopped) return stopped;
+    if (!redConfirmed) {
       redWhy = `${calibration.classification}: the suite did not fail under the Red calibration gate`;
     }
   }
