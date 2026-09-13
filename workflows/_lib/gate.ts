@@ -290,7 +290,9 @@ function isExistingDirectory(path: string): boolean {
   }
 }
 
-export function parseArgs(argv: string[]): ValidatedOptions {
+// Reads argv one flag at a time and builds ParsedOptions. Per-flag acceptance validation
+// happens here.
+function consumeFlags(argv: string[]): ParsedOptions {
   const options: ParsedOptions = {
     gate_id: "gate",
     failure_route: "triage",
@@ -369,7 +371,12 @@ export function parseArgs(argv: string[]): ValidatedOptions {
     seen.add(flag);
     index += 2;
   }
+  return options;
+}
 
+// After the loop, validates the shape of each flag value individually: --gate-id,
+// --failure-route, --cwd.
+function validateShape(options: ParsedOptions): void {
   if (!GATE_ID_PATTERN.test(options.gate_id) || options.gate_id.length > 128) {
     throw new UsageError("--gate-id has an invalid shape");
   }
@@ -388,6 +395,11 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   if (!isExistingDirectory(options.cwd)) {
     throw new UsageError("--cwd must be an existing directory");
   }
+}
+
+// Resolves the --calibrate/--planned-test interaction, validates --expect and --command,
+// and returns ValidatedOptions.
+function resolveCalibration(options: ParsedOptions): ValidatedOptions {
   if (options.calibrate) {
     if (options.expect !== undefined && options.expect !== "fail") {
       throw new UsageError("--calibrate runs the Red command, so --expect must be fail");
@@ -410,10 +422,16 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   }
   return {
     ...options,
-    cwd: options.cwd,
+    cwd: options.cwd as string,
     expect: options.expect,
     command: options.command,
   };
+}
+
+export function parseArgs(argv: string[]): ValidatedOptions {
+  const options = consumeFlags(argv);
+  validateShape(options);
+  return resolveCalibration(options);
 }
 
 // Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts).
@@ -480,6 +498,46 @@ function observeCommand(options: ValidatedOptions): CommandObservation {
   };
 }
 
+interface VerdictOutcome {
+  verdict: string;
+  exitCode: number;
+  reasonCodes: string[];
+}
+
+// Determines verdict, exitCode, and reason_codes from the observation conditions and the
+// check results. A blocked verdict is settled before any check is consulted.
+function determineVerdict(
+  timedOut: boolean,
+  executionError: string | null,
+  signalName: string | null,
+  expect: "pass" | "fail",
+  matchesExpectedExit: boolean,
+  checks: CheckResult[],
+): VerdictOutcome {
+  if (timedOut) {
+    return { verdict: "blocked", exitCode: 124, reasonCodes: ["timeout"] };
+  }
+  if (executionError !== null) {
+    return { verdict: "blocked", exitCode: 2, reasonCodes: ["execution_error"] };
+  }
+  if (signalName !== null) {
+    return { verdict: "blocked", exitCode: 2, reasonCodes: ["signal"] };
+  }
+  const reasonCodes: string[] = [];
+  if (!matchesExpectedExit) {
+    reasonCodes.push(expect === "fail" ? "unexpected_pass" : "unexpected_failure");
+  }
+  if (checks.some((check) => check.kind === "output_includes" && !check.passed)) {
+    reasonCodes.push("missing_required_output");
+  }
+  if (checks.some((check) => check.kind === "output_excludes" && !check.passed)) {
+    reasonCodes.push("forbidden_output");
+  }
+  const verdict = reasonCodes.length > 0 ? "fail" : "pass";
+  const exitCode = reasonCodes.length > 0 ? 1 : 0;
+  return { verdict, exitCode, reasonCodes };
+}
+
 /** Derives the verdict from an observation. Pure, so a test reaches every branch by
  * describing the condition rather than by producing it. */
 export function classifyObservation(
@@ -521,34 +579,17 @@ export function classifyObservation(
     checks.push({ kind: "output_excludes", value, passed: !combined.includes(value) });
   }
 
-  const reasonCodes: string[] = [];
-  let verdict: string;
-  let exitCode: number;
-  if (timedOut) {
-    verdict = "blocked";
-    exitCode = 124;
-    reasonCodes.push("timeout");
-  } else if (executionError !== null) {
-    verdict = "blocked";
-    exitCode = 2;
-    reasonCodes.push("execution_error");
-  } else if (signalName !== null) {
-    verdict = "blocked";
-    exitCode = 2;
-    reasonCodes.push("signal");
-  } else {
-    if (!matchesExpectedExit) {
-      reasonCodes.push(expect === "fail" ? "unexpected_pass" : "unexpected_failure");
-    }
-    if (checks.some((check) => check.kind === "output_includes" && !check.passed)) {
-      reasonCodes.push("missing_required_output");
-    }
-    if (checks.some((check) => check.kind === "output_excludes" && !check.passed)) {
-      reasonCodes.push("forbidden_output");
-    }
-    verdict = reasonCodes.length > 0 ? "fail" : "pass";
-    exitCode = reasonCodes.length > 0 ? 1 : 0;
-  }
+  const verdictOutcome = determineVerdict(
+    timedOut,
+    executionError,
+    signalName,
+    expect,
+    matchesExpectedExit,
+    checks,
+  );
+  let verdict = verdictOutcome.verdict;
+  let exitCode = verdictOutcome.exitCode;
+  const reasonCodes = verdictOutcome.reasonCodes;
 
   const defaultClassification = expect === "fail" ? "expected_failure" : "pass";
   let classification = reasonCodes.length > 0 ? reasonCodes[0] : defaultClassification;
