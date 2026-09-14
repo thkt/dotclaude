@@ -21,7 +21,7 @@ const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
 // Exit code of `bin args` run from the repository root. A warn-level rule leaves both linters at
 // exit 0, so a non-zero here means a config error, a parse error, or an error-level finding.
-// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020, T-021)
+// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020 to T-022)
 // that also reads the tool's own report of how many files it checked.
 function runFromRoot(bin, args, { captureStdout = false } = {}) {
   assert.ok(
@@ -136,4 +136,38 @@ test("T-021 biome lint --error-on-warnings over every tracked JS and TS file und
   const checked = stdout.match(/Checked (\d+) files?/);
   assert.ok(checked, `expected a "Checked N files" line in stdout, got:\n${stdout}`);
   assert.equal(Number(checked[1]), files.length);
+});
+
+// Every tracked JS/TS file that sits under a subdirectory of workflows/ or .ja/workflows/ (the
+// top-level workflows/*.js and .ja/workflows/*.js entry points are excluded by biome.json
+// itself, so they are left out here too), minus anything under a /tests/ directory -- tests are
+// not part of this gate.
+function trackedLintTargetsOutsideTests() {
+  const SOURCE_EXT = /\.(js|mjs|cjs|ts|mts|cts)$/;
+  const UNDER_A_SUBDIR = /^(\.ja\/)?workflows\/[^/]+\/.+$/;
+  return execFileSync("git", ["ls-files", "-z", "workflows", ".ja/workflows"], {
+    cwd: ROOT,
+    encoding: "utf8",
+  })
+    .split("\0")
+    .filter(Boolean)
+    .filter(
+      (file) => SOURCE_EXT.test(file) && UNDER_A_SUBDIR.test(file) && !file.includes("/tests/"),
+    );
+}
+
+test("T-022 biome lint --error-on-warnings over every tracked JS and TS file under workflows subdirectories outside tests exits zero after checking every listed file", () => {
+  const files = trackedLintTargetsOutsideTests();
+  assert.ok(
+    files.length > 0,
+    "no tracked JS/TS files found under workflows subdirectories outside tests",
+  );
+  const result = runFromRoot(BIOME_BIN, ["lint", "--error-on-warnings", ...files], {
+    captureStdout: true,
+  });
+  assert.equal(result.code, 0, `expected exit 0; biome stdout was:\n${result.stdout}`);
+  assert.ok(
+    result.stdout.includes(`Checked ${files.length} files`),
+    `expected biome stdout to report "Checked ${files.length} files", got:\n${result.stdout}`,
+  );
 });

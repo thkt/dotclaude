@@ -290,7 +290,62 @@ function isExistingDirectory(path: string): boolean {
   }
 }
 
-export function parseArgs(argv: string[]): ValidatedOptions {
+// consumeFlags's once-per-flag guard, shared by the boolean-flag branch and the
+// single-value-flag branch below it.
+function assertUnseen(seen: Set<string>, flag: string): void {
+  if (seen.has(flag)) {
+    throw new UsageError(`${flag} may be provided only once`);
+  }
+}
+
+// consumeFlags's per-flag assignment: reached once a flag's existence, duplication, and
+// non-empty-value checks all pass. Produces the same assignment and the same --planned-test
+// shape check the inline switch it replaces produced.
+function applyFlagValue(options: ParsedOptions, flag: string, value: string): void {
+  switch (flag) {
+    case "--gate-id":
+      options.gate_id = value;
+      break;
+    case "--failure-route":
+      options.failure_route = value;
+      break;
+    case "--cwd":
+      options.cwd = value;
+      break;
+    case "--expect":
+      options.expect = value;
+      break;
+    case "--command":
+      options.command = value;
+      break;
+    case "--timeout-ms":
+      options.timeout_ms = positiveInt(value, flag);
+      break;
+    case "--tail-bytes":
+      // 0 keeps no tail at all, for a caller whose relay must never see command output
+      // inside the report.
+      options.tail_bytes = value.trim() === "0" ? 0 : positiveInt(value, flag);
+      break;
+    case "--require-output":
+      options.required_output.push(value);
+      break;
+    case "--forbid-output":
+      options.forbidden_output.push(value);
+      break;
+    case "--planned-test":
+      if (!value.includes(":")) {
+        throw new UsageError("--planned-test must be <test-id>:<test name>");
+      }
+      options.planned_tests.push(value);
+      break;
+    default:
+      throw new UsageError(`unknown argument: ${flag}`);
+  }
+}
+
+// Reads argv one flag at a time and builds ParsedOptions. Per-flag acceptance validation
+// happens here.
+function consumeFlags(argv: string[]): ParsedOptions {
   const options: ParsedOptions = {
     gate_id: "gate",
     failure_route: "triage",
@@ -306,9 +361,7 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   while (index < argv.length) {
     const flag = argv[index];
     if (BOOLEAN_FLAGS.has(flag)) {
-      if (seen.has(flag)) {
-        throw new UsageError(`${flag} may be provided only once`);
-      }
+      assertUnseen(seen, flag);
       options.calibrate = true;
       seen.add(flag);
       index += 1;
@@ -321,55 +374,20 @@ export function parseArgs(argv: string[]): ValidatedOptions {
       throw new UsageError(`missing value for ${flag}`);
     }
     const value = argv[index + 1];
-    if (SINGLE_FLAGS.has(flag) && seen.has(flag)) {
-      throw new UsageError(`${flag} may be provided only once`);
-    }
+    if (SINGLE_FLAGS.has(flag)) assertUnseen(seen, flag);
     if (!value) {
       throw new UsageError(`${flag} must not be empty`);
     }
-    switch (flag) {
-      case "--gate-id":
-        options.gate_id = value;
-        break;
-      case "--failure-route":
-        options.failure_route = value;
-        break;
-      case "--cwd":
-        options.cwd = value;
-        break;
-      case "--expect":
-        options.expect = value;
-        break;
-      case "--command":
-        options.command = value;
-        break;
-      case "--timeout-ms":
-        options.timeout_ms = positiveInt(value, flag);
-        break;
-      case "--tail-bytes":
-        // 0 keeps no tail at all, for a caller whose relay must never see command output
-        // inside the report.
-        options.tail_bytes = value.trim() === "0" ? 0 : positiveInt(value, flag);
-        break;
-      case "--require-output":
-        options.required_output.push(value);
-        break;
-      case "--forbid-output":
-        options.forbidden_output.push(value);
-        break;
-      case "--planned-test":
-        if (!value.includes(":")) {
-          throw new UsageError("--planned-test must be <test-id>:<test name>");
-        }
-        options.planned_tests.push(value);
-        break;
-      default:
-        throw new UsageError(`unknown argument: ${flag}`);
-    }
+    applyFlagValue(options, flag, value);
     seen.add(flag);
     index += 2;
   }
+  return options;
+}
 
+// After the loop, validates the shape of each flag value individually: --gate-id,
+// --failure-route, --cwd.
+function validateShape(options: ParsedOptions): void {
   if (!GATE_ID_PATTERN.test(options.gate_id) || options.gate_id.length > 128) {
     throw new UsageError("--gate-id has an invalid shape");
   }
@@ -388,6 +406,11 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   if (!isExistingDirectory(options.cwd)) {
     throw new UsageError("--cwd must be an existing directory");
   }
+}
+
+// Resolves the --calibrate/--planned-test interaction, validates --expect and --command,
+// and returns ValidatedOptions.
+function resolveCalibration(options: ParsedOptions): ValidatedOptions {
   if (options.calibrate) {
     if (options.expect !== undefined && options.expect !== "fail") {
       throw new UsageError("--calibrate runs the Red command, so --expect must be fail");
@@ -410,10 +433,16 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   }
   return {
     ...options,
-    cwd: options.cwd,
+    cwd: options.cwd as string,
     expect: options.expect,
     command: options.command,
   };
+}
+
+export function parseArgs(argv: string[]): ValidatedOptions {
+  const options = consumeFlags(argv);
+  validateShape(options);
+  return resolveCalibration(options);
 }
 
 // Not exported: no tracked file outside this one reads it (workflows/_lib/tests/gate-exports.test.ts).
@@ -480,6 +509,46 @@ function observeCommand(options: ValidatedOptions): CommandObservation {
   };
 }
 
+interface VerdictOutcome {
+  verdict: string;
+  exitCode: number;
+  reasonCodes: string[];
+}
+
+// Determines verdict, exitCode, and reason_codes from the observation conditions and the
+// check results. A blocked verdict is settled before any check is consulted.
+function determineVerdict(
+  timedOut: boolean,
+  executionError: string | null,
+  signalName: string | null,
+  expect: "pass" | "fail",
+  matchesExpectedExit: boolean,
+  checks: CheckResult[],
+): VerdictOutcome {
+  if (timedOut) {
+    return { verdict: "blocked", exitCode: 124, reasonCodes: ["timeout"] };
+  }
+  if (executionError !== null) {
+    return { verdict: "blocked", exitCode: 2, reasonCodes: ["execution_error"] };
+  }
+  if (signalName !== null) {
+    return { verdict: "blocked", exitCode: 2, reasonCodes: ["signal"] };
+  }
+  const reasonCodes: string[] = [];
+  if (!matchesExpectedExit) {
+    reasonCodes.push(expect === "fail" ? "unexpected_pass" : "unexpected_failure");
+  }
+  if (checks.some((check) => check.kind === "output_includes" && !check.passed)) {
+    reasonCodes.push("missing_required_output");
+  }
+  if (checks.some((check) => check.kind === "output_excludes" && !check.passed)) {
+    reasonCodes.push("forbidden_output");
+  }
+  const verdict = reasonCodes.length > 0 ? "fail" : "pass";
+  const exitCode = reasonCodes.length > 0 ? 1 : 0;
+  return { verdict, exitCode, reasonCodes };
+}
+
 /** Derives the verdict from an observation. Pure, so a test reaches every branch by
  * describing the condition rather than by producing it. */
 export function classifyObservation(
@@ -521,34 +590,17 @@ export function classifyObservation(
     checks.push({ kind: "output_excludes", value, passed: !combined.includes(value) });
   }
 
-  const reasonCodes: string[] = [];
-  let verdict: string;
-  let exitCode: number;
-  if (timedOut) {
-    verdict = "blocked";
-    exitCode = 124;
-    reasonCodes.push("timeout");
-  } else if (executionError !== null) {
-    verdict = "blocked";
-    exitCode = 2;
-    reasonCodes.push("execution_error");
-  } else if (signalName !== null) {
-    verdict = "blocked";
-    exitCode = 2;
-    reasonCodes.push("signal");
-  } else {
-    if (!matchesExpectedExit) {
-      reasonCodes.push(expect === "fail" ? "unexpected_pass" : "unexpected_failure");
-    }
-    if (checks.some((check) => check.kind === "output_includes" && !check.passed)) {
-      reasonCodes.push("missing_required_output");
-    }
-    if (checks.some((check) => check.kind === "output_excludes" && !check.passed)) {
-      reasonCodes.push("forbidden_output");
-    }
-    verdict = reasonCodes.length > 0 ? "fail" : "pass";
-    exitCode = reasonCodes.length > 0 ? 1 : 0;
-  }
+  const verdictOutcome = determineVerdict(
+    timedOut,
+    executionError,
+    signalName,
+    expect,
+    matchesExpectedExit,
+    checks,
+  );
+  let verdict = verdictOutcome.verdict;
+  let exitCode = verdictOutcome.exitCode;
+  const reasonCodes = verdictOutcome.reasonCodes;
 
   const defaultClassification = expect === "fail" ? "expected_failure" : "pass";
   let classification = reasonCodes.length > 0 ? reasonCodes[0] : defaultClassification;

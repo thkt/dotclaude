@@ -126,11 +126,18 @@ interface VerifyOutput {
   title: unknown;
 }
 
-/** payload が宣言する draft PR が GitHub 上で宣言どおりの head/base/title で実在することを
- * 検証する。verify() を写す: payload を検証し (required_string/optional_string/cwd の guard
- * が起こしうる 5 つの失敗条件で Invalid を throw)、view_pr で gh に問い合わせ、gh の答えを
- * 0〜5 個の blocker に畳み込む。 */
-export function verify(payload: unknown): VerifyOutput {
+interface ParsedPayload {
+  repository: string;
+  branch: string;
+  baseBranch: string;
+  cwd: string | null;
+  title: string;
+}
+
+/** `payload` を検証し、verify() が必要とする field を返す。required_string/optional_string/cwd
+ * の guard が起こしうる 5 つの失敗条件 (object でない、branch 無し、base_branch 無し、cwd が
+ * 絶対パスでない、repository も cwd も無し) のいずれかで Invalid を (fail() 経由で) throw する。 */
+function parsePayload(payload: unknown): ParsedPayload {
   if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
     fail("payload must be a JSON object");
   }
@@ -148,38 +155,55 @@ export function verify(payload: unknown): VerifyOutput {
     fail("either repository or cwd is required, so gh knows which repository to ask");
   }
   const title = optionalString(record, "title");
+  return { repository, branch, baseBranch, cwd: typeof cwdRaw === "string" ? cwdRaw : null, title };
+}
 
-  const { code, view, stderr } = viewPr(
-    repository,
-    branch,
-    typeof cwdRaw === "string" ? cwdRaw : null,
-  );
-  const blockers: string[] = [];
+/** 1 回の `gh pr view` 結果を blocker list に変換する。exit が非ゼロなら exit code の blocker
+ * 一つだけを返す。exit がゼロなら isDraft, baseRefName, headRefName, url, (`title` が宣言され
+ * ていれば) title を、この順に宣言値と突き合わせる。 */
+function viewBlockers(
+  code: number,
+  view: Record<string, unknown>,
+  stderr: string,
+  baseBranch: string,
+  branch: string,
+  title: string,
+): string[] {
   if (code !== 0) {
-    blockers.push(`gh pr view exited ${code}: ${stderr || "no stderr"}`);
-  } else {
-    if (view.isDraft !== true) {
-      blockers.push(`pull request is not a draft (isDraft=${pyRepr(view.isDraft)})`);
-    }
-    if (view.baseRefName !== baseBranch) {
-      blockers.push(
-        `base branch is ${pyRepr(view.baseRefName)}, not the declared ${pyRepr(baseBranch)}`,
-      );
-    }
-    if (view.headRefName !== branch) {
-      blockers.push(
-        `head branch is ${pyRepr(view.headRefName)}, not the declared ${pyRepr(branch)}`,
-      );
-    }
-    if (typeof view.url !== "string" || view.url.trim() === "") {
-      blockers.push("pull request carries no url");
-    }
-    if (title && view.title !== title) {
-      blockers.push(
-        `pull request title is ${pyRepr(view.title)}, not the declared ${pyRepr(title)}`,
-      );
-    }
+    return [`gh pr view exited ${code}: ${stderr || "no stderr"}`];
   }
+  const blockers: string[] = [];
+  if (view.isDraft !== true) {
+    blockers.push(`pull request is not a draft (isDraft=${pyRepr(view.isDraft)})`);
+  }
+  if (view.baseRefName !== baseBranch) {
+    blockers.push(
+      `base branch is ${pyRepr(view.baseRefName)}, not the declared ${pyRepr(baseBranch)}`,
+    );
+  }
+  if (view.headRefName !== branch) {
+    blockers.push(
+      `head branch is ${pyRepr(view.headRefName)}, not the declared ${pyRepr(branch)}`,
+    );
+  }
+  if (typeof view.url !== "string" || view.url.trim() === "") {
+    blockers.push("pull request carries no url");
+  }
+  if (title && view.title !== title) {
+    blockers.push(
+      `pull request title is ${pyRepr(view.title)}, not the declared ${pyRepr(title)}`,
+    );
+  }
+  return blockers;
+}
+
+/** payload が宣言する draft PR が GitHub 上で宣言どおりの head/base/title で実在することを
+ * 検証する。parsePayload で payload を検証し、viewPr で gh に問い合わせ、gh の答えを
+ * viewBlockers で 0〜5 個の blocker に畳み込む。 */
+export function verify(payload: unknown): VerifyOutput {
+  const { repository, branch, baseBranch, cwd, title } = parsePayload(payload);
+  const { code, view, stderr } = viewPr(repository, branch, cwd);
+  const blockers = viewBlockers(code, view, stderr, baseBranch, branch, title);
 
   return {
     protocol: PROTOCOL,

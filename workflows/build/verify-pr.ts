@@ -128,11 +128,19 @@ interface VerifyOutput {
   title: unknown;
 }
 
-/** Verifies against GitHub that the draft PR the payload declares actually exists with the
- * declared head/base/title. Mirrors verify(): validates the payload (throwing Invalid on the
- * five failure conditions required_string/optional_string/the cwd guard can raise), asks gh
- * via view_pr, and folds gh's answer into 0-5 blockers. */
-export function verify(payload: unknown): VerifyOutput {
+interface ParsedPayload {
+  repository: string;
+  branch: string;
+  baseBranch: string;
+  cwd: string | null;
+  title: string;
+}
+
+/** Validates `payload` and returns the fields verify() needs. Throws Invalid (via fail()) on
+ * any of the five failure conditions required_string/optional_string/the cwd guard can raise:
+ * not an object, a missing branch, a missing base_branch, a non-absolute cwd, or neither
+ * repository nor cwd. */
+function parsePayload(payload: unknown): ParsedPayload {
   if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
     fail("payload must be a JSON object");
   }
@@ -150,38 +158,55 @@ export function verify(payload: unknown): VerifyOutput {
     fail("either repository or cwd is required, so gh knows which repository to ask");
   }
   const title = optionalString(record, "title");
+  return { repository, branch, baseBranch, cwd: typeof cwdRaw === "string" ? cwdRaw : null, title };
+}
 
-  const { code, view, stderr } = viewPr(
-    repository,
-    branch,
-    typeof cwdRaw === "string" ? cwdRaw : null,
-  );
-  const blockers: string[] = [];
+/** Turns one `gh pr view` outcome into its blockers list. A nonzero exit yields the single
+ * exit-code blocker; a zero exit checks isDraft, baseRefName, headRefName, url, and (when
+ * `title` is declared) title against the declared values, in that order. */
+function viewBlockers(
+  code: number,
+  view: Record<string, unknown>,
+  stderr: string,
+  baseBranch: string,
+  branch: string,
+  title: string,
+): string[] {
   if (code !== 0) {
-    blockers.push(`gh pr view exited ${code}: ${stderr || "no stderr"}`);
-  } else {
-    if (view.isDraft !== true) {
-      blockers.push(`pull request is not a draft (isDraft=${pyRepr(view.isDraft)})`);
-    }
-    if (view.baseRefName !== baseBranch) {
-      blockers.push(
-        `base branch is ${pyRepr(view.baseRefName)}, not the declared ${pyRepr(baseBranch)}`,
-      );
-    }
-    if (view.headRefName !== branch) {
-      blockers.push(
-        `head branch is ${pyRepr(view.headRefName)}, not the declared ${pyRepr(branch)}`,
-      );
-    }
-    if (typeof view.url !== "string" || view.url.trim() === "") {
-      blockers.push("pull request carries no url");
-    }
-    if (title && view.title !== title) {
-      blockers.push(
-        `pull request title is ${pyRepr(view.title)}, not the declared ${pyRepr(title)}`,
-      );
-    }
+    return [`gh pr view exited ${code}: ${stderr || "no stderr"}`];
   }
+  const blockers: string[] = [];
+  if (view.isDraft !== true) {
+    blockers.push(`pull request is not a draft (isDraft=${pyRepr(view.isDraft)})`);
+  }
+  if (view.baseRefName !== baseBranch) {
+    blockers.push(
+      `base branch is ${pyRepr(view.baseRefName)}, not the declared ${pyRepr(baseBranch)}`,
+    );
+  }
+  if (view.headRefName !== branch) {
+    blockers.push(
+      `head branch is ${pyRepr(view.headRefName)}, not the declared ${pyRepr(branch)}`,
+    );
+  }
+  if (typeof view.url !== "string" || view.url.trim() === "") {
+    blockers.push("pull request carries no url");
+  }
+  if (title && view.title !== title) {
+    blockers.push(
+      `pull request title is ${pyRepr(view.title)}, not the declared ${pyRepr(title)}`,
+    );
+  }
+  return blockers;
+}
+
+/** Verifies against GitHub that the draft PR the payload declares actually exists with the
+ * declared head/base/title. Validates the payload via parsePayload, asks gh via viewPr, and
+ * folds gh's answer into 0-5 blockers via viewBlockers. */
+export function verify(payload: unknown): VerifyOutput {
+  const { repository, branch, baseBranch, cwd, title } = parsePayload(payload);
+  const { code, view, stderr } = viewPr(repository, branch, cwd);
+  const blockers = viewBlockers(code, view, stderr, baseBranch, branch, title);
 
   return {
     protocol: PROTOCOL,

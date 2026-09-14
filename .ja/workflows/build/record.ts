@@ -58,18 +58,10 @@ interface WindowCounts {
   skipped_lines: number;
 }
 
-/** `path` (この run が今しがた追記した path そのもの) を読み直し、直近の started run の
- * trailing window 内にある plan-quality stop を数える。読み直しさえできないとき
- * (権限、run 途中での削除) は null を返す。呼び出し側はこの count を advisory 扱いとし、
- * run を失敗させる代わりに stdout からこれらのキーを省く。 */
-export function countPlanQualityStops(path: string): WindowCounts | null {
-  let text: string;
-  try {
-    text = readFileSync(path, "utf8");
-  } catch {
-    return null;
-  }
-
+/** `text` を行ごとに JSON object の行へ分ける (追記順のまま)。空行はそのまま飛ばす。parse に
+ * 失敗した行、または plain object 以外 (array、scalar、null) に parse された行は、行を作らず
+ * `skippedLines` を上げる。 */
+function parseRows(text: string): { rows: Record<string, unknown>[]; skippedLines: number } {
   const rows: Record<string, unknown>[] = [];
   let skippedLines = 0;
   for (const line of text.split("\n")) {
@@ -87,6 +79,22 @@ export function countPlanQualityStops(path: string): WindowCounts | null {
     }
     rows.push(parsed as Record<string, unknown>);
   }
+  return { rows, skippedLines };
+}
+
+/** `path` (この run が今しがた追記した path そのもの) を読み直し、直近の started run の
+ * trailing window 内にある plan-quality stop を数える。読み直しさえできないとき
+ * (権限、run 途中での削除) は null を返す。呼び出し側はこの count を advisory 扱いとし、
+ * run を失敗させる代わりに stdout からこれらのキーを省く。 */
+export function countPlanQualityStops(path: string): WindowCounts | null {
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch {
+    return null;
+  }
+
+  const { rows, skippedLines } = parseRows(text);
 
   // run_id は自分の started 行が現れた時点で window に 1 度だけ入る。同じ run_id の後の stop は、
   // その started 行が window から外れるまで (それより WINDOW_SIZE 件多く後の run が start する
