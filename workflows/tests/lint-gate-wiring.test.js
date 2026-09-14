@@ -21,23 +21,21 @@ const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
 // Exit code of `bin args` run from the repository root. Both linters exit 0 when all findings
 // pass their configured level (now error after #710), so a non-zero here means a config error,
-// a parse error, or an error-level finding. With `captureStdout`, returns `{ code, stdout }`
-// instead of the bare code, for a caller that also reads the tool's own report of how many files it checked.
-function runFromRoot(bin, args, { captureStdout = false } = {}) {
+// a parse error, or an error-level finding.
+function runFromRoot(bin, args) {
   assert.ok(
     existsSync(bin),
     `${bin} is missing: run the repository's install step (bun install) before this suite`,
   );
   try {
-    const stdout = execFileSync(bin, args, {
+    execFileSync(bin, args, {
       cwd: ROOT,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     });
-    return captureStdout ? { code: 0, stdout } : 0;
+    return 0;
   } catch (error) {
-    const code = typeof error.status === "number" ? error.status : 1;
-    return captureStdout ? { code, stdout: error.stdout || "" } : code;
+    return typeof error.status === "number" ? error.status : 1;
   }
 }
 
