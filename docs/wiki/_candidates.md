@@ -94,6 +94,7 @@
 - Python の str.splitlines() は \n 以外に \r\n・\r・Unicode 行境界でも分割するが、TS へ移すとき split("\n") のみだと挙動が異なる。LF のみの現行データでは到達不能 #697
 - workflows/tests/ja-ts-parity.test.js は git ls-files で `.ja/**/*.ts` をリポジトリ全域走査するため、新規追加した .ts モジュールの .ja ミラーは別途登録しなくても自動的に検査対象へ入る #696
 - grep 等の文字出現検査で実 invocation の有無を判定するときは、shebang・settings.json の command・heredoc launcher など具体的な起動形にマッチを絞り、コメントや prose に出る bare な文字列言及を除外しないと偽陽性になる #703
+- plan の値 (files.includes 等) と実装が食い違うと build workflow はそのユニットで止まり、以降を手作業で進める #707
 
 ## 棄却
 
