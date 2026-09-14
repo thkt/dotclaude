@@ -3,6 +3,9 @@
 // committed config, and `.gitignore` hides no lintable tracked file (`vcs.useIgnoreFile` makes
 // biome skip whatever git ignores). test.yml is read as text: package.json carries no YAML
 // parser, and both commands are literal `run:` lines.
+//
+// T-021 pins every tracked JS/TS/JSON file under hooks/ under --error-on-warnings. Once #710
+// raises the rule to error, T-016 carries this check and T-021 retires.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -18,7 +21,7 @@ const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
 // Exit code of `bin args` run from the repository root. A warn-level rule leaves both linters at
 // exit 0, so a non-zero here means a config error, a parse error, or an error-level finding.
-// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020)
+// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020, T-021)
 // that also reads the tool's own report of how many files it checked.
 function runFromRoot(bin, args, { captureStdout = false } = {}) {
   assert.ok(
@@ -108,4 +111,29 @@ test("T-020 biome lint --error-on-warnings over every tracked test file under wo
     "biome checked a different count than the list supplies",
   );
   assert.equal(code, 0);
+});
+
+test("T-021 biome lint --error-on-warnings over every tracked JS and TS file under hooks/ exits zero after checking every listed file", () => {
+  const files = execFileSync("git", ["ls-files", "-z", "--", "hooks"], {
+    cwd: ROOT,
+    encoding: "utf8",
+  })
+    .split("\0")
+    .filter((file) => /\.(js|ts|tsx|json)$/.test(file) && !file.includes("/fixtures/"));
+  assert.ok(files.length > 0, "expected at least one tracked JS/TS/JSON file under hooks/");
+
+  const { code, stdout } = runFromRoot(BIOME_BIN, ["lint", "--error-on-warnings", ...files], {
+    captureStdout: true,
+  });
+  assert.equal(
+    code,
+    0,
+    `biome lint --error-on-warnings over hooks/ must exit zero, stdout:\n${stdout}`,
+  );
+
+  // An argument biome skips (a git-ignored path, see T-018) leaves the count below the list
+  // without any diagnostic, so the count is compared exactly rather than as a floor.
+  const checked = stdout.match(/Checked (\d+) files?/);
+  assert.ok(checked, `expected a "Checked N files" line in stdout, got:\n${stdout}`);
+  assert.equal(Number(checked[1]), files.length);
 });

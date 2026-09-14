@@ -34,6 +34,66 @@ function which(name: string): string | null {
   return null;
 }
 
+function toNi(args: string): string {
+  return args ? `ni ${args}` : "ni";
+}
+
+function toNci(): string {
+  return "nci";
+}
+
+function toNr(args: string): string {
+  return args ? `nr ${args}` : "";
+}
+
+function toNrTest(args: string): string {
+  return args ? `nr test ${args}` : "nr test";
+}
+
+function toNrStart(args: string): string {
+  return args ? `nr start ${args}` : "nr start";
+}
+
+function toNlx(args: string): string {
+  return args ? `nlx ${args}` : "";
+}
+
+function toNun(args: string): string {
+  return args ? `nun ${args}` : "";
+}
+
+function toNup(args: string): string {
+  return args ? `nup ${args}` : "nup";
+}
+
+/** Subcommand alias -> the function producing its ni equivalent, keyed on the alias exactly as
+ * a manager accepts it (`install` / `i` / `add` share one function, and so on).
+ *
+ * A `Map` rather than an object literal: `subcmd` comes from the Bash command a user is about
+ * to run, and an object literal lookup falls through its prototype chain, so a subcommand
+ * literally named `constructor` would resolve to `Object.prototype.constructor` instead of
+ * missing. `Map.get` carries no such prototype, so an unlisted subcommand always misses. */
+const SUBCOMMAND_TABLE: ReadonlyMap<string, (args: string) => string> = new Map([
+  ["install", toNi],
+  ["i", toNi],
+  ["add", toNi],
+  ["ci", toNci],
+  ["run", toNr],
+  ["test", toNrTest],
+  ["t", toNrTest],
+  ["start", toNrStart],
+  ["exec", toNlx],
+  ["dlx", toNlx],
+  ["x", toNlx],
+  ["uninstall", toNun],
+  ["remove", toNun],
+  ["rm", toNun],
+  ["un", toNun],
+  ["update", toNup],
+  ["up", toNup],
+  ["upgrade", toNup],
+]);
+
 /** The ni equivalent of an already-split command, empty for one to leave alone. */
 export function convert(parts: readonly string[]): string {
   const manager = parts[0];
@@ -58,29 +118,9 @@ export function convert(parts: readonly string[]): string {
     return "";
   }
 
-  if (subcmd === "install" || subcmd === "i" || subcmd === "add") {
-    return args ? `ni ${args}` : "ni";
-  }
-  if (subcmd === "ci") {
-    return "nci";
-  }
-  if (subcmd === "run") {
-    return args ? `nr ${args}` : "";
-  }
-  if (subcmd === "test" || subcmd === "t") {
-    return args ? `nr test ${args}` : "nr test";
-  }
-  if (subcmd === "start") {
-    return args ? `nr start ${args}` : "nr start";
-  }
-  if (subcmd === "exec" || subcmd === "dlx" || subcmd === "x") {
-    return args ? `nlx ${args}` : "";
-  }
-  if (subcmd === "uninstall" || subcmd === "remove" || subcmd === "rm" || subcmd === "un") {
-    return args ? `nun ${args}` : "";
-  }
-  if (subcmd === "update" || subcmd === "up" || subcmd === "upgrade") {
-    return args ? `nup ${args}` : "nup";
+  const toRewritten = SUBCOMMAND_TABLE.get(subcmd);
+  if (toRewritten) {
+    return toRewritten(args);
   }
   // na passes the subcommand to the detected agent verbatim, so a manager-specific one such
   // as `bun pm ls` still reaches the manager that understands it.

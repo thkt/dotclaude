@@ -14,6 +14,7 @@ import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { SHEBANG, trackedEntries } from "../shebang_scope.ts";
+import { hookCommands } from "./_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -66,36 +67,6 @@ test("T-290 no tracked file outside the historical directories names git_sandbox
   );
 });
 
-/** The `command` string of every hook settings.json's PreToolUse array registers under the
- * "Bash" matcher. */
-function preToolUseBashCommands(settings: unknown): string[] {
-  const hooksNode =
-    settings !== null && typeof settings === "object"
-      ? (settings as Record<string, unknown>).hooks
-      : undefined;
-  const preToolUse =
-    hooksNode !== null && typeof hooksNode === "object"
-      ? (hooksNode as Record<string, unknown>).PreToolUse
-      : undefined;
-  const commands: string[] = [];
-  if (!Array.isArray(preToolUse)) return commands;
-  for (const group of preToolUse) {
-    if (group === null || typeof group !== "object") continue;
-    const groupRecord = group as Record<string, unknown>;
-    if (groupRecord.matcher !== "Bash") continue;
-    const groupHooks = groupRecord.hooks;
-    if (!Array.isArray(groupHooks)) continue;
-    for (const hook of groupHooks) {
-      const command =
-        hook !== null && typeof hook === "object"
-          ? (hook as Record<string, unknown>).command
-          : undefined;
-      if (typeof command === "string") commands.push(command);
-    }
-  }
-  return commands;
-}
-
 /** The whitespace-delimited token inside `command` that names `stem`, or undefined when no
  * PreToolUse Bash command registers that stem at all. */
 function commandNaming(commands: string[], stem: string): string | undefined {
@@ -105,7 +76,7 @@ function commandNaming(commands: string[], stem: string): string | undefined {
 
 test("T-291 the three PreToolUse Bash commands settings.json registers end in .ts, carry the exec bit and open with the bun shebang, read from settings.json rather than a copied literal", () => {
   const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
-  const commands = preToolUseBashCommands(settings);
+  const commands = hookCommands(settings, "PreToolUse", "Bash");
 
   for (const stem of ["git_sandbox_guard", "npm_install_guard", "rm_to_trash"]) {
     const command = commandNaming(commands, stem);

@@ -13,6 +13,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { hookCommands } from "./_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -53,38 +54,9 @@ test("T-247 no tracked file outside docs/decisions/ and .claude/workspace/resear
   );
 });
 
-/** The `command` string of every hook settings.json's SessionStart array runs. */
-function sessionStartCommands(settings: unknown): string[] {
-  const hooksNode =
-    settings !== null && typeof settings === "object"
-      ? (settings as Record<string, unknown>).hooks
-      : undefined;
-  const sessionStart =
-    hooksNode !== null && typeof hooksNode === "object"
-      ? (hooksNode as Record<string, unknown>).SessionStart
-      : undefined;
-  const commands: string[] = [];
-  if (!Array.isArray(sessionStart)) return commands;
-  for (const group of sessionStart) {
-    const groupHooks =
-      group !== null && typeof group === "object"
-        ? (group as Record<string, unknown>).hooks
-        : undefined;
-    if (!Array.isArray(groupHooks)) continue;
-    for (const hook of groupHooks) {
-      const command =
-        hook !== null && typeof hook === "object"
-          ? (hook as Record<string, unknown>).command
-          : undefined;
-      if (typeof command === "string") commands.push(command);
-    }
-  }
-  return commands;
-}
-
 test("T-248 settings.json's SessionStart command names hooks/lifecycle/recall_index.ts and no command in settings.json names recall_index.py", () => {
   const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
-  const sessionStartCommandList = sessionStartCommands(settings);
+  const sessionStartCommandList = hookCommands(settings, "SessionStart");
   assert.ok(
     sessionStartCommandList.some((command) => command.includes("hooks/lifecycle/recall_index.ts")),
     `no SessionStart command names hooks/lifecycle/recall_index.ts: ${sessionStartCommandList.join(", ")}`,

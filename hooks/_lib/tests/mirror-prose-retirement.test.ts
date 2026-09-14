@@ -15,6 +15,7 @@ import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { SHEBANG, trackedEntries } from "../../_lib/shebang_scope.ts";
+import { hookCommands } from "./_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -55,42 +56,11 @@ test("T-375 no tracked file outside the historical directories names mirror_pros
   );
 });
 
-/** The `command` string of every hook settings.json's PostToolUse array runs, filtered to the
- * ones naming mirror_prose_guard. Read from the parsed settings.json tree, not a copied
- * literal, so editing settings.json's command strings is what turns T-374 green. */
-function mirrorProseGuardCommands(settings: unknown): string[] {
-  const hooksNode =
-    settings !== null && typeof settings === "object"
-      ? (settings as Record<string, unknown>).hooks
-      : undefined;
-  const postToolUse =
-    hooksNode !== null && typeof hooksNode === "object"
-      ? (hooksNode as Record<string, unknown>).PostToolUse
-      : undefined;
-  const commands: string[] = [];
-  if (!Array.isArray(postToolUse)) return commands;
-  for (const group of postToolUse) {
-    const groupHooks =
-      group !== null && typeof group === "object"
-        ? (group as Record<string, unknown>).hooks
-        : undefined;
-    if (!Array.isArray(groupHooks)) continue;
-    for (const hook of groupHooks) {
-      const command =
-        hook !== null && typeof hook === "object"
-          ? (hook as Record<string, unknown>).command
-          : undefined;
-      if (typeof command === "string" && command.includes("mirror_prose_guard")) {
-        commands.push(command);
-      }
-    }
-  }
-  return commands;
-}
-
 test("T-374 the two mirror_prose_guard commands settings.json registers end in .ts, carry the exec bit and open with the bun shebang, read from settings.json rather than a copied literal", () => {
   const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
-  const commands = mirrorProseGuardCommands(settings);
+  const commands = hookCommands(settings, "PostToolUse").filter((command) =>
+    command.includes("mirror_prose_guard"),
+  );
   assert.equal(
     commands.length,
     2,

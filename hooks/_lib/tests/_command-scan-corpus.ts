@@ -12,7 +12,10 @@
 //   - lexicalCases(): the 14 special characters `( ) ; < > | & # \ ' " space newline
 //     line-continuation`, each in the 7 placements a shlex-based scanner treats differently
 //     (unquoted / inside single quotes / inside double quotes / right after a backslash / at a
-//     token's head / at a token's tail / next to another punctuation character) -- 98 cases.
+//     token's head / at a token's tail / next to another punctuation character) -- 98 cases,
+//     plus one extra case putting `#` right after a punct-state token: `#` is never itself a
+//     punctuation character, so the 7-placement product never reaches `_lex`'s separate
+//     punct-state comment branch -- 99 cases.
 //   - heredocCases(): the 5 heredoc marker forms `<<EOF`, `<<-EOF`, `<<'EOF'`, `<<"EOF"`, and a
 //     marker that only looks real inside quotes, each with and without a closing line -- 10
 //     cases.
@@ -113,7 +116,8 @@ const LEXICAL_TEMPLATES: Readonly<Record<string, (char: string) => string>> = {
   },
 };
 
-/** The special-character x placement product: 14 characters x 7 placements = 98 cases. */
+/** The special-character x placement product (14 characters x 7 placements = 98 cases), plus
+ * one extra case for `#` right after a punct-state token -- 99 cases total. */
 export function lexicalCases(): CorpusCase[] {
   const cases: CorpusCase[] = [];
   SPECIAL_CHARACTERS.forEach((char, charIndex) => {
@@ -125,6 +129,12 @@ export function lexicalCases(): CorpusCase[] {
       });
     }
   });
+  // `#` is never itself a punctuation character (_PUNCTUATION excludes it), so none of the 7
+  // placements above land `#` while `_lex` is already in its "punct" state -- "adjacent-
+  // punctuation" puts `#` right after a word instead, landing in the word-state branch that
+  // "token-tail" already covers. This case puts a real punct token (`;`) first so `#` arrives
+  // in punct state, exercising that branch's own comment handling.
+  cases.push({ name: "lexical hash after-punct", command: "echo alpha;#beta" });
   return cases;
 }
 

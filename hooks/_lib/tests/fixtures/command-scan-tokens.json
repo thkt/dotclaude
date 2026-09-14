@@ -1401,6 +1401,20 @@
       "raises": null
     },
     {
+      "name": "lexical hash after-punct",
+      "command": "echo alpha;#beta",
+      "commands_with_env": [
+        [
+          {},
+          [
+            "echo",
+            "alpha"
+          ]
+        ]
+      ],
+      "raises": null
+    },
+    {
       "name": "heredoc <<EOF terminated",
       "command": "cat <<EOF\nbody line\nEOF\necho done",
       "commands_with_env": [
