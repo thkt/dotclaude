@@ -21,7 +21,7 @@ const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
 // Exit code of `bin args` run from the repository root. A warn-level rule leaves both linters at
 // exit 0, so a non-zero here means a config error, a parse error, or an error-level finding.
-// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020)
+// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020, T-021)
 // that also reads the tool's own report of how many files it checked.
 function runFromRoot(bin, args, { captureStdout = false } = {}) {
   assert.ok(
@@ -54,28 +54,6 @@ function listWorkflowScripts(dir) {
 // from the root exits zero) carries this check and T-020 retires.
 const T020_SCOPE_RE = /^(workflows\/.*\/tests\/|workflows\/tests\/|tests\/)/;
 const T020_EXT_RE = /\.(js|ts|tsx|json)$/;
-
-// Exit code and stdout of `bin args` run from the repository root, for a caller (T-021) that
-// needs to read what the command reported rather than only whether it exited zero.
-function runFromRootCapturingStdout(bin, args) {
-  assert.ok(
-    existsSync(bin),
-    `${bin} is missing: run the repository's install step (bun install) before this suite`,
-  );
-  try {
-    const stdout = execFileSync(bin, args, {
-      cwd: ROOT,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    return { status: 0, stdout };
-  } catch (error) {
-    return {
-      status: typeof error.status === "number" ? error.status : 1,
-      stdout: error.stdout ?? "",
-    };
-  }
-}
 
 test("T-015 test.yml runs biome lint with --reporter=github in a step after an oxlint step that passes --format=github", () => {
   const source = readFileSync(TEST_YML, "utf8");
@@ -144,13 +122,11 @@ test("T-021 biome lint --error-on-warnings over every tracked JS and TS file und
     .filter((file) => /\.(js|ts|tsx|json)$/.test(file) && !file.includes("/fixtures/"));
   assert.ok(files.length > 0, "expected at least one tracked JS/TS/JSON file under hooks/");
 
-  const { status, stdout } = runFromRootCapturingStdout(BIOME_BIN, [
-    "lint",
-    "--error-on-warnings",
-    ...files,
-  ]);
+  const { code, stdout } = runFromRoot(BIOME_BIN, ["lint", "--error-on-warnings", ...files], {
+    captureStdout: true,
+  });
   assert.equal(
-    status,
+    code,
     0,
     `biome lint --error-on-warnings over hooks/ must exit zero, stdout:\n${stdout}`,
   );
