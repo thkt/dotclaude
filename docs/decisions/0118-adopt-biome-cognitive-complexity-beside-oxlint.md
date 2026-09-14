@@ -35,9 +35,9 @@ linter を 2 つ持つ状態をどう置くか。
 
 Chosen option: "Biome を lint 専用でルール 1 本だけ入れ、workflow script は oxlint の `max-depth` で補う", because 認知的複雑度を数える規則が Biome にしか無く、Biome が読めない 7 本は oxlint の `max-depth` 3 がネストだけを数えられるため。
 
-`biome.json` は `linter.rules.preset: "none"` で他規則を止め、`formatter` と `assist` を無効にし、`noExcessiveCognitiveComplexity` を `warn`、閾値 15 で持つ。`files.includes` は `**` から `workflows/*.js`、`.ja/workflows/*.js`、`plugins/**`、`skills/*/test/cases/**` を除く。`vcs.useIgnoreFile: true` で gitignore 配下を歩かない。`.oxlintrc.json` の `workflows/*.js` override に `max-depth: ["warn", 3]` を足す。
+`biome.json` は `linter.rules.preset: "none"` で他規則を止め、`formatter` と `assist` を無効にし、`noExcessiveCognitiveComplexity` を `error`、閾値 15 で持つ。`files.includes` は `**` から `workflows/*.js`、`.ja/workflows/*.js`、`plugins/**`、`skills/*/test/cases/**` を除く。`vcs.useIgnoreFile: true` で gitignore 配下を歩かない。`.oxlintrc.json` の `workflows/*.js` override に `max-depth: ["error", 3]` を足す。
 
-両規則は `warn` で始める。CI は `npx oxlint --format=github` と `npx biome lint --reporter=github` で warning を PR の annotation にする。step は緑のままで、diff 上に annotation が並ぶ。error に上げる条件は Reassessment Triggers が持つ。
+両規則は `error` に上がった。CI は `npx oxlint --format=github` と `npx biome lint --reporter=github` で error を PR の annotation にし、step が赤になる。
 
 ### Consequences
 
@@ -104,7 +104,7 @@ CI が `bun run lint` を呼ぶ。
 
 ### Reassessment Triggers
 
-- root で `npx biome lint` と `npx oxlint` を走らせて warning が 0 件になる。両規則を `error` に上げる
+- ✓ root で `npx biome lint` と `npx oxlint` を走らせて warning が 0 件になる。両規則を `error` に上げる（#710 で実施）
 - oxlint が認知的複雑度の規則を持つ。Biome 側を撤去し、`.oxlintrc.json` に寄せる
 - Biome がトップレベル `return` を持つ script を parse できる。`max-depth` 側を撤去し、workflow script も Biome で数える
 - gates hook の linter は `oxlint (priority) / biome (fallback)`、formatter は `oxfmt (priority) / biome (fallback)`。oxlint か oxfmt を外すと Biome が黙って昇格するので、どちらかを外す判断が出たら `biome.json` の `preset: "none"` と `formatter.enabled: false` を見直す
