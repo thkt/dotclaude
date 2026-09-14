@@ -6,6 +6,8 @@ decision-makers: "thkt"
 
 # Adopt Biome cognitive complexity beside oxlint
 
+> 2026-09-14 追記: Reassessment Triggers の 1 件目が充足した。#709 の分割 5 件が merge され、root の `npx biome lint` と `npx oxlint` の warning が 0 件になったので、#710 で両規則を `error` に上げ、範囲限定のゲート T-019 から T-023 を退役させた。この記録の本文は決定時点の `warn` を書いたまま残す。
+
 ## Context and Problem Statement
 
 AI agent が書く関数のネストの深さを、どの検査も数えていなかった。`.oxlintrc.json` は `no-unused-vars` と TypeScript 向けの `no-restricted-*` しか持たず、`if` を 5 段重ねた関数でも lint は緑のまま通る。
@@ -35,9 +37,9 @@ linter を 2 つ持つ状態をどう置くか。
 
 Chosen option: "Biome を lint 専用でルール 1 本だけ入れ、workflow script は oxlint の `max-depth` で補う", because 認知的複雑度を数える規則が Biome にしか無く、Biome が読めない 7 本は oxlint の `max-depth` 3 がネストだけを数えられるため。
 
-`biome.json` は `linter.rules.preset: "none"` で他規則を止め、`formatter` と `assist` を無効にし、`noExcessiveCognitiveComplexity` を `error`、閾値 15 で持つ。`files.includes` は `**` から `workflows/*.js`、`.ja/workflows/*.js`、`plugins/**`、`skills/*/test/cases/**` を除く。`vcs.useIgnoreFile: true` で gitignore 配下を歩かない。`.oxlintrc.json` の `workflows/*.js` override に `max-depth: ["error", 3]` を足す。
+`biome.json` は `linter.rules.preset: "none"` で他規則を止め、`formatter` と `assist` を無効にし、`noExcessiveCognitiveComplexity` を `warn`、閾値 15 で持つ。`files.includes` は `**` から `workflows/*.js`、`.ja/workflows/*.js`、`plugins/**`、`skills/*/test/cases/**` を除く。`vcs.useIgnoreFile: true` で gitignore 配下を歩かない。`.oxlintrc.json` の `workflows/*.js` override に `max-depth: ["error", 3]` を足す。
 
-両規則は `error` に上がった。CI は `npx oxlint --format=github` と `npx biome lint --reporter=github` で error を PR の annotation にし、step が赤になる。
+両規則は `warn` で始め、2026-09-14 に `error` へ上げた。CI は `npx oxlint --format=github` と `npx biome lint --reporter=github` で finding を PR の annotation にし、error は step を赤にする。
 
 ### Consequences
 
@@ -45,7 +47,7 @@ Chosen option: "Biome を lint 専用でルール 1 本だけ入れ、workflow s
 - Good, because Biome の設定は規則 1 本分で、oxfmt と oxlint の役割は変わらない
 - Good, because `biome.json` の形、抑止コメント、`.gitignore`、`test.yml` の配線をテストが固定し、どの経路で外しても `node --test` が落ちる
 - Bad, because linter が 2 つになり、`workflows/*.js` だけ別の規則 (`max-depth`) で数える
-- Bad, because `warn` の間は CI が赤にならず、annotation を読まない限り気付かない
+- Bad, because `warn` で始めた期間（2026-09-13 から 09-14）は CI が赤にならず、annotation を読まない限り気付かなかった
 - Bad, because `biome.json` の `overrides` は不在を固定するが、`linter.includes` など別キーでの除外は未検査
 
 ### Confirmation
@@ -104,7 +106,7 @@ CI が `bun run lint` を呼ぶ。
 
 ### Reassessment Triggers
 
-- ✓ root で `npx biome lint` と `npx oxlint` を走らせて warning が 0 件になる。両規則を `error` に上げる（#710 で実施）
+- root で `npx biome lint` と `npx oxlint` を走らせて warning が 0 件になる。両規則を `error` に上げる。2026-09-14 に充足し、#710 で実施
 - oxlint が認知的複雑度の規則を持つ。Biome 側を撤去し、`.oxlintrc.json` に寄せる
 - Biome がトップレベル `return` を持つ script を parse できる。`max-depth` 側を撤去し、workflow script も Biome で数える
 - gates hook の linter は `oxlint (priority) / biome (fallback)`、formatter は `oxfmt (priority) / biome (fallback)`。oxlint か oxfmt を外すと Biome が黙って昇格するので、どちらかを外す判断が出たら `biome.json` の `preset: "none"` と `formatter.enabled: false` を見直す

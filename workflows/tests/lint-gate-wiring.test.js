@@ -4,8 +4,8 @@
 // biome skip whatever git ignores). test.yml is read as text: package.json carries no YAML
 // parser, and both commands are literal `run:` lines.
 //
-// #710 raised both nesting rules to error, so T-016 and T-017 now carry all the checks
-// T-019 to T-023 used to verify with --deny-warnings / --error-on-warnings flags.
+// Both nesting rules sit at error, so an over-nested function makes the bare runs in T-016 and
+// T-017 exit non-zero; no scoped gate with --deny-warnings / --error-on-warnings is needed.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -19,9 +19,8 @@ const BIOME_BIN = path.join(ROOT, "node_modules", ".bin", "biome");
 const OXLINT_BIN = path.join(ROOT, "node_modules", ".bin", "oxlint");
 const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
-// Exit code of `bin args` run from the repository root. Both linters exit 0 when all findings
-// pass their configured level (now error after #710), so a non-zero here means a config error,
-// a parse error, or an error-level finding.
+// Exit code of `bin args` run from the repository root. A non-zero here means a config error, a
+// parse error, or an error-level finding, which is what both nesting rules now produce.
 function runFromRoot(bin, args) {
   assert.ok(
     existsSync(bin),
@@ -69,22 +68,21 @@ test("T-018 no tracked .js or .ts file is hidden from Biome by .gitignore", () =
 const BIOME_JSON = path.join(ROOT, "biome.json");
 const OXLINTRC = path.join(ROOT, ".oxlintrc.json");
 
-// T-024 reads both config files directly: #710 raised both nesting rules to "error", so the
-// bare runs T-016/T-017 already assert now carry what T-019 to T-023's `--deny-warnings` /
-// `--error-on-warnings` flags used to add on top. This is the one place that pins both configs'
-// level in the same assertion, across the biome/oxlint split DR-0118 chose.
-test("T-024 biome.json and .oxlintrc.json both hold their nesting rule at error", () => {
+// The level each config holds for its nesting rule, read the way biome-cognitive-complexity-
+// discipline.test.js (T-005) and oxlint-workflow-depth.test.js (T-010) read their own file.
+// Those two pin each linter alone; this one pins that neither can sit at warn while the other
+// sits at error, which is the state T-016 and T-017 rest on.
+function nestingRuleLevels() {
   const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
-  const biomeLevel = biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity.level;
-  assert.equal(
-    biomeLevel,
-    "error",
-    `biome.json's noExcessiveCognitiveComplexity level is ${biomeLevel}`,
-  );
-
   const oxlintConfig = JSON.parse(readFileSync(OXLINTRC, "utf8"));
   const override = oxlintConfig.overrides.find((entry) => entry.files.includes("workflows/*.js"));
   assert.ok(override, "no override in .oxlintrc.json matches workflows/*.js");
-  const [oxlintLevel] = override.rules["max-depth"];
-  assert.equal(oxlintLevel, "error", `.oxlintrc.json's max-depth level is ${oxlintLevel}`);
+  return {
+    biome: biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity.level,
+    oxlint: override.rules["max-depth"][0],
+  };
+}
+
+test("T-024 biome.json and .oxlintrc.json both hold their nesting rule at error", () => {
+  assert.deepEqual(nestingRuleLevels(), { biome: "error", oxlint: "error" });
 });
