@@ -107,38 +107,62 @@ function _parse_date(timestamp: string): string | null {
     : candidate;
 }
 
-/** 1つの transcript file 内の PreToolUse/PostToolUse fire record ごとに
- * [element_path, fire_date] を yield する。壊れた、または不完全な record は例外を投げず
- * 何も寄与しない: 別の process がこの transcript を書き込み中に読むこともあるため、
+/** transcript の生の 1 行を [element_path, fire_date] の pair へ parse する。line が
+ * PreToolUse/PostToolUse のどの fire も指さない場合は null。壊れた、または不完全な record は
+ * 例外を投げず null を返す: 別の process がこの transcript を書き込み中に読むこともあるため、
  * 末尾行が途中で切れているのは想定内である。 */
-function _iter_fires(path: string): Iterable<[string, string]> {
+function fireOf(rawLine: string): [string, string] | null {
+  const line = rawLine.trim();
+  if (!line) return null;
+  let record: unknown;
+  try {
+    record = JSON.parse(line);
+  } catch {
+    return null;
+  }
+  if (record === null || typeof record !== "object" || Array.isArray(record)) return null;
+  const attachment = (record as Record<string, unknown>).attachment;
+  if (attachment === null || typeof attachment !== "object" || Array.isArray(attachment)) {
+    return null;
+  }
+  const attachmentFields = attachment as Record<string, unknown>;
+  if (!FIRE_EVENTS.has(attachmentFields.hookEvent as string)) return null;
+  const command = attachmentFields.command;
+  const timestamp = (record as Record<string, unknown>).timestamp;
+  if (typeof command !== "string" || typeof timestamp !== "string") return null;
+  const element = element_path(command);
+  if (element === null) return null;
+  const fireDate = _parse_date(timestamp);
+  if (fireDate === null) return null;
+  return [element, fireDate];
+}
+
+/** 1つの transcript file から fireOf が読み取る [element_path, fire_date] の pair 全体を、
+ * file の順序どおりに返す。 */
+function _iter_fires(path: string): [string, string][] {
   const fires: [string, string][] = [];
   for (const rawLine of readFileSync(path, "utf8").split("\n")) {
-    const line = rawLine.trim();
-    if (!line) continue;
-    let record: unknown;
-    try {
-      record = JSON.parse(line);
-    } catch {
-      continue;
-    }
-    if (record === null || typeof record !== "object" || Array.isArray(record)) continue;
-    const attachment = (record as Record<string, unknown>).attachment;
-    if (attachment === null || typeof attachment !== "object" || Array.isArray(attachment)) {
-      continue;
-    }
-    const attachmentFields = attachment as Record<string, unknown>;
-    if (!FIRE_EVENTS.has(attachmentFields.hookEvent as string)) continue;
-    const command = attachmentFields.command;
-    const timestamp = (record as Record<string, unknown>).timestamp;
-    if (typeof command !== "string" || typeof timestamp !== "string") continue;
-    const element = element_path(command);
-    if (element === null) continue;
-    const fireDate = _parse_date(timestamp);
-    if (fireDate === null) continue;
-    fires.push([element, fireDate]);
+    const fire = fireOf(rawLine);
+    if (fire !== null) fires.push(fire);
   }
   return fires;
+}
+
+/** [element, fire_date] の pair を1つ、`elements` の要素ごとの tally と `range` の
+ * 全体スパンへ畳み込む。 */
+function mergeFire(
+  elements: Record<string, ElementUsage>,
+  range: { start: string | null; end: string | null },
+  element: string,
+  fireDate: string,
+): void {
+  const entry = (elements[element] ??= { fires: 0, last_used: null });
+  entry.fires += 1;
+  if (entry.last_used === null || fireDate > entry.last_used) {
+    entry.last_used = fireDate;
+  }
+  if (range.start === null || fireDate < range.start) range.start = fireDate;
+  if (range.end === null || fireDate > range.end) range.end = fireDate;
 }
 
 /** `root` 配下の `*.jsonl` transcript をすべて scan し、要素ごとに fire を tally する。
@@ -146,11 +170,10 @@ function _iter_fires(path: string): Iterable<[string, string]> {
 export function count_usage(root: string): UsageResult {
   const transcripts = globSync("**/*.jsonl", { cwd: root }).sort();
   const elements: Record<string, ElementUsage> = {};
-  let start: string | null = null;
-  let end: string | null = null;
+  const range: { start: string | null; end: string | null } = { start: null, end: null };
 
   for (const relative of transcripts) {
-    let fires: Iterable<[string, string]>;
+    let fires: [string, string][];
     try {
       fires = _iter_fires(join(root, relative));
     } catch {
@@ -158,20 +181,14 @@ export function count_usage(root: string): UsageResult {
       continue;
     }
     for (const [element, fireDate] of fires) {
-      const entry = (elements[element] ??= { fires: 0, last_used: null });
-      entry.fires += 1;
-      if (entry.last_used === null || fireDate > entry.last_used) {
-        entry.last_used = fireDate;
-      }
-      if (start === null || fireDate < start) start = fireDate;
-      if (end === null || fireDate > end) end = fireDate;
+      mergeFire(elements, range, element, fireDate);
     }
   }
 
   return {
     elements,
     transcript_count: transcripts.length,
-    date_range: { start, end },
+    date_range: range,
   };
 }
 

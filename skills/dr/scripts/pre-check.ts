@@ -115,6 +115,22 @@ function gitTopLevel(): GitTopLevelResult {
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };
 }
 
+/** Every existing DR under drDir (markdownFilesUnder, sorted) whose first heading scores >=
+ * threshold against title, paired with formatScore(score) and the existing heading text --
+ * empty when drDir carries no *.md file scoring at or above threshold. Called from main(). */
+function collectSimilarDrs(title: string, drDir: string, threshold: number): SimilarDr[] {
+  const similarDrs: SimilarDr[] = [];
+  for (const drFile of markdownFilesUnder(drDir).sort()) {
+    const existing = firstHeading(drFile);
+    if (!existing) continue;
+    const score = similarity(title, existing);
+    if (score >= threshold) {
+      similarDrs.push({ file: basename(drFile), similarity: formatScore(score), title: existing });
+    }
+  }
+  return similarDrs;
+}
+
 // Python's main() takes no argv of its own (title comes from sys.argv[1]), so this main(argv)
 // keeps the same process.argv.slice(2) convention harness_hash.ts's main() uses.
 export function main(argv: string[]): number {
@@ -164,15 +180,7 @@ export function main(argv: string[]): number {
     .replace(/-{2,}/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  const similarDrs: SimilarDr[] = [];
-  for (const drFile of markdownFilesUnder(drDir).sort()) {
-    const existing = firstHeading(drFile);
-    if (!existing) continue;
-    const score = similarity(title, existing);
-    if (score >= threshold) {
-      similarDrs.push({ file: basename(drFile), similarity: formatScore(score), title: existing });
-    }
-  }
+  const similarDrs = collectSimilarDrs(title, drDir, threshold);
 
   const now = new Date();
   const date = [

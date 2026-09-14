@@ -21,7 +21,7 @@ const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
 // Exit code of `bin args` run from the repository root. A warn-level rule leaves both linters at
 // exit 0, so a non-zero here means a config error, a parse error, or an error-level finding.
-// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020 to T-022)
+// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020 to T-023)
 // that also reads the tool's own report of how many files it checked.
 function runFromRoot(bin, args, { captureStdout = false } = {}) {
   assert.ok(
@@ -170,4 +170,32 @@ test("T-022 biome lint --error-on-warnings over every tracked JS and TS file und
     result.stdout.includes(`Checked ${files.length} files`),
     `expected biome stdout to report "Checked ${files.length} files", got:\n${result.stdout}`,
   );
+});
+
+// Every tracked source file under skills/ or .ja/skills/ outside a test or tests directory,
+// by extension. skills/*/test/cases/** (biome.json's own ignore) falls out of this the same
+// way skills/*/tests/*.test.ts does.
+const SKILLS_SOURCE_RE = /^(\.ja\/)?skills\//;
+const SKILLS_TEST_SEGMENT = /\/tests?\//;
+const SKILLS_EXT_RE = /\.(js|mjs|cjs|ts|mts|cts)$/;
+
+function trackedSkillsFilesOutsideTests() {
+  return execFileSync("git", ["ls-files", "-z"], { cwd: ROOT, encoding: "utf8" })
+    .split("\0")
+    .filter(
+      (file) =>
+        SKILLS_SOURCE_RE.test(file) && !SKILLS_TEST_SEGMENT.test(file) && SKILLS_EXT_RE.test(file),
+    );
+}
+
+test("T-023 biome lint --error-on-warnings over every tracked JS and TS file under skills outside test directories exits zero after checking every listed file", () => {
+  const files = trackedSkillsFilesOutsideTests();
+  assert.ok(files.length > 0, "the tracked file list under skills/ is non-empty");
+  const { code, stdout } = runFromRoot(BIOME_BIN, ["lint", "--error-on-warnings", ...files], {
+    captureStdout: true,
+  });
+  assert.equal(code, 0, `exit code (stdout: ${stdout})`);
+  const checked = stdout.match(/Checked (\d+) files?/);
+  assert.ok(checked, `stdout carries no "Checked N files" line: ${stdout}`);
+  assert.equal(Number(checked[1]), files.length, "biome did not check every listed file");
 });

@@ -74,6 +74,24 @@ function placeholdersLeft(text: string): string[] {
   return found;
 }
 
+/** Indicators: 表にある label ごとの check、無い label ごとの warning、
+ * section 自体が無いときの omitted note。 */
+function checkIndicators(text: string, results: Results): void {
+  const indicators = sectionBody(text, "Indicators");
+  if (indicators === null) {
+    results.checks.push("indicators=omitted");
+    return;
+  }
+  for (const label of INDICATORS) {
+    const found = new RegExp(`^\\|\\s*${escapeRegExp(label)}\\s*\\|`, "m").test(indicators);
+    if (found) {
+      results.checks.push(`indicator:${label}=ok`);
+    } else {
+      results.warnings.push(`missing_indicator:${label}`);
+    }
+  }
+}
+
 /** 報告を出力し、終了コードを返す。errors があれば 1、無ければ 0。 */
 function report(target: string, state: string, results: Results): number {
   const payload = {
@@ -127,19 +145,7 @@ export function main(argv: readonly string[]): number {
     results.checks.push("all_sections=unfilled");
   }
 
-  const indicators = sectionBody(text, "Indicators");
-  if (indicators === null) {
-    results.checks.push("indicators=omitted");
-  } else {
-    for (const label of INDICATORS) {
-      const found = new RegExp(`^\\|\\s*${escapeRegExp(label)}\\s*\\|`, "m").test(indicators);
-      if (found) {
-        results.checks.push(`indicator:${label}=ok`);
-      } else {
-        results.warnings.push(`missing_indicator:${label}`);
-      }
-    }
-  }
+  checkIndicators(text, results);
 
   return report(target, behaviorUnfilled ? "empty" : "ok", results);
 }

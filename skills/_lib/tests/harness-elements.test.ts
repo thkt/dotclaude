@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 import { fixture, runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
 import { loadTreeFixtures, replayTreeFixtures, writeTree } from "./_tree-fixture.ts";
 import type { TreeFixtureCase } from "./_tree-fixture.ts";
-import { classify, enumerate_elements } from "../harness_elements.ts";
+import { _read_array, classify, enumerate_elements } from "../harness_elements.ts";
 import type { HarnessElement } from "../harness_elements.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -65,4 +65,17 @@ test("T-349 enumerate_elements returns the same element list for a constructed t
 
 test("T-350 the frozen CLI cases replay through the .ts entry point", () => {
   replayTreeFixtures(CASES, "harness-elements-cli", (argv, root) => runCli(SCRIPT, root, "", argv));
+});
+
+// T-351/T-352/T-353 call _read_array directly: the three shapes it answers with an empty list.
+test("T-351 an inline JSON value that is not an array yields an empty list", () => {
+  assert.deepEqual(_read_array(['globs: {"a": 1}'], "globs"), []);
+});
+
+test("T-352 an inline value that is not valid JSON yields an empty list", () => {
+  assert.deepEqual(_read_array(["globs: not json"], "globs"), []);
+});
+
+test("T-353 a key whose next line does not start with a dash yields an empty list", () => {
+  assert.deepEqual(_read_array(["paths:", "not a dash line"], "paths"), []);
 });

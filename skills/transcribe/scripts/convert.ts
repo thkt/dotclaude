@@ -168,19 +168,64 @@ export interface Sheet {
   rows: unknown[][];
 }
 
+interface RowSpan {
+  lines: string[];
+  next: number;
+}
+
+/** The doc-header block: up to 3 rows joined with " / " and quoted with "> ", skipped when
+ * the sheet's own first cell does not open the header profile expects. */
+function docHeaderLines(rows: CellInfo[][], profile: Profile): RowSpan | null {
+  if (!profile.docHeaderFirstCell || rows[0]?.[0]?.text !== profile.docHeaderFirstCell) {
+    return null;
+  }
+  const meta: string[] = [];
+  for (const row of rows.slice(0, 3)) {
+    if (!row.length || isColumnRuler(textsOf(row))) continue;
+    meta.push(row.map((cell) => cell.text).join(" / "));
+  }
+  const lines: string[] = [];
+  if (meta.length) lines.push(`> ${meta.join("  \n> ")}`, "");
+  return { lines, next: 3 };
+}
+
+/** The 2-tier header table opening at row `i`: builds columns from the header row (and an
+ * optional second-tier sub-header row directly under it), reads body rows until the next
+ * heading, table head, or blank row, and renders the whole block as markdown table lines. */
+function tableBlock(rows: CellInfo[][], i: number, head: CellInfo[], profile: Profile): RowSpan {
+  let next = i + 1;
+  let sub: CellInfo[] = [];
+  // A data row always starts at the first column, so a row empty there is the second header tier.
+  if (rows[next]?.length && rows[next][0].col > head[0].col) {
+    sub = rows[next];
+    next++;
+  }
+  const columns = buildColumns(head, sub);
+  const body: string[][] = [];
+  while (next < rows.length) {
+    const row = rows[next];
+    if (!row.length) break;
+    if (profile.heading && profile.heading.test(row[0].text) && row.length <= 2) break;
+    if (isTableHead(row, profile)) break;
+    body.push(rowToCells(row, columns, profile.nestColumnLabel));
+    next++;
+  }
+  const labels = columns.map((column) => escapeCell(column.label));
+  const lines: string[] = [`| ${labels.join(" | ")} |`, `| ${labels.map(() => "---").join(" | ")} |`];
+  for (const row of body) lines.push(`| ${row.join(" | ")} |`);
+  lines.push("");
+  return { lines, next };
+}
+
 export function sheetToMarkdown(sheet: Sheet, profile: Profile = profiles.generic): string {
   const rows = sheet.rows.map(cellsOf);
   const lines: string[] = [`# ${sheet.name}`, ""];
   let i = 0;
 
-  if (profile.docHeaderFirstCell && rows[0]?.[0]?.text === profile.docHeaderFirstCell) {
-    const meta: string[] = [];
-    for (const row of rows.slice(0, 3)) {
-      if (!row.length || isColumnRuler(textsOf(row))) continue;
-      meta.push(row.map((cell) => cell.text).join(" / "));
-    }
-    if (meta.length) lines.push(`> ${meta.join("  \n> ")}`, "");
-    i = 3;
+  const header = docHeaderLines(rows, profile);
+  if (header) {
+    lines.push(...header.lines);
+    i = header.next;
   }
 
   let code: string[] = [];
@@ -208,30 +253,9 @@ export function sheetToMarkdown(sheet: Sheet, profile: Profile = profiles.generi
 
     if (isTableHead(cells, profile)) {
       flushCode();
-      const head = cells;
-      let next = i + 1;
-      let sub: CellInfo[] = [];
-      // A data row always starts at the first column, so a row empty there is the second header tier.
-      if (rows[next]?.length && rows[next][0].col > head[0].col) {
-        sub = rows[next];
-        next++;
-      }
-      const columns = buildColumns(head, sub);
-      const body: string[][] = [];
-      while (next < rows.length) {
-        const row = rows[next];
-        if (!row.length) break;
-        if (profile.heading && profile.heading.test(row[0].text) && row.length <= 2) break;
-        if (isTableHead(row, profile)) break;
-        body.push(rowToCells(row, columns, profile.nestColumnLabel));
-        next++;
-      }
-      const labels = columns.map((column) => escapeCell(column.label));
-      lines.push(`| ${labels.join(" | ")} |`);
-      lines.push(`| ${labels.map(() => "---").join(" | ")} |`);
-      for (const row of body) lines.push(`| ${row.join(" | ")} |`);
-      lines.push("");
-      i = next;
+      const block = tableBlock(rows, i, cells, profile);
+      lines.push(...block.lines);
+      i = block.next;
       continue;
     }
 
