@@ -13,20 +13,22 @@ const DEFAULT_VERIFY = "verify pass output";
 
 // opt にキーを渡すことで既定応答を上書きできる。デフォルト引数 (opt.foo ?? default) は値が
 // undefined のときも発動してしまい「キーを渡さなかった」と「undefined を明示的に渡した」を
-// 区別できないため、`"key" in opt` でキーの有無を見て既定を分ける。
-export const defaultAgentStub =
-  (opt = {}) =>
-  (prompt, opts) => {
-    const label = opts && opts.label;
-    if (label === "route") return "route" in opt ? opt.route : DEFAULT_ROUTE;
-    if (label === "security") return "security" in opt ? opt.security : DEFAULT_SECURITY;
-    if (label === "silence") return "silence" in opt ? opt.silence : DEFAULT_SILENCE;
-    if (label === "challenge") return opt.challenge;
-    if (label === "verify") return "verify" in opt ? opt.verify : DEFAULT_VERIFY;
-    if (label === "integrate") return opt.integrate;
-    if (label === "snapshot") return opt.snapshot;
-    return undefined;
+// 区別できないため、`"key" in opt` でキーの有無を見て既定を分ける。応答は label で引く。
+export const defaultAgentStub = (opt = {}) => {
+  const responders = {
+    route: () => ("route" in opt ? opt.route : DEFAULT_ROUTE),
+    security: () => ("security" in opt ? opt.security : DEFAULT_SECURITY),
+    silence: () => ("silence" in opt ? opt.silence : DEFAULT_SILENCE),
+    challenge: () => opt.challenge,
+    verify: () => ("verify" in opt ? opt.verify : DEFAULT_VERIFY),
+    integrate: () => opt.integrate,
+    snapshot: () => opt.snapshot,
   };
+  return (prompt, opts) => {
+    const label = opts && opts.label;
+    return Object.hasOwn(responders, label) ? responders[label]() : undefined;
+  };
+};
 
 export const callOf = (calls, label) => calls.agent.find((c) => c.opts && c.opts.label === label);
 

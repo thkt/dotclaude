@@ -211,6 +211,125 @@ function anomaly(a: unknown): string[] {
   return [head, ...asList(d.evidence).map(pyStr)];
 }
 
+/** item ごとに既に平坦化された `parts` を、section 内で担う行に描画する。先頭は "- " 行、
+ * 続きは (`fold` があり行が 2 以上のとき) 入れ子の <details> に畳むか、そのままインデント
+ * して並べるかのどちらか。 */
+function sectionItemLines(parts: string[], fold?: string): string[] {
+  const lines: string[] = [`- ${parts[0]}`];
+  if (fold && parts.length > 1) {
+    // インデント 2 が list item の内側に収め、<details> 前後の空行が GitHub にその
+    // 中の markdown を描画させる。
+    const foldLabel = fold.replace("{n}", String(parts.length - 1));
+    lines.push(`  ${openTag("details")}${summaryTag(foldLabel)}`);
+    lines.push("");
+    lines.push(...parts.slice(1).map((p) => `  - ${p}`));
+    lines.push("");
+    lines.push(`  ${closeTag("details")}`);
+  } else {
+    lines.push(...parts.slice(1).map((p) => `  ${p}`));
+  }
+  return lines;
+}
+
+/** fact tail の 1 section を `**label**\n<item の行>` として描画するか、`items` が空なら
+ * "" を返す。呼び出し側が戻り値の truthiness を見て push する側であり、section 自身が
+ * 全 section 共有の fold list を書き換えることはしない。 */
+function section(
+  label: string,
+  items: unknown,
+  renderItem: (x: unknown) => string | string[],
+  fold?: string,
+): string {
+  const list = asList(items);
+  if (list.length === 0) return "";
+  const lines: string[] = [];
+  for (const x of list) {
+    let text: string | string[];
+    try {
+      text = renderItem(x);
+    } catch {
+      // malformed (例: non-object) な item が render を crash させて、fail-closed な
+      // tail 全体を落としてはならない。
+      text = pyStr(x);
+    }
+    const rawParts = Array.isArray(text) ? text : [text];
+    const parts = rawParts.map((p) => pyStr(p).split("\n").join(" ")).filter((p) => p.trim());
+    if (parts.length === 0) continue;
+    lines.push(...sectionItemLines(parts, fold));
+  }
+  return `**${label}**\n${lines.join("\n")}`;
+}
+
+/** チェックが走ったときは件数、走らなかったときは "not run"、出すものが無いときは ""。
+ * status キーを持たない payload はそれ以前の呼び出し元から来たものなので、その件数は
+ * そのまま信じる。 */
+function summaryCell(
+  payload: Record<string, unknown>,
+  L: Record<string, string>,
+  label: string,
+  key: string,
+  count: number,
+  always: boolean,
+  suffix = "",
+): string {
+  const status = payload[`${key}_status`];
+  if (typeof status === "string" && (NOT_RUN as readonly string[]).includes(status)) {
+    return code(`${label} ${L.not_run}`);
+  }
+  return always || count ? code(`${label} ${count}${suffix}`) : "";
+}
+
+/** status 行のセル -- verify、scope-deviations、missing-tests、任意の untouched-plan-files、
+ * (high の内訳付き) conformance、structure -- を組み立て、非空のものだけを " · " で
+ * つなげる。 */
+function summaryCells(
+  payload: Record<string, unknown>,
+  L: Record<string, string>,
+  tests: string,
+  gates: string,
+  scope: unknown[],
+  missing: unknown[],
+  untouched: unknown[],
+  conformance: unknown[],
+  structure: unknown[],
+): string {
+  const high = conformance.filter((f) => asMapping(f).severity === "high").length;
+  const cells = [
+    code(`verify tests=${tests} gates=${gates}`),
+    summaryCell(payload, L, "scope-deviations", "scope", scope.length, true),
+    summaryCell(payload, L, "missing-tests", "test_presence", missing.length, true),
+  ];
+  // summary に無い件数は畳まれたまま気づかれないので、開くかどうかの判断が拠る非ゼロの
+  // 件数はすべてここに出す。high の内訳をここに出すのは、件数だけだと表記上の指摘と、
+  // 満たせなかった受け入れ条件が同じ 1 件に見えてしまうため。
+  if (untouched.length > 0) {
+    cells.push(code(`untouched-plan-files ${untouched.length}`));
+  }
+  cells.push(
+    summaryCell(
+      payload,
+      L,
+      "conformance",
+      "conformance",
+      conformance.length,
+      false,
+      high ? ` (${high} high)` : "",
+    ),
+  );
+  cells.push(summaryCell(payload, L, "structure", "structure", structure.length, false));
+  return cells.filter((c) => c).join(" · ");
+}
+
+/** チェックが FAIL していて verify_output が truthy のときだけの「verify output」畳み。
+ * それ以外は "" を返し、呼び出し側は push すべきものがあるときだけ push する。 */
+function verifyOutputFold(tests: string, gates: string, detail: unknown, label: string): string {
+  if (tests !== "FAIL" && gates !== "FAIL") return "";
+  if (!truthy(detail)) return "";
+  const body = typeof detail === "string" ? detail : JSON.stringify(detail, null, 2);
+  const f = fence(body);
+  return detailsWrap(`${summaryTag(label)}\n\n${f}\n${body}\n${f}\n\n`);
+}
+
 /** `payload` の markdown fact tail を描画する。 */
 export function render(payload: Record<string, unknown>): string {
   const issue = pyStr("issue" in payload ? payload.issue : "").trim();
@@ -231,95 +350,39 @@ export function render(payload: Record<string, unknown>): string {
 
   const out: string[] = [L.tail_header, issue ? `Closes #${issue}` : "Closes #"];
 
-  // チェックが走ったときは件数、走らなかったときは "not run"、出すものが無いときは ""。
-  // status キーを持たない payload はそれ以前の呼び出し元から来たものなので、その件数は
-  // そのまま信じる。
-  function cell(label: string, key: string, count: number, always: boolean, suffix = ""): string {
-    const status = payload[`${key}_status`];
-    if (typeof status === "string" && (NOT_RUN as readonly string[]).includes(status)) {
-      return code(`${label} ${L.not_run}`);
-    }
-    return always || count ? code(`${label} ${count}${suffix}`) : "";
-  }
-
-  const high = conformance.filter((f) => asMapping(f).severity === "high").length;
-  const cells = [
-    code(`verify tests=${tests} gates=${gates}`),
-    cell("scope-deviations", "scope", scope.length, true),
-    cell("missing-tests", "test_presence", missing.length, true),
-  ];
-  // summary に無い件数は畳まれたまま気づかれないので、開くかどうかの判断が拠る非ゼロの
-  // 件数はすべてここに出す。high の内訳をここに出すのは、件数だけだと表記上の指摘と、
-  // 満たせなかった受け入れ条件が同じ 1 件に見えてしまうため。
-  if (untouched.length > 0) {
-    cells.push(code(`untouched-plan-files ${untouched.length}`));
-  }
-  cells.push(
-    cell("conformance", "conformance", conformance.length, false, high ? ` (${high} high)` : ""),
+  const summary = summaryCells(
+    payload,
+    L,
+    tests,
+    gates,
+    scope,
+    missing,
+    untouched,
+    conformance,
+    structure,
   );
-  cells.push(cell("structure", "structure", structure.length, false));
-  const summary = cells.filter((c) => c).join(" · ");
   const folded: string[] = [];
 
-  if (tests === "FAIL" || gates === "FAIL") {
-    const detail = payload.verify_output;
-    if (truthy(detail)) {
-      const body = typeof detail === "string" ? detail : JSON.stringify(detail, null, 2);
-      const f = fence(body);
-      folded.push(detailsWrap(`${summaryTag(L.verify_output)}\n\n${f}\n${body}\n${f}\n\n`));
-    }
-  }
+  const verifyFold = verifyOutputFold(tests, gates, payload.verify_output, L.verify_output);
+  if (verifyFold) folded.push(verifyFold);
 
-  function section(
-    label: string,
-    items: unknown,
-    renderItem: (x: unknown) => string | string[],
-    fold?: string,
-  ): void {
-    const list = asList(items);
-    if (list.length === 0) return;
-    const lines: string[] = [];
-    for (const x of list) {
-      let text: string | string[];
-      try {
-        text = renderItem(x);
-      } catch {
-        // malformed (例: non-object) な item が render を crash させて、fail-closed な
-        // tail 全体を落としてはならない。
-        text = pyStr(x);
-      }
-      const rawParts = Array.isArray(text) ? text : [text];
-      const parts = rawParts.map((p) => pyStr(p).split("\n").join(" ")).filter((p) => p.trim());
-      if (parts.length === 0) continue;
-      lines.push(`- ${parts[0]}`);
-      if (fold && parts.length > 1) {
-        // インデント 2 が list item の内側に収め、<details> 前後の空行が GitHub にその
-        // 中の markdown を描画させる。
-        const foldLabel = fold.replace("{n}", String(parts.length - 1));
-        lines.push(`  ${openTag("details")}${summaryTag(foldLabel)}`);
-        lines.push("");
-        lines.push(...parts.slice(1).map((p) => `  - ${p}`));
-        lines.push("");
-        lines.push(`  ${closeTag("details")}`);
-      } else {
-        lines.push(...parts.slice(1).map((p) => `  ${p}`));
-      }
-    }
-    folded.push(`**${label}**\n${lines.join("\n")}`);
+  // レビュアーが PR 上でチェックを付けられるよう、task-list item として描画する。この中の
+  // scope_deviations の逆向きとして、plan が名指ししたのに何も触っていないファイルは、
+  // unit が丸ごと実装されないまま通った跡でありうる。anomalies の evidence は逐語の
+  // コマンド出力であり、その行数が結論を埋もれさせるが、逐語であることこそが証跡としての
+  // 価値なので、短くできるのは renderer だけ。
+  const sections = [
+    section(L.manual_checks, payload.manual_checks, (s) => `[ ] ${pyStr(s)}`),
+    section(L.scope_deviations, scope, (f) => `\`${pyStr(f)}\``),
+    section(L.untouched_plan_files, untouched, (f) => `\`${pyStr(f)}\``),
+    section(L.missing_tests, missing, pyStr),
+    section(L.conformance, conformance, (f) => finding(f, "spec", "spec_line")),
+    section(L.structure, structure, (f) => finding(f, "ref", "reference")),
+    section(L.anomalies, payload.code_anomalies, anomaly, L.evidence),
+  ];
+  for (const rendered of sections) {
+    if (rendered) folded.push(rendered);
   }
-
-  // レビュアーが PR 上でチェックを付けられるよう、task-list item として描画する。
-  section(L.manual_checks, payload.manual_checks, (s) => `[ ] ${pyStr(s)}`);
-  section(L.scope_deviations, scope, (f) => `\`${pyStr(f)}\``);
-  // scope_deviations の逆向き。plan が名指ししたのに何も触っていないファイルは、unit が
-  // 丸ごと実装されないまま通った跡でありうる。
-  section(L.untouched_plan_files, untouched, (f) => `\`${pyStr(f)}\``);
-  section(L.missing_tests, missing, pyStr);
-  section(L.conformance, conformance, (f) => finding(f, "spec", "spec_line"));
-  section(L.structure, structure, (f) => finding(f, "ref", "reference"));
-  // evidence は逐語のコマンド出力であり、その行数が結論を埋もれさせるが、逐語であること
-  // こそが証跡としての価値なので、短くできるのは renderer だけ。
-  section(L.anomalies, payload.code_anomalies, anomaly, L.evidence);
 
   // 折りたたんだ内容の前後の空行が、GitHub に HTML の <details> ブロック内の markdown を
   // 描画させる。空の <details> は、レビュアーに開いても何も無いものを開かせることになる。

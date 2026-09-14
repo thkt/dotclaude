@@ -156,6 +156,57 @@ export function pruneNulls(value: JsonValue, schema: JsonSchema | undefined): Js
   return value;
 }
 
+// findSchemaViolation's array branch: a null is checked directly, then each item recurses back
+// into findSchemaViolation, stopping at the first violation. Produces the same strings in the
+// same order the inline branch it replaces produced.
+function findArrayViolation(value: JsonValue, schema: JsonSchema, here: string): string {
+  if (value === null) return acceptsNull(schema) ? "" : `${here} is null`;
+  if (!Array.isArray(value)) return `${here} is not an array`;
+  for (let index = 0; index < value.length; index++) {
+    const found = findSchemaViolation(value[index], schema.items, `${here}[${index}]`);
+    if (found) return found;
+  }
+  return "";
+}
+
+// findObjectViolation's required-key pass: a missing key or a disallowed null on a required
+// key is reported before any property recurses. Produces the same strings in the same order
+// the inline loop it replaces produced.
+function requiredKeyViolation(
+  value: Record<string, JsonValue>,
+  schema: JsonSchema,
+  path: string,
+): string {
+  const properties = schema.properties || {};
+  for (const key of schema.required || []) {
+    const childPath = path ? `${path}.${key}` : key;
+    if (!(key in value)) return `${childPath} is missing`;
+    if (value[key] === null && !acceptsNull(properties[key])) return `${childPath} is null`;
+  }
+  return "";
+}
+
+// findSchemaViolation's object branch: required keys are checked for presence and a disallowed
+// null before every property recurses back into findSchemaViolation. Produces the same strings
+// in the same order the inline branch it replaces produced.
+function findObjectViolation(
+  value: JsonValue,
+  schema: JsonSchema,
+  path: string,
+  here: string,
+): string {
+  if (value === null) return acceptsNull(schema) ? "" : `${here} is null`;
+  if (typeof value !== "object") return `${here} is not an object`;
+  const requiredViolation = requiredKeyViolation(value, schema, path);
+  if (requiredViolation) return requiredViolation;
+  const properties = schema.properties || {};
+  for (const [key, child] of Object.entries(value)) {
+    const found = findSchemaViolation(child, properties[key], path ? `${path}.${key}` : key);
+    if (found) return found;
+  }
+  return "";
+}
+
 // Strict mode makes every property required and nullable, so the API is free to answer null
 // where the original schema requires a value. A null reaching the script is not the absence
 // the script branches on: build.js's oversizedUnits reads u.files.length, and a null there
@@ -170,30 +221,9 @@ export function findSchemaViolation(
   const here = path || "the response";
   const types = typeList(schema.type);
 
-  if (types.includes("array") || schema.items) {
-    if (value === null) return acceptsNull(schema) ? "" : `${here} is null`;
-    if (!Array.isArray(value)) return `${here} is not an array`;
-    for (let index = 0; index < value.length; index++) {
-      const found = findSchemaViolation(value[index], schema.items, `${here}[${index}]`);
-      if (found) return found;
-    }
-    return "";
-  }
-
+  if (types.includes("array") || schema.items) return findArrayViolation(value, schema, here);
   if (types.includes("object") || schema.properties) {
-    if (value === null) return acceptsNull(schema) ? "" : `${here} is null`;
-    if (typeof value !== "object") return `${here} is not an object`;
-    const properties = schema.properties || {};
-    for (const key of schema.required || []) {
-      const childPath = path ? `${path}.${key}` : key;
-      if (!(key in value)) return `${childPath} is missing`;
-      if (value[key] === null && !acceptsNull(properties[key])) return `${childPath} is null`;
-    }
-    for (const [key, child] of Object.entries(value)) {
-      const found = findSchemaViolation(child, properties[key], path ? `${path}.${key}` : key);
-      if (found) return found;
-    }
-    return "";
+    return findObjectViolation(value, schema, path, here);
   }
 
   if (value === null && !acceptsNull(schema)) return `${here} is null`;
@@ -342,6 +372,86 @@ const runCodexOnce = ({
 
 // ---- Runner ----------------------------------------------------------------------------
 
+// One codex run plus its outcome, factored out of the attempt loop below. A timeout, a
+// non-zero exit, and a missing output file all reset the correction and ask the loop to retry;
+// a schema violation asks again with the reason appended; success reports done alongside the
+// value the loop returns. codex-run.test.js's T-434..T-437 pin these five paths through the
+// injectable `runOnce`.
+interface AttemptOutcome {
+  done: boolean;
+  value: JsonValue;
+  correction: string;
+}
+
+interface AttemptOnceArgs {
+  label: string;
+  model: string;
+  effort: string;
+  schema: JsonSchema | undefined;
+  schemaPath: string;
+  outPath: string;
+  sandbox: string;
+  repo: string;
+  prompt: string;
+  runOnce: (spec: CodexRunSpec) => Promise<CodexRunOutcome>;
+  onLog: (message: string) => void;
+}
+
+async function attemptOnce({
+  label,
+  model,
+  effort,
+  schema,
+  schemaPath,
+  outPath,
+  sandbox,
+  repo,
+  prompt,
+  runOnce,
+  onLog,
+}: AttemptOnceArgs): Promise<AttemptOutcome> {
+  const run = await runOnce({
+    prompt,
+    model,
+    effort,
+    schemaPath,
+    outPath,
+    sandbox,
+    cwd: repo,
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+  });
+
+  if (run.timedOut) {
+    onLog(`[${label}] killed at ${DEFAULT_TIMEOUT_MS} ms.`);
+    return { done: false, value: null, correction: "" };
+  }
+  if (run.code !== 0) {
+    const tail = run.stderr.split("\n").slice(-3).join(" ");
+    onLog(`[${label}] codex exited ${run.code}. ${tail}`);
+    return { done: false, value: null, correction: "" };
+  }
+
+  let raw = "";
+  try {
+    raw = readFileSync(outPath, "utf8");
+  } catch {
+    onLog(`[${label}] codex wrote no final message.`);
+    return { done: false, value: null, correction: "" };
+  }
+  if (!schema) return { done: true, value: raw.trim(), correction: "" };
+
+  try {
+    const value = pruneNulls(JSON.parse(raw), schema);
+    const violation = findSchemaViolation(value, schema);
+    if (violation) throw new Error(violation);
+    return { done: true, value, correction: "" };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    onLog(`[${label}] response did not fit the schema: ${message}`);
+    return { done: false, value: null, correction: schemaCorrection(message) };
+  }
+}
+
 const makeSlots = (limit: number) => {
   let active = 0;
   const waiting: (() => void)[] = [];
@@ -366,11 +476,95 @@ const resolveWorkflowPath = (name: string): string => {
   return path;
 };
 
+interface AgentRunConfig {
+  label: string;
+  model: string;
+  effort: string;
+  sandbox: "read-only" | "workspace-write";
+  schema: JsonSchema | undefined;
+  schemaPath: string;
+  outPath: string;
+  base: string;
+}
+
+// Resolves the agent's label/preamble/model/sandbox/schema-file setup once per call, before
+// the attempt loop below starts spending attempts on it.
+function prepareAgentRun(
+  prompt: string,
+  opts: AgentOptions,
+  tmp: string,
+  id: number,
+  onLog: (message: string) => void,
+): AgentRunConfig {
+  const label = opts.label || opts.agentType || "agent";
+  const { preamble, readOnly, missing } = loadAgent(opts.agentType);
+  if (missing) {
+    onLog(`[${label}] agents/${opts.agentType}.md is missing; running with no preamble.`);
+  }
+  const model = (opts.model && MODEL_MAP[opts.model]) || MODEL_MAP.sonnet;
+  const effort = opts.effort || DEFAULT_EFFORT;
+  const sandbox = readOnly ? "read-only" : "workspace-write";
+  const schemaPath = opts.schema ? join(tmp, `schema-${id}.json`) : "";
+  const outPath = join(tmp, `out-${id}.json`);
+  if (opts.schema) writeFileSync(schemaPath, JSON.stringify(strictify(opts.schema)));
+  return {
+    label,
+    model,
+    effort,
+    sandbox,
+    schema: opts.schema,
+    schemaPath,
+    outPath,
+    base: withPreamble(preamble, prompt),
+  };
+}
+
+// Spends up to ATTEMPTS calls to runOnce, feeding each schema-violation correction into the
+// next prompt. Produces the same value and the same give-up log the inline loop it replaces
+// produced.
+async function runAgentAttempts(
+  config: AgentRunConfig,
+  repo: string,
+  runOnce: (spec: CodexRunSpec) => Promise<CodexRunOutcome>,
+  onLog: (message: string) => void,
+): Promise<JsonValue> {
+  let correction = "";
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    onLog(
+      `[${config.label}] codex ${config.model}/${config.effort} ${config.sandbox} ` +
+        `(attempt ${attempt}/${ATTEMPTS})`,
+    );
+    const outcome = await attemptOnce({
+      label: config.label,
+      model: config.model,
+      effort: config.effort,
+      schema: config.schema,
+      schemaPath: config.schemaPath,
+      outPath: config.outPath,
+      sandbox: config.sandbox,
+      repo,
+      prompt: config.base + correction,
+      runOnce,
+      onLog,
+    });
+    if (outcome.done) return outcome.value;
+    correction = outcome.correction;
+  }
+  // The Agent tool returns null when a subagent dies after its retries, and the workflow
+  // scripts branch on that null, so the same value is returned rather than a throw.
+  onLog(`[${config.label}] gave up after ${ATTEMPTS} attempts; the stage returns null.`);
+  return null;
+}
+
 interface CreateStubsOptions {
   repo: string;
   concurrency?: number;
   onLog?: (message: string) => void;
   tmp: string;
+  // Injectable seam for the attempt loop below, defaulting to the real runCodexOnce. Tests pass
+  // a stub that answers in sequence to pin the five attempt-loop paths (workflows/_lib/tests/
+  // codex-run.test.js T-434..437) without spawning the codex binary.
+  runOnce?: (spec: CodexRunSpec) => Promise<CodexRunOutcome>;
 }
 
 // The pool belongs to one createStubs call. stubs.workflow hands the same stubs object to the
@@ -381,6 +575,7 @@ export function createStubs({
   concurrency = DEFAULT_CONCURRENCY,
   onLog = () => {},
   tmp,
+  runOnce = runCodexOnce,
 }: CreateStubsOptions): RunWorkflowStubs {
   const withSlot = makeSlots(concurrency);
   const stubs: RunWorkflowStubs = {};
@@ -389,71 +584,8 @@ export function createStubs({
   stubs.agent = async (prompt: string, opts: AgentOptions = {}) =>
     withSlot(async () => {
       const id = ++serial;
-      const label = opts.label || opts.agentType || "agent";
-      const { preamble, readOnly, missing } = loadAgent(opts.agentType);
-      if (missing) {
-        onLog(`[${label}] agents/${opts.agentType}.md is missing; running with no preamble.`);
-      }
-
-      const model = (opts.model && MODEL_MAP[opts.model]) || MODEL_MAP.sonnet;
-      const effort = opts.effort || DEFAULT_EFFORT;
-      const sandbox = readOnly ? "read-only" : "workspace-write";
-      const schemaPath = opts.schema ? join(tmp, `schema-${id}.json`) : "";
-      const outPath = join(tmp, `out-${id}.json`);
-      if (opts.schema) writeFileSync(schemaPath, JSON.stringify(strictify(opts.schema)));
-
-      const base = withPreamble(preamble, prompt);
-      let correction = "";
-
-      for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
-        onLog(`[${label}] codex ${model}/${effort} ${sandbox} (attempt ${attempt}/${ATTEMPTS})`);
-        const run = await runCodexOnce({
-          prompt: base + correction,
-          model,
-          effort,
-          schemaPath,
-          outPath,
-          sandbox,
-          cwd: repo,
-          timeoutMs: DEFAULT_TIMEOUT_MS,
-        });
-
-        if (run.timedOut) {
-          correction = "";
-          onLog(`[${label}] killed at ${DEFAULT_TIMEOUT_MS} ms.`);
-          continue;
-        }
-        if (run.code !== 0) {
-          correction = "";
-          const tail = run.stderr.split("\n").slice(-3).join(" ");
-          onLog(`[${label}] codex exited ${run.code}. ${tail}`);
-          continue;
-        }
-
-        let raw = "";
-        try {
-          raw = readFileSync(outPath, "utf8");
-        } catch {
-          onLog(`[${label}] codex wrote no final message.`);
-          continue;
-        }
-        if (!opts.schema) return raw.trim();
-
-        try {
-          const value = pruneNulls(JSON.parse(raw), opts.schema);
-          const violation = findSchemaViolation(value, opts.schema);
-          if (violation) throw new Error(violation);
-          return value;
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          onLog(`[${label}] response did not fit the schema: ${message}`);
-          correction = schemaCorrection(message);
-        }
-      }
-      // The Agent tool returns null when a subagent dies after its retries, and the workflow
-      // scripts branch on that null, so the same value is returned rather than a throw.
-      onLog(`[${label}] gave up after ${ATTEMPTS} attempts; the stage returns null.`);
-      return null;
+      const config = prepareAgentRun(prompt, opts, tmp, id, onLog);
+      return runAgentAttempts(config, repo, runOnce, onLog);
     });
 
   // build.js's sibling() falls back to the plugin namespace only when the message matches this

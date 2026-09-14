@@ -241,6 +241,73 @@ export function contentOnlyReport(bodyPath: string): number {
   return report(results);
 }
 
+/** The title's bracketed type against the template's own name: an error naming the mismatch, or
+ * naming that the title carries no bracketed prefix at all, when they disagree. */
+function checkTypePrefix(title: string, templateType: string, results: ValidationResults): void {
+  const titleMatch = TYPE_PREFIX.exec(title);
+  if (!titleMatch) {
+    results.errors.push("type_mismatch:title has no bracketed type prefix");
+    return;
+  }
+  const titleType = titleMatch[1].toLowerCase();
+  if (titleType !== templateType) {
+    results.errors.push(`type_mismatch:title=${titleType} template=${templateType}`);
+  } else {
+    results.checks.push(`type_match:${titleType}=ok`);
+  }
+}
+
+/** The skeleton's required sections, plus any floor section the template's own required set and
+ * the body together still leave uncovered, each checked present in the body. Returns the full
+ * required-name list so the caller can also check it for unfilled content. */
+function checkRequiredSections(
+  sections: Array<[string, boolean]>,
+  templateType: string,
+  present: Set<string>,
+  results: ValidationResults,
+): string[] {
+  const required = sections.filter(([, optional]) => !optional).map(([name]) => name);
+  const known = new Set([...present, ...required].map((n) => n.toLowerCase()));
+  for (const name of FLOOR[templateType] ?? []) {
+    const names = [name, ...(FLOOR_ALIASES[name] ?? [])];
+    if (!names.some((n) => known.has(n.toLowerCase()))) {
+      required.push(name);
+    }
+  }
+  for (const name of required) {
+    if (present.has(name)) {
+      results.checks.push(`section:${name}=ok`);
+    } else {
+      results.errors.push(`missing_section:${name}`);
+    }
+  }
+  return required;
+}
+
+/** A body section outside the skeleton's own names (and ALLOWED_EXTRA). Skipped for a repository
+ * template: that states the web UI's minimum, so a CLI filing that adds sections to it is not
+ * deviating. Only the skill's own templates are a closed set. */
+function checkUnknownSections(
+  sections: Array<[string, boolean]>,
+  present: Set<string>,
+  isForm: boolean,
+  ownTemplate: boolean,
+  results: ValidationResults,
+): void {
+  if (isForm || !ownTemplate) {
+    results.checks.push("unknown_section=skipped (repository template)");
+    return;
+  }
+  const knownNames = new Set([...sections.map(([name]) => name), ...ALLOWED_EXTRA]);
+  const extra = [...present].filter((name) => !knownNames.has(name)).sort();
+  for (const name of extra) {
+    results.errors.push(`unknown_section:${name}`);
+  }
+  if (extra.length === 0) {
+    results.checks.push("unknown_section=none");
+  }
+}
+
 export function main(argv: string[]): number {
   // The number route knows no skeleton, so it runs the checks that do not need one.
   if (argv.length > 1 && argv[0] === "--content-only") {
@@ -257,19 +324,9 @@ export function main(argv: string[]): number {
 
   const results: ValidationResults = { errors: [], warnings: [], checks: [] };
 
-  const titleMatch = TYPE_PREFIX.exec(title);
   const parsedTemplate = parse(templatePath);
   const templateType = parsedTemplate.name;
-  if (titleMatch) {
-    const titleType = titleMatch[1].toLowerCase();
-    if (titleType !== templateType) {
-      results.errors.push(`type_mismatch:title=${titleType} template=${templateType}`);
-    } else {
-      results.checks.push(`type_match:${titleType}=ok`);
-    }
-  } else {
-    results.errors.push("type_mismatch:title has no bracketed type prefix");
-  }
+  checkTypePrefix(title, templateType, results);
 
   const isForm = FORM_SUFFIXES.includes(parsedTemplate.ext);
   const ownTemplate = /^## Template\s*$/m.test(templateText);
@@ -279,37 +336,10 @@ export function main(argv: string[]): number {
   if (sections.length === 0) {
     results.errors.push(`unreadable_skeleton:${parsedTemplate.base}`);
   }
-  const required = sections.filter(([, optional]) => !optional).map(([name]) => name);
   const present = bodySectionNames(bodyText);
-  const known = new Set([...present, ...required].map((n) => n.toLowerCase()));
-  for (const name of FLOOR[templateType] ?? []) {
-    const names = [name, ...(FLOOR_ALIASES[name] ?? [])];
-    if (!names.some((n) => known.has(n.toLowerCase()))) {
-      required.push(name);
-    }
-  }
-  for (const name of required) {
-    if (present.has(name)) {
-      results.checks.push(`section:${name}=ok`);
-    } else {
-      results.errors.push(`missing_section:${name}`);
-    }
-  }
+  const required = checkRequiredSections(sections, templateType, present, results);
 
-  // A repository template states the web UI's minimum, so a CLI filing that adds sections to it
-  // is not deviating. Only the skill's own templates are a closed set.
-  if (isForm || !ownTemplate) {
-    results.checks.push("unknown_section=skipped (repository template)");
-  } else {
-    const knownNames = new Set([...sections.map(([name]) => name), ...ALLOWED_EXTRA]);
-    const extra = [...present].filter((name) => !knownNames.has(name)).sort();
-    for (const name of extra) {
-      results.errors.push(`unknown_section:${name}`);
-    }
-    if (extra.length === 0) {
-      results.checks.push("unknown_section=none");
-    }
-  }
+  checkUnknownSections(sections, present, isForm, ownTemplate, results);
 
   recordPlaceholders(bodyText, isForm ? "" : skeletonText(templateText), results);
 

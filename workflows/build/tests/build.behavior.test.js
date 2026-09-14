@@ -59,25 +59,36 @@ const makePlan = (overrides = {}) => ({
 const RECORDED_RUN_ID = "a1b2c3d4e5f6";
 
 // Classifies an agent call by the shape of its schema rather than by its label string, which
-// would couple these tests to wording build.js is free to reword.
+// would couple these tests to wording build.js is free to reword. Each row pairs a predicate on
+// the schema's properties with the kind it identifies (or a function deriving the kind from the
+// properties and opts); rows are tried in order and the first match wins.
+const KIND_RULES = [
+  [(p) => "run_id" in p, "record"],
+  [(p) => "found" in p && "body" in p, "fetch"],
+  [(p) => "units" in p, "extract"],
+  [
+    (p) => "results" in p,
+    (p) => {
+      const item = (p.results.items && p.results.items.properties) || {};
+      return "name" in item ? "presence" : "revalidate";
+    },
+  ],
+  [(p) => "branch" in p, "branch"],
+  [(p) => "untracked" in p, "untracked"],
+  [(p) => "edits" in p, "cleanup"],
+  [(p) => "spec_found" in p, "conformance"],
+  [(p) => "translations" in p, "translate"],
+  [(p) => "pr_url" in p, "ship"],
+  // The two stdout relays share one schema, so the label tells them apart.
+  [(p) => "stdout" in p, (p, opts) => (opts.label === "diff-files" ? "diff" : "prverify")],
+];
+
 const kindOf = (opts) => {
   const p = (opts && opts.schema && opts.schema.properties) || null;
   if (!p) return "plain";
-  if ("run_id" in p) return "record";
-  if ("found" in p && "body" in p) return "fetch";
-  if ("units" in p) return "extract";
-  if ("results" in p) {
-    const item = (p.results.items && p.results.items.properties) || {};
-    return "name" in item ? "presence" : "revalidate";
+  for (const [matches, kind] of KIND_RULES) {
+    if (matches(p)) return typeof kind === "function" ? kind(p, opts) : kind;
   }
-  if ("branch" in p) return "branch";
-  if ("untracked" in p) return "untracked";
-  if ("edits" in p) return "cleanup";
-  if ("spec_found" in p) return "conformance";
-  if ("translations" in p) return "translate";
-  if ("pr_url" in p) return "ship";
-  // The two stdout relays share one schema, so the label tells them apart.
-  if ("stdout" in p) return opts.label === "diff-files" ? "diff" : "prverify";
   return "plain";
 };
 
@@ -97,99 +108,99 @@ const makeStubs = ({
   record,
   ship,
   prVerify,
-} = {}) => ({
-  agent: (prompt, opts) => {
-    const kind = kindOf(opts);
-    switch (kind) {
-      case "record":
-        // The default stands in for record.ts's stdout; a function override runs the real script.
-        if (record !== undefined) return typeof record === "function" ? record(prompt) : record;
-        return { path: "/home/sample/.claude/history/build-runs.jsonl", run_id: RECORDED_RUN_ID };
-      case "translate":
-        // The default fails open (no translations) and keeps the English originals. Only the
-        // test verifying that translations land passes a translate stub.
-        return translate ? translate(prompt) : { notes: "no-translations" };
-      case "fetch":
-        // title is omitted by default, reproducing extract having dropped the key. Only the
-        // test verifying the Bug decision passes a title override.
-        return { found: true, title, body: body ?? bodyFor(["U-001"], ["T-001"]) };
-      case "extract":
-        return plan ?? makePlan();
-      case "revalidate":
+} = {}) => {
+  // One responder per kind, each (prompt) => value. Building the table from the destructured
+  // overrides once per makeStubs() call keeps every default and override exactly as it was under
+  // the switch; only the branch on kind becomes a table lookup.
+  const responders = {
+    // The default stands in for record.ts's stdout; a function override runs the real script.
+    record: (prompt) =>
+      record !== undefined
+        ? typeof record === "function"
+          ? record(prompt)
+          : record
+        : { path: "/home/sample/.claude/history/build-runs.jsonl", run_id: RECORDED_RUN_ID },
+    // The default fails open (no translations) and keeps the English originals. Only the
+    // test verifying that translations land passes a translate stub.
+    translate: (prompt) => (translate ? translate(prompt) : { notes: "no-translations" }),
+    // title is omitted by default, reproducing extract having dropped the key. Only the
+    // test verifying the Bug decision passes a title override.
+    fetch: () => ({ found: true, title, body: body ?? bodyFor(["U-001"], ["T-001"]) }),
+    extract: () => plan ?? makePlan(),
+    revalidate: () =>
+      revalidate ?? {
+        results: [
+          {
+            path: "sample.js",
+            pattern: "sampleSymbol",
+            exists: true,
+            matches: true,
+          },
+        ],
+      },
+    // Stands in for diff-files.ts's stdout. The default matches the plan's files (no scope
+    // escape). A null override takes the fail-open route; an object override is the report.
+    diff: (prompt) => {
+      const report =
+        diff === undefined
+          ? { files: ["sample.js"] }
+          : typeof diff === "function"
+            ? diff(prompt)
+            : diff;
+      return report === null ? null : { stdout: JSON.stringify(report) };
+    },
+    // The default reads the checks JSON at the tail of the prompt and returns every name
+    // as found: true, the same shape as verify-tests.ts's happy relay.
+    presence: (prompt) => {
+      if (presence !== undefined)
+        return typeof presence === "function" ? presence(prompt) : presence;
+      const checks = JSON.parse(prompt.trim().split("\n").pop());
+      return {
+        results: checks.flatMap((c) => c.names.map((name) => ({ name, found: true }))),
+      };
+    },
+    // head is the branch-point sha. Returning it by default carries the happy path through
+    // the same per-unit commit route as production. An override returning something other
+    // than a sha takes the fallback route.
+    branch: () => branch ?? { branch: "feat/sample-branch", head: "a1b2c3d4e5f6a7b8" },
+    untracked: () => untracked ?? { untracked: [] },
+    cleanup: () => ({ edits: [], tests_pass: true, stashed: false }),
+    conformance: () => conformance ?? { spec_found: false, findings: [] },
+    ship: () => ship ?? { committed: true, pr_url: "https://example.com/pr/1" },
+    // Stands in for verify-pr.ts's stdout. The default is a PR that matches its declaration.
+    prverify: (prompt) =>
+      prVerify !== undefined
+        ? typeof prVerify === "function"
+          ? prVerify(prompt)
+          : prVerify
+        : { stdout: JSON.stringify({ verdict: "pass", blockers: [] }) },
+  };
+  return {
+    agent: (prompt, opts) => {
+      const kind = kindOf(opts);
+      const responder = responders[kind];
+      return responder ? responder(prompt) : "feat/sample-branch";
+    },
+    workflow: (name) => {
+      if (name === "code")
         return (
-          revalidate ?? {
-            results: [
-              {
-                path: "sample.js",
-                pattern: "sampleSymbol",
-                exists: true,
-                matches: true,
-              },
-            ],
+          code ?? {
+            completed: ["U-001"],
+            skipped: [],
+            anomalies: [],
+            commits: [{ unit: "U-001", subject: "feat: sample subject" }],
+            tests_pass: true,
+            gates_pass: true,
+            verification: "tests+gates",
           }
         );
-      case "diff": {
-        // Stands in for diff-files.ts's stdout. The default matches the plan's files (no scope
-        // escape). A null override takes the fail-open route; an object override is the report.
-        const report =
-          diff === undefined
-            ? { files: ["sample.js"] }
-            : typeof diff === "function"
-              ? diff(prompt)
-              : diff;
-        return report === null ? null : { stdout: JSON.stringify(report) };
-      }
-      case "presence": {
-        // The default reads the checks JSON at the tail of the prompt and returns every name
-        // as found: true, the same shape as verify-tests.ts's happy relay.
-        if (presence !== undefined)
-          return typeof presence === "function" ? presence(prompt) : presence;
-        const checks = JSON.parse(prompt.trim().split("\n").pop());
-        return {
-          results: checks.flatMap((c) => c.names.map((name) => ({ name, found: true }))),
-        };
-      }
-      case "branch":
-        // head is the branch-point sha. Returning it by default carries the happy path through
-        // the same per-unit commit route as production. An override returning something other
-        // than a sha takes the fallback route.
-        return branch ?? { branch: "feat/sample-branch", head: "a1b2c3d4e5f6a7b8" };
-      case "untracked":
-        return untracked ?? { untracked: [] };
-      case "cleanup":
-        return { edits: [], tests_pass: true, stashed: false };
-      case "conformance":
-        return conformance ?? { spec_found: false, findings: [] };
-      case "ship":
-        return ship ?? { committed: true, pr_url: "https://example.com/pr/1" };
-      case "prverify":
-        // Stands in for verify-pr.ts's stdout. The default is a PR that matches its declaration.
-        if (prVerify !== undefined)
-          return typeof prVerify === "function" ? prVerify(prompt) : prVerify;
-        return { stdout: JSON.stringify({ verdict: "pass", blockers: [] }) };
-      default:
-        return "feat/sample-branch";
-    }
-  },
-  workflow: (name) => {
-    if (name === "code")
-      return (
-        code ?? {
-          completed: ["U-001"],
-          skipped: [],
-          anomalies: [],
-          commits: [{ unit: "U-001", subject: "feat: sample subject" }],
-          tests_pass: true,
-          gates_pass: true,
-          verification: "tests+gates",
-        }
-      );
-    // The real runtime semantics: an unknown workflow name throws. sibling() tries code first
-    // and resolves here, so it never falls back to build:code. build does not call audit, so a
-    // call would make this throw fail the test rather than fall back.
-    throw new Error(`unknown workflow: ${name}`);
-  },
-});
+      // The real runtime semantics: an unknown workflow name throws. sibling() tries code first
+      // and resolves here, so it never falls back to build:code. build does not call audit, so a
+      // call would make this throw fail the test rather than fall back.
+      throw new Error(`unknown workflow: ${name}`);
+    },
+  };
+};
 
 const agentCallsOf = (calls, kind) => calls.agent.filter((c) => kindOf(c.opts) === kind);
 

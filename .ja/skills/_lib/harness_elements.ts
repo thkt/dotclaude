@@ -84,6 +84,36 @@ export function _unquote(item: string): string {
   return item;
 }
 
+/** 1 行の JSON 表記 (`globs: ["a", "b"]`): `key:` 行自身の残りに乗っている配列の
+ * 文字列要素。そのテキストが JSON でないか、JSON としてパースした値が配列でなければ
+ * 空リストを返す。 */
+function inlineArray(rest: string): string[] {
+  let value: unknown;
+  try {
+    value = JSON.parse(rest);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((v): v is string => typeof v === "string");
+}
+
+/** 複数行の YAML ダッシュリスト表記 (`paths:` に続く `  - "a"` 行): `start` から、
+ * ダッシュで始まらない行に出会うまでの各項目をクォート解除して集める。 */
+function listItems(lines: string[], start: number): string[] {
+  const items: string[] = [];
+  for (let j = start; j < lines.length; j++) {
+    const stripped = lines[j].trim();
+    if (!stripped.startsWith("-")) {
+      break;
+    }
+    items.push(_unquote(stripped.slice(1).trim()));
+  }
+  return items;
+}
+
 /** このリポジトリのハーネスファイルが使う 2 つの frontmatter 配列表記のどちらも読む:
  * 1 行の JSON 配列 (`globs: ["a", "b"]`) と、複数行の YAML ダッシュリスト
  * (`paths:` に続く `  - "a"` 行) の両方。 */
@@ -96,26 +126,9 @@ export function _read_array(lines: string[], key: string): string[] {
     }
     const rest = line.slice(prefix.length).trim();
     if (rest) {
-      let value: unknown;
-      try {
-        value = JSON.parse(rest);
-      } catch {
-        return [];
-      }
-      if (!Array.isArray(value)) {
-        return [];
-      }
-      return value.filter((v): v is string => typeof v === "string");
+      return inlineArray(rest);
     }
-    const items: string[] = [];
-    for (let j = i + 1; j < lines.length; j++) {
-      const stripped = lines[j].trim();
-      if (!stripped.startsWith("-")) {
-        break;
-      }
-      items.push(_unquote(stripped.slice(1).trim()));
-    }
-    return items;
+    return listItems(lines, i + 1);
   }
   return [];
 }

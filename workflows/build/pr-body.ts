@@ -215,6 +215,125 @@ function anomaly(a: unknown): string[] {
   return [head, ...asList(d.evidence).map(pyStr)];
 }
 
+/** Renders one item's already-flattened `parts` as the lines it contributes inside a section:
+ * a leading "- " line, then either a nested <details> fold for the remaining lines (when
+ * `fold` is given and there is more than one line) or those lines indented in place. */
+function sectionItemLines(parts: string[], fold?: string): string[] {
+  const lines: string[] = [`- ${parts[0]}`];
+  if (fold && parts.length > 1) {
+    // Indent 2 keeps these inside the list item; the blank lines around <details> are what
+    // let GitHub render the markdown inside it.
+    const foldLabel = fold.replace("{n}", String(parts.length - 1));
+    lines.push(`  ${openTag("details")}${summaryTag(foldLabel)}`);
+    lines.push("");
+    lines.push(...parts.slice(1).map((p) => `  - ${p}`));
+    lines.push("");
+    lines.push(`  ${closeTag("details")}`);
+  } else {
+    lines.push(...parts.slice(1).map((p) => `  ${p}`));
+  }
+  return lines;
+}
+
+/** Renders one fact-tail section as `**label**\n<item lines>`, or "" for an empty `items` --
+ * the caller reads the return for truthiness and pushes it, rather than section mutating a
+ * fold list shared across every section call. */
+function section(
+  label: string,
+  items: unknown,
+  renderItem: (x: unknown) => string | string[],
+  fold?: string,
+): string {
+  const list = asList(items);
+  if (list.length === 0) return "";
+  const lines: string[] = [];
+  for (const x of list) {
+    let text: string | string[];
+    try {
+      text = renderItem(x);
+    } catch {
+      // A malformed (e.g. non-object) item must not crash the render and drop the whole
+      // fail-closed tail.
+      text = pyStr(x);
+    }
+    const rawParts = Array.isArray(text) ? text : [text];
+    const parts = rawParts.map((p) => pyStr(p).split("\n").join(" ")).filter((p) => p.trim());
+    if (parts.length === 0) continue;
+    lines.push(...sectionItemLines(parts, fold));
+  }
+  return `**${label}**\n${lines.join("\n")}`;
+}
+
+/** The count when the check ran, "not run" when it did not, "" when there is nothing to show.
+ * A payload without the status key comes from a caller that predates them, so its counts are
+ * taken at face value. */
+function summaryCell(
+  payload: Record<string, unknown>,
+  L: Record<string, string>,
+  label: string,
+  key: string,
+  count: number,
+  always: boolean,
+  suffix = "",
+): string {
+  const status = payload[`${key}_status`];
+  if (typeof status === "string" && (NOT_RUN as readonly string[]).includes(status)) {
+    return code(`${label} ${L.not_run}`);
+  }
+  return always || count ? code(`${label} ${count}${suffix}`) : "";
+}
+
+/** Assembles the status-line cells -- verify, scope-deviations, missing-tests, an optional
+ * untouched-plan-files, conformance (with a high-severity breakdown), and structure -- and
+ * joins the non-empty ones with " · ". */
+function summaryCells(
+  payload: Record<string, unknown>,
+  L: Record<string, string>,
+  tests: string,
+  gates: string,
+  scope: unknown[],
+  missing: unknown[],
+  untouched: unknown[],
+  conformance: unknown[],
+  structure: unknown[],
+): string {
+  const high = conformance.filter((f) => asMapping(f).severity === "high").length;
+  const cells = [
+    code(`verify tests=${tests} gates=${gates}`),
+    summaryCell(payload, L, "scope-deviations", "scope", scope.length, true),
+    summaryCell(payload, L, "missing-tests", "test_presence", missing.length, true),
+  ];
+  // A count absent from the summary goes unnoticed inside the fold, so every non-zero count the
+  // open-or-not decision rests on surfaces here. The high breakdown is there because a bare
+  // count makes a wording nit and a defeated acceptance criterion look alike.
+  if (untouched.length > 0) {
+    cells.push(code(`untouched-plan-files ${untouched.length}`));
+  }
+  cells.push(
+    summaryCell(
+      payload,
+      L,
+      "conformance",
+      "conformance",
+      conformance.length,
+      false,
+      high ? ` (${high} high)` : "",
+    ),
+  );
+  cells.push(summaryCell(payload, L, "structure", "structure", structure.length, false));
+  return cells.filter((c) => c).join(" · ");
+}
+
+/** The failed-check-only "verify output" fold: "" unless a check FAILed and verify_output is
+ * truthy, so the caller pushes it only when there is something to push. */
+function verifyOutputFold(tests: string, gates: string, detail: unknown, label: string): string {
+  if (tests !== "FAIL" && gates !== "FAIL") return "";
+  if (!truthy(detail)) return "";
+  const body = typeof detail === "string" ? detail : JSON.stringify(detail, null, 2);
+  const f = fence(body);
+  return detailsWrap(`${summaryTag(label)}\n\n${f}\n${body}\n${f}\n\n`);
+}
+
 /** Renders the markdown fact tail for `payload`. */
 export function render(payload: Record<string, unknown>): string {
   const issue = pyStr("issue" in payload ? payload.issue : "").trim();
@@ -235,95 +354,39 @@ export function render(payload: Record<string, unknown>): string {
 
   const out: string[] = [L.tail_header, issue ? `Closes #${issue}` : "Closes #"];
 
-  // The count when the check ran, "not run" when it did not, "" when there is nothing to show.
-  // A payload without the status key comes from a caller that predates them, so its counts are
-  // taken at face value.
-  function cell(label: string, key: string, count: number, always: boolean, suffix = ""): string {
-    const status = payload[`${key}_status`];
-    if (typeof status === "string" && (NOT_RUN as readonly string[]).includes(status)) {
-      return code(`${label} ${L.not_run}`);
-    }
-    return always || count ? code(`${label} ${count}${suffix}`) : "";
-  }
-
-  const high = conformance.filter((f) => asMapping(f).severity === "high").length;
-  const cells = [
-    code(`verify tests=${tests} gates=${gates}`),
-    cell("scope-deviations", "scope", scope.length, true),
-    cell("missing-tests", "test_presence", missing.length, true),
-  ];
-  // A count absent from the summary goes unnoticed inside the fold, so every non-zero count the
-  // open-or-not decision rests on surfaces here. The high breakdown is there because a bare
-  // count makes a wording nit and a defeated acceptance criterion look alike.
-  if (untouched.length > 0) {
-    cells.push(code(`untouched-plan-files ${untouched.length}`));
-  }
-  cells.push(
-    cell("conformance", "conformance", conformance.length, false, high ? ` (${high} high)` : ""),
+  const summary = summaryCells(
+    payload,
+    L,
+    tests,
+    gates,
+    scope,
+    missing,
+    untouched,
+    conformance,
+    structure,
   );
-  cells.push(cell("structure", "structure", structure.length, false));
-  const summary = cells.filter((c) => c).join(" · ");
   const folded: string[] = [];
 
-  if (tests === "FAIL" || gates === "FAIL") {
-    const detail = payload.verify_output;
-    if (truthy(detail)) {
-      const body = typeof detail === "string" ? detail : JSON.stringify(detail, null, 2);
-      const f = fence(body);
-      folded.push(detailsWrap(`${summaryTag(L.verify_output)}\n\n${f}\n${body}\n${f}\n\n`));
-    }
-  }
+  const verifyFold = verifyOutputFold(tests, gates, payload.verify_output, L.verify_output);
+  if (verifyFold) folded.push(verifyFold);
 
-  function section(
-    label: string,
-    items: unknown,
-    renderItem: (x: unknown) => string | string[],
-    fold?: string,
-  ): void {
-    const list = asList(items);
-    if (list.length === 0) return;
-    const lines: string[] = [];
-    for (const x of list) {
-      let text: string | string[];
-      try {
-        text = renderItem(x);
-      } catch {
-        // A malformed (e.g. non-object) item must not crash the render and drop the whole
-        // fail-closed tail.
-        text = pyStr(x);
-      }
-      const rawParts = Array.isArray(text) ? text : [text];
-      const parts = rawParts.map((p) => pyStr(p).split("\n").join(" ")).filter((p) => p.trim());
-      if (parts.length === 0) continue;
-      lines.push(`- ${parts[0]}`);
-      if (fold && parts.length > 1) {
-        // Indent 2 keeps these inside the list item; the blank lines around <details> are what
-        // let GitHub render the markdown inside it.
-        const foldLabel = fold.replace("{n}", String(parts.length - 1));
-        lines.push(`  ${openTag("details")}${summaryTag(foldLabel)}`);
-        lines.push("");
-        lines.push(...parts.slice(1).map((p) => `  - ${p}`));
-        lines.push("");
-        lines.push(`  ${closeTag("details")}`);
-      } else {
-        lines.push(...parts.slice(1).map((p) => `  ${p}`));
-      }
-    }
-    folded.push(`**${label}**\n${lines.join("\n")}`);
+  // Rendered as task-list items so the reviewer can tick them off on the PR. The inverse of
+  // scope_deviations sits among them: a file the plan named but nothing touched can be the
+  // trace of a unit that went unimplemented and still passed. The evidence anomalies carry is
+  // verbatim command output whose line count buries the conclusion, and being verbatim is what
+  // makes it evidence, so the renderer is the only place to shorten it.
+  const sections = [
+    section(L.manual_checks, payload.manual_checks, (s) => `[ ] ${pyStr(s)}`),
+    section(L.scope_deviations, scope, (f) => `\`${pyStr(f)}\``),
+    section(L.untouched_plan_files, untouched, (f) => `\`${pyStr(f)}\``),
+    section(L.missing_tests, missing, pyStr),
+    section(L.conformance, conformance, (f) => finding(f, "spec", "spec_line")),
+    section(L.structure, structure, (f) => finding(f, "ref", "reference")),
+    section(L.anomalies, payload.code_anomalies, anomaly, L.evidence),
+  ];
+  for (const rendered of sections) {
+    if (rendered) folded.push(rendered);
   }
-
-  // Rendered as task-list items so the reviewer can tick them off on the PR.
-  section(L.manual_checks, payload.manual_checks, (s) => `[ ] ${pyStr(s)}`);
-  section(L.scope_deviations, scope, (f) => `\`${pyStr(f)}\``);
-  // The inverse of scope_deviations: a file the plan named but nothing touched can be the trace
-  // of a unit that went unimplemented and still passed.
-  section(L.untouched_plan_files, untouched, (f) => `\`${pyStr(f)}\``);
-  section(L.missing_tests, missing, pyStr);
-  section(L.conformance, conformance, (f) => finding(f, "spec", "spec_line"));
-  section(L.structure, structure, (f) => finding(f, "ref", "reference"));
-  // The evidence is verbatim command output whose line count buries the conclusion, and being
-  // verbatim is what makes it evidence, so the renderer is the only place to shorten it.
-  section(L.anomalies, payload.code_anomalies, anomaly, L.evidence);
 
   // Blank lines around the folded content keep GitHub rendering the markdown inside the HTML
   // <details> block. An empty <details> asks the reviewer to open nothing.

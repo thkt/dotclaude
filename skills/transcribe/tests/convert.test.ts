@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cellText, fillRatio, isColumnRuler, profiles, sheetFileName, sheetToMarkdown } from "../scripts/convert.ts";
+import {
+  cellText,
+  fillRatio,
+  isColumnRuler,
+  profiles,
+  sheetFileName,
+  sheetToMarkdown,
+} from "../scripts/convert.ts";
 
 // A business Excel spreads one item across several cells by merging them. In a merged run every
 // cell after the first arrives as null, so the rows are built keeping their column positions.
@@ -10,7 +17,10 @@ const row = (...pairs: [number, unknown][]): unknown[] => {
   return cells;
 };
 
-const sheetOf = (...rows: unknown[][]): { name: string; rows: unknown[][] } => ({ name: "S", rows });
+const sheetOf = (...rows: unknown[][]): { name: string; rows: unknown[][] } => ({
+  name: "S",
+  rows,
+});
 
 test("collapses the merged cells and restores the data into a table along the header column positions", () => {
   const markdown = sheetToMarkdown(
@@ -143,4 +153,35 @@ test("T-249 cellText renders a Date as YYYY-MM-DD, a formula cell by its value o
 test("T-250 sheetFileName pads the index to two digits and replaces every path-unsafe character in the sheet name with an underscore", () => {
   assert.equal(sheetFileName(1, "Sheet/One"), "01_Sheet_One.md");
   assert.equal(sheetFileName(12, 'A:B*C?D"E<F>G|H\\I'), "12_A_B_C_D_E_F_G_H_I.md");
+});
+
+// sheetToMarkdown's doc-header block: the column-ruler row sits among the first three rows and
+// must not become a third meta line.
+test("T-251 a sheet whose first cell is the profile's docHeaderFirstCell renders the first three rows as a quoted meta block, skipping a column-ruler row", () => {
+  const ruler = Array.from({ length: 12 }, (_, i) => String(i + 1));
+  const markdown = sheetToMarkdown(
+    sheetOf(row([0, "案件名"], [2, "サンプルAPI"]), ruler, row([0, "バージョン"], [2, "1.0"])),
+    profiles["ja-api-spec"],
+  );
+
+  const metaLines = markdown.match(/^> .*$/gm) ?? [];
+  assert.equal(metaLines.length, 2);
+  assert.match(markdown, /> 案件名 \/ サンプルAPI/);
+  assert.match(markdown, /> バージョン \/ 1\.0/);
+});
+
+// sheetToMarkdown's second-header-tier merge: the row right after the table head starts past the head's first column, so buildColumns folds
+// it in as child labels instead of treating it as a body row.
+test("T-252 a row right after the table head whose first cell starts beyond the head's column is merged into the column labels as the second header tier", () => {
+  const markdown = sheetToMarkdown(
+    sheetOf(
+      row([2, "項番"], [4, "パラメータ名"], [12, "バリデーション"], [18, "説明"]),
+      row([12, "必須"], [14, "重複"]),
+      row([2, "1"], [4, "password"], [12, "○"], [18, "パスワード"]),
+    ),
+    profiles["ja-api-spec"],
+  );
+
+  assert.match(markdown, /\| 項番 \| パラメータ名 \| 必須 \| 重複 \| 説明 \|/);
+  assert.match(markdown, /\| 1 \| password \| ○ \|  \| パスワード \|/);
 });

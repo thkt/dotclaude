@@ -123,6 +123,52 @@ function gitTopLevel(): GitTopLevelResult {
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };
 }
 
+/** drDir 配下の DR ファイルを 1 回走査して得られる DR List の行と By Status の bucket:
+ * `rows` は main() が HEADER の下に join する各テーブル行を持ち、`byStatus` は
+ * STATUS_SECTIONS の各キーが持つ [number, title] のペアを、main() 内の By Status ループが
+ * ソートして描画できるように持つ。 */
+interface CollectRowsResult {
+  rows: string[];
+  byStatus: Map<string, Array<[number: string, title: string]>>;
+}
+
+/** drDir 配下の DR ファイル (drFilesUnder、フルパスでソート済み) を走査し、それぞれについて
+ * DR List の行を積み、[number, title] をその status が startsWith する最初の
+ * STATUS_SECTIONS キーの bucket に振り分ける。main() から呼ばれる。 */
+function collectRows(drDir: string): CollectRowsResult {
+  const rows: string[] = [];
+  const byStatus = new Map<string, Array<[number: string, title: string]>>(
+    STATUS_SECTIONS.map(([key]) => [key, []]),
+  );
+  for (const drFile of drFilesUnder(drDir).sort()) {
+    const name = basename(drFile);
+    const number = name.slice(0, 4);
+    const [title, status, date] = parseDr(drFile);
+    rows.push(`| [${number}](${name}) | ${title} | ${status} | ${date} |`);
+    for (const [key] of STATUS_SECTIONS) {
+      const bucket = byStatus.get(key);
+      if (bucket && status.startsWith(key)) {
+        bucket.push([number, title]);
+        break;
+      }
+    }
+  }
+  return { rows, byStatus };
+}
+
+/** Python の sorted() が (number, title) のタプルに対して行うのと同じ: number を優先し
+ * title を tiebreaker にするが、DR の 4 桁番号は一意なので実際には tiebreaker が働く
+ * ことはない。main() から By Status entries の sort comparator として呼ばれる。 */
+function compareEntries(
+  [numA, titleA]: [number: string, title: string],
+  [numB, titleB]: [number: string, title: string],
+): number {
+  if (numA !== numB) return numA < numB ? -1 : 1;
+  if (titleA < titleB) return -1;
+  if (titleA > titleB) return 1;
+  return 0;
+}
+
 // Python の main() は dr-directory という省略可能な positional 以外の argv を取らない
 // (sys.argv[1] if len(sys.argv) > 1 else None)。pre-check.ts と validate-dr.ts の main(argv) が
 // 既に使っている process.argv.slice(2) の慣習と同じである。
@@ -144,34 +190,13 @@ export function main(argv: string[]): number {
   }
   guardSkillDir(drDir, "Set DR_DIR env var or pass an explicit DR archive path.");
 
-  const rows: string[] = [];
-  const byStatus = new Map<string, Array<[number: string, title: string]>>(
-    STATUS_SECTIONS.map(([key]) => [key, []]),
-  );
-  for (const drFile of drFilesUnder(drDir).sort()) {
-    const name = basename(drFile);
-    const number = name.slice(0, 4);
-    const [title, status, date] = parseDr(drFile);
-    rows.push(`| [${number}](${name}) | ${title} | ${status} | ${date} |`);
-    for (const [key] of STATUS_SECTIONS) {
-      const bucket = byStatus.get(key);
-      if (bucket && status.startsWith(key)) {
-        bucket.push([number, title]);
-        break;
-      }
-    }
-  }
+  const { rows, byStatus } = collectRows(drDir);
 
   const parts: string[] = [HEADER + rows.join("\n"), "\n## By Status\n"];
   for (const [key, heading] of STATUS_SECTIONS) {
     const entries = byStatus.get(key) ?? [];
     if (entries.length === 0) continue;
-    // Python の sorted() が (number, title) のタプルに対して行うのと同じ: number を優先し
-    // title を tiebreaker にするが、DR の 4 桁番号は一意なので実際には tiebreaker が働く
-    // ことはない。
-    const sorted = [...entries].sort(([numA, titleA], [numB, titleB]) =>
-      numA !== numB ? (numA < numB ? -1 : 1) : titleA < titleB ? -1 : titleA > titleB ? 1 : 0,
-    );
+    const sorted = [...entries].sort(compareEntries);
     const entryLines = sorted.map(([num, title]) => `- **${num}**: ${title}`).join("\n");
     parts.push(`### ${heading}\n\n${entryLines}\n`);
   }

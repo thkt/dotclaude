@@ -208,6 +208,16 @@ function _lex(text: string): string[] {
   let pos = 0;
   const pushback: string[] = [];
 
+  // The lexer's live position within the current token, reset at the top of each readToken()
+  // call and mutated by whichever onX handler below runs for the current state.
+  let token = "";
+  let state: _LexState = "space";
+  let quoteChar = "";
+  // What state resumes once the current escape is consumed, and (for "quote") which quote
+  // character it returns to -- mirrors shlex's escapedstate.
+  let escapedState: "word" | "quote" = "word";
+  let escapedQuoteChar = "";
+
   function nextChar(): string | null {
     if (pushback.length > 0) {
       return pushback.pop() as string;
@@ -220,135 +230,155 @@ function _lex(text: string): string[] {
     return ch;
   }
 
+  // One handler per _LexState, closing over the token/state/quoteChar above. A handler receives
+  // the character readToken's dispatch loop already read via nextChar(), mutates state for the
+  // next iteration, and returns undefined to keep reading or the value readToken itself should
+  // return (a token, or null).
+
+  function onSpace(ch: string | null): string | null | undefined {
+    if (ch === null) {
+      return null;
+    }
+    if (_WHITESPACE.includes(ch)) {
+      return undefined;
+    }
+    if (ch === _COMMENTER) {
+      // A comment runs to the end of the current line. Nothing here separates commands by a
+      // real newline (that already became _NEWLINE, a punctuation character) or a real
+      // "line" at all once heredoc bodies are gone, so the comment consumes everything left.
+      pos = chars.length;
+      return null;
+    }
+    if (ch === _ESCAPE) {
+      state = "escape";
+      escapedState = "word";
+      return undefined;
+    }
+    if (_PUNCTUATION.includes(ch)) {
+      token = ch;
+      state = "punct";
+      return undefined;
+    }
+    if (_QUOTES.includes(ch)) {
+      state = "quote";
+      quoteChar = ch;
+      return undefined;
+    }
+    token = ch;
+    state = "word";
+    return undefined;
+  }
+
+  function onQuote(ch: string | null): string | null | undefined {
+    if (ch === null) {
+      throw new Error("No closing quotation");
+    }
+    if (ch === quoteChar) {
+      state = "word";
+      return undefined;
+    }
+    if (ch === _ESCAPE && _ESCAPED_QUOTES.includes(quoteChar)) {
+      escapedState = "quote";
+      escapedQuoteChar = quoteChar;
+      state = "escape";
+      return undefined;
+    }
+    token += ch;
+    return undefined;
+  }
+
+  function onEscape(ch: string | null): string | null | undefined {
+    if (ch === null) {
+      throw new Error("No escaped character");
+    }
+    if (escapedState === "quote") {
+      // In posix shells, only the quote itself or the escape character may be escaped
+      // within quotes; anything else keeps the backslash literally.
+      if (ch !== _ESCAPE && ch !== escapedQuoteChar) {
+        token += _ESCAPE;
+      }
+      token += ch;
+      state = "quote";
+      quoteChar = escapedQuoteChar;
+      return undefined;
+    }
+    token += ch;
+    state = "word";
+    return undefined;
+  }
+
+  function onPunct(ch: string | null): string | null | undefined {
+    if (ch === null) {
+      return token;
+    }
+    if (ch === _COMMENTER) {
+      pos = chars.length;
+      return token;
+    }
+    if (_WHITESPACE.includes(ch)) {
+      return token;
+    }
+    if (_PUNCTUATION.includes(ch)) {
+      token += ch;
+      return undefined;
+    }
+    pushback.push(ch);
+    return token;
+  }
+
+  function onWord(ch: string | null): string | null | undefined {
+    if (ch === null) {
+      return token;
+    }
+    if (ch === _COMMENTER) {
+      pos = chars.length;
+      return token;
+    }
+    if (_WHITESPACE.includes(ch)) {
+      return token;
+    }
+    if (_QUOTES.includes(ch)) {
+      state = "quote";
+      quoteChar = ch;
+      return undefined;
+    }
+    if (ch === _ESCAPE) {
+      state = "escape";
+      escapedState = "word";
+      return undefined;
+    }
+    if (_PUNCTUATION.includes(ch)) {
+      pushback.push(ch);
+      return token;
+    }
+    token += ch;
+    return undefined;
+  }
+
+  // Keyed by _LexState so readToken's dispatch loop is a lookup instead of a state-name
+  // if/else-if chain -- the chain form counts as its own nested branching and pushes readToken's
+  // cognitive complexity over the lint limit even with each handler's own complexity low.
+  const handlers: Record<_LexState, (ch: string | null) => string | null | undefined> = {
+    space: onSpace,
+    quote: onQuote,
+    escape: onEscape,
+    punct: onPunct,
+    word: onWord,
+  };
+
   function readToken(): string | null {
-    let token = "";
-    let state: _LexState = "space";
-    let quoteChar = "";
-    // What state resumes once the current escape is consumed, and (for "quote") which quote
-    // character it returns to -- mirrors shlex's escapedstate.
-    let escapedState: "word" | "quote" = "word";
-    let escapedQuoteChar = "";
+    token = "";
+    state = "space";
+    quoteChar = "";
+    escapedState = "word";
+    escapedQuoteChar = "";
 
     while (true) {
       const ch = nextChar();
-
-      if (state === "space") {
-        if (ch === null) {
-          return null;
-        }
-        if (_WHITESPACE.includes(ch)) {
-          continue;
-        }
-        if (ch === _COMMENTER) {
-          // A comment runs to the end of the current line. Nothing here separates commands by a
-          // real newline (that already became _NEWLINE, a punctuation character) or a real
-          // "line" at all once heredoc bodies are gone, so the comment consumes everything left.
-          pos = chars.length;
-          return null;
-        }
-        if (ch === _ESCAPE) {
-          state = "escape";
-          escapedState = "word";
-          continue;
-        }
-        if (_PUNCTUATION.includes(ch)) {
-          token = ch;
-          state = "punct";
-          continue;
-        }
-        if (_QUOTES.includes(ch)) {
-          state = "quote";
-          quoteChar = ch;
-          continue;
-        }
-        token = ch;
-        state = "word";
-        continue;
+      const result = handlers[state](ch);
+      if (result !== undefined) {
+        return result;
       }
-
-      if (state === "quote") {
-        if (ch === null) {
-          throw new Error("No closing quotation");
-        }
-        if (ch === quoteChar) {
-          state = "word";
-          continue;
-        }
-        if (ch === _ESCAPE && _ESCAPED_QUOTES.includes(quoteChar)) {
-          escapedState = "quote";
-          escapedQuoteChar = quoteChar;
-          state = "escape";
-          continue;
-        }
-        token += ch;
-        continue;
-      }
-
-      if (state === "escape") {
-        if (ch === null) {
-          throw new Error("No escaped character");
-        }
-        if (escapedState === "quote") {
-          // In posix shells, only the quote itself or the escape character may be escaped
-          // within quotes; anything else keeps the backslash literally.
-          if (ch !== _ESCAPE && ch !== escapedQuoteChar) {
-            token += _ESCAPE;
-          }
-          token += ch;
-          state = "quote";
-          quoteChar = escapedQuoteChar;
-          continue;
-        }
-        token += ch;
-        state = "word";
-        continue;
-      }
-
-      if (state === "punct") {
-        if (ch === null) {
-          return token;
-        }
-        if (ch === _COMMENTER) {
-          pos = chars.length;
-          return token;
-        }
-        if (_WHITESPACE.includes(ch)) {
-          return token;
-        }
-        if (_PUNCTUATION.includes(ch)) {
-          token += ch;
-          continue;
-        }
-        pushback.push(ch);
-        return token;
-      }
-
-      // state === "word"
-      if (ch === null) {
-        return token;
-      }
-      if (ch === _COMMENTER) {
-        pos = chars.length;
-        return token;
-      }
-      if (_WHITESPACE.includes(ch)) {
-        return token;
-      }
-      if (_QUOTES.includes(ch)) {
-        state = "quote";
-        quoteChar = ch;
-        continue;
-      }
-      if (ch === _ESCAPE) {
-        state = "escape";
-        escapedState = "word";
-        continue;
-      }
-      if (_PUNCTUATION.includes(ch)) {
-        pushback.push(ch);
-        return token;
-      }
-      token += ch;
     }
   }
 
@@ -395,8 +425,19 @@ export function* commands_with_env(text: string): Generator<[Record<string, stri
   }
 }
 
-/** Emit the real command a token list runs, plus any it runs through -exec. */
-function* _resolve(tokens: readonly string[]): Generator<[Record<string, string>, string[]]> {
+/** How many tokens right after a wrapper's own name are the wrapper's flags -- a valued flag
+ * (VALUED_WRAPPER_FLAGS) also claims the token carrying its value. */
+function _wrapperFlagSpan(tokens: readonly string[], start: number): number {
+  let index = start;
+  while (index < tokens.length && tokens[index].startsWith("-")) {
+    index += VALUED_WRAPPER_FLAGS.has(tokens[index]) ? 2 : 1;
+  }
+  return index - start;
+}
+
+/** Consume the assignments, wrapper tokens, and exec flags ahead of the real command, returning
+ * the env collected and the index of the command token (tokens.length when none remains). */
+function _skipToCommand(tokens: readonly string[]): [Record<string, string>, number] {
   const env: Record<string, string> = {};
   let index = 0;
   while (index < tokens.length) {
@@ -406,10 +447,7 @@ function* _resolve(tokens: readonly string[]): Generator<[Record<string, string>
       env[token.slice(0, split)] = token.slice(split + 1);
       index += 1;
     } else if (WRAPPERS.has(basename(token))) {
-      index += 1;
-      while (index < tokens.length && tokens[index].startsWith("-")) {
-        index += VALUED_WRAPPER_FLAGS.has(tokens[index]) ? 2 : 1;
-      }
+      index += 1 + _wrapperFlagSpan(tokens, index + 1);
     } else if (EXEC_FLAGS.has(token)) {
       // The lexer unescapes the `\;` closing a -exec, so the separator split hands the next one
       // over headed by the flag instead of by the command it runs.
@@ -418,18 +456,28 @@ function* _resolve(tokens: readonly string[]): Generator<[Record<string, string>
       break;
     }
   }
-  if (index >= tokens.length) {
-    return;
-  }
-  const resolved = [basename(tokens[index]), ...tokens.slice(index + 1)];
-  yield [env, resolved];
+  return [env, index];
+}
 
+/** Whatever a resolved command runs through -exec, recursively resolved. */
+function* _execTail(resolved: readonly string[]): Generator<[Record<string, string>, string[]]> {
   for (let position = 0; position < resolved.length; position += 1) {
     if (EXEC_FLAGS.has(resolved[position]) && position + 1 < resolved.length) {
       yield* _resolve(resolved.slice(position + 1));
       return;
     }
   }
+}
+
+/** Emit the real command a token list runs, plus any it runs through -exec. */
+function* _resolve(tokens: readonly string[]): Generator<[Record<string, string>, string[]]> {
+  const [env, index] = _skipToCommand(tokens);
+  if (index >= tokens.length) {
+    return;
+  }
+  const resolved = [basename(tokens[index]), ...tokens.slice(index + 1)];
+  yield [env, resolved];
+  yield* _execTail(resolved);
 }
 
 /** Each command as a token list, its first entry the executable name.

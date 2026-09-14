@@ -117,3 +117,45 @@ test("T-010 .oxlintrc.json keeps max-depth in the workflows override at a level 
   assert.notEqual(level, "off");
   assert.ok(limit <= 3, `max-depth limit ${limit} exceeds 3`);
 });
+
+// The paths the override must keep naming, and the ignore list as committed. `ignorePatterns`
+// wins over an override, so an entry added there drops the workflow scripts out of every rule
+// without touching the override T-010 reads; the list is compared as content, not as a count.
+const WORKFLOW_SCRIPT_GLOBS = ["workflows/*.js", ".ja/workflows/*.js"];
+const PLANNED_IGNORE_PATTERNS = ["plugins/**", "node_modules/**", "skills/*/test/cases/**"];
+
+function oxlintHoles(config) {
+  const holes = [];
+  if (!(config.ignorePatterns ?? []).every((p) => PLANNED_IGNORE_PATTERNS.includes(p))) {
+    holes.push("ignorePatterns carries an entry beyond the planned three");
+  }
+  const override = findWorkflowsOverride(config);
+  if (!override || !WORKFLOW_SCRIPT_GLOBS.every((g) => override.files.includes(g))) {
+    holes.push("the workflows override no longer names both workflow script globs");
+  }
+  return holes;
+}
+
+test("T-021 .oxlintrc.json's ignorePatterns and workflows override keep the workflow scripts inside max-depth's reach", () => {
+  assert.deepEqual(oxlintHoles(oxlintConfig), []);
+});
+
+// T-022's positive controls, one per hole, applied to a copy of the committed config.
+const OXLINT_MUTATIONS = [
+  [
+    "ignorePatterns carries an entry beyond the planned three",
+    (c) => c.ignorePatterns.push("workflows/**"),
+  ],
+  [
+    "the workflows override no longer names both workflow script globs",
+    (c) => (findWorkflowsOverride(c).files = ["workflows/*.js"]),
+  ],
+];
+
+test("T-022 each .oxlintrc.json mutation that pulls the workflow scripts out of reach is named by the config check", () => {
+  for (const [hole, mutate] of OXLINT_MUTATIONS) {
+    const copy = structuredClone(oxlintConfig);
+    mutate(copy);
+    assert.deepEqual(oxlintHoles(copy), [hole]);
+  }
+});

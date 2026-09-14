@@ -74,6 +74,24 @@ function placeholdersLeft(text: string): string[] {
   return found;
 }
 
+/** Indicators: a check per label present in the table, a warning per label missing, or the
+ * omitted note when the section itself is absent. */
+function checkIndicators(text: string, results: Results): void {
+  const indicators = sectionBody(text, "Indicators");
+  if (indicators === null) {
+    results.checks.push("indicators=omitted");
+    return;
+  }
+  for (const label of INDICATORS) {
+    const found = new RegExp(`^\\|\\s*${escapeRegExp(label)}\\s*\\|`, "m").test(indicators);
+    if (found) {
+      results.checks.push(`indicator:${label}=ok`);
+    } else {
+      results.warnings.push(`missing_indicator:${label}`);
+    }
+  }
+}
+
 /** Prints the report and returns the exit code: 1 when it carries an error, 0 otherwise. */
 function report(target: string, state: string, results: Results): number {
   const payload = {
@@ -127,19 +145,7 @@ export function main(argv: readonly string[]): number {
     results.checks.push("all_sections=unfilled");
   }
 
-  const indicators = sectionBody(text, "Indicators");
-  if (indicators === null) {
-    results.checks.push("indicators=omitted");
-  } else {
-    for (const label of INDICATORS) {
-      const found = new RegExp(`^\\|\\s*${escapeRegExp(label)}\\s*\\|`, "m").test(indicators);
-      if (found) {
-        results.checks.push(`indicator:${label}=ok`);
-      } else {
-        results.warnings.push(`missing_indicator:${label}`);
-      }
-    }
-  }
+  checkIndicators(text, results);
 
   return report(target, behaviorUnfilled ? "empty" : "ok", results);
 }

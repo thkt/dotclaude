@@ -287,7 +287,61 @@ function isExistingDirectory(path: string): boolean {
   }
 }
 
-export function parseArgs(argv: string[]): ValidatedOptions {
+// consumeFlags の flag 1 個あたり 1 回のみ許可するガード。下の boolean-flag 分岐と
+// single-value-flag 分岐の両方から共有される。
+function assertUnseen(seen: Set<string>, flag: string): void {
+  if (seen.has(flag)) {
+    throw new UsageError(`${flag} may be provided only once`);
+  }
+}
+
+// consumeFlags の flag ごとの代入部分。flag の存在確認・重複確認・非空値確認をすべて
+// 通過した後にここへ達する。差し替え元の inline switch と同じ代入、同じ --planned-test
+// の形チェックを行う。
+function applyFlagValue(options: ParsedOptions, flag: string, value: string): void {
+  switch (flag) {
+    case "--gate-id":
+      options.gate_id = value;
+      break;
+    case "--failure-route":
+      options.failure_route = value;
+      break;
+    case "--cwd":
+      options.cwd = value;
+      break;
+    case "--expect":
+      options.expect = value;
+      break;
+    case "--command":
+      options.command = value;
+      break;
+    case "--timeout-ms":
+      options.timeout_ms = positiveInt(value, flag);
+      break;
+    case "--tail-bytes":
+      // 0 は tail を一切残さない。relay に report の中のコマンド出力を見せてはいけない
+      // 呼び出し側のため。
+      options.tail_bytes = value.trim() === "0" ? 0 : positiveInt(value, flag);
+      break;
+    case "--require-output":
+      options.required_output.push(value);
+      break;
+    case "--forbid-output":
+      options.forbidden_output.push(value);
+      break;
+    case "--planned-test":
+      if (!value.includes(":")) {
+        throw new UsageError("--planned-test must be <test-id>:<test name>");
+      }
+      options.planned_tests.push(value);
+      break;
+    default:
+      throw new UsageError(`unknown argument: ${flag}`);
+  }
+}
+
+// argv を 1 flag ずつ読み、ParsedOptions を組み立てる。個々の flag の受理判定はここで行う。
+function consumeFlags(argv: string[]): ParsedOptions {
   const options: ParsedOptions = {
     gate_id: "gate",
     failure_route: "triage",
@@ -303,9 +357,7 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   while (index < argv.length) {
     const flag = argv[index];
     if (BOOLEAN_FLAGS.has(flag)) {
-      if (seen.has(flag)) {
-        throw new UsageError(`${flag} may be provided only once`);
-      }
+      assertUnseen(seen, flag);
       options.calibrate = true;
       seen.add(flag);
       index += 1;
@@ -318,55 +370,19 @@ export function parseArgs(argv: string[]): ValidatedOptions {
       throw new UsageError(`missing value for ${flag}`);
     }
     const value = argv[index + 1];
-    if (SINGLE_FLAGS.has(flag) && seen.has(flag)) {
-      throw new UsageError(`${flag} may be provided only once`);
-    }
+    if (SINGLE_FLAGS.has(flag)) assertUnseen(seen, flag);
     if (!value) {
       throw new UsageError(`${flag} must not be empty`);
     }
-    switch (flag) {
-      case "--gate-id":
-        options.gate_id = value;
-        break;
-      case "--failure-route":
-        options.failure_route = value;
-        break;
-      case "--cwd":
-        options.cwd = value;
-        break;
-      case "--expect":
-        options.expect = value;
-        break;
-      case "--command":
-        options.command = value;
-        break;
-      case "--timeout-ms":
-        options.timeout_ms = positiveInt(value, flag);
-        break;
-      case "--tail-bytes":
-        // 0 は tail を一切残さない。relay に report の中のコマンド出力を見せてはいけない
-        // 呼び出し側のため。
-        options.tail_bytes = value.trim() === "0" ? 0 : positiveInt(value, flag);
-        break;
-      case "--require-output":
-        options.required_output.push(value);
-        break;
-      case "--forbid-output":
-        options.forbidden_output.push(value);
-        break;
-      case "--planned-test":
-        if (!value.includes(":")) {
-          throw new UsageError("--planned-test must be <test-id>:<test name>");
-        }
-        options.planned_tests.push(value);
-        break;
-      default:
-        throw new UsageError(`unknown argument: ${flag}`);
-    }
+    applyFlagValue(options, flag, value);
     seen.add(flag);
     index += 2;
   }
+  return options;
+}
 
+// ループ後、個々の flag 値の形を検証する: --gate-id、--failure-route、--cwd。
+function validateShape(options: ParsedOptions): void {
   if (!GATE_ID_PATTERN.test(options.gate_id) || options.gate_id.length > 128) {
     throw new UsageError("--gate-id has an invalid shape");
   }
@@ -385,6 +401,11 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   if (!isExistingDirectory(options.cwd)) {
     throw new UsageError("--cwd must be an existing directory");
   }
+}
+
+// --calibrate と --planned-test の相互作用を解決し、--expect と --command を検証して
+// ValidatedOptions を返す。
+function resolveCalibration(options: ParsedOptions): ValidatedOptions {
   if (options.calibrate) {
     if (options.expect !== undefined && options.expect !== "fail") {
       throw new UsageError("--calibrate runs the Red command, so --expect must be fail");
@@ -407,10 +428,16 @@ export function parseArgs(argv: string[]): ValidatedOptions {
   }
   return {
     ...options,
-    cwd: options.cwd,
+    cwd: options.cwd as string,
     expect: options.expect,
     command: options.command,
   };
+}
+
+export function parseArgs(argv: string[]): ValidatedOptions {
+  const options = consumeFlags(argv);
+  validateShape(options);
+  return resolveCalibration(options);
 }
 
 // export しない: この 1 ファイルの外に読み手が無い (workflows/_lib/tests/gate-exports.test.ts)。
@@ -477,6 +504,46 @@ function observeCommand(options: ValidatedOptions): CommandObservation {
   };
 }
 
+interface VerdictOutcome {
+  verdict: string;
+  exitCode: number;
+  reasonCodes: string[];
+}
+
+// 観測条件と checks の結果から verdict・exitCode・reason_codes を決定する。blocked 判定は
+// checks を参照する前に確定する。
+function determineVerdict(
+  timedOut: boolean,
+  executionError: string | null,
+  signalName: string | null,
+  expect: "pass" | "fail",
+  matchesExpectedExit: boolean,
+  checks: CheckResult[],
+): VerdictOutcome {
+  if (timedOut) {
+    return { verdict: "blocked", exitCode: 124, reasonCodes: ["timeout"] };
+  }
+  if (executionError !== null) {
+    return { verdict: "blocked", exitCode: 2, reasonCodes: ["execution_error"] };
+  }
+  if (signalName !== null) {
+    return { verdict: "blocked", exitCode: 2, reasonCodes: ["signal"] };
+  }
+  const reasonCodes: string[] = [];
+  if (!matchesExpectedExit) {
+    reasonCodes.push(expect === "fail" ? "unexpected_pass" : "unexpected_failure");
+  }
+  if (checks.some((check) => check.kind === "output_includes" && !check.passed)) {
+    reasonCodes.push("missing_required_output");
+  }
+  if (checks.some((check) => check.kind === "output_excludes" && !check.passed)) {
+    reasonCodes.push("forbidden_output");
+  }
+  const verdict = reasonCodes.length > 0 ? "fail" : "pass";
+  const exitCode = reasonCodes.length > 0 ? 1 : 0;
+  return { verdict, exitCode, reasonCodes };
+}
+
 /** 観測から判定を導出する。純粋なので、テストは条件を作り出すのではなく記述する
  * ことで各分岐に到達できる。 */
 export function classifyObservation(
@@ -518,34 +585,17 @@ export function classifyObservation(
     checks.push({ kind: "output_excludes", value, passed: !combined.includes(value) });
   }
 
-  const reasonCodes: string[] = [];
-  let verdict: string;
-  let exitCode: number;
-  if (timedOut) {
-    verdict = "blocked";
-    exitCode = 124;
-    reasonCodes.push("timeout");
-  } else if (executionError !== null) {
-    verdict = "blocked";
-    exitCode = 2;
-    reasonCodes.push("execution_error");
-  } else if (signalName !== null) {
-    verdict = "blocked";
-    exitCode = 2;
-    reasonCodes.push("signal");
-  } else {
-    if (!matchesExpectedExit) {
-      reasonCodes.push(expect === "fail" ? "unexpected_pass" : "unexpected_failure");
-    }
-    if (checks.some((check) => check.kind === "output_includes" && !check.passed)) {
-      reasonCodes.push("missing_required_output");
-    }
-    if (checks.some((check) => check.kind === "output_excludes" && !check.passed)) {
-      reasonCodes.push("forbidden_output");
-    }
-    verdict = reasonCodes.length > 0 ? "fail" : "pass";
-    exitCode = reasonCodes.length > 0 ? 1 : 0;
-  }
+  const verdictOutcome = determineVerdict(
+    timedOut,
+    executionError,
+    signalName,
+    expect,
+    matchesExpectedExit,
+    checks,
+  );
+  let verdict = verdictOutcome.verdict;
+  let exitCode = verdictOutcome.exitCode;
+  const reasonCodes = verdictOutcome.reasonCodes;
 
   const defaultClassification = expect === "fail" ? "expected_failure" : "pass";
   let classification = reasonCodes.length > 0 ? reasonCodes[0] : defaultClassification;

@@ -58,18 +58,10 @@ interface WindowCounts {
   skipped_lines: number;
 }
 
-/** Re-read `path` (the same path this run just appended to) and count plan-quality stops
- * inside the trailing window of started runs. Returns null when the file cannot even be read
- * back (permissions, removed mid-run); the caller then omits these keys from stdout rather
- * than failing the run over a count that is advisory only. */
-export function countPlanQualityStops(path: string): WindowCounts | null {
-  let text: string;
-  try {
-    text = readFileSync(path, "utf8");
-  } catch {
-    return null;
-  }
-
+/** Splits `text` into JSON-object rows, in append order. A blank line is skipped outright; a
+ * line that fails to parse, or that parses to something other than a plain object (an array, a
+ * scalar, null), raises `skippedLines` instead of producing a row. */
+function parseRows(text: string): { rows: Record<string, unknown>[]; skippedLines: number } {
   const rows: Record<string, unknown>[] = [];
   let skippedLines = 0;
   for (const line of text.split("\n")) {
@@ -87,6 +79,22 @@ export function countPlanQualityStops(path: string): WindowCounts | null {
     }
     rows.push(parsed as Record<string, unknown>);
   }
+  return { rows, skippedLines };
+}
+
+/** Re-read `path` (the same path this run just appended to) and count plan-quality stops
+ * inside the trailing window of started runs. Returns null when the file cannot even be read
+ * back (permissions, removed mid-run); the caller then omits these keys from stdout rather
+ * than failing the run over a count that is advisory only. */
+export function countPlanQualityStops(path: string): WindowCounts | null {
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch {
+    return null;
+  }
+
+  const { rows, skippedLines } = parseRows(text);
 
   // A run_id enters the window once, when its started row is seen, so a later stop for
   // the same run_id can still land inside a window whose started row aged it out only

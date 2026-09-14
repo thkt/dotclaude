@@ -43,6 +43,12 @@ export const RECOMMENDED_SECTIONS = ["Reassessment Triggers"] as const;
 export const STATUS_VALUES: RegExp =
   /^(?:proposed|accepted|rejected|deprecated|superseded by DR-\d{4})$/;
 
+interface Results {
+  errors: string[];
+  warnings: string[];
+  checks: string[];
+}
+
 /** 退役した Python 版 validate-dr の count_options: Considered Options 見出しの直下にある
  * bullet または番号付き項目。同じ深さ以下の見出しが来たらそこで数え終える。より深い見出
  * しは Considered Options の subsection なので、その中の bullet も引き続き数える。 */
@@ -111,22 +117,9 @@ function isFile(path: string): boolean {
   }
 }
 
-/** 退役した Python 版 validate-dr の main: argv[0] を dr-file の path として読み、検証結果
- * の JSON (indent 2) を出力する。exit 1 になるのは results.errors が空でないときだけ。 */
-export function main(argv: string[]): number {
-  const drFile = argv[0] ?? "";
-  if (!isFile(drFile)) {
-    fail(`Error: file not found: ${drFile}`);
-  }
-
-  const text = readFileSync(drFile, "utf8");
-  const lines = text.split("\n");
-  const results: { errors: string[]; warnings: string[]; checks: string[] } = {
-    errors: [],
-    warnings: [],
-    checks: [],
-  };
-
+/** REQUIRED_SECTIONS の次に RECOMMENDED_SECTIONS を検査する: 見出しがあれば checks に、
+ * 必須の見出しが無ければ errors に、recommended の見出しが無ければ warnings に push する。 */
+function checkSections(text: string, results: Results): void {
   for (const section of [...REQUIRED_SECTIONS, ...RECOMMENDED_SECTIONS]) {
     const escaped = section.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const found = new RegExp(`^#{2,3} ${escaped}\\s*$`, "m").test(text);
@@ -138,8 +131,10 @@ export function main(argv: string[]): number {
       results.warnings.push(`missing_section:${section} (recommended)`);
     }
   }
+}
 
-  // MADR v4 frontmatter: status and date are optional but recommended
+/** MADR v4 の frontmatter: status と date は optional だが recommended。 */
+function checkFrontmatter(text: string, results: Results): void {
   const [frontmatter] = splitFrontmatter(text);
   if (frontmatter.length > 0) {
     results.checks.push("frontmatter=present");
@@ -161,7 +156,11 @@ export function main(argv: string[]): number {
         " for status/date/decision-makers)",
     );
   }
+}
 
+/** countOptions の結果を 2+/1/0 のしきい値と照らす: 2 個以上なら checks、ちょうど 1 個なら
+ * warnings、0 個なら errors。 */
+function checkOptions(lines: readonly string[], results: Results): void {
   const optionsCount = countOptions(lines);
   if (optionsCount >= 2) {
     results.checks.push(`options_count=${optionsCount}`);
@@ -170,6 +169,23 @@ export function main(argv: string[]): number {
   } else {
     results.errors.push("options_count=0");
   }
+}
+
+/** 退役した Python 版 validate-dr の main: argv[0] を dr-file の path として読み、検証結果
+ * の JSON (indent 2) を出力する。exit 1 になるのは results.errors が空でないときだけ。 */
+export function main(argv: string[]): number {
+  const drFile = argv[0] ?? "";
+  if (!isFile(drFile)) {
+    fail(`Error: file not found: ${drFile}`);
+  }
+
+  const text = readFileSync(drFile, "utf8");
+  const lines = text.split("\n");
+  const results: Results = { errors: [], warnings: [], checks: [] };
+
+  checkSections(text, results);
+  checkFrontmatter(text, results);
+  checkOptions(lines, results);
 
   if (lines.some((line) => line.startsWith("# "))) {
     results.checks.push("title_heading=ok");

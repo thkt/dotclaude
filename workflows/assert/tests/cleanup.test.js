@@ -59,27 +59,33 @@ const worktreeList = (repo) =>
   spawnSync("git", ["-C", repo, "worktree", "list"], { encoding: "utf8" }).stdout;
 
 // Reused by both tests, so a stub that swept more than the one worktree it was told about would
-// show up the same way in either test.
-const cleanupCapableAgentStub = (repo, worktreePathA) => (prompt, opts) => {
-  const label = opts && opts.label;
-  if (label === "bootstrap") return { ...bootOk, worktree_path: worktreePathA, scope_files: [] };
-  if (label === "test-exec") return { outcome: "no-runner" };
-  if (label === "adversarial") return { ran: false, notes: "stub" };
-  if (label === "codex-review") return { ran: false, findings: [] };
-  if (label === "synthesize") return { issues: [], root_causes: [], report: "stub" };
-  if (label === "cleanup") {
-    const match = /\.claude\/worktrees\/assert-[A-Za-z0-9._-]+/.exec(prompt);
-    // No concrete path in the prompt (the pre-fix text names only the unresolved
-    // "$CLAUDE_SESSION_ID"): nothing for this stub to act on, so it does nothing -- and its own
-    // return to the script is nothing either way, per this unit's T-439.
-    if (!match) return undefined;
-    const path = match[0];
-    const branch = path.split("/").pop();
-    spawnSync("git", ["-C", repo, "worktree", "remove", path, "--force"], { encoding: "utf8" });
-    spawnSync("git", ["-C", repo, "branch", "-D", branch], { encoding: "utf8" });
-    return undefined;
-  }
-  return undefined;
+// show up the same way in either test. Responders are looked up by label; an unknown label
+// answers undefined.
+const cleanupCapableAgentStub = (repo, worktreePathA) => {
+  const responders = {
+    bootstrap: () => ({ ...bootOk, worktree_path: worktreePathA, scope_files: [] }),
+    "test-exec": () => ({ outcome: "no-runner" }),
+    adversarial: () => ({ ran: false, notes: "stub" }),
+    "codex-review": () => ({ ran: false, findings: [] }),
+    synthesize: () => ({ issues: [], root_causes: [], report: "stub" }),
+    cleanup: (prompt) => {
+      const match = /\.claude\/worktrees\/assert-[A-Za-z0-9._-]+/.exec(prompt);
+      // No concrete path in the prompt (the pre-fix text names only the unresolved
+      // "$CLAUDE_SESSION_ID"): nothing for this stub to act on, so it does nothing -- and its
+      // own return to the script is nothing either way, per this unit's T-439.
+      if (!match) return undefined;
+      const path = match[0];
+      const branch = path.split("/").pop();
+      spawnSync("git", ["-C", repo, "worktree", "remove", path, "--force"], { encoding: "utf8" });
+      spawnSync("git", ["-C", repo, "branch", "-D", branch], { encoding: "utf8" });
+      return undefined;
+    },
+  };
+  return (prompt, opts) => {
+    const label = opts && opts.label;
+    const respond = Object.hasOwn(responders, label) ? responders[label] : undefined;
+    return respond ? respond(prompt) : undefined;
+  };
 };
 
 test("T-439 a run that creates a worktree removes it from the git worktree list even when the agent step returns nothing", async () => {

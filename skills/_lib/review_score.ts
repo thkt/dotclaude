@@ -90,6 +90,86 @@ function ratio(hit: number, total: number): number | null {
   return total === 0 ? null : round3(hit / total);
 }
 
+/** Every verdict `results` carries, tallied in first-occurrence order (a missing verdict
+ * counts under the `null` key). Map insertion order mirrors Python's `dict.fromkeys(...)`,
+ * so `score` can filter these keys down to the ones VERDICTS does not name. */
+function tallyVerdicts(results: readonly Outcome[]): Map<string | null, number> {
+  const counted = new Map<string | null, number>();
+  for (const r of results) {
+    const verdict = r.verdict ?? null;
+    counted.set(verdict, (counted.get(verdict) ?? 0) + 1);
+  }
+  return counted;
+}
+
+/** The verdicts `counts` carries that VERDICTS does not name, including the `null` key a
+ * missing verdict counts under. */
+function collectUnknownVerdicts(counts: Map<string | null, number>): (string | null)[] {
+  const unknown: (string | null)[] = [];
+  for (const verdict of counts.keys()) {
+    if (verdict === null || !(verdict in VERDICTS)) unknown.push(verdict);
+  }
+  return unknown;
+}
+
+// A case with no verdict counts as a miss rather than dropping out. Dropping it would raise
+// recall by shrinking the denominator, which is the direction that hides a regression.
+function verdictOf(
+  entry: Case,
+  verdictByFile: Map<string | undefined, string | null | undefined>,
+): string {
+  const fallback = entry.expected === "detected" ? "miss" : "pass";
+  return verdictByFile.get(entry.file) || fallback;
+}
+
+function countsOf(
+  flagged: readonly Case[],
+  clean: readonly Case[],
+  verdictByFile: Map<string | undefined, string | null | undefined>,
+): Counts {
+  return {
+    flagged: flagged.length,
+    clean: clean.length,
+    hit: flagged.filter((e) => verdictOf(e, verdictByFile) === "hit").length,
+    below_severity: flagged.filter((e) => verdictOf(e, verdictByFile) === "below_severity").length,
+    other_finding: flagged.filter((e) => verdictOf(e, verdictByFile) === "other_finding").length,
+    miss: flagged.filter((e) => verdictOf(e, verdictByFile) === "miss").length,
+    false_positive: clean.filter((e) => verdictOf(e, verdictByFile) === "false_positive").length,
+    below_min_findings: flagged.filter((e) => verdictOf(e, verdictByFile) === "below_min_findings")
+      .length,
+  };
+}
+
+function byCategoryOf(
+  flagged: readonly Case[],
+  verdictByFile: Map<string | undefined, string | null | undefined>,
+): Record<string, Category> {
+  const byCategory: Record<string, Category> = {};
+  for (const entry of flagged) {
+    const key = entry.category || "uncategorized";
+    const bucket = (byCategory[key] ??= { total: 0, hit: 0, recall_strict: null });
+    bucket.total += 1;
+    if (verdictOf(entry, verdictByFile) === "hit") bucket.hit += 1;
+  }
+  for (const bucket of Object.values(byCategory)) {
+    bucket.recall_strict = ratio(bucket.hit, bucket.total);
+  }
+  return byCategory;
+}
+
+// Not `baseline == null`: earlier logs wrote a metric as prose, and subtracting one took the
+// whole scoring down.
+function diffOf(metrics: Metrics, previous?: Previous | null): Metrics | null {
+  if (previous == null) return null;
+  const before = previous.metrics ?? {};
+  const diff: Metrics = {};
+  for (const [key, value] of Object.entries(metrics)) {
+    const baseline = before[key];
+    diff[key] = value === null || typeof baseline !== "number" ? null : round3(value - baseline);
+  }
+  return diff;
+}
+
 export function score(
   expected: readonly Case[],
   results: readonly Outcome[],
@@ -100,37 +180,12 @@ export function score(
     verdictByFile.set(r.file, r.verdict);
   }
 
-  // dict.fromkeys(...) in Python keeps first-occurrence order while dropping duplicates; the
-  // Set below does the same before the filter to unknown-only runs over it.
-  const seenVerdicts = new Set<string | null>();
-  const unknown: (string | null)[] = [];
-  for (const r of results) {
-    const verdict = r.verdict ?? null;
-    if (seenVerdicts.has(verdict)) continue;
-    seenVerdicts.add(verdict);
-    if (verdict === null || !(verdict in VERDICTS)) unknown.push(verdict);
-  }
+  const unknown = collectUnknownVerdicts(tallyVerdicts(results));
 
   const flagged = expected.filter((e) => e.expected === "detected");
   const clean = expected.filter((e) => e.expected === "no_finding");
 
-  // A case with no verdict counts as a miss rather than dropping out. Dropping it would raise
-  // recall by shrinking the denominator, which is the direction that hides a regression.
-  function verdictOf(entry: Case): string {
-    const fallback = entry.expected === "detected" ? "miss" : "pass";
-    return verdictByFile.get(entry.file) || fallback;
-  }
-
-  const counts: Counts = {
-    flagged: flagged.length,
-    clean: clean.length,
-    hit: flagged.filter((e) => verdictOf(e) === "hit").length,
-    below_severity: flagged.filter((e) => verdictOf(e) === "below_severity").length,
-    other_finding: flagged.filter((e) => verdictOf(e) === "other_finding").length,
-    miss: flagged.filter((e) => verdictOf(e) === "miss").length,
-    false_positive: clean.filter((e) => verdictOf(e) === "false_positive").length,
-    below_min_findings: flagged.filter((e) => verdictOf(e) === "below_min_findings").length,
-  };
+  const counts = countsOf(flagged, clean, verdictByFile);
 
   const metrics: Metrics = {
     recall_detection: ratio(
@@ -142,28 +197,8 @@ export function score(
     fp_rate: ratio(counts.false_positive, counts.clean),
   };
 
-  const byCategory: Record<string, Category> = {};
-  for (const entry of flagged) {
-    const key = entry.category || "uncategorized";
-    const bucket = (byCategory[key] ??= { total: 0, hit: 0, recall_strict: null });
-    bucket.total += 1;
-    if (verdictOf(entry) === "hit") bucket.hit += 1;
-  }
-  for (const bucket of Object.values(byCategory)) {
-    bucket.recall_strict = ratio(bucket.hit, bucket.total);
-  }
-
-  let diff: Metrics | null = null;
-  if (previous != null) {
-    const before = previous.metrics ?? {};
-    diff = {};
-    for (const [key, value] of Object.entries(metrics)) {
-      const baseline = before[key];
-      // Not `baseline == null`: earlier logs wrote a metric as prose, and subtracting one
-      // took the whole scoring down.
-      diff[key] = value === null || typeof baseline !== "number" ? null : round3(value - baseline);
-    }
-  }
+  const byCategory = byCategoryOf(flagged, verdictByFile);
+  const diff = diffOf(metrics, previous);
 
   return { counts, metrics, byCategory, diff, unknownVerdicts: unknown };
 }
@@ -191,7 +226,8 @@ export function main(argv: string[]): number {
     rows as Outcome[],
     argv.length > 2 ? (load(argv[2]) as Previous) : null,
   );
-  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify(report, null, 2)}
+`);
   return report.unknownVerdicts.length > 0 ? 1 : 0;
 }
 

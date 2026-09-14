@@ -17,6 +17,7 @@ import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { run } from "../../_lib/tests/_hook-harness.ts";
+import { hookCommands } from "../../_lib/tests/_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -67,36 +68,6 @@ test("T-328 no tracked file outside the historical directories names issue_body_
   );
 });
 
-/** The `command` string of every hook settings.json's PreToolUse array registers under the
- * "Bash" matcher. Mirrors pre-bash-hooks-retirement.test.ts's own preToolUseBashCommands. */
-function preToolUseBashCommands(settings: unknown): string[] {
-  const hooksNode =
-    settings !== null && typeof settings === "object"
-      ? (settings as Record<string, unknown>).hooks
-      : undefined;
-  const preToolUse =
-    hooksNode !== null && typeof hooksNode === "object"
-      ? (hooksNode as Record<string, unknown>).PreToolUse
-      : undefined;
-  const commands: string[] = [];
-  if (!Array.isArray(preToolUse)) return commands;
-  for (const group of preToolUse) {
-    if (group === null || typeof group !== "object") continue;
-    const groupRecord = group as Record<string, unknown>;
-    if (groupRecord.matcher !== "Bash") continue;
-    const groupHooks = groupRecord.hooks;
-    if (!Array.isArray(groupHooks)) continue;
-    for (const hook of groupHooks) {
-      const command =
-        hook !== null && typeof hook === "object"
-          ? (hook as Record<string, unknown>).command
-          : undefined;
-      if (typeof command === "string") commands.push(command);
-    }
-  }
-  return commands;
-}
-
 /** The whitespace-delimited token inside `command` that names `stem`, or undefined when no
  * PreToolUse Bash command registers that stem at all. Mirrors pre-bash-hooks-retirement.test.ts's
  * own commandNaming. */
@@ -130,7 +101,7 @@ function contextOf(stdout: string): string {
 
 test("T-327 feeding the hook entry a gh issue close payload for this repository returns the issue-close page names, driven through the real finder", () => {
   const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
-  const commands = preToolUseBashCommands(settings);
+  const commands = hookCommands(settings, "PreToolUse", "Bash");
   const command = commandNaming(commands, "wiki_scene");
   assert.ok(
     command,

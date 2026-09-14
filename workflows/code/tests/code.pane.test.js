@@ -50,25 +50,33 @@ const twoPlan = {
 // Fails loudly on any label this scenario should never reach, instead of letting a stray
 // call return undefined and mask a wiring mistake as a pass. coderStarted: false reproduces
 // the second pane's `agent start` failing (agent_not_ready) after the first pane's split /
-// start already succeeded.
-const paneStub =
-  ({ testerPaneId = "pane-tester-1", coderPaneId = "pane-coder-1", coderStarted = true } = {}) =>
-  (prompt, opts) => {
-    const label = opts.label ?? "";
-    if (label === "herdr-check") return { herdr_available: true, notes: "" };
-    if (label === "pane-start:tester") return { pane_id: testerPaneId, started: true, notes: "" };
-    if (label === "pane-start:coder")
-      return coderStarted
+// start already succeeded. Responders are looked up by label; the per-unit red:/green: labels
+// match on their prefix.
+const paneStub = ({
+  testerPaneId = "pane-tester-1",
+  coderPaneId = "pane-coder-1",
+  coderStarted = true,
+} = {}) => {
+  const responders = {
+    "herdr-check": () => ({ herdr_available: true, notes: "" }),
+    "pane-start:tester": () => ({ pane_id: testerPaneId, started: true, notes: "" }),
+    "pane-start:coder": () =>
+      coderStarted
         ? { pane_id: coderPaneId, started: true, notes: "" }
-        : { pane_id: "", started: false, notes: "agent start failed: agent_not_ready" };
-    if (label === "pane-close:tester") return { closed: true, notes: "" };
-    if (label === "pane-close:coder") return { closed: true, notes: "" };
-    if (label.startsWith("red:"))
-      return { red_confirmed: true, test_files: ["t.test.js"], notes: "", evidence: [] };
-    if (label.startsWith("green:")) return { green: true, notes: "", deferred: [] };
-    if (label === "verify") return { tests_pass: true, gates_pass: true, output_tail: "" };
-    throw new Error(`unexpected label: ${label}`);
+        : { pane_id: "", started: false, notes: "agent start failed: agent_not_ready" },
+    "pane-close:tester": () => ({ closed: true, notes: "" }),
+    "pane-close:coder": () => ({ closed: true, notes: "" }),
+    "red:": () => ({ red_confirmed: true, test_files: ["t.test.js"], notes: "", evidence: [] }),
+    "green:": () => ({ green: true, notes: "", deferred: [] }),
+    verify: () => ({ tests_pass: true, gates_pass: true, output_tail: "" }),
   };
+  return (prompt, opts) => {
+    const label = opts.label ?? "";
+    const key = Object.hasOwn(responders, label) ? label : `${label.split(":")[0]}:`;
+    if (!Object.hasOwn(responders, key)) throw new Error(`unexpected label: ${label}`);
+    return responders[key]();
+  };
+};
 
 test("T-006 codex-herdr opens two panes, tester and coder", async () => {
   const { calls } = await runWorkflow(codeJs, {
