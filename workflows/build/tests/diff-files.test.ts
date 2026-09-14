@@ -64,6 +64,23 @@ const FIXTURES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "diff-files-cases.json"), "utf8"),
 ) as DiffFilesFixtureCase[];
 
+/** Applies one `setup` step to `repo`: writes a file, or runs a git subcommand and throws when
+ * that subcommand fails. Returns whether this step was a commit, so the caller can tell whether
+ * HEAD now has a root commit to read the base sha back from. */
+function applyStep(repo: string, step: SetupStep): boolean {
+  if (step.type === "write") {
+    const target = join(repo, step.path);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, step.content);
+    return false;
+  }
+  const result = spawnSync("git", ["-C", repo, ...step.args], { encoding: "utf8" });
+  if (result.status !== 0) {
+    throw new Error(`setup step \`git ${step.args.join(" ")}\` failed: ${result.stderr}`);
+  }
+  return step.args[0] === "commit";
+}
+
 /** Replays a fixture case's `setup` into a fresh git repository, the way
  * workflows/build/tests/diff_files_test.py's setUp + per-test setup built the repos the
  * frozen fixture recorded: a fixed committer identity, then each step in order. Runs `fn`
@@ -91,17 +108,7 @@ function buildRepo<T>(
 
     let committed = false;
     for (const step of steps) {
-      if (step.type === "write") {
-        const target = join(repo, step.path);
-        mkdirSync(dirname(target), { recursive: true });
-        writeFileSync(target, step.content);
-      } else {
-        const result = spawnSync("git", ["-C", repo, ...step.args], { encoding: "utf8" });
-        if (result.status !== 0) {
-          throw new Error(`setup step \`git ${step.args.join(" ")}\` failed: ${result.stderr}`);
-        }
-        if (step.args[0] === "commit") committed = true;
-      }
+      if (applyStep(repo, step)) committed = true;
     }
 
     const baseSha = committed

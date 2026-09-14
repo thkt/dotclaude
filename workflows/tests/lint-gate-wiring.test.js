@@ -18,16 +18,23 @@ const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
 // Exit code of `bin args` run from the repository root. A warn-level rule leaves both linters at
 // exit 0, so a non-zero here means a config error, a parse error, or an error-level finding.
-function runFromRoot(bin, args) {
+// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020)
+// that also reads the tool's own report of how many files it checked.
+function runFromRoot(bin, args, { captureStdout = false } = {}) {
   assert.ok(
     existsSync(bin),
     `${bin} is missing: run the repository's install step (bun install) before this suite`,
   );
   try {
-    execFileSync(bin, args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
-    return 0;
+    const stdout = execFileSync(bin, args, {
+      cwd: ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    return captureStdout ? { code: 0, stdout } : 0;
   } catch (error) {
-    return typeof error.status === "number" ? error.status : 1;
+    const code = typeof error.status === "number" ? error.status : 1;
+    return captureStdout ? { code, stdout: error.stdout || "" } : code;
   }
 }
 
@@ -38,6 +45,12 @@ function listWorkflowScripts(dir) {
     .filter((entry) => entry.isFile() && entry.name.endsWith(".js"))
     .map((entry) => path.posix.join(dir, entry.name));
 }
+
+// T-020 covers tracked workflows/**/tests/, workflows/tests/, and tests/ files, by extension;
+// hooks/**/tests/ is #712's range. Once #710 raises the rule to error, T-016 (bare `biome lint`
+// from the root exits zero) carries this check and T-020 retires.
+const T020_SCOPE_RE = /^(workflows\/.*\/tests\/|workflows\/tests\/|tests\/)/;
+const T020_EXT_RE = /\.(js|ts|tsx|json)$/;
 
 test("T-015 test.yml runs biome lint with --reporter=github in a step after an oxlint step that passes --format=github", () => {
   const source = readFileSync(TEST_YML, "utf8");
@@ -75,4 +88,24 @@ test("T-019 oxlint --deny-warnings over every workflow script in workflows/ and 
   const scripts = [...listWorkflowScripts("workflows"), ...listWorkflowScripts(".ja/workflows")];
   assert.ok(scripts.length > 0, "no *.js file found directly under workflows/ or .ja/workflows/");
   assert.equal(runFromRoot(OXLINT_BIN, ["--deny-warnings", ...scripts]), 0);
+});
+
+test("T-020 biome lint --error-on-warnings over every tracked test file under workflows/ and tests/ exits zero after checking every listed file", () => {
+  const files = execFileSync("git", ["ls-files", "-z"], { cwd: ROOT, encoding: "utf8" })
+    .split("\0")
+    .filter(Boolean)
+    .filter((file) => T020_SCOPE_RE.test(file) && T020_EXT_RE.test(file));
+  assert.ok(files.length > 0, "the filtered file list is empty");
+
+  const { code, stdout } = runFromRoot(BIOME_BIN, ["lint", "--error-on-warnings", ...files], {
+    captureStdout: true,
+  });
+  const checked = stdout.match(/Checked (\d+) files?/);
+  assert.ok(checked, "biome's stdout carries no `Checked N files` line");
+  assert.equal(
+    Number(checked[1]),
+    files.length,
+    "biome checked a different count than the list supplies",
+  );
+  assert.equal(code, 0);
 });

@@ -1,0 +1,5 @@
+const value = a / b / c;
+let x =
+/ not a regex due to newline
+y;
+const tpl = `template with "quotes" and 'apostrophes' inside`;

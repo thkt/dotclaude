@@ -34,6 +34,78 @@ function opensRegexLiteral(emitted) {
   return true;
 }
 
+// The index right after a `//`…newline run. Nothing from it survives into the output.
+function skipLineComment(source, i, n) {
+  while (i < n && source[i] !== "\n") i++;
+  return i;
+}
+
+// The index right after a `/*`…`*/` run. Nothing from it survives into the output.
+function skipBlockComment(source, i, n) {
+  i += 2;
+  while (i < n && source.slice(i, i + 2) !== "*/") i++;
+  return i + 2;
+}
+
+// `/https?:\/\//g` ends in an escaped slash followed by the delimiter. Emitting the opening
+// `/` and reading on character by character would meet that pair as `//` and drop the flag
+// and the rest of the line, so the literal is consumed here in one piece. Inside a `[...]`
+// class a `/` does not close the literal.
+function consumeRegexLiteral(source, i, n) {
+  let text = "/";
+  i++;
+  let inCharClass = false;
+  while (i < n && source[i] !== "\n") {
+    const c = source[i];
+    if (c === "\\") {
+      text += c + (source[i + 1] ?? "");
+      i += 2;
+      continue;
+    }
+    if (c === "[") inCharClass = true;
+    else if (c === "]") inCharClass = false;
+    else if (c === "/" && !inCharClass) break;
+    text += c;
+    i++;
+  }
+  // A newline or the end of input means the `/` was not a literal after all. Leave both
+  // untouched for the caller rather than consuming them as part of one.
+  if (source[i] === "/") {
+    const flags = consumeRegexFlags(source, i + 1, n);
+    text += "/" + flags.text;
+    i = flags.next;
+  }
+  return { text, next: i };
+}
+
+// The flag letters right after a regex literal's closing `/`, e.g. `g` in `/re/g`.
+function consumeRegexFlags(source, i, n) {
+  let text = "";
+  while (i < n && /[a-z]/i.test(source[i])) {
+    text += source[i];
+    i++;
+  }
+  return { text, next: i };
+}
+
+function consumeStringLiteral(source, i, n) {
+  const quote = source[i];
+  let text = quote;
+  i++;
+  while (i < n && source[i] !== quote) {
+    if (source[i] === "\\") {
+      text += source[i] + (source[i + 1] ?? "");
+      i += 2;
+      continue;
+    }
+    text += source[i];
+    i++;
+  }
+  text += source[i] ?? "";
+  i++;
+  return { text, next: i };
+}
+
 // A // or /* inside a string, a template literal, or a regex literal is not a comment. A plain
 // regex substitution would eat `http://example.com` out of the body, and two files differing only
 // there would then compare equal.
@@ -44,64 +116,24 @@ function stripComments(source) {
   while (i < n) {
     const two = source.slice(i, i + 2);
     if (two === "//") {
-      while (i < n && source[i] !== "\n") i++;
+      i = skipLineComment(source, i, n);
       continue;
     }
     if (two === "/*") {
-      i += 2;
-      while (i < n && source.slice(i, i + 2) !== "*/") i++;
-      i += 2;
+      i = skipBlockComment(source, i, n);
       continue;
     }
-    // `/https?:\/\//g` ends in an escaped slash followed by the delimiter. Emitting the opening
-    // `/` and reading on character by character would meet that pair as `//` and drop the flag
-    // and the rest of the line, so the literal is consumed here in one piece. Inside a `[...]`
-    // class a `/` does not close the literal.
     if (source[i] === "/" && opensRegexLiteral(out)) {
-      out += "/";
-      i++;
-      let inCharClass = false;
-      while (i < n && source[i] !== "\n") {
-        const c = source[i];
-        if (c === "\\") {
-          out += c + (source[i + 1] ?? "");
-          i += 2;
-          continue;
-        }
-        if (c === "[") inCharClass = true;
-        else if (c === "]") inCharClass = false;
-        else if (c === "/" && !inCharClass) break;
-        out += c;
-        i++;
-      }
-      // A newline or the end of input means the `/` was not a literal after all. Leave both
-      // untouched for the outer loop rather than consuming them as part of one.
-      if (source[i] === "/") {
-        out += "/";
-        i++;
-        while (i < n && /[a-z]/i.test(source[i])) {
-          out += source[i];
-          i++;
-        }
-      }
+      const { text, next } = consumeRegexLiteral(source, i, n);
+      out += text;
+      i = next;
       continue;
     }
     const ch = source[i];
     if (ch === '"' || ch === "'" || ch === "`") {
-      const quote = ch;
-      out += ch;
-      i++;
-      while (i < n && source[i] !== quote) {
-        if (source[i] === "\\") {
-          out += source[i] + (source[i + 1] ?? "");
-          i += 2;
-          continue;
-        }
-        out += source[i];
-        i++;
-      }
-      out += source[i] ?? "";
-      i++;
+      const { text, next } = consumeStringLiteral(source, i, n);
+      out += text;
+      i = next;
       continue;
     }
     out += ch;
@@ -197,4 +229,15 @@ test("T-020 a regex literal holding an escaped slash keeps its flag and its trai
   assert.equal(tsBodiesMatch(en, ja), false);
   assert.equal(extractBody(en), String.raw`export const PROTOCOL = /https?:\/\//g;`);
   assert.equal(extractBody(ja), String.raw`export const PROTOCOL = /https?:\/\//i;`);
+});
+
+// Splitting the one while loop into per-token readers must not move stripComments's output by a
+// single character. The golden input packs the four forms the split has to keep reading alike:
+// an unterminated `/*` that runs to end of input, a `/` that opensRegexLiteral correctly reads as
+// division rather than a literal, a `/` that opens a regex literal but is cut short by a newline,
+// and quotes sitting inside a template literal.
+test("T-021 stripComments over the golden input fixture yields exactly the recorded expected text", () => {
+  const input = read("strip-golden.input.txt");
+  const expected = read("strip-golden.expected.txt");
+  assert.equal(stripComments(input), expected);
 });

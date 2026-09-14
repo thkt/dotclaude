@@ -8,21 +8,35 @@ import { fileURLToPath } from "node:url";
 // keeps them outside their own scan, which is why no self-exemption is needed below.
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-// Letting readdir throw on a missing directory keeps a deleted instruction tree from quietly
-// shrinking the sweep to the directories that remain.
+type InstructionFile = { lang: "en" | ".ja"; rel: string; full: string };
+
+// One prefix/dir pair's worth of instructionFiles's walk: every markdown/js/py file directly
+// under root/prefix/dir, __pycache__ excluded. Letting readdir throw on a missing directory
+// keeps a deleted instruction tree from quietly shrinking the sweep to the directories that
+// remain.
+const scanInstructionDir = async (
+  prefix: "" | ".ja",
+  lang: "en" | ".ja",
+  dir: string,
+): Promise<InstructionFile[]> => {
+  const found: InstructionFile[] = [];
+  const base = join(root, prefix, dir);
+  for (const entry of await readdir(base, { recursive: true, withFileTypes: true })) {
+    if (!entry.isFile() || !/\.(md|js|py)$/.test(entry.name)) continue;
+    const full = join(entry.parentPath, entry.name);
+    const rel = full.slice(join(root, prefix).length + 1);
+    if (rel.includes("__pycache__")) continue;
+    found.push({ lang, rel, full });
+  }
+  return found;
+};
+
 const instructionFiles = async () => {
-  const found: Array<{ lang: "en" | ".ja"; rel: string; full: string }> = [];
+  const found: InstructionFile[] = [];
   for (const prefix of ["", ".ja"] as const) {
     const lang: "en" | ".ja" = prefix === "" ? "en" : prefix;
     for (const dir of ["skills", "agents", "rules", "workflows"]) {
-      const base = join(root, prefix, dir);
-      for (const entry of await readdir(base, { recursive: true, withFileTypes: true })) {
-        if (!entry.isFile() || !/\.(md|js|py)$/.test(entry.name)) continue;
-        const full = join(entry.parentPath, entry.name);
-        const rel = full.slice(join(root, prefix).length + 1);
-        if (rel.includes("__pycache__")) continue;
-        found.push({ lang, rel, full });
-      }
+      found.push(...(await scanInstructionDir(prefix, lang, dir)));
     }
   }
   return found;
