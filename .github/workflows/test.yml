@@ -90,14 +90,12 @@ jobs:
 
       # 3 つとも hook か手元でしか走っておらず、指摘が溜まっても誰も気付かなかった。
       # oxlint と textlint は devDependency なので、上の Install がそのまま入れる。
-      # --format=github は warning を PR の annotation にする。max-depth は warn なので
-      # step は緑のままで、annotation だけが diff 上に残る (#706)。
+      # --format=github は error を PR の annotation にする。
       - name: oxlint
         run: npx oxlint --format=github
 
       # 認知的複雑度の規則 1 本だけを持つ。formatter も他の lint 規則も biome.json が
-      # 止めている。--reporter=github は oxlint の --format=github と同じ役で、
-      # noExcessiveCognitiveComplexity は warn なので step は緑のまま annotation を出す。
+      # 止めている。--reporter=github は oxlint の --format=github と同じ役。
       - name: biome
         run: npx biome lint --reporter=github
 

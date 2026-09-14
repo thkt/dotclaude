@@ -97,7 +97,7 @@ function lint(name, relativePath, source) {
   try {
     output = execFileSync(
       BIOME_BIN,
-      ["lint", "--vcs-enabled=false", "--error-on-warnings", "--reporter=github", relativePath],
+      ["lint", "--vcs-enabled=false", "--reporter=github", relativePath],
       { cwd: workspace, encoding: "utf8" },
     );
   } catch (error) {
@@ -113,7 +113,7 @@ test.after(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
 });
 
-test("T-001 a function with cognitive complexity 16 exits non-zero under the repository's biome.json with --error-on-warnings", () => {
+test("T-001 a function with cognitive complexity 16 exits non-zero under the repository's biome.json", () => {
   const { exitCode } = lint("complexity-16", "workflows/complexity-16.ts", COMPLEXITY_16);
   assert.notEqual(exitCode, 0);
 });
@@ -141,6 +141,8 @@ test("T-004 the same script placed under src/ yields a parse diagnostic", () => 
   assert.ok(output.includes("title=parse"), `expected a parse diagnostic, got: ${output}`);
 });
 
+// T-005 requires exactly "error", not "warn", because lint() above no longer passes
+// `--error-on-warnings`: a "warn"-level diagnostic would print but leave the exit code 0.
 // T-005/T-006 read biome.json itself: the rule's level, its threshold, the exact
 // `files.includes` (compared as a list, not a count, per
 // docs/wiki/count-comparison-masks-filtered-set-drift.md), and the absence of `overrides`.
@@ -155,27 +157,27 @@ const PLANNED_FILES_INCLUDES = [
   "!skills/*/test/cases/**",
 ];
 
-// Every way a biome.json edit can stop the rule from reaching the tracked tree, as a list of
-// names so the positive controls below can say which hole a mutation opened. Each entry was
-// confirmed against biome 2.5.12 to skip files or silence the rule: `linter.enabled: false`
-// lints nothing, `linter.includes` excludes paths just as `files.includes` does, an `overrides`
-// entry can turn the linter off per path, and `level: "info"` reports as a notice that
-// `--error-on-warnings` never fails on.
+// Every way a biome.json edit can stop the rule from reaching the tracked tree as a failure, as
+// a list of names so the positive controls below can say which hole a mutation opened. Each
+// entry was confirmed against biome 2.5.12 to skip files or silence the rule: `linter.enabled:
+// false` lints nothing, `linter.includes` excludes paths just as `files.includes` does, an
+// `overrides` entry can turn the linter off per path, and any `level` other than `"error"` (such
+// as `"warn"`) prints a diagnostic that leaves the exit code 0, since `lint()` no longer passes
+// `--error-on-warnings`.
 function biomeHoles(config) {
   const holes = [];
   const rule = config.linter?.rules?.complexity?.noExcessiveCognitiveComplexity;
   if (config.linter?.enabled === false) holes.push("linter.enabled is false");
   if (Object.hasOwn(config.linter ?? {}, "includes")) holes.push("linter.includes is set");
-  if (!rule || !["warn", "error"].includes(rule.level))
-    holes.push("rule level is not warn or error");
+  if (!rule || rule.level !== "error") holes.push("rule level is not error");
   if (!(rule?.options?.maxAllowedComplexity <= 15)) holes.push("maxAllowedComplexity exceeds 15");
   if (Object.hasOwn(config, "overrides")) holes.push("overrides is set");
   return holes;
 }
 
-test("T-005 biome.json keeps noExcessiveCognitiveComplexity at warn or error with maxAllowedComplexity at most 15", () => {
+test("T-005 biome.json keeps noExcessiveCognitiveComplexity at error with maxAllowedComplexity at most 15", () => {
   const rule = biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity;
-  assert.ok(["warn", "error"].includes(rule.level), `level is ${rule.level}`);
+  assert.equal(rule.level, "error", `level is ${rule.level}`);
   assert.ok(
     rule.options.maxAllowedComplexity <= 15,
     `maxAllowedComplexity ${rule.options.maxAllowedComplexity} exceeds 15`,
@@ -197,8 +199,8 @@ const BIOME_MUTATIONS = [
   ["linter.enabled is false", (c) => (c.linter.enabled = false)],
   ["linter.includes is set", (c) => (c.linter.includes = ["**", "!hooks/**"])],
   [
-    "rule level is not warn or error",
-    (c) => (c.linter.rules.complexity.noExcessiveCognitiveComplexity.level = "info"),
+    "rule level is not error",
+    (c) => (c.linter.rules.complexity.noExcessiveCognitiveComplexity.level = "warn"),
   ],
   [
     "maxAllowedComplexity exceeds 15",
