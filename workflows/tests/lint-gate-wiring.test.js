@@ -21,7 +21,7 @@ const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
 // Exit code of `bin args` run from the repository root. A warn-level rule leaves both linters at
 // exit 0, so a non-zero here means a config error, a parse error, or an error-level finding.
-// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020, T-021)
+// With `captureStdout`, returns `{ code, stdout }` instead of the bare code, for a caller (T-020 to T-022)
 // that also reads the tool's own report of how many files it checked.
 function runFromRoot(bin, args, { captureStdout = false } = {}) {
   assert.ok(
@@ -156,36 +156,16 @@ function trackedLintTargetsOutsideTests() {
     );
 }
 
-// Same as runFromRoot, but also hands back stdout -- biome's "Checked N files" line is the only
-// place it reports how many of the given paths it actually processed.
-function runFromRootCapturingStdout(bin, args) {
-  assert.ok(
-    existsSync(bin),
-    `${bin} is missing: run the repository's install step (bun install) before this suite`,
-  );
-  try {
-    const stdout = execFileSync(bin, args, {
-      cwd: ROOT,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    return { status: 0, stdout };
-  } catch (error) {
-    return {
-      status: typeof error.status === "number" ? error.status : 1,
-      stdout: typeof error.stdout === "string" ? error.stdout : "",
-    };
-  }
-}
-
 test("T-022 biome lint --error-on-warnings over every tracked JS and TS file under workflows subdirectories outside tests exits zero after checking every listed file", () => {
   const files = trackedLintTargetsOutsideTests();
   assert.ok(
     files.length > 0,
     "no tracked JS/TS files found under workflows subdirectories outside tests",
   );
-  const result = runFromRootCapturingStdout(BIOME_BIN, ["lint", "--error-on-warnings", ...files]);
-  assert.equal(result.status, 0, `expected exit 0; biome stdout was:\n${result.stdout}`);
+  const result = runFromRoot(BIOME_BIN, ["lint", "--error-on-warnings", ...files], {
+    captureStdout: true,
+  });
+  assert.equal(result.code, 0, `expected exit 0; biome stdout was:\n${result.stdout}`);
   assert.ok(
     result.stdout.includes(`Checked ${files.length} files`),
     `expected biome stdout to report "Checked ${files.length} files", got:\n${result.stdout}`,
