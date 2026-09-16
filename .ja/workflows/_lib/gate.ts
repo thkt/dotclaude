@@ -247,13 +247,25 @@ export function calibrationCandidates(
   }
   const candidates: CandidateLine[] = [];
   const seen = new Set<string>();
+  // Python の unittest は verbose でないとき、ヘッダ (`FAIL: test_x (...)`) を 1 行に、planned の
+  // 文が載るテストの docstring をその次の行に出す。同じ stream で直前の行がそのヘッダなら、次の
+  // 行を受け入れる。資格を与えるのはヘッダだけで、任意の marker ではない。verbose の `... ok` 行が
+  // 上の `... ERROR` 行を根拠に通ってしまうのを防ぐ。
+  const UNITTEST_HEADER = /^(?:FAIL|ERROR): \S/;
+  const followsMarker = (index: number): boolean => {
+    const previous = index > 0 ? lines[index - 1] : undefined;
+    return (
+      previous !== undefined &&
+      previous.stream === lines[index].stream &&
+      UNITTEST_HEADER.test(previous.text)
+    );
+  };
   for (const [testId, name] of planned) {
-    for (const line of lines) {
-      if (
-        candidates.length >= MAX_CALIBRATION_CANDIDATES ||
-        seen.has(line.id) ||
-        !namesPlannedFailure(line.text, name)
-      ) {
+    for (const [index, line] of lines.entries()) {
+      const named =
+        namesPlannedFailure(line.text, name) ||
+        (locateName(line.text, name) !== null && followsMarker(index));
+      if (candidates.length >= MAX_CALIBRATION_CANDIDATES || seen.has(line.id) || !named) {
         continue;
       }
       candidates.push({ ...line, test_id: testId });

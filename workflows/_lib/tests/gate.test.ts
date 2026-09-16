@@ -574,3 +574,44 @@ test("T-036 --tail-bytes 0 is accepted, the report carries no output tails, and 
     );
   });
 });
+
+// Python's unittest names the failing test on a `FAIL:` line and prints the docstring, where the
+// planned statement lives, on the line after it. A live build run offered no candidate for that.
+test("T-037 a planned statement on the line after a unittest FAIL header is a calibration candidate, and one after a verbose ok line is not", () => {
+  withTempDir((cwd) => {
+    const failing =
+      "FAIL: test_x (report_cli_test.Cli.test_x)\\nT-001 the report writer names its file\\n---\\nTraceback\\n";
+    const calibrated = runCli([
+      "--cwd",
+      cwd,
+      "--command",
+      `printf '${failing}' >&2; exit 1`,
+      "--calibrate",
+      "--planned-test",
+      "T-001:T-001 the report writer names its file",
+    ]);
+    assert.equal(calibrated.report.verdict, "pass", "calibration: verdict");
+    const candidates = calibrated.report.candidates as { text: string; stream: string }[];
+    assert.deepEqual(
+      candidates.map((c) => [c.stream, c.text]),
+      [["stderr", "T-001 the report writer names its file"]],
+      "the docstring line after the FAIL header is offered",
+    );
+
+    const passing = "test_x ... ok\\nT-001 the report writer names its file\\n";
+    const unmarked = runCli([
+      "--cwd",
+      cwd,
+      "--command",
+      `printf '${passing}' >&2; exit 1`,
+      "--calibrate",
+      "--planned-test",
+      "T-001:T-001 the report writer names its file",
+    ]);
+    assert.deepEqual(
+      (unmarked.report.candidates as { text: string }[]).map((c) => c.text),
+      [],
+      "a line after a verbose ok line is not offered",
+    );
+  });
+});
