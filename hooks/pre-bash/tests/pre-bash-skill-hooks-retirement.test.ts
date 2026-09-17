@@ -82,6 +82,7 @@ function commandNaming(commands: string[], stem: string): string | undefined {
 // wiki_scene_seam_test.py's ISSUE_CLOSE_PAGES did before this test replaced it.
 const ISSUE_CLOSE_PAGES = [
   "incident-driven-deferral.md",
+  "integration-base-pr-closes-no-autoclose.md",
   "premise-collapse-not-planned.md",
   "runtime-bug-wontfix.md",
   "umbrella-issue-recut.md",

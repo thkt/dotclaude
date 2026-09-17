@@ -47,12 +47,13 @@ test(
   },
 );
 
-test("T-234 a --scene issue-close query over docs/wiki returns exactly the five issue-close pages", () => {
+test("T-234 a --scene issue-close query over docs/wiki returns exactly the six issue-close pages", () => {
   const report = find(WIKI, "issue-close", [], "issue-close");
   assert.deepEqual(
     [...report.scenes].sort(),
     [
       "incident-driven-deferral.md",
+      "integration-base-pr-closes-no-autoclose.md",
       "premise-collapse-not-planned.md",
       "runtime-bug-wontfix.md",
       "umbrella-issue-recut.md",
