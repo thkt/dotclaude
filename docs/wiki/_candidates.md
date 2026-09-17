@@ -64,6 +64,7 @@
 - skills 配下の Python を TypeScript へ移すとき、.github/workflows/test.yml の Node tests step は glob を手動で足さないと拾わない。Python 側は find なので .py を消せば自動で外れるが、.ts を足しても自動では入らない #615
 - exit 0 の hook の stdout print は単独では届かず hook_payload の notify (systemMessage/additionalContext) 経由が要る #618
 - settings.json で matcher 共通 command が if だけ Write/Edit に分かれる複数登録は重複でない #618
+- hook が一度でも配線されたことがあるかは `git log -S<名前> -- settings.json` で分かる。空なら未配線のままテストだけが駆動している #618
 - script が決めた値 (比較対象の sha、PR タイトル) は agent に書き写させず、shq で argv 1 要素としてコマンドに直接載せる。relay agent には stdout の逐語中継だけをさせる。git を打たせると比較対象を自分で解決した HEAD に置き換える #623
 - 検証に落ちた成果物も実在すれば数え、verified フラグで区別する。commits から落とすと呼び出し元が unit_commits: 0 と報告し、履歴にあるコミットを無いものとして扱う #623
 - 同じ事実を 2 体の agent に聞かない。verifier の report が持つフィールド (head) を使い、再取得の relay を足さない #623
