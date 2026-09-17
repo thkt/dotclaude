@@ -33,7 +33,7 @@
         "no-var": "error",
         "no-undef": "error",
         "max-depth": [
-          "warn",
+          "error",
           3
         ]
       }

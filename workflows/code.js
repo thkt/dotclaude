@@ -170,7 +170,9 @@ const runGate = async (unit, label, args) => {
   ].join(" ");
   const relayed = await relayStdout(unit, label, command);
   if (relayed === null) return null;
-  const report = parsedReport(relayed.stdout);
+  // A relay that merged the streams hands the report back under stderr; it is the only JSON
+  // object in either, so the fallback cannot pick up anything else.
+  const report = parsedReport(relayed.stdout) ?? parsedReport(relayed.stderr);
   return (
     report ?? { verdict: "blocked", classification: "gate_did_not_report", stderr: relayed.stderr }
   );
@@ -870,7 +872,7 @@ for (const [index, unit] of units.entries()) {
     RED_SCHEMA,
     (r) => r.red_confirmed,
     `TDD Red step. ${ctx}` +
-      `Write each test scenario (T-NNN) as a failing test. Use the scenario's name verbatim as the test name. ` +
+      `Write each test scenario (T-NNN) as a failing test. Use the scenario's name verbatim as the test name, on one line; in Python, as the first line of the docstring, never wrapped, since unittest prints only that first line beside the failure. ` +
       `Make every planned test discoverable and executable. When a module this unit allows does not exist yet, create the smallest API-shaped scaffold that lets the planned assertion run, and do not satisfy the planned behavior. A module-resolution, parse, type-check, or test-discovery failure is not Red evidence: the gate reads the failure line that names the planned scenario, and a file that never loaded produces none. ` +
       `Write no other implementation code. Run the tests and confirm each fails for the intended reason, then report. ` +
       `Deleting, moving, renaming, or emptying an existing file to manufacture a Red is forbidden. When the target behavior is already implemented, that is the correct state: keep red_confirmed=false, put the conclusion in notes as one sentence and the supporting facts in evidence, one per element, with no account of what you checked in notes. ` +

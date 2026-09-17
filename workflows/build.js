@@ -878,7 +878,7 @@ const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
 phase("Cleanup");
 const cleanup = (await agent(
   anchor(
-    `Invoke the Skill tool with skill "simplify" for a cleanup-only pass (reuse, simplification, efficiency, altitude) on the current diff. If it rejects a no-arg invocation, pass the diff scope. ` +
+    `Invoke the Skill tool with skill "simplify" for a cleanup-only pass (reuse, simplification, efficiency, altitude) on this build's own changes: \`git diff ${diffBase}\` plus the untracked files it created, confined to the plan's files ${JSON.stringify(plan.units.flatMap((u) => u.files))}. Pass that scope to the skill; edit no file outside it, whatever else the branch diff carries. ` +
       `Then detect and run the project's test command. On failure, roll back the cleanup edits via git stash and report stashed: true. ` +
       `Do not commit.`,
   ),

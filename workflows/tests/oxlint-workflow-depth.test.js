@@ -54,8 +54,9 @@ const THREE_NESTED_BLOCKS = `export const nested = (a, b, c) => {
 };
 `;
 
-// `max-depth` sits at "warn", so `--deny-warnings` is what turns a hit into a non-zero exit.
-// The fixture's parent directory (workflows/, src/) is what the override's glob matches against.
+// `max-depth` sits at "error" in the workflows override, so a hit exits non-zero on its own;
+// no `--deny-warnings` flag is needed. The fixture's parent directory (workflows/, src/) is what
+// the override's glob matches against.
 let workspace;
 const cache = new Map();
 
@@ -74,7 +75,7 @@ function lint(name, relativePath, source) {
   writeFileSync(filePath, source, "utf8");
   let exitCode = 0;
   try {
-    execFileSync(OXLINT_BIN, ["-c", ".oxlintrc.json", "--deny-warnings", relativePath], {
+    execFileSync(OXLINT_BIN, ["-c", ".oxlintrc.json", relativePath], {
       cwd: workspace,
       encoding: "utf8",
     });
@@ -89,7 +90,7 @@ test.after(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
 });
 
-test("T-007 a workflow script nesting four blocks under workflows/ exits non-zero under the repository's .oxlintrc.json with --deny-warnings", () => {
+test("T-007 a workflow script nesting four blocks under workflows/ exits non-zero under the repository's .oxlintrc.json", () => {
   assert.notEqual(lint("four-nested-workflows", "workflows/four-nested.js", FOUR_NESTED_BLOCKS), 0);
 });
 
@@ -108,13 +109,13 @@ function findWorkflowsOverride(config) {
   return config.overrides.find((override) => override.files.includes("workflows/*.js"));
 }
 
-test("T-010 .oxlintrc.json keeps max-depth in the workflows override at a level other than off with a limit of at most 3", () => {
+test("T-010 .oxlintrc.json keeps max-depth in the workflows override at error with a limit of at most 3", () => {
   const override = findWorkflowsOverride(oxlintConfig);
   assert.ok(override, "no override in .oxlintrc.json matches workflows/*.js");
   const rule = override.rules["max-depth"];
   assert.ok(rule, "the workflows/*.js override carries no max-depth rule");
   const [level, limit] = rule;
-  assert.notEqual(level, "off");
+  assert.equal(level, "error", `level is ${level}`);
   assert.ok(limit <= 3, `max-depth limit ${limit} exceeds 3`);
 });
 

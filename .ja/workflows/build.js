@@ -858,7 +858,7 @@ const CLEANUP_SCHEMA = obj(["edits", "tests_pass", "stashed"], {
 phase("Cleanup");
 const cleanup = (await agent(
   anchor(
-    `Skill ツールで skill "simplify" を起動し、現在の diff に cleanup 限定の pass (再利用 / 簡素化 / 効率 / 高度) をかける。引数なしを拒否されたら diff の scope を渡す。` +
+    `Skill ツールで skill "simplify" を起動し、この build 自身の変更、すなわち \`git diff ${diffBase}\` と build が作った未追跡ファイルに cleanup 限定の pass (再利用 / 簡素化 / 効率 / 高度) をかける。対象は plan の files ${JSON.stringify(plan.units.flatMap((u) => u.files))} に限る。その scope を skill に渡し、branch diff に他の何が載っていても、scope 外のファイルは編集しない。` +
       `続けてプロジェクトのテストコマンドを検出して実行する。失敗したら cleanup の編集を git stash で戻し stashed: true を報告する。` +
       `commit しない。`,
   ),

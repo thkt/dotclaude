@@ -291,6 +291,51 @@ test("reports the file as written only after a separate agent finds it", async (
   );
 });
 
+// A live run reported the file by its absolute path, and the shape check read that as a path
+// adrift never writes even though the file was there.
+test("an absolute path under the repository confirms and comes back repository-relative", async () => {
+  const { result, calls } = await runWorkflow(adriftJs, {
+    args: { repo: "/abs/target-repo" },
+    stubs: {
+      agent: reportStub({
+        report: {
+          written: true,
+          report_path: "/abs/target-repo/docs/audit/2026-01-01-000000-dr-drift.md",
+        },
+        stat: { exists: true, bytes: 1200 },
+      }),
+    },
+  });
+
+  assert.equal(result.report_written, true, "the file under the repository confirmed");
+  assert.equal(result.report_path, "docs/audit/2026-01-01-000000-dr-drift.md");
+  const confirm = calls.agent.find((c) => c.opts && c.opts.label === "confirm-report");
+  assert.match(confirm.prompt, /docs\/audit\/2026-01-01-000000-dr-drift\.md/);
+  assert.doesNotMatch(
+    confirm.prompt,
+    /\/abs\/target-repo\/docs/,
+    "the stat agent gets the relative path",
+  );
+});
+
+test("a path outside the repository is not read as a written report", async () => {
+  const { result } = await runWorkflow(adriftJs, {
+    args: { repo: "/abs/target-repo" },
+    stubs: {
+      agent: reportStub({
+        report: {
+          written: true,
+          report_path: "/elsewhere/docs/audit/2026-01-01-000000-dr-drift.md",
+        },
+        stat: { exists: true, bytes: 1200 },
+      }),
+    },
+  });
+
+  assert.equal(result.report_written, false);
+  assert.equal(result.report_unconfirmed.reason, "the claimed path is not the shape adrift writes");
+});
+
 test("does not report a file as written when the confirming agent cannot find it", async () => {
   const { result } = await runWorkflow(adriftJs, {
     args: { repo: "/abs/target-repo" },
