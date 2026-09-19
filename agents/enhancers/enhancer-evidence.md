@@ -3,6 +3,7 @@ name: enhancer-evidence
 description: Delegate at the end of an assert run, to reconcile static findings, dynamic evidence, and adversarial results into issues, root causes, and a report.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-root-cause-analysis]
 background: true
 ---

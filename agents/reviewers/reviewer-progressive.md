@@ -3,6 +3,7 @@ name: reviewer-progressive
 description: Delegate when a diff adds JavaScript for layout, animation, or viewport handling, to find the parts browser-native CSS can replace.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

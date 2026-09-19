@@ -3,6 +3,7 @@ name: reviewer-causation
 description: diff がバグ修正や回避策を含むとき、原因を除いたのか症状を黙らせただけかを確認するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-root-cause-analysis]
 background: true
 ---

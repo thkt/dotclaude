@@ -3,6 +3,7 @@ name: enhancer-evidence
 description: assert run の最後に、静的 findings、動的根拠、敵対的結果を issues、根本原因、report に統合するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-root-cause-analysis]
 background: true
 ---

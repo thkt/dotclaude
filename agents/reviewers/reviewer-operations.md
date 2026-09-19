@@ -3,6 +3,7 @@ name: reviewer-operations
 description: Delegate when a diff touches UI components, request handlers, or shell scripts, to check error containment, loading states, logging, and performance budgets.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

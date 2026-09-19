@@ -3,6 +3,7 @@ name: reviewer-efficiency
 description: diff がループ、リクエストハンドラ、I/O、並行処理に触れたとき、コードが 2 回以上または必要以上に行っている処理を見つけるために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

@@ -3,6 +3,7 @@ name: reviewer-prompt
 description: diff が LLM 向けプロンプトファイル (rules、skills、agents、templates、workflow の prompt 文字列) に触れたとき、トークン効率、構造、フォーマット、明瞭性を確認するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

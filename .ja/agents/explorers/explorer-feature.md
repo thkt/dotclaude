@@ -3,6 +3,7 @@ name: explorer-feature
 description: research が機能の全体像を必要とするとき、実行経路の追跡、アーキテクチャの把握、読むべきファイルの列挙のために委譲する。
 tools: LS, Read, Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 ---
 
 # Feature Explorer

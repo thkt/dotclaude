@@ -37,6 +37,7 @@ paths:
 | mcpServers, hooks               | 必要に応じて                                                                                                                                                               |
 | memory                          | `user`/`project`/`local`。有効化で Read/Write/Edit を自動付与                                                                                                              |
 | background                      | Boolean。対話セッションでの起動は `false` を書いてもバックグラウンドで走る。workflow と headless はこの既定の外                                                            |
+| omitClaudeMd                    | Boolean。ユーザー / プロジェクト / ローカルの CLAUDE.md と rules/ を読み込まずに起動する。委譲プロンプトから判定対象を全て受け取るエージェントに付ける。対象リポジトリの規約に照らして判定するエージェント (reviewer-conformance、reviewer-readability) には付けない。v2.1.271 以降 |
 | effort                          | low/medium/high/xhigh/max                                                                                                                                                  |
 | isolation, color, initialPrompt | 必要に応じて                                                                                                                                                               |
 | observer                        | このエージェントが走るたび background で起動する observer の agent 型名。observer は読み取り専用の活動ダイジェストを受け取り ObserverReport で報告し、タスクには参加しない |

@@ -111,6 +111,8 @@ usage-data/
 .claude-plugin/.cache/
 plugins/*
 !plugins/README.md
+# claude.ai アカウントから同期されるスキル。ここでの編集はアカウントに保存されない
+skills/synced/
 
 # Local state
 BACKLOG.md

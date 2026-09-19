@@ -3,6 +3,7 @@ name: critic-evidence
 description: レビュー pass の後に、各 finding を具体的な実行経路の追跡で検証するために委譲する。challenger である critic-audit を補う verifier。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 effort: medium
 background: true
 ---

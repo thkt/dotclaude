@@ -3,6 +3,7 @@ name: enhancer-code
 description: 変更が入った後に、変更ファイルから AI slop、冗長なテスト、過剰防御を振る舞いを変えずに削るために委譲する。
 tools: Read, Edit, LS, Bash(ugrep:*), Bash(bfs:*), Bash(ast-grep:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-reviewer-readability]
 ---
 

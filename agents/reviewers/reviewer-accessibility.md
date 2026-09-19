@@ -3,6 +3,7 @@ name: reviewer-accessibility
 description: Delegate when a diff touches HTML, CSS, or UI components, to check WCAG 2.2 compliance.
 tools: Read, LS, Bash(git:*), Bash(agent-browser:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [a11y-specialist-skills:reviewing-a11y]
 background: true
 ---

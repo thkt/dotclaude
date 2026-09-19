@@ -3,6 +3,7 @@ name: reviewer-accessibility
 description: diff が HTML、CSS、UI コンポーネントに触れたとき、WCAG 2.2 準拠を確認するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(agent-browser:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [a11y-specialist-skills:reviewing-a11y]
 background: true
 ---

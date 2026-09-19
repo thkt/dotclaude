@@ -3,6 +3,7 @@ name: enhancer-code
 description: Delegate after a change lands, to strip AI slop, redundant tests, and defensive excess from the changed files without changing behavior.
 tools: Read, Edit, LS, Bash(ugrep:*), Bash(bfs:*), Bash(ast-grep:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-reviewer-readability]
 ---
 

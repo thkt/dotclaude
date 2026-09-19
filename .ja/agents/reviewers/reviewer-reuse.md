@@ -3,6 +3,7 @@ name: reviewer-reuse
 description: diff が新規コードや新規依存を足したとき、それを既に賄っているヘルパー、標準ライブラリ、native 機能、既存依存を見つけるために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

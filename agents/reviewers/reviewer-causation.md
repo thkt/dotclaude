@@ -3,6 +3,7 @@ name: reviewer-causation
 description: Delegate when a diff fixes a bug or adds a workaround, to check whether the change removes the cause or silences the symptom.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-root-cause-analysis]
 background: true
 ---

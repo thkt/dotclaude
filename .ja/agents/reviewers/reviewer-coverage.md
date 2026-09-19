@@ -3,6 +3,7 @@ name: reviewer-coverage
 description: diff がテストやテスト可能なロジックに触れたとき、未テストの振る舞いと、実装を壊しても落ちないテストを見つけるために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-workflow-tdd-cycle]
 background: true
 ---

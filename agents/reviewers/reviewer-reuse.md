@@ -3,6 +3,7 @@ name: reviewer-reuse
 description: Delegate when a diff adds new code or a new dependency, to find the existing helper, standard library, native feature, or installed dependency that already covers it.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

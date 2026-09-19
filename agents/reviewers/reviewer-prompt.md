@@ -3,6 +3,7 @@ name: reviewer-prompt
 description: Delegate when a diff touches an LLM-facing prompt file (rules, skills, agents, templates, workflow prompt strings), to check token efficiency, structure, format, and clarity.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

@@ -3,6 +3,7 @@ name: reviewer-silence
 description: diff がエラー処理、promise、デフォルト値に触れたとき、各抑制にドキュメント化された理由があるか、エラーがなお可視化されるかを判定するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-reviewer-silence]
 background: true
 ---

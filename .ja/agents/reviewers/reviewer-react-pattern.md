@@ -3,6 +3,7 @@ name: reviewer-react-pattern
 description: diff が React コンポーネントや hook に触れたとき、Container/Presentational、hook 設計、state 配置、prop 伝播、レンダー/Effect 効率を確認するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 background: true
 ---
 

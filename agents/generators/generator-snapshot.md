@@ -3,6 +3,7 @@ name: generator-snapshot
 description: Use once per audit run, after the findings are final, to persist the snapshot record. Writes the payload verbatim to a temp file and runs snapshot.ts once. Does not review code or judge findings.
 tools: Write, Bash(node:*)
 model: sonnet
+omitClaudeMd: true
 ---
 
 # Snapshot Generator

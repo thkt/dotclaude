@@ -3,6 +3,7 @@ name: generator-snapshot
 description: audit 実行ごとに 1 回、findings が確定した後に snapshot record を永続化するために使う。payload をそのまま一時ファイルに書き、snapshot.ts を 1 回実行する。コードのレビューや findings の判定はしない。
 tools: Write, Bash(node:*)
 model: sonnet
+omitClaudeMd: true
 ---
 
 # Snapshot Generator
