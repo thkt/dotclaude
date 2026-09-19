@@ -328,7 +328,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/herdr-agent-state.sh session",
+            "command": "bash '/Users/thkt/.claude/hooks/herdr-agent-state.sh' session",
             "timeout": 10
           }
         ]
