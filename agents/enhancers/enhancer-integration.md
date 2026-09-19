@@ -3,6 +3,7 @@ name: enhancer-integration
 description: Delegate after the challenge triage of an audit, to merge the survivors into cross-domain root causes.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-root-cause-analysis]
 ---
 

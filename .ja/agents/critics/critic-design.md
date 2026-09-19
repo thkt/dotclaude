@@ -3,6 +3,7 @@ name: critic-design
 description: 設計提案を採用する前に、隠れた仮定、コスト、障害モードの観点で攻撃するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 effort: medium
 memory: project
 background: true

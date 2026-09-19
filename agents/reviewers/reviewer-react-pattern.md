@@ -3,6 +3,7 @@ name: reviewer-react-pattern
 description: Delegate when a diff touches React components or hooks, to check Container/Presentational, hook design, state placement, prop forwarding, and render/Effect efficiency.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 background: true
 ---
 

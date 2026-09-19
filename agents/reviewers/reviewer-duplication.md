@@ -3,6 +3,7 @@ name: reviewer-duplication
 description: Delegate when a diff or directory may repeat logic across 2 or more files, to find the duplication and propose one shared utility.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 background: true
 ---
 

@@ -3,6 +3,7 @@ name: critic-evidence
 description: Delegate after a review pass, to verify each finding by tracing a concrete execution path. The verifier that complements critic-audit, the challenger.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 effort: medium
 background: true
 ---

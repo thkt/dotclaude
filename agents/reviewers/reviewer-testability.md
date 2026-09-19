@@ -3,6 +3,7 @@ name: reviewer-testability
 description: Delegate when a diff adds dependencies, side effects, or global state to logic, to find the patterns that make the code hard to test and propose the injection that fixes them.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-reviewer-testability, use-workflow-tdd-cycle]
 background: true
 ---

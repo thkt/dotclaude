@@ -3,6 +3,7 @@ name: generator-test
 description: Use from a bug fix, before touching the cause, to generate the failing test that reproduces the reported symptom. Does not implement code.
 tools: Read, Write, Edit, LS, Bash(ugrep:*), Bash(bfs:*), Bash(ast-grep:*)
 model: opus
+omitClaudeMd: true
 skills: [use-workflow-tdd-cycle]
 ---
 

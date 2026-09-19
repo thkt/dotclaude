@@ -3,6 +3,7 @@ name: reviewer-resilience
 description: diff が外部呼び出し、共有状態、リソース上限に触れたとき、インシデントが先に見つける前に障害モード、ブラスト半径、欠けたセーフガードを洗い出すために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

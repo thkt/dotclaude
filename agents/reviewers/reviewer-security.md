@@ -3,6 +3,7 @@ name: reviewer-security
 description: Delegate when a diff touches input handling, auth, configuration, dependencies, outbound requests, or LLM I/O, to find OWASP Top 10 vulnerabilities with a threat model per finding.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-reviewer-security]
 memory: project
 background: true

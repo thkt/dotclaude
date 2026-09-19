@@ -3,6 +3,7 @@ name: reviewer-resilience
 description: Delegate when a diff touches external calls, shared state, or resource limits, to map failure modes, blast radius, and missing safeguards before an incident finds them.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

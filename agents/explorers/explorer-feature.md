@@ -3,6 +3,7 @@ name: explorer-feature
 description: Delegate when research needs the shape of a feature, to trace its execution paths, map its architecture, and list the files to read.
 tools: LS, Read, Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 ---
 
 # Feature Explorer

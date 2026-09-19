@@ -3,6 +3,7 @@ name: reviewer-operations
 description: diff が UI コンポーネント、リクエストハンドラ、シェルスクリプトに触れたとき、エラー封じ込め、ローディング状態、ロギング、パフォーマンス予算を確認するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

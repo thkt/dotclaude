@@ -3,6 +3,7 @@ name: reviewer-silence
 description: Delegate when a diff touches error handling, promises, or default values, to judge whether each suppression has a documented reason and whether errors still surface.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-reviewer-silence]
 background: true
 ---
