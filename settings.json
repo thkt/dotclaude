@@ -19,7 +19,6 @@
       "ListMcpResourcesTool(*)",
       "Read(*)",
       "ReadMcpResourceTool(*)",
-      "TaskOutput(*)",
       "TaskStop(*)",
       "Write(*)",
       "Bash(gh *)",
@@ -124,6 +123,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-fable-5-1[1m]",
   "hooks": {
     "PostToolUse": [
       {
@@ -392,7 +392,8 @@
     "kagami@kagami": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "html@skills": true
+    "html@skills": true,
+    "typesafe@typesafe-ai": true
   },
   "extraKnownMarketplaces": {
     "agent-browser": {
@@ -418,6 +419,12 @@
         "source": "github",
         "repo": "mathbullet/skills"
       }
+    },
+    "typesafe-ai": {
+      "source": {
+        "source": "github",
+        "repo": "typesafe-ai/skills"
+      }
     }
   },
   "outputStyle": "Concise",
@@ -426,17 +433,18 @@
     "enabled": true,
     "failIfUnavailable": true,
     "filesystem": {
-      "allowWrite": [
-        "~/.Trash",
-        "~/.claude/.git",
-        "~/.claude/workflows"
-      ]
+      "allowWrite": ["~/.Trash", "~/.claude/.git", "~/.claude/workflows"]
     },
     "enableWeakerNetworkIsolation": true,
-    "excludedCommands": [
-      "afplay",
-      "scout"
-    ]
+    "excludedCommands": ["afplay", "scout"],
+    "network": {
+      "allowedDomains": [
+        "api.github.com",
+        "raw.githubusercontent.com",
+        "github.com",
+        "code.claude.com"
+      ]
+    }
   },
   "effortLevel": "high",
   "advisorModel": "opus",
@@ -480,6 +488,5 @@
     "classifyAllShell": true
   },
   "disableDeepLinkRegistration": "disable",
-  "voiceEnabled": true,
-  "model": "claude-fable-5-1[1m]"
+  "voiceEnabled": true
 }
