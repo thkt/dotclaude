@@ -3,6 +3,7 @@ name: resolver-build
 description: ビルドや型検査のコマンドがエラーを報告したとき、最小の diff で直すために使う。リファクタやアーキテクチャ変更はしない。
 tools: Bash, Read, Edit, LS
 model: opus
+omitClaudeMd: true
 effort: medium
 background: true
 ---

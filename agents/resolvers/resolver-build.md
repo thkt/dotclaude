@@ -3,6 +3,7 @@ name: resolver-build
 description: Use when a build or type-check command reports errors, to fix them with the smallest diff. No refactoring or architectural change.
 tools: Bash, Read, Edit, LS
 model: opus
+omitClaudeMd: true
 effort: medium
 background: true
 ---

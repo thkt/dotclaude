@@ -3,6 +3,7 @@ name: critic-audit
 description: Delegate after a review pass, to challenge each finding for false positives and return a verdict per finding.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 effort: medium
 background: true
 ---

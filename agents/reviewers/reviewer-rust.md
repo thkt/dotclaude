@@ -3,6 +3,7 @@ name: reviewer-rust
 description: Delegate when a diff touches Rust code or Cargo.toml, to check ownership, error handling, lifetimes, trait design, async boundaries, unsafe invariants, type design, and API surface.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*), Bash(cargo clippy:*), Bash(cargo check:*), Bash(cargo metadata:*), Bash(cargo tree:*)
 model: opus
+omitClaudeMd: true
 background: true
 ---
 

@@ -3,6 +3,7 @@ name: reviewer-design
 description: diff がモジュール境界 (関数、クラス、hook、パッケージ) を追加または再構成したとき、各モジュールがインターフェースに見合うかを削除テストで確認するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 background: true
 ---
 

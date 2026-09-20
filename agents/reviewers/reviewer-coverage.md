@@ -3,6 +3,7 @@ name: reviewer-coverage
 description: Delegate when a diff touches tests or testable logic, to find behavior left untested and tests that pass even when the implementation breaks.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-workflow-tdd-cycle]
 background: true
 ---

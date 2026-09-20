@@ -3,6 +3,7 @@ name: enhancer-integration
 description: audit の challenge triage の後に、survivors をドメイン横断の根本原因へ統合するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-root-cause-analysis]
 ---
 

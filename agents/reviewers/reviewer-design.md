@@ -3,6 +3,7 @@ name: reviewer-design
 description: Delegate when a diff adds or reshapes a module boundary (function, class, hook, package), to check whether each module earns its interface by the deletion test.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 background: true
 ---
 

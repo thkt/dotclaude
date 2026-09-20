@@ -3,6 +3,7 @@ name: reviewer-duplication
 description: diff やディレクトリが 2 ファイル以上でロジックを繰り返しているおそれがあるとき、重複を見つけて共有ユーティリティ 1 つを提案するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 background: true
 ---
 

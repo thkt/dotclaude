@@ -3,6 +3,7 @@ name: critic-audit
 description: レビュー pass の後に、各 finding を false positive の観点で反論し finding ごとの verdict を返すために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 effort: medium
 background: true
 ---

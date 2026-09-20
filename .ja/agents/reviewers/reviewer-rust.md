@@ -3,6 +3,7 @@ name: reviewer-rust
 description: diff が Rust コードや Cargo.toml に触れたとき、所有権、エラー処理、ライフタイム、trait 設計、async 境界、unsafe の不変条件、型設計、API surface を確認するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*), Bash(cargo clippy:*), Bash(cargo check:*), Bash(cargo metadata:*), Bash(cargo tree:*)
 model: opus
+omitClaudeMd: true
 background: true
 ---
 

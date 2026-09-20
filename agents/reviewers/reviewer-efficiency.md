@@ -3,6 +3,7 @@ name: reviewer-efficiency
 description: Delegate when a diff touches loops, request handlers, I/O, or concurrency, to find work the code does more than once or more than needed.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

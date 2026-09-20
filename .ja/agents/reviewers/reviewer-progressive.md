@@ -3,6 +3,7 @@ name: reviewer-progressive
 description: diff がレイアウト、アニメーション、ビューポート処理のために JavaScript を追加したとき、ブラウザネイティブの CSS で置き換えられる部分を見つけるために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: sonnet
+omitClaudeMd: true
 background: true
 ---
 

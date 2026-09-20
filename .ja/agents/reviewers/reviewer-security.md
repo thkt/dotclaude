@@ -3,6 +3,7 @@ name: reviewer-security
 description: diff が入力処理、認証・認可、設定、依存、外向きリクエスト、LLM の入出力に触れたとき、finding ごとの脅威モデル付きで OWASP Top 10 の脆弱性を見つけるために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-reviewer-security]
 memory: project
 background: true

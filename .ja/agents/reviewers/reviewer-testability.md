@@ -3,6 +3,7 @@ name: reviewer-testability
 description: diff がロジックに依存、副作用、グローバル状態を持ち込んだとき、テストを難しくするパターンを見つけ、それを解く注入を提案するために委譲する。
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 skills: [use-context-reviewer-testability, use-workflow-tdd-cycle]
 background: true
 ---

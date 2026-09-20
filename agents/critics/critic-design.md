@@ -3,6 +3,7 @@ name: critic-design
 description: Delegate before a design proposal is adopted, to attack it for hidden assumptions, costs, and failure modes.
 tools: Read, LS, Bash(git:*), Bash(ugrep:*), Bash(bfs:*)
 model: opus
+omitClaudeMd: true
 effort: medium
 memory: project
 background: true
