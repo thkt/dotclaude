@@ -96,6 +96,11 @@
 - workflows/tests/ja-ts-parity.test.js は git ls-files で `.ja/**/*.ts` をリポジトリ全域走査するため、新規追加した .ts モジュールの .ja ミラーは別途登録しなくても自動的に検査対象へ入る #696
 - grep 等の文字出現検査で実 invocation の有無を判定するときは、shebang・settings.json の command・heredoc launcher など具体的な起動形にマッチを絞り、コメントや prose に出る bare な文字列言及を除外しないと偽陽性になる #703
 - plan の値 (files.includes 等) と実装が食い違うと build workflow はそのユニットで止まり、以降を手作業で進める #707
+- 複合 Bash コマンドは全パートが sandbox.excludedCommands に一致しないと除外されないので、パイプ相手を除外に足さず sandbox.network.allowedDomains でホストを開ける #726
+- インストーラが管理する hook が settings.json に別表記で二重登録されたら、インストーラの書く表記を残して古い表記を消す #726
+- agy は Claude Code の Bash sandbox 内で起動できない (127.0.0.1 への bind と ~/.gemini 配下への log 書き込みが拒否される) (research)
+- Jev の Choice には `noMatch` と `noIssue` の逃げ道を入れ、閾値は絶対値でなく clean 側との相対で決める (research)
+- Jev に判断材料 (最終メッセージとツール結果の本文) を渡さないと判定にならず、常に同じ値を返す (research)
 
 ## 棄却
 
