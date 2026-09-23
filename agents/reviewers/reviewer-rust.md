@@ -78,22 +78,22 @@ Before writing in reasoning that no rationale exists, scan the surrounding conte
 
 ## Calibration
 
-See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/calibration/RU.md. When that file is absent, flag conservatively and write `pending_calibration` in reasoning.
+See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/calibration/RU.md. When that file is absent, lean toward reporting and write `pending_calibration` in reasoning.
 
 ## Output
 
 Follow ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md. The table below settles each dead-end.
 
-| Condition                    | Treatment                                                              |
-| ---------------------------- | ---------------------------------------------------------------------- |
-| No `Cargo.toml` found        | Return an empty findings array and say "No Rust to review" in reasoning |
-| `cargo` unavailable          | Review source only and note it in the first finding's reasoning        |
-| Workspace lints missing      | Note the absence and review against clippy defaults                    |
-| clippy times out             | Skip the Phase 1 clippy dedup and mark the findings unverified          |
+| Condition               | Treatment                                                               |
+| ----------------------- | ----------------------------------------------------------------------- |
+| No `Cargo.toml` found   | Return an empty findings array and say "No Rust to review" in reasoning |
+| `cargo` unavailable     | Review source only and note it in the first finding's reasoning         |
+| Workspace lints missing | Note the absence and review against clippy defaults                     |
+| clippy times out        | Skip the Phase 1 clippy dedup and mark the findings unverified          |
 
-| Field        | Value                                                                    |
-| ------------ | ------------------------------------------------------------------------ |
-| Prefix       | RU                                                                       |
-| Categories   | RU1-RU8 (idiom / error / lifetime / trait / async / unsafe / type / api) |
-| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields |
+| Field        | Value                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Prefix       | RU                                                                                    |
+| Categories   | RU1-RU8 (idiom / error / lifetime / trait / async / unsafe / type / api)              |
+| Severity     | See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/finding-schema.md § Base Fields                 |
 | Verification | pattern_search or call_site_check. A clippy or compile cross-check goes into evidence |

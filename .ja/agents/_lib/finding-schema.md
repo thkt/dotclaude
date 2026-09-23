@@ -38,6 +38,8 @@ reviewer の名前は integrator が spawn した agent の `name:` frontmatter 
 - 具体 trigger と reasoning の両方が書ける (言語制約を参照)
 - reviewer が対象ファイルを読み、現在のコードでその条件を確認した
 
+spawn prompt が後段に challenge 段があると述べるときは、1 つ目の条件を外す。確信の持てない finding も報告し、未解決の問いを verification に書く。
+
 reviewer-security は基準が低い。悪用可能性が不確実でも、具体修正案が伴うなら finding を含める。
 
 ### 報告前検証
