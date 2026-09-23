@@ -38,7 +38,7 @@ Apply in order. If any filter excludes, do not report.
 
 ### Context Test
 
-Each reviewer's own `## Calibration` heading points at its REPORT/SKIP examples under `calibration/`. When uncertain, prefer SKIP. The challenger exists to catch false negatives, but false positives waste pipeline capacity.
+Each reviewer's own `## Calibration` heading points at its REPORT/SKIP examples under `calibration/`. When uncertain, prefer SKIP, because without a later stage a false positive reaches the reader unfiltered. When the spawn prompt states that a challenge stage (critic-audit) follows, report the uncertain finding instead and write the open question into verification. That challenge stage removes false positives.
 
 | Context         | Action                                                            |
 | --------------- | ----------------------------------------------------------------- |

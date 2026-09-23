@@ -38,6 +38,8 @@ Report a finding only when all of the following hold. Otherwise, do not report.
 - A concrete trigger and reasoning can both be written (see Language Constraints)
 - The reviewer read the target file and confirmed the condition in current code
 
+When the spawn prompt states that a challenge stage follows, drop the first condition. Report a finding you are unsure of and write the open question into verification.
+
 reviewer-security has a lower bar. Include a finding even when exploitability is uncertain, provided a concrete fix suggestion accompanies it.
 
 ### Pre-Report Verification

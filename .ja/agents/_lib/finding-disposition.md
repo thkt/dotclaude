@@ -38,7 +38,7 @@ Severity は影響の大きさを表す。Disposition は読んだ人間が次�
 
 ### Context Test
 
-各 reviewer 自身の `## キャリブレーション` 見出しが `calibration/` 配下の REPORT/SKIP 例を指す。迷ったら SKIP を優先。challenger は false negative を捕まえる存在だが、false positive は pipeline capacity を浪費する。
+各 reviewer 自身の `## キャリブレーション` 見出しが `calibration/` 配下の REPORT/SKIP 例を指す。迷ったら SKIP を優先する。後段がなければ false positive はそのまま読み手に届くため。ただし spawn prompt が後段に challenge 段 (critic-audit) があると述べるときは、迷った finding も報告し、未解決の問いを verification に書く。false positive を除くのはその challenge 段である。
 
 | コンテキスト    | アクション                                                  |
 | --------------- | ----------------------------------------------------------- |
