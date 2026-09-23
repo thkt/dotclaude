@@ -10,7 +10,7 @@ user-invocable: false
 
 ## When to use
 
-When one applies, call without deliberation. recall answers past decisions and `ugrep` / `bfs` answer the current code state, so on a trigger carrying a code-search column, run both in parallel.
+Call it when a trigger below applies. recall answers past decisions and `ugrep` / `bfs` answer the current code state, so on a trigger carrying a code-search column, run both in parallel.
 
 | Trigger              | Signal                                     | Code search to run alongside |
 | -------------------- | ------------------------------------------ | ---------------------------- |

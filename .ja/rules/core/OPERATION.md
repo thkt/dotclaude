@@ -39,12 +39,14 @@
 
 Bash のエラー文言と出力は真の原因を隠すことがある。権限拒否、0 バイトの出力、空の表はいずれも別の原因から出るので、文言のまま読むと取り違える。
 
-| 事象                                        | 対処                                                                         |
-| ------------------------------------------- | ---------------------------------------------------------------------------- |
-| bun が `PermissionDenied` で終わる          | `dangerouslyDisableSandbox` と `TMPDIR=/tmp` を付ける                        |
-| `run_in_background` の出力が 0 バイトで残る | `tail` へのパイプを外し、直接出力させる                                      |
-| `bun outdated` が表を出さない               | 依存が最新。引き直さない。lockfile 不在だけ exit 1 なので exit code で分ける |
-| macOS で `mktemp` が `$TMPDIR` を無視する   | `mktemp -d "${TMPDIR:-/tmp}/name-XXXXXX"` とテンプレートを渡す               |
+| 事象                                                                                         | 対処                                                                                                                              |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| bun が `PermissionDenied` で終わる                                                           | `dangerouslyDisableSandbox` と `TMPDIR=/tmp` を付ける                                                                             |
+| `run_in_background` の出力が 0 バイトで残る                                                  | `tail` へのパイプを外し、直接出力させる                                                                                           |
+| `bun outdated` が表を出さない                                                                | 依存が最新。引き直さない。lockfile 不在だけ exit 1 なので exit code で分ける                                                      |
+| macOS で `mktemp` が `$TMPDIR` を無視する                                                    | `mktemp -d "${TMPDIR:-/tmp}/name-XXXXXX"` とテンプレートを渡す                                                                    |
+| `git stash push <pathspec>` や `git log --since=<date>` が絞れているように見えて絞れていない | pathspec 外のステージ済み変更も stash され、時刻のない日付は実行時刻に落ちる。`--name-only` か時刻付きの `--since` で突き合わせる |
+| シェルの `timeout <cmd>` が `command not found` になる                                       | macOS の zsh に `timeout` はない。Bash ツール自身の `timeout` (ms) 引数を渡す                                                     |
 
 ## デバッグ調査プロトコル
 

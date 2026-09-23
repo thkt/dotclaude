@@ -624,7 +624,7 @@ log(
 // ---- Review ----
 phase("Review");
 const RELIABILITY =
-  "Do NOT call the advisor tool; work autonomously from your own analysis. Complete within 8 minutes; if uncertain about a finding, include it rather than skip (the challenger prunes false positives). When the scope spans several files, follow the high-churn paths and do not spend the whole budget on the first file.";
+  "Do not call the advisor tool; work from your own analysis to the end. Complete within 8 minutes; if uncertain about a finding, include it rather than skip (the challenger prunes false positives). When the scope spans several files, follow the high-churn paths and do not spend the whole budget on the first file.";
 const raw = await parallel(
   units.map(
     (u) => () =>
