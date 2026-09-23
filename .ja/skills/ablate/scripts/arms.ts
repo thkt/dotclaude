@@ -30,8 +30,9 @@ export const MEASURED = "measured";
  *
  * wiped は設定読み込みを project source のみに制限し (--setting-sources project)、
  * これが ablation の baseline となる。wiped+1 は同じ baseline から始め、
- * 通常の discovery を通して再読み込みするのではなく、system prompt に追記する形
- * (--append-system-prompt) で harness element を1つだけ復元する。full-harness は
+ * 通常の discovery を通して再読み込みするのではなく、element ファイルの中身を CLI に読ませて
+ * system prompt に追記する形 (--append-system-prompt-file) で harness element を1つだけ復元する。
+ * path は実行時の cwd (リポジトリ root) から解決される。full-harness は
  * 制限フラグなしで無改変のまま実行し、上限側の比較対象となる。 */
 export function arm_command(arm: string, element: string | null = null): string[] {
   const command = [...BASE_COMMAND];
@@ -42,7 +43,7 @@ export function arm_command(arm: string, element: string | null = null): string[
     if (element === null) {
       throw new Error(`arm ${JSON.stringify(WIPED_PLUS_ONE)} requires an element to restore`);
     }
-    command.push("--append-system-prompt", `[ablate] restoring element: ${element}`);
+    command.push("--append-system-prompt-file", element);
   }
   return command;
 }
