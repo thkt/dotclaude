@@ -14,13 +14,13 @@
 //
 // find_wiki_rule.ts runs against the cd-walked directory's own docs/wiki.
 import { spawnSync } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
+import { statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as commandScan from "../_lib/command_scan.ts";
 import { tsRuntime } from "../_lib/executable.ts";
-import { field, notify, parse } from "../_lib/hook_payload.ts";
+import { field, notify, parse, readStdin } from "../_lib/hook_payload.ts";
 
 // hooks/pre-bash/wiki_scene.ts -> hooks/pre-bash -> hooks -> repo root, the same two levels
 // the retired Python original's Path(__file__).resolve().parents[2] climbs.
@@ -100,7 +100,7 @@ function _scene_pages(directory: string, scene: string): string[] {
 }
 
 function main(): number {
-  const payload = parse(readFileSync(0, "utf8"));
+  const payload = parse(readStdin());
   const command = field(payload.tool_input, "command");
   if (typeof command !== "string" || !command) {
     return 0;

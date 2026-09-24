@@ -5,9 +5,8 @@
 // Python side's values character for character.
 //
 // Failure mode: fail-closed (security enforcement).
-import { readFileSync } from "node:fs";
 import * as command_scan from "../_lib/command_scan.ts";
-import { deny, field, parse } from "../_lib/hook_payload.ts";
+import { deny, field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 export const VERBS: ReadonlySet<string> = new Set(["rm", "rmdir", "unlink", "shred"]);
 
@@ -62,16 +61,6 @@ export function kind(command: string): string | null {
     return null;
   } catch {
     return "verb"; // an unparsable line hides where its commands are, so it is not cleared
-  }
-}
-
-/** A closed stdin can make a synchronous fd-0 read throw rather than return "" -- read it as
- * empty rather than let that throw exit the hook non-zero. */
-function readStdin(): string {
-  try {
-    return readFileSync(0, "utf8");
-  } catch {
-    return "";
   }
 }
 

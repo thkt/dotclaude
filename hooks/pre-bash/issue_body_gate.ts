@@ -20,12 +20,12 @@
 // the conversion hooks/pre-bash/tests/body-proofread-target.test.ts made once
 // hooks/pre-bash/body_proofread.ts grew a main() of its own.
 import { spawnSync } from "node:child_process";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ghFiling from "../_lib/gh_filing.ts";
 import { tsRuntime } from "../_lib/executable.ts";
-import { deny, field, parse } from "../_lib/hook_payload.ts";
+import { deny, field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -111,7 +111,7 @@ export function _errors(
 }
 
 function main(): number {
-  const raw = readFileSync(0, "utf8");
+  const raw = readStdin();
   // Cheaper than a parse on a hook that fires for every Bash call. The scan below decides
   // whether this really is a filing; this only keeps the work off everything else.
   if (!['"tool_name":"Bash"', "gh", "issue", "create"].every((word) => raw.includes(word))) {

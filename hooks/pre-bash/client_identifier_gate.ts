@@ -19,7 +19,7 @@ import { readFileSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { deny, field, parse } from "../_lib/hook_payload.ts";
+import { deny, field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -116,7 +116,7 @@ export function _hit(
 }
 
 function main(): number {
-  const payload = parse(readFileSync(0, "utf-8"));
+  const payload = parse(readStdin());
   if (field(payload, "tool_name") !== "Bash") {
     return 0;
   }

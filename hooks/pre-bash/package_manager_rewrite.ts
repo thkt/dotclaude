@@ -4,9 +4,8 @@
 // TypeScript side of the retired Python rewriter of the same name. MANAGERS / convert
 // / main carry the Python side's names and shapes; convert is exported the way the plan
 // requires.
-import { readFileSync } from "node:fs";
 import { which } from "../_lib/executable.ts";
-import { field, parse } from "../_lib/hook_payload.ts";
+import { field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 export const MANAGERS: ReadonlySet<string> = new Set(["npm", "npx", "pnpm", "yarn", "bun", "bunx"]);
 
@@ -106,7 +105,7 @@ export function convert(parts: readonly string[]): string {
 function main(): number {
   if (which("ni") === null) return 0;
 
-  const payload = parse(readFileSync(0, "utf-8"));
+  const payload = parse(readStdin());
   const command = field(field(payload, "tool_input"), "command");
   if (typeof command !== "string") return 0;
 
