@@ -27,6 +27,12 @@ export const RUN_COUNT = 5;
 // be judged passed.
 export const PASS_THRESHOLD = 0.8;
 
+// How many extra reference-arm attempts an arm may launch beyond RUN_COUNT to make up for
+// runs that reference_observation.ts's aggregation discards as contaminated or unexposed. 3 is
+// a provisional cap against runaway retries, the same provisional shape RUN_COUNT's own
+// comment carries; revisit once the first ablation run's exposure rate is measured.
+export const RERUN_CAP = 3;
+
 export const UNMEASURED = "unmeasured";
 export const MEASURED = "measured";
 
