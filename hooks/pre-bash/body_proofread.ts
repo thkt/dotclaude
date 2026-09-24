@@ -30,7 +30,7 @@ import { dirname, isAbsolute, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as commandScan from "../_lib/command_scan.ts";
 import * as ghFiling from "../_lib/gh_filing.ts";
-import { field, notify, parse } from "../_lib/hook_payload.ts";
+import { field, notify, parse, readStdin } from "../_lib/hook_payload.ts";
 import { hasJapanese } from "../_lib/japanese.ts";
 
 // hooks/_lib/textlint.py's REPO_ROOT / CONFIG, computed the same way shebang_scope.ts computes
@@ -246,7 +246,7 @@ function _checklist(): string {
 /** Answer via notify. Not a top-level decision / additionalContext pair: PreToolUse reads
  * context only out of hookSpecificOutput, so findings written at that level reach no one. */
 function main(): number {
-  const raw = readFileSync(0, "utf-8");
+  const raw = readStdin();
   // Cheaper than a scan on a hook that fires for every Bash call. _target decides whether
   // this really writes a body; this only keeps the work off everything else.
   if (!((raw.includes("gh") && raw.includes("create")) || (raw.includes("git") && raw.includes("commit")))) {
