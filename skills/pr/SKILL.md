@@ -36,7 +36,7 @@ If there are no commits, the directory is not a git repository, or gh auth fails
 2. Push the current branch with `git push -u origin HEAD`
 3. Write the body to a temp file and create the PR with `gh pr create --draft --title "<title>" --body-file <path>` (§ Creation Constraints). If a pageshot artifact exists, add the `--attach` from § Pageshot Integration
 4. On success, display `Created draft PR: #<number> <title> (base: <base>) <PR URL>`. A failed attachment follows § Creation Constraints
-5. Render and check the prompt log, then confirm attaching it (§ Prompt Log Integration)
+5. Render and check the prompt log, then confirm posting it as a PR comment (§ Prompt Log Integration)
 
 ## Analysis Sources
 
@@ -96,4 +96,4 @@ Call `Skill("use-workflow-pageshot")` with the current PR body string as input. 
 
 ## Prompt Log Integration
 
-Run node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `render` and `check` on this session's transcript (session ID ${CLAUDE_SESSION_ID}), confirm the attachment through AskUserQuestion, and branch on the result. Procedure, the `--since` value, and each branch: ${CLAUDE_SKILL_DIR}/references/prompt-log.md.
+Run node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `render` and `check` on this session's transcript (session ID ${CLAUDE_SESSION_ID}), confirm posting it as a PR comment through AskUserQuestion, and branch on the result. Procedure, the `--since` value, and each branch: ${CLAUDE_SKILL_DIR}/references/prompt-log.md.

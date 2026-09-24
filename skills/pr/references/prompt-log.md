@@ -1,6 +1,6 @@
 # Prompt Log Integration
 
-How `/pr`'s Phase 3 renders, fills, and attaches a prompt log to the PR it just created, and where each failure ends the step early.
+How `/pr`'s Phase 3 renders, fills, and posts a prompt log as a comment on the PR it just created, and where each failure ends the step early.
 
 ## Steps
 
@@ -13,7 +13,7 @@ How `/pr`'s Phase 3 renders, fills, and attaches a prompt log to the PR it just 
 2. Run node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `render SESSION_ID --out <path> --since "$SINCE"`. Write the session ID SKILL.md § Prompt Log Integration carries into the command in place of SESSION_ID, since the Bash tool does not export `CLAUDE_SESSION_ID`.
 3. Fill each rendered `Outcome:` line with the word matching that prompt (§ Outcome words).
 4. Run node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `check <path>`.
-5. Report `<path>` on the result line, then confirm the attachment through AskUserQuestion.
+5. Report `<path>` on the result line, then confirm posting it through AskUserQuestion.
 6. Branch on the result (§ Result line).
 
 ## Outcome words
@@ -31,5 +31,5 @@ How `/pr`'s Phase 3 renders, fills, and attaches a prompt log to the PR it just 
 | Result                                | What happens                                                                                                                            |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `render` or `check` exits non-zero    | End the step. Report the reason its stderr printed and the file path, the same as a failed pageshot attachment (§ Creation Constraints) |
-| Both exit 0, AskUserQuestion approves | Run `gh pr edit <number> --attach <path>`                                                                                               |
+| Both exit 0, AskUserQuestion approves | Run `gh pr comment <number> --body-file <path>`. `gh pr edit --attach` uploads images and video only and refuses a `.md` file            |
 | Both exit 0, AskUserQuestion declines | End without editing the PR                                                                                                              |
