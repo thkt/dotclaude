@@ -46,6 +46,8 @@ Obvious は RCA と regression test 生成の双方を省くため、誤修正�
 
 ## 決まりごとの参照
 
+`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従い、関連 wiki・DR と原本の適用条件・状態を現在の要求へ照合する。必要な文書更新を今回の合意範囲へ含め、実装と同じ評価へ渡す。
+
 修正するファイルが定まったら、着手の前に `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <バグの語> <触るファイル> --scene implement` を実行する。`matched` のページは今回触るファイルに効く決まりごとなので全て読んでから直す。`scenes` のページも読む。`/think` を通らないこの経路にも決まりごとが届くようにするための手順で、plan が無いぶん引くのはこの 1 回きりになる。
 
 ## Obvious
@@ -95,3 +97,7 @@ RCA の起点は経路で変わる。下表に無い経路はバグ説明から�
 - [ ] RCA から Pattern フィールドを記録 (Non-obvious パス)
 - [ ] defense-in-depth を適用 (Recurring/Systematic のみ)
 - [ ] 再 audit を提案 (finding を渡した経路)
+
+## 文書への影響
+
+修正差分が揃ったら関連 wiki/DR の現在形・適用条件への影響を確認し、必要な文書更新を含めて検証する。DR の置換が必要なら `/dr` の採用・更新手順に従い、由来を持つ wiki 本文も更新する。文書込みで許可範囲や 1〜3 ファイルの範囲を超えるときは Escalation へ戻し、黙って範囲を広げない。

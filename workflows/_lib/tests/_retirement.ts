@@ -2,7 +2,7 @@
 // The retirement-scan helpers shared by the "no tracked file still names X" tests
 // (gate-retirement.test.ts, record-retirement.test.ts, ts-harness-retirement.test.ts). Each of
 // those files used to carry its own copy of the same walk: skip docs/decisions/ and
-// docs/research/ (kept as historical record, per docs/wiki/retire-rename-procedure.md),
+// docs/research/ and its legacy roots (historical records, per docs/wiki/retire-rename-procedure.md),
 // skip whatever extra path the caller names, read the rest, and keep the ones a predicate flags.
 // This module gives that walk one home, in the same shape as workflows/_lib/tests/_brace.ts
 // (small, independently testable, named exports; no .ja mirror, per rules/conventions/MIRROR.md).
@@ -16,7 +16,12 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 
-const HISTORICAL_DIRS = ["docs/decisions/", "docs/research/"];
+const HISTORICAL_DIRS = [
+  "docs/decisions/",
+  "docs/research/",
+  "research/",
+  ".claude/workspace/research/",
+];
 
 function isHistorical(path: string): boolean {
   return HISTORICAL_DIRS.some((dir) => path.startsWith(dir));
@@ -99,7 +104,7 @@ export function assertNoResidualReferences(
   assert.deepEqual(
     offenders,
     [],
-    `files still naming ${retiredLabel} (docs/decisions/ and docs/research/ are ` +
+    `files still naming ${retiredLabel} (decisions and research archives are ` +
       `kept as history, not counted): ${offenders.join(", ")}`,
   );
 }

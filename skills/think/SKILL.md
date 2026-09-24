@@ -19,12 +19,14 @@ Subject 2+ approaches to `critic-design` critique, and let only the surviving ap
 
 Read `.claude/OUTCOME.md`. If it does not exist, generate it via `/outcome`. The Why is three things, plus a fourth when the task is a Bug: who is having trouble and with what, what counts as success, why now, and for a Bug what the root cause is. Attach evidence to the trouble. Identify the root cause together with evidence such as reproduction steps or logs; when the cause is undetermined, do not proceed to design and route to `/research` instead. When the report that comes back carries a `Hypotheses Log` section, read it as the evidence for the cause. Design starts only once this Why is readable from $ARGUMENTS and the conversation. Do not proceed on placeholders; pin it down via AskUserQuestion.
 
+Follow `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`: check relevant wiki/DRs and original conditions and status against the current requirements. Include needed document updates in the agreed scope and pass them through the same evaluation as implementation.
+
 ## Phase 2: Design Exploration
 
 Ground the approaches in the real code and existing research before making them. Steps 1 through 4 finish with no approach yet in existence.
 
 1. Read the relevant code. When the task, the issue, or a research report cites a mock image or screenshot, open that image file with Read as well. Absence from the text is not evidence the element does not exist
-2. Derive a lowercase hyphenated slug from the task's words and run ${CLAUDE_SKILL_DIR}/../research/scripts/find-prior-research.ts <slug> docs/research. Read the matching report from the candidates on stdout, and take each of its parts per the table in ${CLAUDE_SKILL_DIR}/references/research-report-intake.md. With no candidate, proceed as though no research report exists
+2. Derive a lowercase hyphenated slug from the task's words and run ${CLAUDE_SKILL_DIR}/../research/scripts/find-prior-research.ts <slug> docs/research research .claude/workspace/research. Read the returned `path` of a matching candidate; `aliases` identify identical migration copies, and differing versions need comparison. Take each report part per the table in ${CLAUDE_SKILL_DIR}/references/research-report-intake.md. With no candidate, proceed as though no research report exists
 3. Search for the reference_module candidate: an existing module whose set of screens or layers matches the one being planned, in any domain. Pick the closest one and note the names of the others. Record the result as kind (module/no-module/new-shape) with a reason, and when none matches, note why this shape is new
 4. Run `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <slug> <the paths likely touched> --scene plan` and read the `matched` pages and `scenes` pages. A rule bears on how units are cut and which files they take, so reading it after the decomposition means cutting them again
 5. Generate 2+ approaches from distinct perspectives (simplest thing that works / structure and extensibility / developer experience). Do not bundle independent technical decisions into one question; ask each separately with a recommendation and trade-offs
@@ -102,3 +104,7 @@ Return the following to the caller in conversation.
 | blockers           | The points left that the user has to decide before this can proceed                  |
 | backlog candidates | Candidates carved out of scope. "none" if none                                       |
 | design summary     | Adopted approach, compared approaches, the `critic-design` verdict, DR needed or not |
+
+## Hand over document updates
+
+Plan changes to affected current-state wiki pages and DR creation/supersession when the adoption gate holds. Put pages in the relevant unit files and needed references in Preconditions/Rules. Build does not update documents outside the Plan; repair an omission through `/think` and `/issue`. Explain when no update is needed; do not create a page merely to fill a format.

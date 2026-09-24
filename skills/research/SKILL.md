@@ -26,7 +26,7 @@ Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. If the inv
 
 ## Phase 2: Prior Research Scan
 
-Derive the lowercase hyphenated subject slug from `$ARGUMENTS` and run `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> docs/research`. Parse the JSON `{ candidates: [{file, shared}, ...], slug_words: int }` (shared descending) from stdout.
+Derive the lowercase hyphenated subject slug from `$ARGUMENTS` and run `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> docs/research research .claude/workspace/research`. Parse the JSON `{ candidates: [{file, shared, path, aliases}, ...], slug_words: int }` (shared descending) from stdout.
 
 - No candidates: set the report's Prior research to `none found` and move on
 - A candidate with shared >= 2, or with shared equal to `slug_words`: carry forward per the table below
@@ -99,3 +99,7 @@ Not done until all are satisfied. An item whose Condition carries "(...)" is req
 | Triage            | Phase 7 | Every Next Action states its linkage (question / OUTCOME / incident) or reads `record only`          |
 | Save              | Phase 8 | Output saved to `docs/research/`                                                        |
 | Handoff           | Phase 8 | Destination proposed from the Next Steps table, with the report path and the slug's words attached   |
+
+## Originals and sharing
+
+When scanning multiple roots, read the returned `path`. Identical same-name migration copies share `aliases`; differing content remains separate and requires comparison of its source and version. Untracked originals are readable, but saving, committing, and sharing are separate: do not publish material whose sharing scope is unconfirmed.

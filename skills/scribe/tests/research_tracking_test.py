@@ -30,7 +30,7 @@ def check_ignore(path: Path) -> int:
 def research_scan_command() -> str:
     """The committed-report scan scribe's Phase 2 step 3 names, read out of SKILL.md so the test
     runs the command the skill actually carries."""
-    match = re.search(r"`(git log --since=[^`]+)`", SKILL.read_text(encoding="utf-8"))
+    match = re.search(r"(git log --since=[^`\n]+)", SKILL.read_text(encoding="utf-8"))
     assert match, "SKILL.md names no git log --since research scan"
     return match.group(1)
 
@@ -40,6 +40,20 @@ def git(repo: Path, *args: str) -> None:
 
 
 class ResearchTracking(unittest.TestCase):
+    def test_git_check_ignore_exits_nonzero_for_a_markdown_file_under_claude_workspace_research(
+        self,
+    ) -> None:
+        """T-001 git check-ignore exits nonzero for a markdown file under
+        .claude/workspace/research"""
+        target = ROOT / ".claude" / "workspace" / "research" / "sample.md"
+        self.assertNotEqual(check_ignore(target), 0, f"{target} is still git-ignored")
+
+    def test_a_non_markdown_file_under_research_stays_ignored(self) -> None:
+        """SKILL.md Phase 2 step 4 reads *.md only, so a tracked non-md file would be
+        published without ever being scanned."""
+        target = ROOT / ".claude" / "workspace" / "research" / "scratch.json"
+        self.assertEqual(check_ignore(target), 0, f"{target} is not git-ignored")
+
     def test_a_markdown_file_directly_under_docs_research_is_not_ignored(self) -> None:
         """T-535 git check-ignore exits nonzero for a markdown file directly under
         docs/research"""
@@ -48,8 +62,6 @@ class ResearchTracking(unittest.TestCase):
 
     def test_a_non_markdown_file_under_docs_research_stays_ignored(self) -> None:
         """T-536 git check-ignore keeps ignoring a non-markdown file under docs/research"""
-        # SKILL.md Phase 2 step 4 reads *.md only, so a tracked non-md file would be published
-        # without ever being scanned.
         target = ROOT / "docs" / "research" / "scratch.json"
         self.assertEqual(check_ignore(target), 0, f"{target} is not git-ignored")
 
@@ -80,13 +92,13 @@ class ResearchTracking(unittest.TestCase):
             git(repo, "init", "-q")
             git(repo, "config", "user.email", "t@example.com")
             git(repo, "config", "user.name", "t")
-            old = repo / "old" / "research"
+            old = repo / ".claude" / "workspace" / "research"
             old.mkdir(parents=True)
             _ = (old / "2026-01-01-moved.md").write_text("# moved\n\nbody line\n" * 5)
             git(repo, "add", ".")
             git(repo, "commit", "-q", "-m", "seed", "--date=2026-01-01T00:00:00Z")
             (repo / "docs" / "research").mkdir(parents=True)
-            git(repo, "mv", "old/research/2026-01-01-moved.md", "docs/research/")
+            git(repo, "mv", ".claude/workspace/research/2026-01-01-moved.md", "docs/research/")
             _ = (repo / "docs" / "research" / "2026-01-02-new.md").write_text("# new\n")
             git(repo, "add", ".")
             git(repo, "commit", "-q", "-m", "move and add")

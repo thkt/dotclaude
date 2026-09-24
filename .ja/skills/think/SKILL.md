@@ -19,12 +19,14 @@ argument-hint: "[task description]"
 
 `.claude/OUTCOME.md` を読む。存在しない場合は `/outcome` で生成する。Why は 3 点で構成し、タスクが Bug のときは 4 点目として原因を足す。誰が何に困っているか、何を成功とみなすか、なぜ今やるか、Bug なら原因は何か。困りごとには根拠を添える。原因は再現手順やログなど根拠とともに特定し、原因が未確定なら設計へ進まず `/research` に回す。戻ってきた調査レポートに `仮説ログ` 節があれば、それを原因の根拠として読む。設計はこの Why が $ARGUMENTS と会話から読めてから始める。曖昧なまま仮置きせず、AskUserQuestion で詰める。
 
+`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従い、関連 wiki・DR と原本の適用条件・状態を現在の要求へ照合する。必要な文書更新を今回の合意範囲へ含め、実装と同じ評価へ渡す。
+
 ## Phase 2: 設計探索
 
 案は、実在するコードと既存の調査に照らしてから作る。手順 1 から 4 は、案が 1 つも無い状態で終える。
 
 1. 関連コードを読む。タスク、issue、調査レポートのいずれかがモック画像を参照しているなら、その画像も Read で開く。テキスト側に記載が無いことを、その要素が存在しない根拠にしない
-2. タスクの語から小文字ハイフン区切りの slug を作る。${CLAUDE_SKILL_DIR}/../research/scripts/find-prior-research.ts <slug> docs/research を実行する。標準出力の候補から該当するレポートを読み、各箇所を ${CLAUDE_SKILL_DIR}/references/research-report-intake.md の表のとおり扱う。候補が 0 件なら調査レポートは無いものとして進む
+2. タスクの語から小文字ハイフン区切りの slug を作る。${CLAUDE_SKILL_DIR}/../research/scripts/find-prior-research.ts <slug> docs/research research .claude/workspace/research を実行する。該当候補の `path` を読む。`aliases` は同内容の移行コピーを示し、異なる版は比較する。各箇所を ${CLAUDE_SKILL_DIR}/references/research-report-intake.md の表のとおり扱う。候補が 0 件なら調査レポートは無いものとして進む
 3. reference_module の候補を探す。対象は画面の組か layer の組が一致する既存モジュールで、ドメインは問わない。もっとも近い 1 つを選び、他は名前を控える。結果は kind (module/no-module/new-shape) と理由で控える。一致が無ければ新規である理由を控える
 4. `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <slug> <触りそうなパス> --scene plan` を実行し、`matched` と `scenes` のページを読む。決まりごとは unit の切り方と files の選び方を決めるので、分割の後に読むと割り直しになる
 5. 異なる視点 (動く最小解/構造と拡張性/開発体験) から 2 つ以上の案を生成する。独立した技術判断は 1 つの質問に束ねず、推奨とトレードオフを添えて別々に問う
@@ -102,3 +104,7 @@ contract が引用できるのは 1 箇所の振る舞いだけなので、周�
 | blockers           | 残った論点のうち、ユーザーが決めないと進めないもの      |
 | backlog candidates | スコープ外へ切り出した候補。無ければ「なし」            |
 | 設計要約           | 採用した案、比較した案、`critic-design` の判定、DR 要否 |
+
+## 文書更新の引継ぎ
+
+現在形が変わる wiki と、採用条件を満たす DR の新規・置換を計画へ含める。対象ページは該当 unit の files、必要な参照は Preconditions/Rules に載せる。build は Plan 外の文書を自動更新しないため、計画に漏れがあれば `/think` と `/issue` で直す。更新不要なら理由を説明し、形式を埋めるために新規ページを作らない。

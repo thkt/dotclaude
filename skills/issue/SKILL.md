@@ -19,6 +19,8 @@ When only an issue number or URL arrives, transfer a plan into that filed issue.
 
 Read `language` from `~/.claude/settings.json` and generate the issue body in that language. Translate the template's body into it as well. Default to English when it is unset. Headings that come from the template stay in English.
 
+Follow `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`: check relevant wiki/DRs and original conditions and status against the current requirements. Include needed document updates in the agreed scope and pass them through the same evaluation as implementation.
+
 ## Phase 1: Drafting
 
 1. Read `.claude/OUTCOME.md`, and generate the stub via `/outcome` when it is absent. Confirm the issue sits inside the outcome state. When it sits outside, ask via AskUserQuestion whether to redefine the non-goal or split it off as its own task

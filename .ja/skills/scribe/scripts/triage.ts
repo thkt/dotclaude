@@ -67,14 +67,43 @@ const ACTION: Record<string, string> = { page: "update", candidate: "promote", n
 // 候補ストアの 2 見出し。read_store/readStore がこの順で認識する。
 const STORE_SECTIONS = ["## 昇格待ち", "## 単発"] as const;
 
-// ストアの行が持つ根拠マーカー: GitHub の参照番号、または裸の "(research)" タグ。
-const EVIDENCE = /#\d+|\(research\)/g;
+// 研究リンクは原本を識別し、旧匿名根拠も読み続ける。
+const RESEARCH_LINK =
+  /\[[^\]]+\]\(((?:\.\.\/\.\.\/(?:\.claude\/workspace\/)?|\.\.\/|docs\/|\.claude\/workspace\/)?research\/[^\s)]+\.md)(?:#[^)]+)?\)/;
+const EVIDENCE = new RegExp(`${RESEARCH_LINK.source}|#\\d+|\\(research\\)`, "g");
+
+function uniqueEvidence(items: readonly string[]): string[] {
+  const sources = new Map<string, string>();
+  for (const item of items) {
+    const target = RESEARCH_LINK.exec(item)?.[1];
+    if (!target) {
+      sources.set(item, item);
+      continue;
+    }
+    const relative = target.startsWith("../research/")
+      ? `docs/${target.slice(3)}`
+      : target.replace(/^\.\.\/\.\.\//, "");
+    const name = relative.replace(/^(?:docs\/|\.claude\/workspace\/)?research\//, "");
+    const href = relative.startsWith("docs/") ? `../${relative.slice(5)}` : `../../${relative}`;
+    const normalized = `[research:${name}](${href})`;
+    const previous = sources.get(name);
+    if (
+      !previous ||
+      relative.startsWith("docs/") ||
+      (!previous.includes("(../research/") && relative.startsWith("research/"))
+    ) {
+      sources.set(name, normalized);
+    }
+  }
+  return [...sources.values()];
+}
 
 function toRow(pattern: Pattern): Row {
-  const evidence = pattern.evidence ?? [];
+  const evidence = uniqueEvidence(pattern.evidence ?? []);
+  const hasIdentifiedResearch = evidence.some((item) => RESEARCH_LINK.test(item));
   const row: Row = {
     name: pattern.name ?? "",
-    count: evidence.length,
+    count: evidence.filter((item) => item !== "(research)" || !hasIdentifiedResearch).length,
     evidence,
     existing: pattern.existing ?? "none",
   };
@@ -163,7 +192,7 @@ export function merge(store: readonly Pattern[], fresh: readonly Pattern[]): Pat
     const at = index.get(name);
     if (at === undefined) {
       index.set(name, merged.length);
-      merged.push({ ...p, evidence: [...(p.evidence ?? [])] });
+      merged.push({ ...p, evidence: uniqueEvidence(p.evidence ?? []) });
       continue;
     }
     const seen = merged[at].evidence;
@@ -172,6 +201,7 @@ export function merge(store: readonly Pattern[], fresh: readonly Pattern[]): Pat
         seen.push(e);
       }
     }
+    merged[at].evidence = uniqueEvidence(seen);
     // 蓄積行の existing は read_store が付けた固定値でしかない。今回同じ名前を fresh 側で
     // どちらとして見たかこそがその行の今の姿なので、そちらが勝つ。
     if (p.existing !== undefined) {

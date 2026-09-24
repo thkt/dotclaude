@@ -19,6 +19,8 @@ issue 番号または URL だけを受け取った場合は、起票済み issue
 
 `~/.claude/settings.json` から `language` を読み、指定された言語で Issue 本文を生成する。テンプレートの本文もその言語に翻訳する。未設定の場合は英語をデフォルトとする。テンプレート由来の見出しは英語のまま維持する。
 
+`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従い、関連 wiki・DR と原本の適用条件・状態を現在の要求へ照合する。必要な文書更新を今回の合意範囲へ含め、実装と同じ評価へ渡す。
+
 ## Phase 1: 起草
 
 1. `.claude/OUTCOME.md` を読み、なければ `/outcome` で stub を生成する。issue が outcome state の範囲内にあるか確認する。範囲外の場合は、非ゴールを再定義するか、別タスクとして切り分けるかを AskUserQuestion で確認する

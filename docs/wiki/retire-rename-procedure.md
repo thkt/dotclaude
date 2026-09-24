@@ -7,14 +7,14 @@ scenes: ["plan"]
 
 ## 内容
 
-skill / agent / workflow を retire または rename するときは、使用実績の計測を根拠にし、両ツリー全域の残存参照ゼロを検証し、配布物 (marketplace.json) と docs を同期し、docs/decisions/ 内の言及は歴史記録として据え置く。PR 本文には retire で失われる検出層とその復活判断トリガーを明記する。
+skill / agent / workflow を retire または rename するときは、使用実績の計測を根拠にし、両ツリー全域の残存参照ゼロを検証し、配布物 (marketplace.json) と docs を同期し、`docs/decisions/` と `docs/research/`（旧 `research/`・`.claude/workspace/research/` を含む）内の言及は歴史記録として据え置く。PR 本文には retire で失われる検出層とその復活判断トリガーを明記する。
 
 ## 定型手順
 
 1. 使用実績を計測して根拠表を作る。30日 spawn 回数 / audit findings 件数 / lint 代替可否 / セッションログ grep
 2. EN と .ja の両ツリー + docs (COMMANDS.md / SKILLS_AGENTS.md) を一括更新し、git ls-files / ugrep 全走査で残存参照ゼロを確認する
 3. `.claude-plugin/marketplace.json` と `docs/SKILLS_AGENTS.md` の件数を同期し、`python3 -m json.tool` で JSON を検証する
-4. docs/decisions/ 内の言及は削除せず歴史記録として据え置く
+4. `docs/decisions/` と `docs/research/`（旧 `research/`・`.claude/workspace/research/` を含む）内の言及は削除せず歴史記録として据え置く
 5. PR 本文に弱点 (失われる検出層) と復活判断トリガーを明記する
 6. 対象を扱う未着手 issue の有無を確認し、無効化されるものは close する
 

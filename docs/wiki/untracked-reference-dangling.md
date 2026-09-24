@@ -18,11 +18,11 @@ git 管理外のファイル (gitignore 配下、ローカル生成物) のパ�
 
 ## 参照コード
 
-- `skills/scribe/SKILL.md` の No research paths 不変条件 (`docs/research/` のパスを `docs/wiki/` 配下に書かない)
+- `skills/scribe/SKILL.md` の Identify originals 不変条件 (research の根拠は追跡済みの原本へリンクし、原本を特定できない旧 `(research)` は推測でリンクしない)
 - `skills/scribe/SKILL.md` Phase 4 の参照掃除 (ファイルの実在とシンボル名の grep 一致を機械的に確認し、壊れていれば共通項を不成立にする)
 
 ## 根拠
 
 - #188 #190 untracked ファイルへの参照が main に載り dangling になった
-- #232 `docs/research/` を scribe の入力に追加する際、evidence として research のファイルパスを wiki page に書く案を、Phase 4 の参照掃除が壊れた参照と判定するためこの理由で落とした
+- #232 `.claude/workspace/research/` を scribe の入力に追加する際、evidence として research のファイルパスを wiki page に書く案を、Phase 4 の参照掃除が壊れた参照と判定するためこの理由で落とした
 - (research) `workflows/assert/bootstrap.py` と `worktree.py` (と `.ja` ミラー) が 64 日前に削除された `references/phase-0.md` / `phase-4.md` を gate 経路の典拠として引き、`docs/wiki/harness-production-divergence.md` が改名済みの `run-workflow.test.js` を名指していた

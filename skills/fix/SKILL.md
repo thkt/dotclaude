@@ -46,6 +46,8 @@ Obvious skips both RCA and regression test generation, so it is limited to findi
 
 ## Reading the rules
 
+Follow `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`: check relevant wiki/DRs and original conditions and status against the current requirements. Include needed document updates in the agreed scope and pass them through the same evaluation as implementation.
+
 Once the files to change are settled, run `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <the bug's words> <the files to touch> --scene implement` before starting. Read every page under `matched`, since its rule bears on a file this fix touches. Read every page under `scenes` as well. This route never passes through `/think`, so this is the one place a rule reaches it; with no plan to carry them, there is no second chance.
 
 ## Obvious
@@ -95,3 +97,7 @@ Not done until every item holds. A parenthesized item is required only when it a
 - [ ] Pattern field recorded from RCA (Non-obvious path)
 - [ ] defense-in-depth applied (Recurring / Systematic only)
 - [ ] Re-audit suggested (findings handed over directly)
+
+## Document impact
+
+When the fix diff is ready, check its effect on related wiki/DR current practice and conditions, and verify needed document updates with it. Follow `/dr` for decision supersession and update derived wiki bodies too. If documents take the change outside authorization or the 1–3 file limit, return to Escalation instead of silently widening scope.

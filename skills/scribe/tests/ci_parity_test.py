@@ -54,7 +54,9 @@ class ScribeWorkflowParity(unittest.TestCase):
     ) -> None:
         """T-007: scribe.yml declares the same tool set as the allowed-tools line of SKILL.md."""
         text = workflow_text()
-        canonical = skill_allowed_tools()
+        canonical = {
+            tool.replace("${CLAUDE_SKILL_DIR}", "skills/scribe") for tool in skill_allowed_tools()
+        }
         match = re.search(r"--allowedTools[= ]\"?([^\"\n]+)\"?", text)
         self.assertIsNotNone(match, "scribe.yml declares --allowedTools in claude_args")
         declared = {tool.strip() for tool in re.split(r"[,\s]+", match.group(1)) if tool.strip()}

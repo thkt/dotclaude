@@ -87,3 +87,20 @@ test(
     );
   },
 );
+
+test("migrated research remains historical while current documentation still rejects retired names", () => {
+  const paths = [
+    "docs/research/2026-09-24-original.md",
+    "research/2026-09-24-original.md",
+    ".claude/workspace/research/original.md",
+    "docs/wiki/live.md",
+  ];
+  assert.deepEqual(
+    offendersAmong(
+      paths,
+      () => "legacy symbol",
+      (text) => text.includes("legacy symbol"),
+    ),
+    ["docs/wiki/live.md"],
+  );
+});

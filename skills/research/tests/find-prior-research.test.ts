@@ -7,7 +7,7 @@
 // skills/outcome/scripts/validate-outcome.ts), and hooks/_lib/shebang_scope.ts's trackedEntries
 // for the git-index mode check (T-182) instead of a standalone statSync or spawn.
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -124,6 +124,118 @@ test("T-262 a broken symlink ending in .md is skipped and the real candidates ar
       });
     } finally {
       rmSync(workDir, { recursive: true, force: true });
+    }
+  });
+});
+
+test("multiple research roots preserve legacy-only sources and deduplicate identical migrations", () => {
+  withTempHome((home) => {
+    const repo = mkdtempSync(join(tmpdir(), "research-roots-"));
+    try {
+      for (const dir of ["docs/research", "research", ".claude/workspace/research"])
+        mkdirSync(join(repo, dir), { recursive: true });
+      writeFileSync(join(repo, "docs/research", "topic-shared.md"), "same source\n");
+      writeFileSync(join(repo, ".claude/workspace/research", "topic-shared.md"), "same source\n");
+      writeFileSync(join(repo, ".claude/workspace/research", "topic-legacy.md"), "legacy source\n");
+      const run = runCli(
+        SCRIPT,
+        home,
+        "",
+        ["topic", "docs/research", "research", ".claude/workspace/research"],
+        { cwd: repo },
+      );
+      assert.equal(run.status, 0, run.stderr);
+      const rows = JSON.parse(run.stdout).candidates;
+      assert.deepEqual(
+        rows.map((row: { path: string }) => row.path),
+        [".claude/workspace/research/topic-legacy.md", "docs/research/topic-shared.md"],
+      );
+      assert.deepEqual(rows[1].aliases, [
+        "docs/research/topic-shared.md",
+        ".claude/workspace/research/topic-shared.md",
+      ]);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+});
+
+test("manual all scan includes new untracked reports and keeps differing same-name originals", () => {
+  withTempHome((home) => {
+    const repo = mkdtempSync(join(tmpdir(), "research-all-"));
+    try {
+      for (const dir of ["docs/research", "research", ".claude/workspace/research"])
+        mkdirSync(join(repo, dir), { recursive: true });
+      writeFileSync(join(repo, "docs/research", "source.md"), "new version\n");
+      writeFileSync(join(repo, ".claude/workspace/research", "source.md"), "old version\n");
+      writeFileSync(join(repo, "research", "README.md"), "index\n");
+      writeFileSync(join(repo, "research", "raw.json"), "{}\n");
+      symlinkSync(join(repo, "docs/research", "source.md"), join(repo, "research", "linked.md"));
+      const run = runCli(
+        SCRIPT,
+        home,
+        "",
+        ["--all", "docs/research", "research", ".claude/workspace/research"],
+        { cwd: repo },
+      );
+      assert.equal(run.status, 0, run.stderr);
+      assert.deepEqual(
+        JSON.parse(run.stdout)
+          .candidates.map((row: { path: string }) => row.path)
+          .sort(),
+        [".claude/workspace/research/source.md", "docs/research/source.md"],
+      );
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+});
+
+test("manual all scan traverses nested originals and preserves their root-relative identity", () => {
+  withTempHome((home) => {
+    const repo = mkdtempSync(join(tmpdir(), "research-nested-"));
+    try {
+      for (const dir of ["docs/research/partition", "docs/research/other", "research/partition"])
+        mkdirSync(join(repo, dir), { recursive: true });
+      for (const dir of ["docs/research/partition", "docs/research/other", "research/partition"])
+        writeFileSync(join(repo, dir, "topic.md"), "same content\n");
+      symlinkSync(join(repo, "docs/research"), join(repo, "docs/research/loop"));
+      const run = runCli(SCRIPT, home, "", ["--all", "docs/research", "research"], { cwd: repo });
+      assert.equal(run.status, 0, run.stderr);
+      const rows = JSON.parse(run.stdout).candidates;
+      assert.deepEqual(
+        rows.map((row: { file: string }) => row.file),
+        ["other/topic.md", "partition/topic.md"],
+      );
+      assert.deepEqual(rows[1].aliases, [
+        "docs/research/partition/topic.md",
+        "research/partition/topic.md",
+      ]);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+});
+
+test("a symlinked ancestor cannot bring an external original into the repository scan", () => {
+  withTempHome((home) => {
+    const repo = mkdtempSync(join(tmpdir(), "research-boundary-"));
+    const external = mkdtempSync(join(tmpdir(), "research-boundary-external-"));
+    try {
+      mkdirSync(join(external, "research"));
+      writeFileSync(join(external, "research/topic.md"), "external source\n");
+      symlinkSync(external, join(repo, "docs"));
+      mkdirSync(join(repo, "research"));
+      writeFileSync(join(repo, "research/topic-local.md"), "local source\n");
+      const run = runCli(SCRIPT, home, "", ["--all", "docs/research", "research"], { cwd: repo });
+      assert.equal(run.status, 0, run.stderr);
+      assert.deepEqual(
+        JSON.parse(run.stdout).candidates.map((row: { path: string }) => row.path),
+        ["research/topic-local.md"],
+      );
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+      rmSync(external, { recursive: true, force: true });
     }
   });
 });

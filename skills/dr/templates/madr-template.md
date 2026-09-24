@@ -56,6 +56,8 @@ Chosen option: "{chosen option}", because {immediate justification}.
 
 ## More Information
 
+{Relative original paths and needed versions, scope and conditions, and the Issue/PR confirming agreement. Mark unknowns unconfirmed}
+
 ### {Recommended topic by type}
 
 {Only the decision type's recommended topics that apply to the decision. Repeat the ### heading per topic}
