@@ -101,6 +101,8 @@
 - agy は Claude Code の Bash sandbox 内で起動できない (127.0.0.1 への bind と ~/.gemini 配下への log 書き込みが拒否される) (research)
 - Jev の Choice には `noMatch` と `noIssue` の逃げ道を入れ、閾値は絶対値でなく clean 側との相対で決める (research)
 - Jev に判断材料 (最終メッセージとツール結果の本文) を渡さないと判定にならず、常に同じ値を返す (research)
+- hook_payload.ts が export する readStdin を使わず、10 個の hook がそれぞれ同じ実装を自前で複製していた #734
+- 重複検出ツール (fallow) は一部の重複しか検出せず、残りは手動 grep で見つける必要がある #734
 
 ## 棄却
 
