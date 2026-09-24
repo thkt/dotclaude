@@ -28,3 +28,4 @@ scenes: []
 - #209 session-start snapshot のため同一 session で検証できないことが分かった
 - #505 hook を配線した同じ session で 5 回試しても発火しなかった
 - #521 settings.json を追跡下へ置いた
+- #726 herdr の SessionStart hook を 1 件に寄せ、26 の agent 定義に omitClaudeMd を足した変更を、新しい session の `/status` と audit 実行で確認した
