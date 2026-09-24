@@ -134,8 +134,29 @@ export const BASE_COMMAND: readonly string[] = [
   "stream-json",
 ];
 
-/** Builds the fixture directory for one arm and one skill-reference element, returning its
- * absolute path.
+/** Validates `arm` and resolves `element`'s own skill dir/name and its reviewer agent -- the
+ * one findReviewerAgent scan (a glob over agents/reviewers/*.md plus a frontmatter read of
+ * each candidate) that build_reference_fixture and reference_arm_command both need before they
+ * diverge. Shared here so reference_arm_command, which also needs the agent's own path for its
+ * --agent flag, does not repeat that scan a second time on top of build_reference_fixture's. */
+function resolveFixtureInputs(
+  arm: string,
+  element: string,
+  root: string,
+): { ownSkillDir: string; ownSkillName: string; agent: ReviewerAgent } {
+  if (arm !== WIPED && arm !== WIPED_PLUS_ONE) {
+    throw new Error(
+      `reference arm classification only supports ${JSON.stringify(WIPED)} and ` +
+        `${JSON.stringify(WIPED_PLUS_ONE)}, got ${JSON.stringify(arm)}`,
+    );
+  }
+  const { dir: ownSkillDir, name: ownSkillName } = ownSkill(element);
+  return { ownSkillDir, ownSkillName, agent: findReviewerAgent(ownSkillName, root) };
+}
+
+/** The fixture-assembly step of build_reference_fixture, taking the already-resolved
+ * ownSkillDir/ownSkillName/agent (resolveFixtureInputs) so reference_arm_command can reuse it
+ * without a second agent resolution.
  *
  * wiped holds every file of the element's own skill unchanged except the target reference,
  * which is emptied. wiped+1 holds the same tree with the target reference at its original
@@ -145,17 +166,14 @@ export const BASE_COMMAND: readonly string[] = [
  * repository -- the element's own skill in full (its SKILL.md and every references/ page,
  * since the element itself lives inside that tree), and each other named skill by its
  * SKILL.md, the file project-scope discovery reads to resolve a skill's existence. */
-export function build_reference_fixture(arm: string, element: string, root: string): string {
-  if (arm !== WIPED && arm !== WIPED_PLUS_ONE) {
-    throw new Error(
-      `reference arm classification only supports ${JSON.stringify(WIPED)} and ` +
-        `${JSON.stringify(WIPED_PLUS_ONE)}, got ${JSON.stringify(arm)}`,
-    );
-  }
-
-  const { dir: ownSkillDir, name: ownSkillName } = ownSkill(element);
-  const agent = findReviewerAgent(ownSkillName, root);
-
+function assembleFixture(
+  arm: string,
+  element: string,
+  root: string,
+  ownSkillDir: string,
+  ownSkillName: string,
+  agent: ReviewerAgent,
+): string {
   const fixtureRoot = mkdtempSync(join(tmpdir(), "reference-arm-"));
 
   copySkillDir(root, ownSkillDir, fixtureRoot);
@@ -174,14 +192,20 @@ export function build_reference_fixture(arm: string, element: string, root: stri
   return fixtureRoot;
 }
 
+/** Builds the fixture directory for one arm and one skill-reference element, returning its
+ * absolute path. See assembleFixture for what the fixture holds. */
+export function build_reference_fixture(arm: string, element: string, root: string): string {
+  const { ownSkillDir, ownSkillName, agent } = resolveFixtureInputs(arm, element, root);
+  return assembleFixture(arm, element, root, ownSkillDir, ownSkillName, agent);
+}
+
 /** The claude invocation for one arm and one skill-reference element: BASE_COMMAND restricted
  * to project settings, running as the reviewer agent the fixture holds, from that fixture's own
  * directory as cwd. claude has no flag for a working directory, so this pair replaces the
  * single argv arm_command returns. */
 export function reference_arm_command(arm: string, element: string, root: string): FixtureCommand {
-  const cwd = build_reference_fixture(arm, element, root);
-  const { name: ownSkillName } = ownSkill(element);
-  const agent = findReviewerAgent(ownSkillName, root);
+  const { ownSkillDir, ownSkillName, agent } = resolveFixtureInputs(arm, element, root);
+  const cwd = assembleFixture(arm, element, root, ownSkillDir, ownSkillName, agent);
   const argv = [
     ...BASE_COMMAND,
     "--setting-sources",

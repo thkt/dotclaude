@@ -134,8 +134,30 @@ export const BASE_COMMAND: readonly string[] = [
   "stream-json",
 ];
 
-/** 1つの arm と1つの skill-reference element について fixture ディレクトリを組み立て、その
- * 絶対パスを返す。
+/** arm を検証し、element 自身の skill dir/名前とその reviewer agent を解決する -- この
+ * findReviewerAgent の走査(agents/reviewers/*.md への glob と、候補それぞれの frontmatter
+ * 読み取り)は build_reference_fixture と reference_arm_command の両方が、互いの処理が分かれる
+ * 前に必要とする1回分。ここに共有することで、agent 自身のパスを --agent フラグ用に別途
+ * 必要とする reference_arm_command が、build_reference_fixture の分に重ねてもう一度この走査を
+ * 繰り返さずに済む。 */
+function resolveFixtureInputs(
+  arm: string,
+  element: string,
+  root: string,
+): { ownSkillDir: string; ownSkillName: string; agent: ReviewerAgent } {
+  if (arm !== WIPED && arm !== WIPED_PLUS_ONE) {
+    throw new Error(
+      `reference arm classification only supports ${JSON.stringify(WIPED)} and ` +
+        `${JSON.stringify(WIPED_PLUS_ONE)}, got ${JSON.stringify(arm)}`,
+    );
+  }
+  const { dir: ownSkillDir, name: ownSkillName } = ownSkill(element);
+  return { ownSkillDir, ownSkillName, agent: findReviewerAgent(ownSkillName, root) };
+}
+
+/** build_reference_fixture の fixture 組み立て部分。すでに解決済みの
+ * ownSkillDir/ownSkillName/agent(resolveFixtureInputs)を受け取ることで、
+ * reference_arm_command が agent 解決をもう一度行わずに再利用できるようにする。
  *
  * wiped は element 自身の skill が持つ全ファイルを、対象の reference だけを空にした状態で
  * そのまま保持する。wiped+1 は同じツリーを、対象の reference だけ元の内容のまま保持する。
@@ -145,17 +167,14 @@ export const BASE_COMMAND: readonly string[] = [
  * skill は丸ごと(element 自体がそのツリーの中にあるため、SKILL.md と全ての references/
  * ページ)、それ以外の名指された skill はその SKILL.md だけ(project-scope discovery が
  * skill の存在を解決する際に読むファイル)。 */
-export function build_reference_fixture(arm: string, element: string, root: string): string {
-  if (arm !== WIPED && arm !== WIPED_PLUS_ONE) {
-    throw new Error(
-      `reference arm classification only supports ${JSON.stringify(WIPED)} and ` +
-        `${JSON.stringify(WIPED_PLUS_ONE)}, got ${JSON.stringify(arm)}`,
-    );
-  }
-
-  const { dir: ownSkillDir, name: ownSkillName } = ownSkill(element);
-  const agent = findReviewerAgent(ownSkillName, root);
-
+function assembleFixture(
+  arm: string,
+  element: string,
+  root: string,
+  ownSkillDir: string,
+  ownSkillName: string,
+  agent: ReviewerAgent,
+): string {
   const fixtureRoot = mkdtempSync(join(tmpdir(), "reference-arm-"));
 
   copySkillDir(root, ownSkillDir, fixtureRoot);
@@ -174,14 +193,20 @@ export function build_reference_fixture(arm: string, element: string, root: stri
   return fixtureRoot;
 }
 
+/** 1つの arm と1つの skill-reference element について fixture ディレクトリを組み立て、その
+ * 絶対パスを返す。fixture が保持する内容は assembleFixture を参照。 */
+export function build_reference_fixture(arm: string, element: string, root: string): string {
+  const { ownSkillDir, ownSkillName, agent } = resolveFixtureInputs(arm, element, root);
+  return assembleFixture(arm, element, root, ownSkillDir, ownSkillName, agent);
+}
+
 /** 1つの arm と1つの skill-reference element について claude の起動コマンドを返す:
  * BASE_COMMAND を project 設定に制限し、fixture が保持する reviewer agent として、その
  * fixture 自身のディレクトリを cwd として起動する。claude には working directory 用の
  * フラグが無いので、この組が arm_command の返す argv 単体の代わりになる。 */
 export function reference_arm_command(arm: string, element: string, root: string): FixtureCommand {
-  const cwd = build_reference_fixture(arm, element, root);
-  const { name: ownSkillName } = ownSkill(element);
-  const agent = findReviewerAgent(ownSkillName, root);
+  const { ownSkillDir, ownSkillName, agent } = resolveFixtureInputs(arm, element, root);
+  const cwd = assembleFixture(arm, element, root, ownSkillDir, ownSkillName, agent);
   const argv = [
     ...BASE_COMMAND,
     "--setting-sources",
