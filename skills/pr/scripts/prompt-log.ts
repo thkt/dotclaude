@@ -195,12 +195,14 @@ function renderCommand(positional: string[], options: Record<string, string>): n
   const [transcriptPath] = candidates;
   const raw = readEntries(transcriptPath);
   const since = options.since;
-  const kept = raw.filter(
-    (entry) =>
-      isHumanPrompt(entry) &&
-      (!since || new Date(entry.timestamp ?? "").getTime() >= new Date(since).getTime()),
-  );
-  const droppedEntries = raw.filter((entry) => !kept.includes(entry));
+  const keepsEntry = (entry: TranscriptEntry): boolean =>
+    isHumanPrompt(entry) &&
+    (!since || new Date(entry.timestamp ?? "").getTime() >= new Date(since).getTime());
+  // Partitioned in one pass rather than two `raw.filter` calls plus `kept.includes(entry)`: the
+  // latter re-scans `kept` for every raw entry, squaring the cost on a large transcript.
+  const kept: TranscriptEntry[] = [];
+  const droppedEntries: TranscriptEntry[] = [];
+  for (const entry of raw) (keepsEntry(entry) ? kept : droppedEntries).push(entry);
 
   if (raw.length > 0 && kept.length === 0) {
     reportDropped(droppedEntries, since, "dropped");

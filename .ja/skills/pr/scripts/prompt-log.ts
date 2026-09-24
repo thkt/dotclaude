@@ -191,12 +191,14 @@ function renderCommand(positional: string[], options: Record<string, string>): n
   const [transcriptPath] = candidates;
   const raw = readEntries(transcriptPath);
   const since = options.since;
-  const kept = raw.filter(
-    (entry) =>
-      isHumanPrompt(entry) &&
-      (!since || new Date(entry.timestamp ?? "").getTime() >= new Date(since).getTime()),
-  );
-  const droppedEntries = raw.filter((entry) => !kept.includes(entry));
+  const keepsEntry = (entry: TranscriptEntry): boolean =>
+    isHumanPrompt(entry) &&
+    (!since || new Date(entry.timestamp ?? "").getTime() >= new Date(since).getTime());
+  // `raw.filter` を 2 回と `kept.includes(entry)` を組む代わりに 1 パスで振り分ける -- 後者は raw
+  // の各 entry ごとに kept を再走査し、大きな transcript ではコストが二乗になる。
+  const kept: TranscriptEntry[] = [];
+  const droppedEntries: TranscriptEntry[] = [];
+  for (const entry of raw) (keepsEntry(entry) ? kept : droppedEntries).push(entry);
 
   if (raw.length > 0 && kept.length === 0) {
     reportDropped(droppedEntries, since, "dropped");
