@@ -8,19 +8,8 @@
 //
 // Warns, never blocks: a file whose comments are legitimately all identifiers or proper nouns
 // has no Japanese to find, and that is not a defect.
-import { readFileSync } from "node:fs";
+import { readStdin } from "../_lib/hook_payload.ts";
 import { emit } from "../_lib/mirror_prose.ts";
-
-/** A closed stdin (no pipe, a TTY with nothing typed) can make a synchronous fd-0 read throw
- * rather than return "" -- read it as empty rather than let that throw exit the hook non-zero
- * (recall_index.ts's readStdin). */
-function readStdin(): string {
-  try {
-    return readFileSync(0, "utf8");
-  } catch {
-    return "";
-  }
-}
 
 function main(): number {
   emit(readStdin());
