@@ -20,6 +20,7 @@ import {
   globSync,
   mkdirSync,
   mkdtempSync,
+  realpathSync,
   statSync,
   writeFileSync,
 } from "node:fs";
@@ -190,7 +191,7 @@ function assembleFixture(
   ownSkillName: string,
   agent: ReviewerAgent,
 ): string {
-  const fixtureRoot = mkdtempSync(join(tmpdir(), "reference-arm-"));
+  const fixtureRoot = realpathSync(mkdtempSync(join(tmpdir(), "reference-arm-")));
 
   copySkillDir(root, ownSkillDir, fixtureRoot);
   for (const skillName of agent.skills) {

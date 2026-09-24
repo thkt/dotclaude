@@ -1,8 +1,8 @@
 /// <reference types="node" />
 // Classifies one skill-reference arm's run from its stream-json transcript: whether the run
 // read the fixture's own copy of the target reference (exposed), and whether any tool call
-// touched a path outside the fixture -- the real skill directory or any other repository
-// absolute path under `root` (contaminated). A contaminated run turns wiped into wiped+1, since
+// reached the real skills under `root` -- a path under `root/skills`, or a search over `root`
+// as a whole (contaminated). A contaminated run turns wiped into wiped+1, since
 // the reviewer agent no longer sees only the fixture's stripped-down tree, so #743's Proposed
 // solution step 2 excludes it from the counted runs rather than scoring it.
 //
@@ -100,6 +100,18 @@ function names_path_under(value: string, base: string): boolean {
   return value === base || value.includes(`${base}/`);
 }
 
+/** Whether `value` touches the real config tree at `spelling` in a way that can reach the
+ * real skills: a path under `<spelling>/skills`, or `<spelling>` itself as a whole-tree target
+ * such as `ugrep -rn X ~/.claude`. A path under `<spelling>/agents/_lib/` is neither, so the
+ * agent's own fallback reads of its calibration and finding schema leave the run clean. */
+function touches_real_skills(value: string, spelling: string): boolean {
+  if (names_path_under(value, `${spelling}/skills`)) {
+    return true;
+  }
+  const escaped = spelling.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`${escaped}/?(?=$|[\\s"'])`).test(value);
+}
+
 /** The spellings a tool argument can use for `root`: the absolute path, and when `root` sits
  * under `home`, the `~/...` and `$HOME/...` forms. The reviewer agent's own fallback line names
  * `~/.claude/`, and a Bash command carries that tilde unexpanded. */
@@ -113,9 +125,8 @@ function root_spellings(root: string, home: string): string[] {
 
 /** Classifies one run's stream-json transcript against the fixture built for `element`
  * (reference_arm.ts's build_reference_fixture): `exposed` is whether the run read the
- * fixture's own copy of `element` at `cwd`; `contaminated` is whether any tool call touched a
- * real path under `root` -- the real skill directory or any other repository absolute path --
- * outside that fixture. */
+ * fixture's own copy of `element` at `cwd`; `contaminated` is whether any tool call reached
+ * the real skills under `root` (touches_real_skills). */
 export function classify_exposure(
   transcript: string,
   element: string,
@@ -140,7 +151,7 @@ export function classify_exposure(
       exposed = true;
     }
     for (const value of string_leaves(block.input)) {
-      if (spellings.some((spelling) => names_path_under(value, spelling))) {
+      if (spellings.some((spelling) => touches_real_skills(value, spelling))) {
         contaminated = true;
       }
     }
