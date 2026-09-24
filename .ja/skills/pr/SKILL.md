@@ -96,4 +96,4 @@ pageshot 成果物は本文へ手書きせず `--attach` で渡す。gh が uplo
 
 ## Prompt Log 統合
 
-このセッションの transcript (セッション ID ${CLAUDE_SESSION_ID}) に対して node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts の `render` と `check` を実行し、AskUserQuestion で添付を確認してから結果で分岐する。手順、`--since` の値、各分岐: ${CLAUDE_SKILL_DIR}/references/prompt-log.md。
+このセッションの transcript (セッション ID ${CLAUDE_SESSION_ID}) に対して node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts の `render` と `check` を実行する。AskUserQuestion で添付を確認してから結果で分岐する。手順、`--since` の値、各分岐: ${CLAUDE_SKILL_DIR}/references/prompt-log.md。
