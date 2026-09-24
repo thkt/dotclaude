@@ -43,13 +43,8 @@ thing that makes a run exercise it. `path-triggered` already names its own condi
 | `rules/development/TESTING.md`          | path-triggered  | `T-test-edit`       | Add or edit a test file in a covered language for changed behavior                                 |
 | `rules/development/TIDYINGS.md`         | path-triggered  | `T-cleanup-pass`    | A cleanup pass in edited files, after the main task, before commit                                 |
 
-## What `complies` means
+## What `complies` and `restored_complies` mean
 
-`complies` in each observation records whether the wiped arm's transcript already honors the
-triggering task's own rule, judged by reading that arm's output against the specific
-directive the task exercises. `verdict.classify` turns it into a verdict; this file does not
-restate that mapping.
+`complies` in each observation records whether the wiped arm's transcript honors the triggering task's own rule, and `restored_complies` records the same for the wiped+1 arm. Each is judged by reading that arm's output against the specific directive the task exercises. `verdict.classify` turns the two into a verdict; this file does not restate that mapping.
 
-A violation never reads as keep on its own. `arms.PASS_THRESHOLD` decides only how many of
-`arms.RUN_COUNT` runs must agree before `complies` is set at all, so a human still confirms
-the violation traces to the removed element rather than to run noise.
+`arms.PASS_THRESHOLD` decides how many of `arms.RUN_COUNT` runs must honor the rule before a value is true. Whether a violation traces to the removed element is settled by the wiped+1 arm: restoring the element either brings the rule back or does not. When it does not, a human reads the transcripts.

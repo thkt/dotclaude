@@ -41,12 +41,8 @@ Phase 2 が各要素の観測を組む際と、`${CLAUDE_SKILL_DIR}/scripts/verd
 | `rules/development/TESTING.md`             | path-triggered  | `T-test-edit`       | 変わった振る舞いに対して、対象言語のテストファイルを追加、または編集する                        |
 | `rules/development/TIDYINGS.md`            | path-triggered  | `T-cleanup-pass`    | 本タスクの後、コミットの前に、編集したファイルへ加える片付けの一手                             |
 
-## `complies` が指すもの
+## `complies` と `restored_complies` が指すもの
 
-各観測の `complies` は、wiped アームの transcript が、起動タスクが発火させるその規則自身の指示を
-既に満たしているかを記録する。そこから verdict を決めるのは `verdict.classify` であり、この本文は
-その対応を繰り返さない。
+各観測の `complies` は wiped アームの、`restored_complies` は wiped+1 アームの transcript が、起動タスクが発火させるその規則自身の指示を満たしているかを記録する。どちらも、そのアームの出力をタスクが試す具体的な指示に照らして読んで判定する。2 つから verdict を決めるのは `verdict.classify` であり、この本文はその対応を繰り返さない。
 
-違反がそれ自体で keep になることはない。`arms.PASS_THRESHOLD` は `arms.RUN_COUNT` 回のうち何回が
-揃えば `complies` を定めるかを決めるだけなので、その違反が外した要素に起因するのか実行のばらつきか
-は人間が確認を挟む。
+`arms.PASS_THRESHOLD` は、`arms.RUN_COUNT` 回のうち何回が規則を満たせば値を true とするかを決める。違反が外した要素に起因するかは、wiped+1 アームで要素を戻したときに規則が守られるかで確かめる。戻しても守られないときは、人間が transcript を読む。

@@ -47,6 +47,7 @@ export interface Observation {
   trigger_task?: string | null;
   task_set?: readonly string[] | null;
   complies?: boolean | null;
+  restored_complies?: boolean | null;
 }
 
 export interface TranscriptRange {
@@ -112,6 +113,7 @@ export function build_report(
       observation.trigger_task ?? null,
       task_set,
       observation.complies ?? null,
+      observation.restored_complies ?? null,
     );
     verdicts[path] = dr_gate.gate(path, raw_verdict, root);
   }

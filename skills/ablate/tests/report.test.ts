@@ -23,7 +23,7 @@ import { writeTree } from "../../_lib/tests/_tree-fixture.ts";
 import { UNMEASURED } from "../scripts/arms.ts";
 import { HELD } from "../scripts/dr_gate.ts";
 import * as report from "../scripts/report.ts";
-import { DELETE_CANDIDATE, NEEDS_HUMAN_JUDGMENT } from "../scripts/verdict.ts";
+import { DELETE_CANDIDATE, KEEP, NEEDS_HUMAN_JUDGMENT } from "../scripts/verdict.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -70,7 +70,7 @@ test("T-473 build_report reproduces the frozen dict for each case", () => {
 test("T-472 the fixture carries a case for each verdict the report can render", () => {
   // Read off the modules that define them rather than retyped: a verdict renamed on one side
   // would otherwise leave this comparison agreeing with a set nothing produces.
-  const renderable = new Set([UNMEASURED, DELETE_CANDIDATE, NEEDS_HUMAN_JUDGMENT, HELD]);
+  const renderable = new Set([UNMEASURED, DELETE_CANDIDATE, KEEP, NEEDS_HUMAN_JUDGMENT, HELD]);
 
   const seen = new Set<string>();
   for (const entry of CASES) {
@@ -104,6 +104,7 @@ test("T-476 a path under the ablation apparatus never reaches the delete candida
     trigger_task: "task-a",
     task_set: ["task-a"],
     complies: true,
+    restored_complies: true,
   });
   try {
     const result = report.build_report(
@@ -150,6 +151,7 @@ test("a secret carried on an observation never reaches the rendered report", () 
       trigger_task: "task-a",
       task_set: ["task-a"],
       complies: true,
+      restored_complies: true,
       settings: { ANTHROPIC_API_KEY: secret },
     } as unknown as report.Observation;
 
