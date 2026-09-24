@@ -26,6 +26,12 @@ export const RUN_COUNT = 5;
 // 実行回数の割合。
 export const PASS_THRESHOLD = 0.8;
 
+// reference_observation.ts の集計が汚染または未露出として捨てた run を埋め合わせるために、
+// 1つの arm が RUN_COUNT を超えて追加で起動できる reference-arm 実行回数の上限。3 は
+// 際限ない再実行に対する暫定的な上限値であり、RUN_COUNT 自身のコメントと同じ暫定的な形。
+// 最初の ablation 実行の露出率を測定したら見直す。
+export const RERUN_CAP = 3;
+
 export const UNMEASURED = "unmeasured";
 export const MEASURED = "measured";
 
