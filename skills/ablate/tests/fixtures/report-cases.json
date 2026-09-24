@@ -18,7 +18,7 @@
     "stdout": "{\"elements\": [{\"path\": \"skills/sample/scripts/unmeasured-example.py\", \"classification\": \"non-prompt\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {\"skills/sample/scripts/unmeasured-example.py\": \"unmeasured\"}, \"usage_verdicts\": {\"skills/sample/scripts/unmeasured-example.py\": \"delete-candidate\"}, \"delete_candidates\": [], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": []}\n"
   },
   {
-    "name": "complies true with no governing DR classifies delete-candidate",
+    "name": "both arms comply with no governing DR classifies delete-candidate",
     "files": {
       "skills/sample/scripts/plain-candidate.py": "# stand-in source\n"
     },
@@ -29,14 +29,15 @@
         "task_set": [
           "task-a"
         ],
-        "complies": true
+        "complies": true,
+        "restored_complies": true
       }
     ],
     "exit": 0,
     "stdout": "{\"elements\": [{\"path\": \"skills/sample/scripts/plain-candidate.py\", \"classification\": \"non-prompt\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {\"skills/sample/scripts/plain-candidate.py\": \"delete-candidate\"}, \"usage_verdicts\": {\"skills/sample/scripts/plain-candidate.py\": \"delete-candidate\"}, \"delete_candidates\": [\"skills/sample/scripts/plain-candidate.py\"], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": []}\n"
   },
   {
-    "name": "complies false classifies needs-human-judgment",
+    "name": "both arms violate classifies needs-human-judgment",
     "files": {
       "skills/sample/scripts/needs-judgment.py": "# stand-in source\n"
     },
@@ -47,11 +48,31 @@
         "task_set": [
           "task-a"
         ],
-        "complies": false
+        "complies": false,
+        "restored_complies": false
       }
     ],
     "exit": 0,
     "stdout": "{\"elements\": [{\"path\": \"skills/sample/scripts/needs-judgment.py\", \"classification\": \"non-prompt\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {\"skills/sample/scripts/needs-judgment.py\": \"needs-human-judgment\"}, \"usage_verdicts\": {\"skills/sample/scripts/needs-judgment.py\": \"delete-candidate\"}, \"delete_candidates\": [], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": []}\n"
+  },
+  {
+    "name": "the wiped arm violates and the wiped+1 arm complies classifies keep",
+    "files": {
+      "skills/sample/scripts/keep-example.py": "# stand-in source\n"
+    },
+    "observations": [
+      {
+        "path": "skills/sample/scripts/keep-example.py",
+        "trigger_task": "task-a",
+        "task_set": [
+          "task-a"
+        ],
+        "complies": false,
+        "restored_complies": true
+      }
+    ],
+    "exit": 0,
+    "stdout": "{\"elements\": [{\"path\": \"skills/sample/scripts/keep-example.py\", \"classification\": \"non-prompt\"}], \"arms\": [\"wiped\", \"wiped+1\", \"full-harness\"], \"verdicts\": {\"skills/sample/scripts/keep-example.py\": \"keep\"}, \"usage_verdicts\": {\"skills/sample/scripts/keep-example.py\": \"delete-candidate\"}, \"delete_candidates\": [], \"usage\": {\"skills/sample/scripts/dr-governed.py\": {\"fires\": 2, \"last_used\": \"2026-08-20\"}}, \"transcripts\": {\"count\": 1, \"date_range\": {\"start\": \"2026-08-01\", \"end\": \"2026-08-20\"}}, \"enforcer_rows\": []}"
   },
   {
     "name": "a live DR governing the path holds a delete candidate",
@@ -66,7 +87,8 @@
         "task_set": [
           "task-a"
         ],
-        "complies": true
+        "complies": true,
+        "restored_complies": true
       }
     ],
     "exit": 0,
