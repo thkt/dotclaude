@@ -13,13 +13,12 @@ import {
   constants,
   mkdirSync,
   openSync,
-  readFileSync,
   statSync,
   utimesSync,
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import { parse } from "../_lib/hook_payload.ts";
+import { parse, readStdin } from "../_lib/hook_payload.ts";
 
 // The full path, not a PATH lookup: a hook can run without the homebrew prefix, where the
 // lookup would silently skip every session. CLAUDE_RECALL_BIN lets the tests hand over a stub.
@@ -41,16 +40,6 @@ function recentlyIndexed(stamp: string): boolean {
     return Date.now() - statSync(stamp).mtimeMs < WINDOW_MINUTES * 60_000;
   } catch {
     return false;
-  }
-}
-
-/** A closed stdin (no pipe, a TTY with nothing typed) can make a synchronous fd-0 read throw
- * rather than return "" -- read it as empty rather than let that throw exit the hook non-zero. */
-function readStdin(): string {
-  try {
-    return readFileSync(0, "utf8");
-  } catch {
-    return "";
   }
 }
 
