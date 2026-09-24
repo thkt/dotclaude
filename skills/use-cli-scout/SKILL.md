@@ -10,7 +10,7 @@ user-invocable: false
 
 ## When to use
 
-Reach for scout whenever the answer depends on something on the web. It returns the page body itself, so the answer can rest on the primary source. When the input carries an `http://` or `https://` URL, fetch it before answering. When unsure, fetch.
+Reach for scout whenever the answer depends on something on the web. It returns the page body itself, so the answer can rest on the primary source. When the input carries an `http://` or `https://` URL, fetch it before answering.
 
 ## Commands
 

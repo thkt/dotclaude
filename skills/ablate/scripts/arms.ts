@@ -31,8 +31,9 @@ export const MEASURED = "measured";
  *
  * wiped restricts settings loading to the project source alone (--setting-sources project),
  * which is the ablation baseline. wiped+1 starts from that same baseline and restores exactly
- * one harness element by appending it to the system prompt (--append-system-prompt), rather
- * than reloading it through normal discovery. full-harness runs unmodified, with no
+ * one harness element by having the CLI read the element file and append its content to the
+ * system prompt (--append-system-prompt-file), rather than reloading it through normal
+ * discovery. The path resolves against the run's cwd, the repo root. full-harness runs unmodified, with no
  * restricting flag, as the upper-bound comparison point. */
 export function arm_command(arm: string, element: string | null = null): string[] {
   const command = [...BASE_COMMAND];
@@ -43,7 +44,7 @@ export function arm_command(arm: string, element: string | null = null): string[
     if (element === null) {
       throw new Error(`arm ${JSON.stringify(WIPED_PLUS_ONE)} requires an element to restore`);
     }
-    command.push("--append-system-prompt", `[ablate] restoring element: ${element}`);
+    command.push("--append-system-prompt-file", element);
   }
   return command;
 }

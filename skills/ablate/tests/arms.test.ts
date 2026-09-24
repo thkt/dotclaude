@@ -42,20 +42,24 @@ test("T-336 the arm-building functions return the same shape the python cases ex
   const wipedCommand = arm_command(WIPED);
   assert.deepEqual(wipedCommand, [...BASE_COMMAND, "--setting-sources", "project"]);
 
-  // wiped+1 starts from the same restricted baseline and restores exactly one element by
-  // appending it to the system prompt.
-  const element = "rules/example.md";
-  const restoreCommand = arm_command(WIPED_PLUS_ONE, element);
+  // wiped+1 starts from the same restricted baseline; T-337 covers what it restores.
+  const restoreCommand = arm_command(WIPED_PLUS_ONE, "rules/example.md");
   assert.deepEqual(restoreCommand.slice(0, BASE_COMMAND.length + 2), [
     ...BASE_COMMAND,
     "--setting-sources",
     "project",
   ]);
-  const flagIndex = restoreCommand.indexOf("--append-system-prompt");
-  assert.notEqual(flagIndex, -1, "wiped+1 must carry --append-system-prompt");
-  assert.ok(restoreCommand[flagIndex + 1].includes(element));
 
   // full-harness runs unmodified, with no restricting flag.
   const fullHarnessCommand = arm_command(FULL_HARNESS);
   assert.deepEqual(fullHarnessCommand, BASE_COMMAND);
+});
+
+test("T-337 wiped+1 hands the CLI the element file to read, so the restored prompt is the element's content rather than a line naming its path", () => {
+  const element = "rules/example.md";
+  const restoreCommand = arm_command(WIPED_PLUS_ONE, element);
+  assert.deepEqual(restoreCommand.slice(BASE_COMMAND.length + 2), [
+    "--append-system-prompt-file",
+    element,
+  ]);
 });
