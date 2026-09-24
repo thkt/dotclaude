@@ -1,5 +1,5 @@
 /// <reference types="node" />
-// Unit tests for hooks/pre-bash/wiki_scene.ts's _runtime/_scene_pages (unit U-004), ported from
+// Unit tests for hooks/pre-bash/wiki_scene.ts's runtime fallback and _scene_pages (unit U-004), ported from
 // the retired Python original's own _runtime/_scene_pages, drawn from
 // the retired Python test's test_an_unresolvable_runtime_yields_no_output_and_exits_0
 // (T-325) and the finder non-zero-exit reasoning the retired Python original's _scene_pages

@@ -4,8 +4,6 @@
 // TypeScript side of the retired Python rewriter of the same name. MANAGERS / convert
 // / main carry the Python side's names and shapes; convert is exported the way the plan
 // requires.
-//
-// The ni lookup is hooks/_lib/executable.ts's which, the PATH scan every hook shares.
 import { readFileSync } from "node:fs";
 import { which } from "../_lib/executable.ts";
 import { field, parse } from "../_lib/hook_payload.ts";

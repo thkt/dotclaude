@@ -55,11 +55,8 @@ test("T-488 which returns the first PATH entry carrying an executable of that na
     const second = join(dir, "second");
     mkdirSync(first);
     mkdirSync(second);
-    plain("tool");
-    writeFileSync(join(first, "tool"), "");
-    chmodSync(join(first, "tool"), 0o644);
-    writeFileSync(join(second, "tool"), "#!/bin/sh\n");
-    chmodSync(join(second, "tool"), 0o755);
+    plain("first/tool");
+    exec("second/tool");
     exec("elsewhere");
 
     withEnv({ PATH: `:${first}::${second}:` }, () => {

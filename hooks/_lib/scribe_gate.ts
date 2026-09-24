@@ -9,22 +9,14 @@
 // shebang-ts.test.ts's T-013 (no shebang line under hooks/_lib/*.ts) applies to this file without
 // exception.
 //
-// should_run's gh-shaped decision (which PRs/issues count, in which order) is scribe_trigger.ts's
-// unmergedScribePrExists / lastScribeMerge / hasNewInput, imported in process the way the
-// retired Python original imported scribe_trigger (DR-0116), not a decision this file makes on
-// its own. Contract: should_run's decision and its
-// GITHUB_OUTPUT-writing CLI, the behavior hooks/_lib/tests/scribe-gate.test.ts pins.
+// The backlog decision is scribe_trigger.ts's scribeBacklogWaiting, imported in process the way
+// the retired Python original imported scribe_trigger (DR-0116).
+//
+// Contract: should_run's decision and its GITHUB_OUTPUT-writing CLI, the behavior
+// hooks/_lib/tests/scribe-gate.test.ts pins.
 import { appendFile } from "node:fs/promises";
 import { isMainModule } from "../../workflows/_lib/entry-point.ts";
-import {
-  DEFAULT_GH,
-  defaultRunner,
-  type GhRunner,
-  hasNewInput,
-  lastScribeMerge,
-  unmergedScribePrExists,
-} from "./scribe_trigger.ts";
-
+import { defaultRunner, ghBinary, type GhRunner, scribeBacklogWaiting } from "./scribe_trigger.ts";
 
 export interface ShouldRunOptions {
   runner?: GhRunner;
@@ -34,22 +26,7 @@ export interface ShouldRunOptions {
 /** Whether scribe has anything new to read: no open scribe PR is already covering the backlog,
  * and a merged PR or closed issue has landed since the last scribe merge. */
 export function shouldRun(options: ShouldRunOptions = {}): boolean {
-  const binary = options.gh || process.env.CLAUDE_GH_BIN || DEFAULT_GH;
-  const call = options.runner || defaultRunner(process.cwd(), binary);
-  try {
-    if (unmergedScribePrExists(call)) {
-      return false;
-    }
-    if (!hasNewInput(lastScribeMerge(call), call)) {
-      return false;
-    }
-  } catch {
-    // None of a failed gh call, a non-JSON response, or a spawn error say a backlog is
-    // waiting, and rethrowing here would turn a plain CI run into a failed job over a
-    // transient gh problem.
-    return false;
-  }
-  return true;
+  return scribeBacklogWaiting(options.runner || defaultRunner(process.cwd(), ghBinary(options.gh)));
 }
 
 async function main(): Promise<number> {

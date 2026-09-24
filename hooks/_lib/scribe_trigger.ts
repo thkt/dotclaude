@@ -8,10 +8,10 @@
 // No shebang and no exec bit: hooks/_lib/tests/shebang-ts.test.ts's T-013 forbids a shebang
 // line under hooks/_lib/*.ts, the same rule scribe_gate.ts follows.
 //
-// unmergedScribePrExists / lastScribeMerge / hasNewInput / defaultRunner are exported for
-// scribe_gate.ts: which PRs and issues count as a scribe backlog is one definition whether a CI
-// gate or a hook cooldown asks, and DR-0116 keeps scribe_gate.ts in hooks/_lib so it imports them
-// in process, the shape the retired Python pair had.
+// scribeBacklogWaiting / ghBinary / defaultRunner are exported for scribe_gate.ts: which PRs and
+// issues count as a scribe backlog is one definition whether a CI gate or a hook cooldown asks,
+// and DR-0116 keeps scribe_gate.ts in hooks/_lib so it imports them in process, the shape the
+// retired Python pair had.
 import { spawnSync } from "node:child_process";
 import { closeSync, mkdirSync, openSync, statSync, utimesSync } from "node:fs";
 import { homedir } from "node:os";
@@ -132,14 +132,14 @@ export function defaultRunner(directory: string, gh: string): GhRunner {
 
 /** skills/scribe/SKILL.md Phase 1 step 1: an open scribe PR already covers the backlog, so a
  * second nudge would only invite a second run to collide with it. */
-export function unmergedScribePrExists(call: GhRunner): boolean {
+function unmergedScribePrExists(call: GhRunner): boolean {
   const output = call(["pr", "list", "--label", "scribe", "--state", "open", "--json", "number"]);
   return (JSON.parse(output) as unknown[]).length > 0;
 }
 
 /** skills/scribe/SKILL.md Phase 2 step 1: the mergedAt of the last merged scribe PR, empty when
  * none has ever merged. `-q` hands back the bare value, not a JSON-quoted string. */
-export function lastScribeMerge(call: GhRunner): string {
+function lastScribeMerge(call: GhRunner): string {
   return call([
     "pr",
     "list",
@@ -158,7 +158,7 @@ export function lastScribeMerge(call: GhRunner): string {
 
 /** skills/scribe/SKILL.md Phase 2 steps 2-3. Returns on the first kind that has anything, so a
  * backlog carrying merged PRs costs one gh call rather than two. */
-export function hasNewInput(cursor: string, call: GhRunner): boolean {
+function hasNewInput(cursor: string, call: GhRunner): boolean {
   const search = cursor ? `-label:scribe merged:>${cursor}` : "-label:scribe";
   const prs = ["pr", "list", "--state", "merged", "--search", search, "--json", "number"];
   if ((JSON.parse(call(prs)) as unknown[]).length >= 1) {
@@ -169,6 +169,25 @@ export function hasNewInput(cursor: string, call: GhRunner): boolean {
     issues.push("--search", `closed:>${cursor}`);
   }
   return (JSON.parse(call(issues)) as unknown[]).length >= 1;
+}
+
+/** The gh binary to run: an explicit option, else CLAUDE_GH_BIN, else DEFAULT_GH. */
+export function ghBinary(override?: string): string {
+  return override || process.env.CLAUDE_GH_BIN || DEFAULT_GH;
+}
+
+/** Whether a scribe backlog is waiting: no open scribe PR already covers it, and a merged PR or
+ * closed issue has landed since the last scribe merge.
+ *
+ * A failed gh call, a non-JSON response, or a spawn error reads as no backlog rather than
+ * throwing: the CI gate would otherwise fail its job and the hook report an error on a plain
+ * pull, over a transient gh problem. */
+export function scribeBacklogWaiting(call: GhRunner): boolean {
+  try {
+    return !unmergedScribePrExists(call) && hasNewInput(lastScribeMerge(call), call);
+  } catch {
+    return false;
+  }
 }
 
 /** Whether scribe should nudge for this directory. Mirrors the retired Python module's should_prompt.
@@ -183,21 +202,11 @@ export function shouldPrompt(directory: string, options: ShouldPromptOptions = {
   if (recentlyStamped(stampPath)) {
     return false;
   }
-  const binary = options.gh || process.env.CLAUDE_GH_BIN || DEFAULT_GH;
+  const binary = ghBinary(options.gh);
   if (options.runner === undefined && !isExecutableFile(binary)) {
     return false;
   }
-  const call = options.runner ?? defaultRunner(directory, binary);
-  try {
-    if (unmergedScribePrExists(call)) {
-      return false;
-    }
-    if (!hasNewInput(lastScribeMerge(call), call)) {
-      return false;
-    }
-  } catch {
-    // None of these say a backlog is waiting, and raising here would report a hook error on a
-    // plain pull.
+  if (!scribeBacklogWaiting(options.runner ?? defaultRunner(directory, binary))) {
     return false;
   }
   touch(stampPath);

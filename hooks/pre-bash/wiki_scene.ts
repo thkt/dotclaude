@@ -12,8 +12,7 @@
 // hooks/pre-bash/tests/wiki-scene-find.test.ts spawns this file through
 // hooks/_lib/tests/_hook-harness.ts's run() rather than importing its exports directly.
 //
-// find_wiki_rule.ts runs the cd-walked directory's own docs/wiki, and find_wiki_rule.ts runs
-// under the runtime hooks/_lib/executable.ts's tsRuntime picks.
+// find_wiki_rule.ts runs against the cd-walked directory's own docs/wiki.
 import { spawnSync } from "node:child_process";
 import { readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
@@ -27,7 +26,6 @@ import { field, notify, parse } from "../_lib/hook_payload.ts";
 // the retired Python original's Path(__file__).resolve().parents[2] climbs.
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const FIND_WIKI_RULE = join(ROOT, "skills", "scribe", "scripts", "find_wiki_rule.ts");
-
 
 // command_scan.starts_with reads position, not word presence, so `git commit -m "gh issue close
 // 42"` never matches: "gh" sits inside a message argument, not at the position a command name

@@ -3,8 +3,7 @@
 // PreToolUse hook: match a gh issue create body against the skeleton its title's type points
 // at, and stop the filing when the two diverge. TypeScript side of the retired Python original (unit
 // U-002, following U-001's skeleton-selection primitives). ROOT / VALIDATOR / TEMPLATES /
-// _issue_type / _template / _errors / main carry the Python side's names and shapes; the
-// runtime the validator runs under comes from hooks/_lib/executable.ts's tsRuntime.
+// _issue_type / _template / _errors / main carry the Python side's names and shapes.
 //
 // _unmatched_type_reason is not a Python-side name: it extracts the deny message
 // the retired Python original's main() builds inline (the f-string after `if template is None`) into its
