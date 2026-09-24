@@ -114,11 +114,10 @@ interface CollectRowsResult {
   byStatus: Map<string, Array<[number: string, title: string]>>;
 }
 
-// 退役した Python 版 update-index の rglob("[0-9][0-9][0-9][0-9]-*.md")。4 桁の数字、ダッシュ、
-// 任意の文字列が続き、.md で終わる。
+// 退役した Python 版 update-index の rglob("[0-9][0-9][0-9][0-9]-*.md")。
 const DR_FILE_NAME = /^\d{4}-.*\.md$/;
 
-/** drDir 配下の DR ファイル (任意の深さの NNNN-*.md、フルパスでソート済み) を走査し、それぞれについて
+/** drDir 配下の DR ファイル (フルパスでソート済み) を走査し、それぞれについて
  * DR List の行を積み、[number, title] をその status が startsWith する最初の
  * STATUS_SECTIONS キーの bucket に振り分ける。main() から呼ばれる。 */
 function collectRows(drDir: string): CollectRowsResult {
@@ -186,8 +185,7 @@ export function main(argv: string[]): number {
     const entryLines = sorted.map(([num, title]) => `- **${num}**: ${title}`).join("\n");
     parts.push(`### ${heading}\n\n${entryLines}\n`);
   }
-  const now = new Date();
-  const updateDate = localDate(now);
+  const updateDate = localDate(new Date());
   parts.push(FOOTER.replace("{update_date}", updateDate));
 
   const indexFile = join(drDir, "README.md");

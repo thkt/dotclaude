@@ -6,16 +6,16 @@
 // call it carry.
 //
 // Contract: the retired Python dr_common's fail, resolve_dr_dir, guard_skill_dir, and
-// split_frontmatter, plus gitTopLevel, filesUnder, and localDate, which pre-check.ts and
-// update-index.ts each used to define for themselves. Python's snake_case names carry over as TS camelCase, the same rename
-// harness_hash.py's _digest -> harness_hash.ts's digest already made.
+// split_frontmatter, plus gitTopLevel, filesUnder, and localDate. Python's snake_case names
+// carry over as TS camelCase, the same rename harness_hash.py's _digest -> harness_hash.ts's
+// digest already made.
 //
 // resolveDrDir is a pure function here, unlike the retired Python resolve_dr_dir, which called
 // fail() itself on a non-zero git exit: env, the CLI argument, and the git-toplevel spawn result
 // all arrive as explicit parameters, and a caller that finds none of the three decides what to do
-// with the null it gets back. That keeps the git spawn and the process.exit side effect in the CLI
-// wrapper, where main()'s Usage-header contract already documents them, instead of buried in a
-// helper this module's own tests import directly.
+// with the null it gets back. The git spawn is gitTopLevel, a separate export each CLI calls
+// only when it needs the fallback, and the process.exit side effect stays in the CLI wrapper,
+// where main()'s Usage-header contract already documents it.
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -44,7 +44,7 @@ export interface GitTopLevelResult {
 export function resolveDrDir(
   env: NodeJS.ProcessEnv,
   arg: string | undefined,
-  gitTopLevel: GitTopLevelResult,
+  topLevel: GitTopLevelResult,
 ): string | null {
   if (env.DR_DIR) {
     return env.DR_DIR;
@@ -52,10 +52,10 @@ export function resolveDrDir(
   if (arg) {
     return arg;
   }
-  if (gitTopLevel.status !== 0) {
+  if (topLevel.status !== 0) {
     return null;
   }
-  return join(gitTopLevel.stdout.trim(), "docs", "decisions");
+  return join(topLevel.stdout.trim(), "docs", "decisions");
 }
 
 /** True when path exists and is a regular file, mirroring Python's Path.is_file() (a
@@ -94,8 +94,8 @@ export function splitFrontmatter(text: string): [string[], string[]] {
   return [[], lines];
 }
 
-/** Runs `git rev-parse --show-toplevel` in the process's cwd, for resolveDrDir to read. A CLI
- * calls it only when DR_DIR is unset, so an explicit override never spawns git. */
+/** Runs `git rev-parse --show-toplevel` in the process's cwd and returns the fields resolveDrDir
+ * reads. */
 export function gitTopLevel(): GitTopLevelResult {
   const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };

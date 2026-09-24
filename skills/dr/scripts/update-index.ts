@@ -113,11 +113,10 @@ interface CollectRowsResult {
   byStatus: Map<string, Array<[number: string, title: string]>>;
 }
 
-// The retired Python update-index's rglob("[0-9][0-9][0-9][0-9]-*.md"): 4 digits, a dash, then
-// anything, ending in .md.
+// The retired Python update-index's rglob("[0-9][0-9][0-9][0-9]-*.md").
 const DR_FILE_NAME = /^\d{4}-.*\.md$/;
 
-/** Scans drDir for DR files (every NNNN-*.md at any depth, sorted by full path) and, for each, appends its DR
+/** Scans drDir for DR files (sorted by full path) and, for each, appends its DR
  * List row and buckets its [number, title] under the first STATUS_SECTIONS key its status
  * starts with. Called from main(). */
 function collectRows(drDir: string): CollectRowsResult {
@@ -185,8 +184,7 @@ export function main(argv: string[]): number {
     const entryLines = sorted.map(([num, title]) => `- **${num}**: ${title}`).join("\n");
     parts.push(`### ${heading}\n\n${entryLines}\n`);
   }
-  const now = new Date();
-  const updateDate = localDate(now);
+  const updateDate = localDate(new Date());
   parts.push(FOOTER.replace("{update_date}", updateDate));
 
   const indexFile = join(drDir, "README.md");

@@ -6,16 +6,16 @@
 // shebang + 100755 とは違い、shebang 無しの mode 100644 で置く。
 //
 // Contract: 退役した Python 版 dr_common の fail / resolve_dr_dir / guard_skill_dir /
-// split_frontmatter。加えて、pre-check.ts と update-index.ts がそれぞれ自前で持っていた
-// gitTopLevel / filesUnder / localDate。Python の snake_case な名前は TS 側では camelCase になる。
+// split_frontmatter。加えて gitTopLevel / filesUnder / localDate。Python の snake_case な名前は TS 側では camelCase になる。
 // harness_hash.py の _digest -> harness_hash.ts の digest で既に行ったのと同じリネームである。
 //
 // resolveDrDir はここでは純関数であり、git の exit が非 0 のときに自分で fail() を呼ぶ
 // 退役した Python 版 resolve_dr_dir とは違う。env、CLI 引数、git-toplevel の spawn 結
 // 果を明示的な引数としてすべて受け取り、3 つのどれも見つからなかった呼び出し側が、返っ
 // てきた null をどう扱うかを決める。これにより git の spawn と process.exit という副作
-// 用は、main() の Usage ヘッダーの契約が既に文書化している CLI 側の wrapper に留まり、
-// この module 自身のテストが直接 import する helper の中には埋もれない。
+// 用のうち、git の spawn は別の export である gitTopLevel が担い、各 CLI は fallback が要るときだけ
+// それを呼ぶ。process.exit は、main() の Usage ヘッダーの契約が既に文書化している CLI 側の
+// wrapper に留まる。
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -45,7 +45,7 @@ export interface GitTopLevelResult {
 export function resolveDrDir(
   env: NodeJS.ProcessEnv,
   arg: string | undefined,
-  gitTopLevel: GitTopLevelResult,
+  topLevel: GitTopLevelResult,
 ): string | null {
   if (env.DR_DIR) {
     return env.DR_DIR;
@@ -53,10 +53,10 @@ export function resolveDrDir(
   if (arg) {
     return arg;
   }
-  if (gitTopLevel.status !== 0) {
+  if (topLevel.status !== 0) {
     return null;
   }
-  return join(gitTopLevel.stdout.trim(), "docs", "decisions");
+  return join(topLevel.stdout.trim(), "docs", "decisions");
 }
 
 /** path が存在し、かつ通常ファイルであるとき true。Python の Path.is_file() に対応する
@@ -96,8 +96,7 @@ export function splitFrontmatter(text: string): [string[], string[]] {
   return [[], lines];
 }
 
-/** プロセスの cwd で `git rev-parse --show-toplevel` を実行し、resolveDrDir が読む形で返す。CLI
- * がこれを呼ぶのは DR_DIR が未設定のときだけで、明示の上書きがあれば git は起動しない。 */
+/** プロセスの cwd で `git rev-parse --show-toplevel` を実行し、resolveDrDir が読む形で返す。 */
 export function gitTopLevel(): GitTopLevelResult {
   const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };

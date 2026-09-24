@@ -90,7 +90,7 @@ export function firstHeading(path: string): string {
   return "";
 }
 
-/** Every existing DR under drDir (every *.md at any depth, sorted) whose first heading scores >=
+/** Every existing DR under drDir (sorted) whose first heading scores >=
  * threshold against title, paired with formatScore(score) and the existing heading text --
  * empty when drDir carries no *.md file scoring at or above threshold. Called from main(). */
 function collectSimilarDrs(title: string, drDir: string, threshold: number): SimilarDr[] {
@@ -157,8 +157,7 @@ export function main(argv: string[]): number {
 
   const similarDrs = collectSimilarDrs(title, drDir, threshold);
 
-  const now = new Date();
-  const date = localDate(now);
+  const date = localDate(new Date());
 
   process.stdout.write(
     `${JSON.stringify(

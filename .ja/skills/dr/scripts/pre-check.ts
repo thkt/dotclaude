@@ -92,7 +92,7 @@ export function firstHeading(path: string): string {
   return "";
 }
 
-/** drDir 配下の既存 DR (任意の深さの *.md、ソート済み) のうち、最初の heading が title に
+/** drDir 配下の既存 DR (ソート済み) のうち、最初の heading が title に
  * 対して threshold 以上のスコアを持つものすべてを、formatScore(score) と既存の heading
  * テキストを添えて返す -- threshold 以上の *.md が drDir に無ければ空になる。main() から
  * 呼ばれる。 */
@@ -160,8 +160,7 @@ export function main(argv: string[]): number {
 
   const similarDrs = collectSimilarDrs(title, drDir, threshold);
 
-  const now = new Date();
-  const date = localDate(now);
+  const date = localDate(new Date());
 
   process.stdout.write(
     `${JSON.stringify(

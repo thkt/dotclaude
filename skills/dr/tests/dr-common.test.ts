@@ -1,10 +1,9 @@
 /// <reference types="node" />
-// Behavior tests for skills/dr/scripts/dr_common.ts: the TS port of the retired Python
-// dr_common's fail, resolveDrDir, guardSkillDir, and splitFrontmatter, in the same shape
+// Behavior tests for skills/dr/scripts/dr_common.ts's exports, in the same shape
 // skills/_lib/tests/harness-hash-digest.test.ts and harness-hash-cli.test.ts use -- pure
-// functions asserted in-process, and the process.exit(1) side effect of fail() (and of
-// guardSkillDir's failing branch, which calls fail() internally) asserted by spawning a
-// throwaway subprocess so this test's own process never exits mid-run.
+// functions asserted in-process, and two things asserted in a throwaway subprocess: the
+// process.exit(1) side effect of fail() (and of guardSkillDir's failing branch), so this test's
+// own process never exits mid-run, and gitTopLevel, so the test can choose its cwd.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
