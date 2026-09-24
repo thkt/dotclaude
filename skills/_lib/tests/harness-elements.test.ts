@@ -14,7 +14,13 @@ import { fileURLToPath } from "node:url";
 import { fixture, runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
 import { loadTreeFixtures, replayTreeFixtures, writeTree } from "./_tree-fixture.ts";
 import type { TreeFixtureCase } from "./_tree-fixture.ts";
-import { _read_array, classify, enumerate_elements } from "../harness_elements.ts";
+import {
+  _read_array,
+  classify,
+  enumerate_elements,
+  NON_PROMPT,
+  SKILL_REFERENCE,
+} from "../harness_elements.ts";
 import type { HarnessElement } from "../harness_elements.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -78,4 +84,50 @@ test("T-352 an inline value that is not valid JSON yields an empty list", () => 
 
 test("T-353 a key whose next line does not start with a dash yields an empty list", () => {
   assert.deepEqual(_read_array(["paths:", "not a dash line"], "paths"), []);
+});
+
+// T-491/T-492/T-493 (U-001): the skill-reference branch classify() is meant to gain, added
+// right before its final NON_PROMPT return (skills/_lib/harness_elements.ts's SKILL_REFERENCE
+// export carries this branch's target value; the branch itself lands in the Green step).
+test("A references file whose sibling SKILL.md names it by its CLAUDE_SKILL_DIR path classifies as skill-reference", () => {
+  const root = writeTree("harness-elements-skill-reference-named", {
+    "skills/checkout/SKILL.md":
+      "---\nname: checkout\n---\nAssemble the name per ${CLAUDE_SKILL_DIR}/references/branch-naming.md.\n",
+    "skills/checkout/references/branch-naming.md": "# Branch naming\n",
+  });
+  try {
+    const actual = classify(join(root, "skills/checkout/references/branch-naming.md"));
+    assert.equal(actual, SKILL_REFERENCE);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("A references file whose sibling SKILL.md does not name it classifies as non-prompt", () => {
+  const root = writeTree("harness-elements-skill-reference-unnamed", {
+    "skills/checkout/SKILL.md": "---\nname: checkout\n---\nNo reference to the naming page here.\n",
+    "skills/checkout/references/branch-naming.md": "# Branch naming\n",
+  });
+  try {
+    const actual = classify(join(root, "skills/checkout/references/branch-naming.md"));
+    assert.equal(actual, NON_PROMPT);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("A rules file keeps its always-loaded or path-triggered classification in a tree that also carries skill references", () => {
+  const root = writeTree("harness-elements-skill-reference-alongside-rules", {
+    "rules/PRINCIPLES.md": "# Principles\n",
+    "rules/development/TESTING.md": '---\npaths:\n  - "**/*.test.ts"\n---\n# Testing\n',
+    "skills/checkout/SKILL.md":
+      "---\nname: checkout\n---\nAssemble the name per ${CLAUDE_SKILL_DIR}/references/branch-naming.md.\n",
+    "skills/checkout/references/branch-naming.md": "# Branch naming\n",
+  });
+  try {
+    assert.equal(classify(join(root, "rules/PRINCIPLES.md")), "always-loaded");
+    assert.equal(classify(join(root, "rules/development/TESTING.md")), "path-triggered");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
