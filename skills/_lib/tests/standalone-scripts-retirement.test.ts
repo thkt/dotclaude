@@ -12,7 +12,7 @@
 // Same shape as workflows/_lib/tests/record-retirement.test.ts, which guards its own
 // retirement: offendersAmong/trackedFiles/assertDetectsAndMisses from
 // workflows/_lib/tests/_retirement.ts drive a full-tree scan, and only the helper's own
-// defaults (docs/decisions/, .claude/workspace/research/) plus this file itself are excluded.
+// defaults (docs/decisions/, docs/research/) plus this file itself are excluded.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -43,7 +43,7 @@ function namesRetiredScript(content: string): boolean {
 }
 
 test(
-  "T-187 no tracked file outside docs/decisions/and .claude/workspace/research/ names " +
+  "T-187 no tracked file outside docs/decisions/and docs/research/ names " +
     "validate-outcome.py, find-prior-research.py or list-source-files.py as a word, and the " +
     "same predicate flags a fixture line carrying one",
   () => {
@@ -60,7 +60,7 @@ test(
     assert.deepEqual(
       offenders,
       [],
-      "no tracked file outside docs/decisions/ and .claude/workspace/research/ names " +
+      "no tracked file outside docs/decisions/ and docs/research/ names " +
         `validate-outcome.py, find-prior-research.py or list-source-files.py\n${offenders.join(", ")}`,
     );
   },

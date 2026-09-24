@@ -11,7 +11,8 @@ const SCANNED = ["agents", "rules", "skills", "docs"];
 // The same row lets a conclusion the table derives stay below it, and a DR's narrative reaches
 // that shape 24 times. Listing each would make an allowlist nobody prunes, so the directory stays
 // out and this line carries the judgement (#450).
-const SKIPPED = new Set(["docs/decisions"]);
+// docs/research holds raw reports kept as history, the same reason .rumdl.toml excludes them.
+const SKIPPED = new Set(["docs/decisions", "docs/research"]);
 
 // MARKDOWN.md's row exempts a conclusion the table derives, and no regex separates one from an
 // explanation. Each key carries the opening sentence, so rewriting the conclusion asks for the

@@ -8,7 +8,7 @@
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees in one change, then
 // confirm zero residual references across git ls-files. A mention under docs/decisions/ or
-// .claude/workspace/research/ is kept as historical record, so both are excluded here rather
+// docs/research/ is kept as historical record, so both are excluded here rather
 // than counted as a leftover reference. docs/wiki/deterministic-script-judgment.md's mention of
 // verify-tests.py is the cited basis line for issue #623 (a quote of the pre-retirement
 // verifier split the issue reported), not a live pointer either, so it is excluded the same way.
@@ -44,7 +44,7 @@ function referencesRetiredScript(content: string): boolean {
 }
 
 test(
-  "T-149 no tracked file outside docs/decisions/, .claude/workspace/research/ and " +
+  "T-149 no tracked file outside docs/decisions/, docs/research/ and " +
     "the deterministic-script-judgment basis line references revalidate.py, verify-tests.py, " +
     "diff-files.py or verify-pr.py as a word, and the same predicate flags a fixture line " +
     "carrying one",
@@ -63,7 +63,7 @@ test(
     assert.deepEqual(
       offenders,
       [],
-      "no tracked file outside docs/decisions/, .claude/workspace/research/ and the " +
+      "no tracked file outside docs/decisions/, docs/research/ and the " +
         `deterministic-script-judgment basis line references a retired verifier script\n${offenders.join(", ")}`,
     );
   },

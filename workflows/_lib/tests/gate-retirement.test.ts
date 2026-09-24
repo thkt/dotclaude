@@ -7,7 +7,7 @@
 // change, then confirm zero residual references across git ls-files. The walk itself is
 // assertNoResidualReferences (workflows/_lib/tests/_retirement.ts), shared with
 // record-retirement.test.ts and ts-harness-retirement.test.ts, so the historical-directory
-// exclusions it applies (docs/decisions/ and .claude/workspace/research/, kept as historical
+// exclusions it applies (docs/decisions/ and docs/research/, kept as historical
 // record by that same procedure) live in one place rather than a copy per test file.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -36,7 +36,7 @@ test("T-014 no tracked file references _lib/gate.py", () => {
   assertDetectsAndMisses(referencesRetiredPath, "_lib/gate.py");
 
   // This test's own file names RETIRED_PATH to describe what it checks, so it is passed as an
-  // extra exclusion; the historical directories (docs/decisions/, .claude/workspace/research/)
+  // extra exclusion; the historical directories (docs/decisions/, docs/research/)
   // are assertNoResidualReferences's own default, not repeated here.
   assertNoResidualReferences(
     REPO_ROOT,

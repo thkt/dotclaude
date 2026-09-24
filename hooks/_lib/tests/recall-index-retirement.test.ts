@@ -33,13 +33,13 @@ function referencesRetiredPython(content: string): boolean {
   return RETIRED_PYTHON.test(content);
 }
 
-test("T-247 no tracked file outside docs/decisions/ and .claude/workspace/research/ references recall_index.py or recall_index_test.py as a word, and the same predicate flags a fixture line carrying it", () => {
+test("T-247 no tracked file outside docs/decisions/ and docs/research/ references recall_index.py or recall_index_test.py as a word, and the same predicate flags a fixture line carrying it", () => {
   assertDetectsAndMisses(referencesRetiredPython, "recall_index.py");
   assertDetectsAndMisses(referencesRetiredPython, "recall_index_test.py");
 
   // This test's own file names both retired paths to describe what it checks, so it is
   // passed as an extra exclusion; the historical directories (docs/decisions/,
-  // .claude/workspace/research/) are offendersAmong's own default, not repeated here.
+  // docs/research/) are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -50,7 +50,7 @@ test("T-247 no tracked file outside docs/decisions/ and .claude/workspace/resear
     offenders,
     [],
     `files still naming recall_index.py or recall_index_test.py (docs/decisions/ and ` +
-      `.claude/workspace/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
+      `docs/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
   );
 });
 

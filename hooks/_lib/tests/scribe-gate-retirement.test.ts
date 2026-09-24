@@ -36,7 +36,7 @@ test("T-451 no tracked file outside the historical directories names scribe_gate
   assertDetectsAndMisses(referencesRetiredPython, "scribe_gate.py");
 
   // This test's own file names scribe_gate.py to describe what it checks, so it is passed as an
-  // extra exclusion; the historical directories (docs/decisions/, .claude/workspace/research/)
+  // extra exclusion; the historical directories (docs/decisions/, docs/research/)
   // are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
@@ -47,7 +47,7 @@ test("T-451 no tracked file outside the historical directories names scribe_gate
   assert.deepEqual(
     offenders,
     [],
-    `files still naming scribe_gate.py (docs/decisions/ and .claude/workspace/research/ are ` +
+    `files still naming scribe_gate.py (docs/decisions/ and docs/research/ are ` +
       `kept as history, not counted)\n${offenders.join(", ")}`,
   );
 });

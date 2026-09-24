@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: 過去の closed PR / issue と .claude/workspace/research/ の調査結果から繰り返しの共通項を抽出し、最新コードと突き合わせて docs/wiki/ に PR で提案する。
+description: 過去の closed PR / issue と docs/research/ の調査結果から繰り返しの共通項を抽出し、最新コードと突き合わせて docs/wiki/ に PR で提案する。
 when_to_use: scribe 実行, wiki 抽出, 共通項の蒸留, PR/issue からの知見蓄積, research 成果の蓄積, run scribe, wiki extraction, distill recurring patterns
 allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Read Write Edit LS
 ---
@@ -17,7 +17,7 @@ allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scri
 | 進捗の記録          | cursor は最後にマージされた scribe PR の mergedAt。research ファイルはその mergedAt と最終コミット時刻を比べる                               |
 | 閾値の所在          | ページにするか候補に置くかの判定は `scripts/triage.ts` が持ち、この skill は判定しない                                                       |
 | 事実のみ            | PR / issue と research ファイルに書かれた事実、および現在のコードで確認できた事実のみ書く。推測で埋めない                                    |
-| research は引かない | `.claude/workspace/research/` のファイルパスを `docs/wiki/` 配下に書かない。wiki は蒸留した共通項を置く場所で、パスは読者を原資料へ送り返す  |
+| research は引かない | `docs/research/` のファイルパスを `docs/wiki/` 配下に書かない。wiki は蒸留した共通項を置く場所で、パスは読者を原資料へ送り返す  |
 | worktree 隔離       | 編集 / commit は隔離 worktree 内で行い、ユーザーの作業ツリーを動かさない。worktree を作るのは Phase 6 なので、書き込む Phase は Phase 6 だけ |
 
 ## Phase 1: 前提確認とオンボーディング
@@ -30,8 +30,8 @@ allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scri
 ## Phase 2: スコープ決定
 
 1. 最後にマージされた scribe PR の mergedAt を `gh pr list --label scribe --state merged --limit 1 --json mergedAt -q '.[0].mergedAt'` で取得する
-2. mergedAt が取れなければ初回。`gh pr list --state merged --search '-label:scribe'` と `gh issue list --state closed` の全件、および `find .claude/workspace/research -name '*.md'` の全件を対象にする
-3. mergedAt が取れたら差分だけを対象にする。PR は `gh pr list --state merged --search "-label:scribe merged:><mergedAt>"` で集める。issue は `gh issue list --state closed --search "closed:><mergedAt>"` で集める。調査ファイルは `git log --since="<mergedAt>" --name-only --diff-filter=AM --pretty=format: -- '.claude/workspace/research/*.md' | sort -u` で集める。これに未追跡分の `git ls-files --others --exclude-standard -- '.claude/workspace/research/*.md'` を加える。未コミットのレポートは git log に載らず、それこそローカル run が持っていやすい 1 件になる
+2. mergedAt が取れなければ初回。`gh pr list --state merged --search '-label:scribe'` と `gh issue list --state closed` の全件、および `find docs/research -maxdepth 1 -name '*.md'` の全件を対象にする
+3. mergedAt が取れたら差分だけを対象にする。PR は `gh pr list --state merged --search "-label:scribe merged:><mergedAt>"` で集める。issue は `gh issue list --state closed --search "closed:><mergedAt>"` で集める。調査ファイルは `git log --since="<mergedAt>" --name-only --diff-filter=AM --pretty=format: | grep -E '^docs/research/[^/]+\.md$' | sort -u` で集める。これに未追跡分の `git ls-files --others --exclude-standard -- 'docs/research/*.md'` を加える。未コミットのレポートは git log に載らず、それこそローカル run が持っていやすい 1 件になる。git log に pathspec を付けないのは、移動したレポートを git が旧パスとの rename として組にし、`--diff-filter=AM` がそれを外すため。新しいパスだけの pathspec では、移動がすべて追加に見える
 4. research の対象は `*.md` だけとし、他の形式は読まない。cursor には各ファイルの最終コミット時刻を使い、mtime とファイル内の `Generated:` 行は使わない。checkout は内容の変更時期と無関係に mtime を checkout 時刻へ戻すので、mtime では比較の基準にならない。`Generated:` は生成時の日付で、後から追記してもその日付のままなので、更新を取りこぼす
 5. PR/issue/research のいずれも 0 件でも、`docs/wiki/_candidates.md` に根拠 2 件以上の行があれば Phase 3 へ進む。その行も無いときだけ「新規なし」と報告して終了する
 

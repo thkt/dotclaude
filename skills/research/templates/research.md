@@ -1,6 +1,6 @@
 # Research Report Template
 
-The template for the report /research generates in Phase 7. The skill reads it at output time, replaces `{...}` with content, fills `${CLAUDE_SESSION_ID}`, and saves to `.claude/workspace/research/YYYY-MM-DD-<slug>.md`.
+The template for the report /research generates in Phase 7. The skill reads it at output time, replaces `{...}` with content, fills `${CLAUDE_SESSION_ID}`, and saves to `docs/research/YYYY-MM-DD-<slug>.md`.
 
 ## Template
 

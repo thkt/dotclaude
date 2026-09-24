@@ -1,6 +1,6 @@
 ---
-status: "accepted"
-date: "2026-08-26"
+status: "superseded by DR-0119"
+date: "2026-09-25"
 decision-makers: thkt
 scope: [meta, infrastructure]
 ---

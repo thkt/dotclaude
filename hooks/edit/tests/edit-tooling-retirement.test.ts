@@ -12,7 +12,7 @@
 //
 // Same shape as hooks/_lib/tests/recall-index-retirement.test.ts, generalized from one retired
 // name to six: no tracked file outside the historical directories (docs/decisions/,
-// .claude/workspace/research/) names any of the six as a word, and offendersAmong
+// docs/research/) names any of the six as a word, and offendersAmong
 // (workflows/_lib/tests/_retirement.ts) is reused for the walk rather than re-derived.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -73,7 +73,7 @@ test("T-385 no tracked file outside the historical directories names the five re
 
   // This test's own file names all six retired paths to describe what it checks, so it is
   // passed as an extra exclusion; the historical directories (docs/decisions/,
-  // .claude/workspace/research/) are offendersAmong's own default, not repeated here.
+  // docs/research/) are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     [...tracked],
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -84,6 +84,6 @@ test("T-385 no tracked file outside the historical directories names the five re
     offenders,
     [],
     `files still naming a retired edit-tooling .py (docs/decisions/ and ` +
-      `.claude/workspace/research/ are kept as history, not counted): ${offenders.join(", ")}`,
+      `docs/research/ are kept as history, not counted): ${offenders.join(", ")}`,
   );
 });

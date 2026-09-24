@@ -26,7 +26,7 @@ Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. If the inv
 
 ## Phase 2: Prior Research Scan
 
-Derive the lowercase hyphenated subject slug from `$ARGUMENTS` and run `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> .claude/workspace/research`. Parse the JSON `{ candidates: [{file, shared}, ...], slug_words: int }` (shared descending) from stdout.
+Derive the lowercase hyphenated subject slug from `$ARGUMENTS` and run `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> docs/research`. Parse the JSON `{ candidates: [{file, shared}, ...], slug_words: int }` (shared descending) from stdout.
 
 - No candidates: set the report's Prior research to `none found` and move on
 - A candidate with shared >= 2, or with shared equal to `slug_words`: carry forward per the table below
@@ -78,7 +78,7 @@ Skip the invocation only when all conditions hold, and record the skip reason in
 
 ## Phase 8: Output
 
-Generate the report following the skeleton in ${CLAUDE_SKILL_DIR}/templates/research.md, fill in `${CLAUDE_SESSION_ID}`, and save to `.claude/workspace/research/YYYY-MM-DD-<slug>.md`.
+Generate the report following the skeleton in ${CLAUDE_SKILL_DIR}/templates/research.md, fill in `${CLAUDE_SESSION_ID}`, and save to `docs/research/YYYY-MM-DD-<slug>.md`.
 
 After saving, propose the destination from the template's Next Steps table in the conversation, and run none of them. Attach the saved report's path and the words the slug came from, verbatim. `/think` builds its slug from those words and pulls this report with the same script, so a word that drifts leaves the report unreachable.
 
@@ -97,5 +97,5 @@ Not done until all are satisfied. An item whose Condition carries "(...)" is req
 | advisor           | Phase 6 | advisor invoked, or skip reason recorded                                                             |
 | Source            | Phase 7 | Every finding has an explicit source or an `unknown, requires X` note                                |
 | Triage            | Phase 7 | Every Next Action states its linkage (question / OUTCOME / incident) or reads `record only`          |
-| Save              | Phase 8 | Output saved to `.claude/workspace/research/`                                                        |
+| Save              | Phase 8 | Output saved to `docs/research/`                                                        |
 | Handoff           | Phase 8 | Destination proposed from the Next Steps table, with the report path and the slug's words attached   |

@@ -20,8 +20,8 @@ paths:
 
 | スコープ     | パス                                                                      |
 | ------------ | ------------------------------------------------------------------------- |
-| LLM-facing   | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `.claude/workspace/**` |
-| Human-facing | `docs/**`, `README.md`                                                    |
+| LLM-facing   | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `.claude/workspace/**`, `docs/research/**` |
+| Human-facing | `docs/research/**` を除く `docs/**`, `README.md`                                          |
 
 ## 記号
 

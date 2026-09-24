@@ -6,7 +6,7 @@
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and the wiki in one
 // change, then confirm zero residual references across git ls-files. A mention under
-// docs/decisions/ or .claude/workspace/research/ is kept as historical record (a DR / a research
+// docs/decisions/ or docs/research/ is kept as historical record (a DR / a research
 // report is written once and stays a record of what was true when it was written, not a live
 // pointer that retirement obliges to follow), so both are excluded here rather than counted as a
 // leftover reference. docs/wiki/pr-tail-translate-prose-only.md's mention of pr-body.py is the
@@ -38,7 +38,7 @@ function referencesRetiredPath(content: string): boolean {
 }
 
 test(
-  "T-129 no tracked file outside docs/decisions/, .claude/workspace/research/and " +
+  "T-129 no tracked file outside docs/decisions/, docs/research/and " +
     "docs/wiki/pr-tail-translate-prose-only.md references pr-body.py as a word, and the same " +
     "predicate flags a fixture line carrying it",
   () => {
@@ -56,7 +56,7 @@ test(
     assert.deepEqual(
       offenders,
       [],
-      "no tracked file outside docs/decisions/, .claude/workspace/research/ and " +
+      "no tracked file outside docs/decisions/, docs/research/ and " +
         `docs/wiki/pr-tail-translate-prose-only.md references pr-body.py\n${offenders.join(", ")}`,
     );
   },

@@ -7,7 +7,7 @@
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and docs in one
 // change, then confirm zero residual references across git ls-files. A mention under
-// docs/decisions/ or .claude/workspace/research/ is kept as historical record (a DR / a research
+// docs/decisions/ or docs/research/ is kept as historical record (a DR / a research
 // report is written once and stays a record of what was true when it was written, not a live
 // pointer that retirement obliges to follow), so both are excluded here rather than counted as a
 // leftover reference. docs/wiki/supply-list-single-source.md's mention of record.py is the cited
@@ -41,7 +41,7 @@ function referencesRetiredPath(content: string): boolean {
 }
 
 test(
-  "T-113 no tracked file outside docs/decisions/, .claude/workspace/research/ and " +
+  "T-113 no tracked file outside docs/decisions/, docs/research/ and " +
     "docs/wiki/supply-list-single-source.md references record.py as a word, and the same " +
     "predicate flags a fixture line carrying it",
   () => {
@@ -59,7 +59,7 @@ test(
     assert.deepEqual(
       offenders,
       [],
-      "no tracked file outside docs/decisions/, .claude/workspace/research/ and " +
+      "no tracked file outside docs/decisions/, docs/research/ and " +
         `docs/wiki/supply-list-single-source.md references record.py\n${offenders.join(", ")}`,
     );
   },

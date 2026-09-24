@@ -8,7 +8,7 @@
 // shells out to the validator).
 //
 // Historical exclusions follow docs/wiki/retire-rename-procedure.md: docs/decisions/ and
-// .claude/workspace/research/ are offendersAmong's own default (a DR / a research report stays a
+// docs/research/ are offendersAmong's own default (a DR / a research report stays a
 // record of what was true when it was written, not a live pointer retirement obliges to follow).
 // docs/wiki/deterministic-script-judgment.md additionally carries the #389 issue's basis line,
 // which names pick-plan.py as the thing that issue moved plan-selection logic into — that
@@ -40,7 +40,7 @@ function referencesRetiredScript(content: string): boolean {
   return VALIDATE_ISSUE_BODY_PATTERN.test(content) || PICK_PLAN_PATTERN.test(content);
 }
 
-test("no tracked file outside docs/decisions/, .claude/workspace/research/and docs/wiki/deterministic-script-judgment.md references validate-issue-body.py or pick-plan.py as a word, and the same predicate flags a fixture line carrying each", () => {
+test("no tracked file outside docs/decisions/, docs/research/and docs/wiki/deterministic-script-judgment.md references validate-issue-body.py or pick-plan.py as a word, and the same predicate flags a fixture line carrying each", () => {
   assertDetectsAndMisses(referencesRetiredScript, "validate-issue-body.py");
   assertDetectsAndMisses(referencesRetiredScript, "pick-plan.py");
 
@@ -57,7 +57,7 @@ test("no tracked file outside docs/decisions/, .claude/workspace/research/and do
   assert.deepEqual(
     offenders,
     [],
-    "no tracked file outside docs/decisions/, .claude/workspace/research/ and " +
+    "no tracked file outside docs/decisions/, docs/research/ and " +
       "docs/wiki/deterministic-script-judgment.md references validate-issue-body.py or " +
       `pick-plan.py\n${offenders.join(", ")}`,
   );

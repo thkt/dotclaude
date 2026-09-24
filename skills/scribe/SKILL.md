@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: Extract recurring patterns from past closed PRs/issues and the research findings in .claude/workspace/research/, verify them against the latest code, and propose them to docs/wiki/ via PR.
+description: Extract recurring patterns from past closed PRs/issues and the research findings in docs/research/, verify them against the latest code, and propose them to docs/wiki/ via PR.
 when_to_use: scribe 実行, wiki 抽出, 共通項の蒸留, PR/issue からの知見蓄積, research 成果の蓄積, run scribe, wiki extraction, distill recurring patterns
 allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Read Write Edit LS
 ---
@@ -17,7 +17,7 @@ The patterns worth picking up are procedures that recur as a routine or a conven
 | Progress record           | The cursor is the mergedAt of the last merged scribe PR. For a research file, compare that mergedAt against its last commit time                                         |
 | Where the threshold lives | `scripts/triage.ts` decides whether a pattern becomes a page or a candidate; this skill does not judge it                                                                |
 | Facts only                | Write only facts stated in PRs / issues and research files, plus facts verified in the current code. No guessing                                                         |
-| No research paths         | Never write `.claude/workspace/research/` file paths under `docs/wiki/`. The wiki carries the distilled pattern, and a path would send the reader back to the raw report |
+| No research paths         | Never write `docs/research/` file paths under `docs/wiki/`. The wiki carries the distilled pattern, and a path would send the reader back to the raw report |
 | Worktree isolation        | Edit and commit inside an isolated worktree; never touch the user's working tree. The worktree is created in Phase 6, so Phase 6 is the only Phase that writes           |
 
 ## Phase 1: Preconditions and onboarding
@@ -30,8 +30,8 @@ The patterns worth picking up are procedures that recur as a routine or a conven
 ## Phase 2: Scope
 
 1. Get the mergedAt of the last merged scribe PR with `gh pr list --label scribe --state merged --limit 1 --json mergedAt -q '.[0].mergedAt'`
-2. If no mergedAt comes back, this is the first run. Take all of `gh pr list --state merged --search '-label:scribe'`, `gh issue list --state closed`, and `find .claude/workspace/research -name '*.md'` as the scope
-3. If a mergedAt comes back, take the PRs from `gh pr list --state merged --search "-label:scribe merged:><mergedAt>"`, the issues from `gh issue list --state closed --search "closed:><mergedAt>"`, and the files from `git log --since="<mergedAt>" --name-only --diff-filter=AM --pretty=format: -- '.claude/workspace/research/*.md' | sort -u` plus the untracked ones from `git ls-files --others --exclude-standard -- '.claude/workspace/research/*.md'` as the scope. A report not yet committed has no git log entry, and it is exactly the one a local run is most likely to hold
+2. If no mergedAt comes back, this is the first run. Take all of `gh pr list --state merged --search '-label:scribe'`, `gh issue list --state closed`, and `find docs/research -maxdepth 1 -name '*.md'` as the scope
+3. If a mergedAt comes back, take the PRs from `gh pr list --state merged --search "-label:scribe merged:><mergedAt>"`, the issues from `gh issue list --state closed --search "closed:><mergedAt>"`, and the files from `git log --since="<mergedAt>" --name-only --diff-filter=AM --pretty=format: | grep -E '^docs/research/[^/]+\.md$' | sort -u` plus the untracked ones from `git ls-files --others --exclude-standard -- 'docs/research/*.md'` as the scope. A report not yet committed has no git log entry, and it is exactly the one a local run is most likely to hold. The log names no pathspec so git pairs a moved report with its old path as a rename, which `--diff-filter=AM` leaves out; a pathspec naming only the new path reads every move as an addition
 4. Only `*.md` counts as a research target; read no other format. Use each file's last commit time as the cursor, not its filesystem mtime or the `Generated:` line inside it. A checkout resets mtime to the checkout moment regardless of when the content last changed in git, so mtime cannot anchor the comparison. `Generated:` carries the date the file was produced and stays there through later edits, so it drops updates too
 5. Even with PRs, issues, and research all empty, go on to Phase 3 when `docs/wiki/_candidates.md` holds a line with two or more pieces of evidence. Report "nothing new" and stop only when that line is absent too
 
