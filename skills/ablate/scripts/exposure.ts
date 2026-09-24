@@ -43,44 +43,37 @@ interface ToolUseBlock {
  * are not valid JSON, or that are not an assistant event carrying tool_use blocks, contribute
  * nothing -- a transcript's system/result events take other shapes entirely. */
 function tool_use_blocks(transcript: string): ToolUseBlock[] {
-  const blocks: ToolUseBlock[] = [];
-  for (const rawLine of transcript.split("\n")) {
-    const trimmed = rawLine.trim();
-    if (trimmed.length === 0) {
-      continue;
-    }
-    let event: unknown;
-    try {
-      event = JSON.parse(trimmed);
-    } catch {
-      continue;
-    }
-    if (
-      typeof event !== "object" ||
-      event === null ||
-      (event as Record<string, unknown>).type !== "assistant"
-    ) {
-      continue;
-    }
-    const message = (event as Record<string, unknown>).message;
-    if (typeof message !== "object" || message === null) {
-      continue;
-    }
-    const content = (message as Record<string, unknown>).content;
-    if (!Array.isArray(content)) {
-      continue;
-    }
-    for (const block of content) {
-      if (
-        typeof block === "object" &&
-        block !== null &&
-        (block as Record<string, unknown>).type === "tool_use"
-      ) {
-        blocks.push(block as ToolUseBlock);
-      }
-    }
+  return transcript
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .flatMap(assistant_content)
+    .filter(is_tool_use);
+}
+
+/** The content array of one transcript line's assistant event, or empty when the line is not
+ * valid JSON or not an assistant event carrying a content array. */
+function assistant_content(line: string): unknown[] {
+  let event: unknown;
+  try {
+    event = JSON.parse(line);
+  } catch {
+    return [];
   }
-  return blocks;
+  const record = event as { type?: unknown; message?: { content?: unknown } } | null;
+  if (record?.type !== "assistant") {
+    return [];
+  }
+  const content = record.message?.content;
+  return Array.isArray(content) ? content : [];
+}
+
+function is_tool_use(block: unknown): block is ToolUseBlock {
+  return (
+    typeof block === "object" &&
+    block !== null &&
+    (block as Record<string, unknown>).type === "tool_use"
+  );
 }
 
 /** Every string leaf `input` holds, recursing through arrays and plain objects. A tool's input

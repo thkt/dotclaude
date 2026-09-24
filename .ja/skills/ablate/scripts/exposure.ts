@@ -43,44 +43,37 @@ interface ToolUseBlock {
  * 正しい JSON でない行や、tool_use ブロックを持たない assistant イベントでない行は何も
  * 寄与しない -- transcript の system/result イベントはまったく別の形を取る。 */
 function tool_use_blocks(transcript: string): ToolUseBlock[] {
-  const blocks: ToolUseBlock[] = [];
-  for (const rawLine of transcript.split("\n")) {
-    const trimmed = rawLine.trim();
-    if (trimmed.length === 0) {
-      continue;
-    }
-    let event: unknown;
-    try {
-      event = JSON.parse(trimmed);
-    } catch {
-      continue;
-    }
-    if (
-      typeof event !== "object" ||
-      event === null ||
-      (event as Record<string, unknown>).type !== "assistant"
-    ) {
-      continue;
-    }
-    const message = (event as Record<string, unknown>).message;
-    if (typeof message !== "object" || message === null) {
-      continue;
-    }
-    const content = (message as Record<string, unknown>).content;
-    if (!Array.isArray(content)) {
-      continue;
-    }
-    for (const block of content) {
-      if (
-        typeof block === "object" &&
-        block !== null &&
-        (block as Record<string, unknown>).type === "tool_use"
-      ) {
-        blocks.push(block as ToolUseBlock);
-      }
-    }
+  return transcript
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .flatMap(assistant_content)
+    .filter(is_tool_use);
+}
+
+/** transcript の1行が assistant イベントなら、その content 配列。有効な JSON でない行や、
+ * content 配列を持つ assistant イベントでない行は空になる。 */
+function assistant_content(line: string): unknown[] {
+  let event: unknown;
+  try {
+    event = JSON.parse(line);
+  } catch {
+    return [];
   }
-  return blocks;
+  const record = event as { type?: unknown; message?: { content?: unknown } } | null;
+  if (record?.type !== "assistant") {
+    return [];
+  }
+  const content = record.message?.content;
+  return Array.isArray(content) ? content : [];
+}
+
+function is_tool_use(block: unknown): block is ToolUseBlock {
+  return (
+    typeof block === "object" &&
+    block !== null &&
+    (block as Record<string, unknown>).type === "tool_use"
+  );
 }
 
 /** `input` が持つ文字列の葉をすべて、配列とプレーンオブジェクトを再帰しながら集める。
