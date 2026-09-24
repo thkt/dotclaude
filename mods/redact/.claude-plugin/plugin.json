@@ -1,0 +1,9 @@
+{
+  "name": "redact",
+  "version": "0.1.0",
+  "description": "Masks credential-shaped strings in a Read tool result before the model reads it.",
+  "author": {
+    "name": "thkt",
+    "url": "https://github.com/thkt"
+  }
+}

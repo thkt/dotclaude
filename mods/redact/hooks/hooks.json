@@ -1,0 +1,4 @@
+{
+  "description": "A tool.call hook on Read replaces credential-shaped strings in the file content with a [REDACTED:<kind>] marker before the result reaches the model",
+  "modules": ["./register.ts"]
+}

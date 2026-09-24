@@ -1,0 +1,9 @@
+{
+  "name": "redact",
+  "version": "0.1.0",
+  "description": "Read ツールの結果に含まれる認証情報の形をした文字列を、モデルが読む前に伏せる。",
+  "author": {
+    "name": "thkt",
+    "url": "https://github.com/thkt"
+  }
+}
