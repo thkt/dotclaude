@@ -20,7 +20,9 @@
 // 定数名と関数名は snake_case のまま保つ。同じディレクトリの arms.ts、verdict.ts、
 // reference_arm.ts が持つ規約と同じ形。
 
+import { homedir } from "node:os";
 import { join } from "node:path";
+import { fixture_relpath } from "./reference_arm.ts";
 
 export interface ExposureResult {
   exposed: boolean;
@@ -105,6 +107,17 @@ function names_path_under(value: string, base: string): boolean {
   return value === base || value.includes(`${base}/`);
 }
 
+/** tool の引数が `root` を書き表しうる形。絶対パスと、`root` が `home` 配下にあるときの
+ * `~/...` と `$HOME/...` の形。reviewer agent 本文の代替文は `~/.claude/` を名指し、Bash
+ * command はそのチルダを展開せずに運ぶ。 */
+function root_spellings(root: string, home: string): string[] {
+  if (!root.startsWith(`${home}/`)) {
+    return [root];
+  }
+  const rest = root.slice(home.length);
+  return [root, `~${rest}`, `$HOME${rest}`];
+}
+
 /** 1つの run の stream-json transcript を、`element` について組まれた fixture
  * (reference_arm.ts の build_reference_fixture)と照らして判定する: `exposed` はその run が
  * `cwd` にある fixture 自身の `element` を読んだかどうか。`contaminated` はいずれかの tool
@@ -115,8 +128,10 @@ export function classify_exposure(
   element: string,
   cwd: string,
   root: string,
+  home: string = homedir(),
 ): ExposureResult {
-  const fixtureTarget = join(cwd, element);
+  const fixtureTarget = join(cwd, fixture_relpath(element));
+  const spellings = root_spellings(root, home);
   const blocks = tool_use_blocks(transcript);
 
   let exposed = false;
@@ -132,7 +147,7 @@ export function classify_exposure(
       exposed = true;
     }
     for (const value of string_leaves(block.input)) {
-      if (names_path_under(value, root)) {
+      if (spellings.some((spelling) => names_path_under(value, spelling))) {
         contaminated = true;
       }
     }

@@ -35,7 +35,7 @@ export interface ArmObservation {
 }
 
 /** clean case の誤検知率。ArmObservation の `complies` とは別に報告する: clean case の run は
- * 仕込んだ欠陥を持たないので、`element` の corpus ファイルについて報告された finding は当たり
+ * 仕込んだ欠陥を持たないので、clean case の corpus ファイルについて報告された finding は当たり
  * ではなく誤検知になる。 */
 export interface CleanCaseObservation {
   false_positive_rate: number | null;
@@ -76,18 +76,20 @@ export function observe_arm(
 
 /** clean case の `runs` を、`element` に対して CleanCaseObservation へ集約する。`root` は
  * 実リポジトリを指す。observe_arm と同じ、露出済みかつ非汚染の run だけを数える。clean case の
- * corpus は仕込んだ欠陥を持たないので、数えられた run が `element` 自身のファイルに対する
- * finding を1つでも報告していれば、それは欠陥範囲への当たりではなく誤検知になる。
+ * corpus は仕込んだ欠陥を持たないので、数えられた run が `cleanCorpusFile` (reviewer がレビュー
+ * したファイル) に対する finding を1つでも報告していれば、それは誤検知になる。`element` は測定
+ * 対象の指針ページで、reviewer は読むがレビューはしない。
  * `false_positive_rate` は -- observe_arm の `complies` と同じ unmeasured の形として -- counted_runs
  * が arms.ts の RUN_COUNT に達するまで null になる。 */
 export function observe_clean_case(
   runs: readonly ObservedRun[],
   element: string,
   root: string,
+  cleanCorpusFile: string,
 ): CleanCaseObservation {
   const counted = counted_runs(runs, element, root);
   const false_positive_runs = counted.filter((run) =>
-    run.findings.some((finding) => finding.file === element),
+    run.findings.some((finding) => finding.file === cleanCorpusFile),
   ).length;
   const false_positive_rate =
     counted.length < RUN_COUNT ? null : false_positive_runs / counted.length;

@@ -35,7 +35,7 @@ export interface ArmObservation {
 }
 
 /** The clean case's false-positive rate, reported apart from ArmObservation's `complies`: a
- * clean-case run carries no planted defect, so any finding it reports against `element`'s
+ * clean-case run carries no planted defect, so any finding it reports against the clean
  * corpus file is a false positive rather than a hit. */
 export interface CleanCaseObservation {
   false_positive_rate: number | null;
@@ -79,17 +79,19 @@ export function observe_arm(
  * the real repository at `root`. A run counts only when classify_exposure reports it exposed
  * and not contaminated, the same counted-run definition observe_arm uses. The clean case's
  * corpus carries no planted defect, so a counted run is a false positive when it reports any
- * finding against `element`'s own file rather than a hit against a defect range.
+ * finding against `cleanCorpusFile`, the file the reviewer reviewed. `element` is the guidance
+ * page under measurement, which the reviewer reads but never reviews.
  * `false_positive_rate` is null -- the same unmeasured shape observe_arm's `complies` takes --
  * until counted_runs reaches arms.ts's RUN_COUNT. */
 export function observe_clean_case(
   runs: readonly ObservedRun[],
   element: string,
   root: string,
+  cleanCorpusFile: string,
 ): CleanCaseObservation {
   const counted = counted_runs(runs, element, root);
   const false_positive_runs = counted.filter((run) =>
-    run.findings.some((finding) => finding.file === element),
+    run.findings.some((finding) => finding.file === cleanCorpusFile),
   ).length;
   const false_positive_rate =
     counted.length < RUN_COUNT ? null : false_positive_runs / counted.length;

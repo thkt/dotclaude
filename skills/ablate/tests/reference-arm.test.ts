@@ -9,7 +9,6 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { WIPED, WIPED_PLUS_ONE } from "../scripts/arms.ts";
 import {
-  BASE_COMMAND,
   build_reference_fixture,
   reference_arm_command,
 } from "../scripts/reference_arm.ts";
@@ -46,7 +45,7 @@ function listSkillFiles(absDir: string): string[] {
 test("T-498 The wiped fixture holds the target reference emptied and every other file of its skill unchanged", () => {
   const fixtureRoot = build_reference_fixture(WIPED, READABILITY_ELEMENT, REPO_ROOT);
 
-  const targetInFixture = join(fixtureRoot, READABILITY_ELEMENT);
+  const targetInFixture = join(fixtureRoot, ".claude", READABILITY_ELEMENT);
   assert.ok(
     existsSync(targetInFixture),
     `expected the wiped fixture to hold ${READABILITY_ELEMENT}`,
@@ -58,7 +57,7 @@ test("T-498 The wiped fixture holds the target reference emptied and every other
   );
 
   const sourceSkillDir = join(REPO_ROOT, READABILITY_SKILL_DIR);
-  const fixtureSkillDir = join(fixtureRoot, READABILITY_SKILL_DIR);
+  const fixtureSkillDir = join(fixtureRoot, ".claude", READABILITY_SKILL_DIR);
   const siblingFiles = listSkillFiles(sourceSkillDir).filter(
     (relPath) => `${READABILITY_SKILL_DIR}/${relPath}` !== READABILITY_ELEMENT,
   );
@@ -84,7 +83,7 @@ test("T-498 The wiped fixture holds the target reference emptied and every other
 test("T-499 The wiped+1 fixture holds the target reference with its original content", () => {
   const fixtureRoot = build_reference_fixture(WIPED_PLUS_ONE, READABILITY_ELEMENT, REPO_ROOT);
 
-  const targetInFixture = join(fixtureRoot, READABILITY_ELEMENT);
+  const targetInFixture = join(fixtureRoot, ".claude", READABILITY_ELEMENT);
   assert.ok(
     existsSync(targetInFixture),
     `expected the wiped+1 fixture to hold ${READABILITY_ELEMENT}`,
@@ -99,7 +98,8 @@ test("T-499 The wiped+1 fixture holds the target reference with its original con
 test("T-500 The fixture holds the reviewer agent whose skills frontmatter names the reference's skill, and every skill that frontmatter names", () => {
   const fixtureRoot = build_reference_fixture(WIPED_PLUS_ONE, TESTABILITY_ELEMENT, REPO_ROOT);
 
-  const agentInFixture = join(fixtureRoot, TESTABILITY_AGENT);
+  // Project-scope discovery reads agents flat under .claude/agents/.
+  const agentInFixture = join(fixtureRoot, ".claude", "agents", "reviewer-testability.md");
   assert.ok(existsSync(agentInFixture), `expected the fixture to hold ${TESTABILITY_AGENT}`);
   assert.equal(
     readFileSync(agentInFixture, "utf8"),
@@ -111,7 +111,7 @@ test("T-500 The fixture holds the reviewer agent whose skills frontmatter names 
   // (use-context-reviewer-testability, use-workflow-tdd-cycle); both must be present, not just
   // the element's own skill.
   for (const skillDir of [TESTABILITY_OWN_SKILL_DIR, TESTABILITY_EXTRA_SKILL_DIR]) {
-    const skillMdInFixture = join(fixtureRoot, skillDir, "SKILL.md");
+    const skillMdInFixture = join(fixtureRoot, ".claude", skillDir, "SKILL.md");
     assert.ok(existsSync(skillMdInFixture), `expected the fixture to hold ${skillDir}/SKILL.md`);
     assert.equal(
       readFileSync(skillMdInFixture, "utf8"),
@@ -124,15 +124,27 @@ test("T-500 The fixture holds the reviewer agent whose skills frontmatter names 
 test("T-501 The command runs claude as that agent with setting sources limited to project and stream-json output, from the fixture directory", () => {
   const result = reference_arm_command(WIPED, READABILITY_ELEMENT, REPO_ROOT);
 
+  // --print with stream-json refuses to start without --verbose, so the literal flags are
+  // asserted here rather than read back from BASE_COMMAND.
   assert.deepEqual(
     result.argv,
-    [...BASE_COMMAND, "--setting-sources", "project", "--agent", "reviewer-readability"],
+    [
+      "claude",
+      "--print",
+      "--output-format",
+      "stream-json",
+      "--verbose",
+      "--setting-sources",
+      "project",
+      "--agent",
+      "reviewer-readability",
+    ],
     "expected the wiped reference-arm command to run claude restricted to project settings, as reviewer-readability, with stream-json output",
   );
 
   assert.ok(statSync(result.cwd).isDirectory(), "expected cwd to be a directory that exists");
   assert.ok(
-    existsSync(join(result.cwd, READABILITY_ELEMENT)),
+    existsSync(join(result.cwd, ".claude", READABILITY_ELEMENT)),
     "expected cwd to be the fixture directory built for this arm and element, not an unrelated directory",
   );
 });

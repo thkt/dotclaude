@@ -20,7 +20,9 @@
 // Constant and function names stay snake_case, the convention arms.ts, verdict.ts and
 // reference_arm.ts hold in this same directory.
 
+import { homedir } from "node:os";
 import { join } from "node:path";
+import { fixture_relpath } from "./reference_arm.ts";
 
 export interface ExposureResult {
   exposed: boolean;
@@ -105,6 +107,17 @@ function names_path_under(value: string, base: string): boolean {
   return value === base || value.includes(`${base}/`);
 }
 
+/** The spellings a tool argument can use for `root`: the absolute path, and when `root` sits
+ * under `home`, the `~/...` and `$HOME/...` forms. The reviewer agent's own fallback line names
+ * `~/.claude/`, and a Bash command carries that tilde unexpanded. */
+function root_spellings(root: string, home: string): string[] {
+  if (!root.startsWith(`${home}/`)) {
+    return [root];
+  }
+  const rest = root.slice(home.length);
+  return [root, `~${rest}`, `$HOME${rest}`];
+}
+
 /** Classifies one run's stream-json transcript against the fixture built for `element`
  * (reference_arm.ts's build_reference_fixture): `exposed` is whether the run read the
  * fixture's own copy of `element` at `cwd`; `contaminated` is whether any tool call touched a
@@ -115,8 +128,10 @@ export function classify_exposure(
   element: string,
   cwd: string,
   root: string,
+  home: string = homedir(),
 ): ExposureResult {
-  const fixtureTarget = join(cwd, element);
+  const fixtureTarget = join(cwd, fixture_relpath(element));
+  const spellings = root_spellings(root, home);
   const blocks = tool_use_blocks(transcript);
 
   let exposed = false;
@@ -132,7 +147,7 @@ export function classify_exposure(
       exposed = true;
     }
     for (const value of string_leaves(block.input)) {
-      if (names_path_under(value, root)) {
+      if (spellings.some((spelling) => names_path_under(value, spelling))) {
         contaminated = true;
       }
     }

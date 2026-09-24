@@ -91,7 +91,21 @@ function findReviewerAgent(skillName: string, root: string): ReviewerAgent {
   );
 }
 
-/** root 配下のリポジトリ相対ファイル1つを、同じ相対パスで fixtureRoot 配下へコピーする。
+const FIXTURE_CONFIG_DIR = ".claude";
+
+/** リポジトリ相対の skill や agent のファイルが fixture の中で置かれる場所。
+ * `--setting-sources project` は cwd の `.claude/skills/` から skill を、`.claude/agents/` から
+ * agent を探すので、skills/<name>/... のパスには `.claude/` を前に付け、
+ * agents/<group>/<name>.md のパスは `.claude/agents/<name>.md` に平たく置く。exposure.ts も
+ * 同じ対応で fixture 内の対象 reference を探す。 */
+export function fixture_relpath(repoRelPath: string): string {
+  if (repoRelPath.startsWith("agents/")) {
+    return join(FIXTURE_CONFIG_DIR, "agents", basename(repoRelPath));
+  }
+  return join(FIXTURE_CONFIG_DIR, repoRelPath);
+}
+
+/** root 配下のリポジトリ相対ファイル1つを、fixture_relpath の位置で fixtureRoot 配下へコピーする。
  * まず宛先の親ディレクトリを作る。コピー元が存在しないか通常ファイルでない場合は何もしない
  * (名指された skill の SKILL.md は fixture の project-scope discovery にとってのベストエフォ
  * ートな文脈であり、測定対象の element そのものではないため)。 */
@@ -100,16 +114,16 @@ function copyFileInto(root: string, relPath: string, fixtureRoot: string): void 
   if (!existsSync(source) || !statSync(source).isFile()) {
     return;
   }
-  const destination = join(fixtureRoot, relPath);
+  const destination = join(fixtureRoot, fixture_relpath(relPath));
   mkdirSync(dirname(destination), { recursive: true });
   cpSync(source, destination);
 }
 
-/** root 配下の skills/<name> ディレクトリを、同じ相対パスで fixtureRoot 配下へコピーする。
+/** root 配下の skills/<name> ディレクトリを、fixture_relpath の位置で fixtureRoot 配下へコピーする。
  * ドットファイル(macOS の .DS_Store など、prompt 内容を持たないもの)を除く全ての通常
  * ファイルを含める。 */
 function copySkillDir(root: string, skillDir: string, fixtureRoot: string): void {
-  cpSync(join(root, skillDir), join(fixtureRoot, skillDir), {
+  cpSync(join(root, skillDir), join(fixtureRoot, fixture_relpath(skillDir)), {
     recursive: true,
     filter: (source) => !basename(source).startsWith("."),
   });
@@ -125,13 +139,14 @@ function ownSkill(element: string): { dir: string; name: string } {
 
 // この arm の起点となる headless 起動コマンド: --print で非対話モードに入り、
 // --output-format stream-json で単一の JSON ブロックではなくパース可能なイベント streamを得る
-// (https://docs.claude.com/en/docs/claude-code/cli-reference で確認済み)。呼び出し箇所ごとに
-// この2つのフラグを書き写す代わりに、ここから再利用する。
+// (https://docs.claude.com/en/docs/claude-code/cli-reference で確認済み)。--print と stream-json
+// の組は --verbose が無いと即座に終了する ("--output-format=stream-json requires --verbose")。
 export const BASE_COMMAND: readonly string[] = [
   "claude",
   "--print",
   "--output-format",
   "stream-json",
+  "--verbose",
 ];
 
 /** arm を検証し、element 自身の skill dir/名前とその reviewer agent を解決する -- この
@@ -187,7 +202,7 @@ function assembleFixture(
   copyFileInto(root, agent.path, fixtureRoot);
 
   if (arm === WIPED) {
-    writeFileSync(join(fixtureRoot, element), "");
+    writeFileSync(join(fixtureRoot, fixture_relpath(element)), "");
   }
 
   return fixtureRoot;

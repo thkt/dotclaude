@@ -9,6 +9,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { PASS_THRESHOLD, RUN_COUNT, UNMEASURED } from "../scripts/arms.ts";
 import { classify_exposure } from "../scripts/exposure.ts";
+import { fixture_relpath } from "../scripts/reference_arm.ts";
 import { is_hit, type Finding, type PlantedDefect } from "../scripts/reference_match.ts";
 import {
   observe_arm,
@@ -46,7 +47,7 @@ function assistantToolUse(name: string, input: Record<string, unknown>): Record<
 function exposedRun(cwd: string, findings: Finding[]): ObservedRun {
   const transcript =
     line({ type: "system", subtype: "init" }) +
-    line(assistantToolUse("Read", { file_path: join(cwd, ELEMENT) })) +
+    line(assistantToolUse("Read", { file_path: join(cwd, fixture_relpath(ELEMENT)) })) +
     line({ type: "result", subtype: "success" });
   return { transcript, cwd, findings };
 }
@@ -56,7 +57,7 @@ function exposedRun(cwd: string, findings: Finding[]): ObservedRun {
 function contaminatedRun(cwd: string, findings: Finding[]): ObservedRun {
   const transcript =
     line({ type: "system", subtype: "init" }) +
-    line(assistantToolUse("Read", { file_path: join(cwd, ELEMENT) })) +
+    line(assistantToolUse("Read", { file_path: join(cwd, fixture_relpath(ELEMENT)) })) +
     line(
       assistantToolUse("Read", {
         file_path: join(ROOT, "skills/use-context-reviewer-readability/SKILL.md"),
@@ -73,7 +74,7 @@ function unexposedRun(cwd: string, findings: Finding[]): ObservedRun {
     line({ type: "system", subtype: "init" }) +
     line(
       assistantToolUse("Read", {
-        file_path: join(cwd, "skills/use-context-reviewer-readability/SKILL.md"),
+        file_path: join(cwd, fixture_relpath("skills/use-context-reviewer-readability/SKILL.md")),
       }),
     ) +
     line({ type: "result", subtype: "success" });
@@ -159,19 +160,22 @@ test("T-511 Contaminated runs and unexposed runs are left out of the counted run
 });
 
 test("T-512 The clean case's false-positive rate is reported apart from complies", () => {
-  // A clean-case corpus carries no planted defect, so any finding a run reports against
-  // ELEMENT's file is a false positive rather than a hit -- there is no DEFECT to pass here.
-  const falseAlarm: Finding = { file: ELEMENT, line: "12" };
+  // A clean-case corpus carries no planted defect, so any finding a run reports against the
+  // clean corpus file is a false positive rather than a hit -- there is no DEFECT to pass here.
+  // A finding on ELEMENT, the guidance page the reviewer reads, is not a review of the corpus.
+  const cleanCorpusFile = "corpus/clean-case.ts";
+  const falseAlarm: Finding = { file: cleanCorpusFile, line: "12" };
+  const onGuidancePage: Finding = { file: ELEMENT, line: "3" };
 
   const runs: ObservedRun[] = [];
   for (let i = 0; i < RUN_COUNT; i++) {
     const cwd = `/tmp/reference-arm-fixture-clean-${i}`;
-    runs.push(exposedRun(cwd, i < 2 ? [falseAlarm] : []));
+    runs.push(exposedRun(cwd, i < 2 ? [falseAlarm] : [onGuidancePage]));
   }
   const counted = reallyCountedRuns(runs);
   assert.equal(counted.length, RUN_COUNT);
 
-  const cleanResult = observe_clean_case(runs, ELEMENT, ROOT);
+  const cleanResult = observe_clean_case(runs, ELEMENT, ROOT, cleanCorpusFile);
   assert.equal(cleanResult.counted_runs, RUN_COUNT);
   assert.equal(cleanResult.false_positive_runs, 2);
   assert.equal(cleanResult.false_positive_rate, 2 / RUN_COUNT);

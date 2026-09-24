@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { join } from "node:path";
 import test from "node:test";
 import { classify_exposure } from "../scripts/exposure.ts";
+import { fixture_relpath } from "../scripts/reference_arm.ts";
 
 // A synthetic fixture cwd and repo root -- classify_exposure reads paths out of the transcript
 // text alone, so neither needs to exist on disk.
@@ -35,7 +36,7 @@ function assistantToolUse(name: string, input: Record<string, unknown>): Record<
 test("T-502 A transcript carrying a Read of the fixture's target reference counts as exposed", () => {
   const transcript =
     line({ type: "system", subtype: "init" }) +
-    line(assistantToolUse("Read", { file_path: join(CWD, ELEMENT) })) +
+    line(assistantToolUse("Read", { file_path: join(CWD, fixture_relpath(ELEMENT)) })) +
     line({ type: "result", subtype: "success" });
 
   const result = classify_exposure(transcript, ELEMENT, CWD, ROOT);
@@ -49,7 +50,7 @@ test("T-502 A transcript carrying a Read of the fixture's target reference count
 test("T-503 A transcript with no Read of the fixture's target reference does not count as exposed", () => {
   // The run reads a sibling file of the same skill, inside the fixture, but never the target
   // reference itself.
-  const siblingPath = join(CWD, "skills/use-context-reviewer-readability/SKILL.md");
+  const siblingPath = join(CWD, fixture_relpath("skills/use-context-reviewer-readability/SKILL.md"));
   const transcript =
     line({ type: "system", subtype: "init" }) +
     line(assistantToolUse("Read", { file_path: siblingPath })) +
@@ -70,7 +71,7 @@ test("T-504 A transcript whose tool call touches the real skill directory counts
   const realSkillPath = join(ROOT, "skills/use-context-reviewer-readability/SKILL.md");
   const transcript =
     line({ type: "system", subtype: "init" }) +
-    line(assistantToolUse("Read", { file_path: join(CWD, ELEMENT) })) +
+    line(assistantToolUse("Read", { file_path: join(CWD, fixture_relpath(ELEMENT)) })) +
     line(assistantToolUse("Read", { file_path: realSkillPath })) +
     line({ type: "result", subtype: "success" });
 
@@ -80,5 +81,16 @@ test("T-504 A transcript whose tool call touches the real skill directory counts
     result.contaminated,
     true,
     "expected the Read of the real skill directory to count as contaminated",
+  );
+
+  // The same fallback reaches a Bash command as the unexpanded ~/.claude/ spelling.
+  const home = "/home/reviewer";
+  const tildeTranscript =
+    line(assistantToolUse("Read", { file_path: join(CWD, fixture_relpath(ELEMENT)) })) +
+    line(assistantToolUse("Bash", { command: "ugrep -n Examples ~/.claude/skills/" }));
+  assert.equal(
+    classify_exposure(tildeTranscript, ELEMENT, CWD, `${home}/.claude`, home).contaminated,
+    true,
+    "expected a Bash command naming ~/.claude/ to count as contaminated",
   );
 });

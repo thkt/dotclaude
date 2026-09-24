@@ -91,7 +91,21 @@ function findReviewerAgent(skillName: string, root: string): ReviewerAgent {
   );
 }
 
-/** Copies one repo-relative file from root into fixtureRoot at the same relative path,
+const FIXTURE_CONFIG_DIR = ".claude";
+
+/** Where a repo-relative skill or agent file sits inside a fixture. `--setting-sources project`
+ * discovers skills under `.claude/skills/` and agents under `.claude/agents/` of the cwd, so a
+ * skills/<name>/... path gains the `.claude/` prefix and an agents/<group>/<name>.md path
+ * lands flat at `.claude/agents/<name>.md`. exposure.ts reads the same mapping to find the
+ * fixture's copy of the target reference. */
+export function fixture_relpath(repoRelPath: string): string {
+  if (repoRelPath.startsWith("agents/")) {
+    return join(FIXTURE_CONFIG_DIR, "agents", basename(repoRelPath));
+  }
+  return join(FIXTURE_CONFIG_DIR, repoRelPath);
+}
+
+/** Copies one repo-relative file from root into fixtureRoot at its fixture_relpath,
  * creating the destination's parent directories first. Silently does nothing when the source
  * is absent or not a regular file, since a named skill's SKILL.md is best-effort context for
  * the fixture's project-scope discovery, not itself the element under measurement. */
@@ -100,16 +114,16 @@ function copyFileInto(root: string, relPath: string, fixtureRoot: string): void 
   if (!existsSync(source) || !statSync(source).isFile()) {
     return;
   }
-  const destination = join(fixtureRoot, relPath);
+  const destination = join(fixtureRoot, fixture_relpath(relPath));
   mkdirSync(dirname(destination), { recursive: true });
   cpSync(source, destination);
 }
 
-/** Copies a skills/<name> directory from root into fixtureRoot at the same relative path,
+/** Copies a skills/<name> directory from root into fixtureRoot at its fixture_relpath,
  * every regular file included except dotfiles (macOS's .DS_Store and the like, which carry no
  * prompt content). */
 function copySkillDir(root: string, skillDir: string, fixtureRoot: string): void {
-  cpSync(join(root, skillDir), join(fixtureRoot, skillDir), {
+  cpSync(join(root, skillDir), join(fixtureRoot, fixture_relpath(skillDir)), {
     recursive: true,
     filter: (source) => !basename(source).startsWith("."),
   });
@@ -125,13 +139,14 @@ function ownSkill(element: string): { dir: string; name: string } {
 
 // The headless invocation this arm starts from: --print for non-interactive mode and
 // --output-format stream-json for a parseable event stream rather than a single JSON blob
-// (verified against https://docs.claude.com/en/docs/claude-code/cli-reference), reused instead
-// of hand-copying the two flags at every call site.
+// (verified against https://docs.claude.com/en/docs/claude-code/cli-reference). --print with
+// stream-json exits at once without --verbose ("--output-format=stream-json requires --verbose").
 export const BASE_COMMAND: readonly string[] = [
   "claude",
   "--print",
   "--output-format",
   "stream-json",
+  "--verbose",
 ];
 
 /** Validates `arm` and resolves `element`'s own skill dir/name and its reviewer agent -- the
@@ -186,7 +201,7 @@ function assembleFixture(
   copyFileInto(root, agent.path, fixtureRoot);
 
   if (arm === WIPED) {
-    writeFileSync(join(fixtureRoot, element), "");
+    writeFileSync(join(fixtureRoot, fixture_relpath(element)), "");
   }
 
   return fixtureRoot;
