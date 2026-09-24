@@ -36,7 +36,7 @@ commit なし、Git リポジトリでない、gh 認証失敗のいずれかを
 2. `git push -u origin HEAD` で現在ブランチを push する
 3. 本文を一時ファイルに書き出し、`gh pr create --draft --title "<title>" --body-file <path>` で PR を作成する (§ 作成の制約)。pageshot 成果物があれば § Pageshot 統合の `--attach` を足す
 4. 成功時は `Created draft PR: #<number> <title> (base: <base>) <PR URL>` を出す。添付の失敗は § 作成の制約に従う
-5. prompt log を render し check した上で、添付を確認する (§ Prompt Log 統合)
+5. prompt log を render し check した上で、PR コメントとして投稿するかを確認する (§ Prompt Log 統合)
 
 ## 分析ソース
 
@@ -96,4 +96,4 @@ pageshot 成果物は本文へ手書きせず `--attach` で渡す。gh が uplo
 
 ## Prompt Log 統合
 
-このセッションの transcript (セッション ID ${CLAUDE_SESSION_ID}) に対して node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts の `render` と `check` を実行する。AskUserQuestion で添付を確認してから結果で分岐する。手順、`--since` の値、各分岐: ${CLAUDE_SKILL_DIR}/references/prompt-log.md。
+このセッションの transcript (セッション ID ${CLAUDE_SESSION_ID}) に対して node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts の `render` と `check` を実行する。AskUserQuestion で PR コメントとしての投稿を確認してから結果で分岐する。手順、`--since` の値、各分岐: ${CLAUDE_SKILL_DIR}/references/prompt-log.md。

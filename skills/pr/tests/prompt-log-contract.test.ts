@@ -7,8 +7,8 @@ import { OUTCOME_WORDS } from "../scripts/prompt-log.ts";
 
 // Contract tests for skills/pr/SKILL.md's prompt-log integration (issue #727 U-003). Phase 3
 // gains one step, after PR creation, that runs scripts/prompt-log.ts's render and check
-// subcommands and confirms the attachment through AskUserQuestion before
-// `gh pr edit <number> --attach <path>` runs. SKILL.md carries only the invocation and a
+// subcommands and confirms through AskUserQuestion before
+// `gh pr comment <number> --body-file <path>` posts the log. SKILL.md carries only the invocation and a
 // pointer to references/prompt-log.md, which carries the procedure (the Pageshot Integration
 // "call -> branch on the result line" shape). The Outcome vocabulary named there is read from
 // the script's own OUTCOME_WORDS export rather than restated by hand, so the two cannot drift.
@@ -90,5 +90,18 @@ test("T-529 skills/pr/SKILL.md and its .ja mirror both point at references/promp
         `${lang}: references/prompt-log.md names the Outcome word "${word}"`,
       );
     }
+  }
+});
+
+test("T-534 references/prompt-log.md and its .ja mirror post the log as a PR comment with gh pr comment --body-file, never through gh pr edit --attach", () => {
+  // gh pr edit --attach uploads images and video only, and refuses a .md file outright.
+  for (const lang of ["en", "ja"] as const) {
+    const ref = reference(lang);
+    assert.match(
+      ref,
+      /gh pr comment <number> --body-file <path>/,
+      `${lang}: the approved branch posts the log as a PR comment`,
+    );
+    assert.doesNotMatch(ref, /gh pr edit <number> --attach/, `${lang}: no .md attachment remains`);
   }
 });

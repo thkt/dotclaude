@@ -4,7 +4,8 @@
 //        prompt-log.ts check <file>
 //
 // render はセッションの transcript を読み、人間が送ったプロンプトだけを残し、プロンプトごとに
-// 空の `Outcome:` 行を添えた Markdown として --out に書く。
+// 空の `Outcome:` 行を添えた Markdown として --out に書く。--since を付けると、<iso> 以降の
+// プロンプトと、その直前の 1 件 (branch を始めたプロンプト) を残す。
 //
 // check は prompt-log の Markdown ファイル (render 自身の出力、または人間が編集した後のもの) を
 // 読み、各 `Outcome:` 行が OUTCOME_WORDS の語で始まることと、ファイルに prompt block が 1 つ以上
@@ -191,9 +192,14 @@ function renderCommand(positional: string[], options: Record<string, string>): n
   const [transcriptPath] = candidates;
   const raw = readEntries(transcriptPath);
   const since = options.since;
+  const isBeforeSince = (entry: TranscriptEntry): boolean =>
+    Boolean(since) && new Date(entry.timestamp ?? "").getTime() < new Date(since).getTime();
+  // branch はその作業を頼んだプロンプトを受けてから切るので、そのプロンプトは必ず --since より
+  // 前にある。範囲の直前にある最後の人間のプロンプトを、branch の起点として残す。
+  const beforeBound = raw.filter((entry) => isHumanPrompt(entry) && isBeforeSince(entry));
+  const origin = beforeBound[beforeBound.length - 1];
   const keepsEntry = (entry: TranscriptEntry): boolean =>
-    isHumanPrompt(entry) &&
-    (!since || new Date(entry.timestamp ?? "").getTime() >= new Date(since).getTime());
+    isHumanPrompt(entry) && (!isBeforeSince(entry) || entry === origin);
   // `raw.filter` を 2 回と `kept.includes(entry)` を組む代わりに 1 パスで振り分ける -- 後者は raw
   // の各 entry ごとに kept を再走査し、大きな transcript ではコストが二乗になる。
   const kept: TranscriptEntry[] = [];

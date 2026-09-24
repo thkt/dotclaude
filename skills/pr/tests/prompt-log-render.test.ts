@@ -149,11 +149,12 @@ test("T-521 render collapses a pasted_content body to a one-line marker carrying
   });
 });
 
-test("T-522 render with --since drops prompts whose timestamp precedes the bound and keeps the rest in transcript order", () => {
+test("T-522 render with --since drops prompts before the bound except the last one before it, and keeps the rest in transcript order", () => {
   withTempHome((home) => {
     const sessionId = "33333333-3333-3333-3333-333333333333";
     seedTranscript(home, sessionId, [
       humanEntry("earliest prompt", "2026-01-01T00:00:00.000Z"),
+      humanEntry("origin prompt", "2026-01-01T00:03:00.000Z"),
       humanEntry("boundary prompt", "2026-01-01T00:05:00.000Z"),
       humanEntry("latest prompt", "2026-01-01T00:10:00.000Z"),
     ]);
@@ -171,17 +172,47 @@ test("T-522 render with --since drops prompts whose timestamp precedes the bound
     const stdout = JSON.parse(run.stdout) as { prompts: number };
     assert.equal(
       stdout.prompts,
-      2,
-      "the prompt before the bound is dropped, the boundary and later ones are kept",
+      3,
+      "the last prompt before the bound, the boundary one, and the later one are kept",
     );
 
     const markdown = readFileSync(outPath, "utf8");
-    assert.doesNotMatch(markdown, /earliest prompt/, "the prompt preceding --since is dropped");
+    assert.doesNotMatch(markdown, /earliest prompt/, "a prompt older than the origin is dropped");
+    const originAt = markdown.indexOf("origin prompt");
     const boundaryAt = markdown.indexOf("boundary prompt");
     const latestAt = markdown.indexOf("latest prompt");
+    // The branch is cut after the prompt that asked for the work, so that prompt always sits
+    // just before --since.
+    assert.ok(originAt >= 0, "the last prompt before --since is kept as the branch's origin");
     assert.ok(boundaryAt >= 0, "the boundary prompt (at --since) is kept");
     assert.ok(latestAt >= 0, "the latest prompt is kept");
-    assert.ok(boundaryAt < latestAt, "the kept prompts stay in transcript order");
+    assert.ok(originAt < boundaryAt && boundaryAt < latestAt, "the kept prompts stay in transcript order");
+  });
+});
+
+test("T-533 render with --since and no prompt at or after the bound keeps the last prompt before it and exits 0", () => {
+  withTempHome((home) => {
+    // #749: the work was asked for, the branch was cut, and no further prompt followed.
+    const sessionId = "35353535-3535-3535-3535-353535353535";
+    seedTranscript(home, sessionId, [
+      humanEntry("unrelated earlier prompt", "2026-01-01T00:00:00.000Z"),
+      humanEntry("start the fix", "2026-01-01T00:04:00.000Z"),
+    ]);
+    const outPath = join(home, "prompt-log.md");
+    const run = runCli(SCRIPT, home, "", [
+      "render",
+      sessionId,
+      "--out",
+      outPath,
+      "--since",
+      "2026-01-01T00:05:00.000Z",
+    ]);
+    assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
+    const stdout = JSON.parse(run.stdout) as { prompts: number };
+    assert.equal(stdout.prompts, 1);
+    const markdown = readFileSync(outPath, "utf8");
+    assert.match(markdown, /start the fix/);
+    assert.doesNotMatch(markdown, /unrelated earlier prompt/);
   });
 });
 
