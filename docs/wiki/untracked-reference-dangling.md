@@ -18,7 +18,7 @@ git 管理外のファイル (gitignore 配下、ローカル生成物) のパ�
 
 ## 参照コード
 
-- `skills/scribe/SKILL.md` の No research paths 不変条件 (`.claude/workspace/research/` のパスを `docs/wiki/` 配下に書かない)
+- `skills/scribe/SKILL.md` の Identify originals 不変条件 (research の根拠は追跡済みの原本へリンクし、原本を特定できない旧 `(research)` は推測でリンクしない)
 - `skills/scribe/SKILL.md` Phase 4 の参照掃除 (ファイルの実在とシンボル名の grep 一致を機械的に確認し、壊れていれば共通項を不成立にする)
 
 ## 根拠

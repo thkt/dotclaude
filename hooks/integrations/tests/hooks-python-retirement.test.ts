@@ -56,7 +56,7 @@ test("T-401 no tracked file outside the historical directories names the five re
 
   // This test's own file names all 5 retired paths in its header and RETIRED_NAMES, so it is
   // passed as an extra exclusion; the historical directories (docs/decisions/,
-  // .claude/workspace/research/) are offendersAmong's own default, not repeated here.
+  // docs/research/) are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -67,7 +67,7 @@ test("T-401 no tracked file outside the historical directories names the five re
     offenders,
     [],
     `files still naming a retired .py (${RETIRED_NAMES.join(", ")}) ` +
-      `(docs/decisions/ and .claude/workspace/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
+      `(docs/decisions/ and docs/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
   );
 });
 

@@ -2,7 +2,7 @@
 // run-workflow.js, codex-run.js and tests/_brace.js are retired once their TypeScript
 // replacements (run-workflow.ts, codex-run.ts, tests/_brace.ts) carry the harness. This file
 // guards the retirement itself, the same way workflows/_lib/tests/gate-retirement.test.ts guards
-// gate.py's: no tracked file outside docs/decisions/ and .claude/workspace/research/ (kept as
+// gate.py's: no tracked file outside docs/decisions/ and docs/research/ (kept as
 // historical record, per docs/wiki/retire-rename-procedure.md) still names a retired path. The
 // walk and the historical-directory exclusions are assertNoResidualReferences
 // (workflows/_lib/tests/_retirement.ts), shared with gate-retirement.test.ts and
@@ -29,7 +29,7 @@ function referencesPath(content: string, retiredPath: string): boolean {
 }
 
 test(
-  "T-053 no tracked file outside docs/decisions/ and .claude/workspace/research/ references " +
+  "T-053 no tracked file outside docs/decisions/ and docs/research/ references " +
     "_lib/run-workflow.js, _lib/codex-run.js, or _lib/tests/_brace.js",
   () => {
     // Positive controls stay hand-typed literals, one per retired path, independent of

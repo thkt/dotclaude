@@ -41,7 +41,7 @@ test("T-375 no tracked file outside the historical directories names mirror_pros
 
   // This test's own file names both retired paths to describe what it checks, so it is
   // passed as an extra exclusion; the historical directories (docs/decisions/,
-  // .claude/workspace/research/) are offendersAmong's own default, not repeated here.
+  // docs/research/) are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -52,7 +52,7 @@ test("T-375 no tracked file outside the historical directories names mirror_pros
     offenders,
     [],
     `files still naming mirror_prose.py or mirror_prose_guard.py (docs/decisions/ and ` +
-      `.claude/workspace/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
+      `docs/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
   );
 });
 

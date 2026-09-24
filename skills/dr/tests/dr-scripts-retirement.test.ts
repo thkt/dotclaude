@@ -2,7 +2,7 @@
 // Guards the retirement of skills/dr/scripts' 4 Python scripts (dr_common.py, pre-check.py,
 // validate-dr.py, update-index.py) and their .ja mirror, the same way
 // workflows/_lib/tests/ts-harness-retirement.test.ts guards run-workflow.js's: no tracked file
-// outside docs/decisions/ and .claude/workspace/research/ (kept as historical record, per
+// outside docs/decisions/ and docs/research/ (kept as historical record, per
 // docs/wiki/retire-rename-procedure.md) still names one, /dr's SKILL.md invokes the .ts scripts
 // by path instead, and the .ts scripts themselves keep the shebang/mode convention
 // hooks/_lib/shebang_scope.ts already checks for hooks/.
@@ -32,7 +32,7 @@ function referencesRetiredPyScript(content: string): boolean {
   return PY_NEEDLE.test(content);
 }
 
-test("T-212 no tracked file outside docs/decisions/and .claude/workspace/research/references dr_common.py, pre-check.py, validate-dr.py or update-index.py as a word, and the same predicate flags a fixture line carrying one", () => {
+test("T-212 no tracked file outside docs/decisions/and docs/research/references dr_common.py, pre-check.py, validate-dr.py or update-index.py as a word, and the same predicate flags a fixture line carrying one", () => {
   assertDetectsAndMisses(referencesRetiredPyScript, "pre-check.py");
 
   const offenders = offendersAmong(
@@ -45,7 +45,7 @@ test("T-212 no tracked file outside docs/decisions/and .claude/workspace/researc
     offenders,
     [],
     `files still naming a retired dr script by its .py extension (docs/decisions/ and ` +
-      `.claude/workspace/research/ are kept as history, not counted): ${offenders.join(", ")}`,
+      `docs/research/ are kept as history, not counted): ${offenders.join(", ")}`,
   );
 });
 
