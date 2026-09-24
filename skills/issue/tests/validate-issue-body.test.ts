@@ -793,11 +793,11 @@ test("T-192 every frozen validate-issue-body case reproduces the python cli's ex
       const result: CliRun = withTempHome((home) => runCli(SCRIPT, home, testCase.stdin, argv));
       assert.equal(result.status, testCase.exit, `${testCase.name}: exit code`);
       const expected = JSON.parse(testCase.stdout) as ValidationResults;
-      let actual: ValidationResults | null = null;
+      let actual: ValidationResults;
       try {
         actual = JSON.parse(result.stdout) as ValidationResults;
       } catch {
-        actual = null;
+        assert.fail(`${testCase.name}: stdout is not JSON (actual stdout: ${result.stdout})`);
       }
       assert.deepEqual(
         actual,
