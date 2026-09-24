@@ -29,9 +29,6 @@
     ".ja/workflows/build/verify-pr.ts",
     "workflows/**/*.test.{js,ts}",
     "hooks/**/tests/*.test.ts",
-    "mods/*/hooks/register.ts",
-    ".ja/mods/*/hooks/register.ts",
-    "mods/**/tests/*.test.ts",
     "hooks/_lib/hook_payload.ts",
     "hooks/_lib/mirror_prose.ts",
     "hooks/lifecycle/recall_index.ts",
@@ -71,11 +68,10 @@
     ".ja/skills/**/*.{js,mjs,ts}",
     "tests/**/*.{js,ts}",
     "agents/**/*.{js,ts}",
-    "mods/**/*.ts",
-    ".ja/mods/**/*.ts"
+    "mods/**/*.ts"
   ],
   "ignoreBinaries": ["codex", "markdownlint-cli2", "rumdl", "osascript"],
-  "ignoreDependencies": ["oxfmt", "^@?textlint", "claude-code"],
+  "ignoreDependencies": ["oxfmt", "^@?textlint"],
   "ignoreFiles": [
     "workflows/tests/fixtures/**",
     "hooks/**/tests/fixtures/**",

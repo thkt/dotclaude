@@ -1,6 +1,6 @@
 // 接頭辞や囲みの形から誤一致が起きにくい認証情報の形。汎用の高エントロピー検出は
 // 意図して入れない。モデルが読む必要のあるハッシュや id まで伏せてしまうため。
-export const PATTERNS: readonly { kind: string; pattern: RegExp }[] = [
+const PATTERNS: readonly { kind: string; pattern: RegExp }[] = [
   { kind: "private-key", pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g },
   { kind: "anthropic", pattern: /\bsk-ant-[A-Za-z0-9_-]{20,}/g },
   { kind: "openai", pattern: /\bsk-(?:proj-)?[A-Za-z0-9_-]{32,}/g },

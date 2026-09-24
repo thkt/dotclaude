@@ -1,7 +1,7 @@
 // Credential shapes whose prefix or framing makes a false match unlikely. A generic
 // high-entropy detector is left out on purpose: it would mask hashes and ids the model
 // needs to read.
-export const PATTERNS: readonly { kind: string; pattern: RegExp }[] = [
+const PATTERNS: readonly { kind: string; pattern: RegExp }[] = [
   { kind: "private-key", pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g },
   { kind: "anthropic", pattern: /\bsk-ant-[A-Za-z0-9_-]{20,}/g },
   { kind: "openai", pattern: /\bsk-(?:proj-)?[A-Za-z0-9_-]{32,}/g },
