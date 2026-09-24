@@ -7,12 +7,19 @@
 // throwaway subprocess so this test's own process never exits mid-run.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { guardSkillDir, resolveDrDir, splitFrontmatter, type GitTopLevelResult } from "../scripts/dr_common.ts";
+import {
+  filesUnder,
+  guardSkillDir,
+  localDate,
+  resolveDrDir,
+  splitFrontmatter,
+  type GitTopLevelResult,
+} from "../scripts/dr_common.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const MODULE_URL = pathToFileURL(join(HERE, "..", "scripts", "dr_common.ts")).href;
@@ -106,4 +113,53 @@ test("T-199 fail writes each line to stderr and exits 1", () => {
   assert.equal(run.status, 1, `exit code (stderr: ${run.stderr})`);
   assert.equal(run.stdout, "");
   assert.equal(run.stderr, "line one\nline two\n");
+});
+
+test("T-484 filesUnder returns every file at any depth whose name the predicate keeps, and never a directory whose name it would keep", () => {
+  const dir = mkdtempSync(join(tmpdir(), "dr-files-under-"));
+  try {
+    mkdirSync(join(dir, "nested", "deeper"), { recursive: true });
+    mkdirSync(join(dir, "0003-looks-like-a-dr.md"));
+    writeFileSync(join(dir, "0001-top.md"), "");
+    writeFileSync(join(dir, "README.md"), "");
+    writeFileSync(join(dir, "nested", "deeper", "0002-deep.md"), "");
+    writeFileSync(join(dir, "nested", "notes.txt"), "");
+
+    const isDr = (name: string) => /^\d{4}-.*\.md$/.test(name);
+    assert.deepEqual(filesUnder(dir, isDr).sort(), [
+      join(dir, "0001-top.md"),
+      join(dir, "nested", "deeper", "0002-deep.md"),
+    ]);
+    assert.deepEqual(filesUnder(dir, (name) => name.endsWith(".md")).sort(), [
+      join(dir, "0001-top.md"),
+      join(dir, "README.md"),
+      join(dir, "nested", "deeper", "0002-deep.md"),
+    ]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("T-485 localDate renders the local calendar date as zero-padded YYYY-MM-DD", () => {
+  assert.equal(localDate(new Date(2026, 0, 5, 23, 59)), "2026-01-05");
+  assert.equal(localDate(new Date(987, 10, 30)), "0987-11-30");
+});
+
+test("T-486 gitTopLevel answers the repository root with status 0 inside a git work tree and a non-zero status outside one", () => {
+  const dir = realpathSync(mkdtempSync(join(tmpdir(), "dr-git-top-")));
+  const probe = `import(${JSON.stringify(MODULE_URL)}).then((m) => process.stdout.write(JSON.stringify(m.gitTopLevel())));`;
+  const run = (cwd: string) =>
+    JSON.parse(spawnSync(process.execPath, ["-e", probe], { cwd, encoding: "utf8" }).stdout) as GitTopLevelResult;
+  try {
+    const outside = run(dir);
+    assert.notEqual(outside.status, 0);
+
+    spawnSync("git", ["init", "-q", dir]);
+    mkdirSync(join(dir, "sub"));
+    const inside = run(join(dir, "sub"));
+    assert.equal(inside.status, 0);
+    assert.equal(inside.stdout.trim(), dir);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

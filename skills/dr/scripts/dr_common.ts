@@ -6,7 +6,8 @@
 // call it carry.
 //
 // Contract: the retired Python dr_common's fail, resolve_dr_dir, guard_skill_dir, and
-// split_frontmatter. Python's snake_case names carry over as TS camelCase, the same rename
+// split_frontmatter, plus gitTopLevel, filesUnder, and localDate, which pre-check.ts and
+// update-index.ts each used to define for themselves. Python's snake_case names carry over as TS camelCase, the same rename
 // harness_hash.py's _digest -> harness_hash.ts's digest already made.
 //
 // resolveDrDir is a pure function here, unlike the retired Python resolve_dr_dir, which called
@@ -15,7 +16,8 @@
 // with the null it gets back. That keeps the git spawn and the process.exit side effect in the CLI
 // wrapper, where main()'s Usage-header contract already documents them, instead of buried in a
 // helper this module's own tests import directly.
-import { existsSync, statSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 /** Writes each line to stderr and exits the process with status 1, mirroring the retired
@@ -90,4 +92,36 @@ export function splitFrontmatter(text: string): [string[], string[]] {
     }
   }
   return [[], lines];
+}
+
+/** Runs `git rev-parse --show-toplevel` in the process's cwd, for resolveDrDir to read. A CLI
+ * calls it only when DR_DIR is unset, so an explicit override never spawns git. */
+export function gitTopLevel(): GitTopLevelResult {
+  const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
+  return { status: result.status, stdout: result.stdout ?? "", error: result.error };
+}
+
+/** Every regular file at any depth under dir whose own name `keep` accepts, as full paths in
+ * directory-read order; the caller sorts. A directory is descended into whatever its name. */
+export function filesUnder(dir: string, keep: (name: string) => boolean): string[] {
+  const found: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...filesUnder(full, keep));
+    } else if (entry.isFile() && keep(entry.name)) {
+      found.push(full);
+    }
+  }
+  return found;
+}
+
+/** The local calendar date of `now` as zero-padded YYYY-MM-DD, the form a DR's date and the
+ * index footer carry. */
+export function localDate(now: Date): string {
+  return [
+    String(now.getFullYear()).padStart(4, "0"),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
 }

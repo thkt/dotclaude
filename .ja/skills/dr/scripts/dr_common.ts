@@ -6,7 +6,8 @@
 // shebang + 100755 とは違い、shebang 無しの mode 100644 で置く。
 //
 // Contract: 退役した Python 版 dr_common の fail / resolve_dr_dir / guard_skill_dir /
-// split_frontmatter。Python の snake_case な名前は TS 側では camelCase になる。
+// split_frontmatter。加えて、pre-check.ts と update-index.ts がそれぞれ自前で持っていた
+// gitTopLevel / filesUnder / localDate。Python の snake_case な名前は TS 側では camelCase になる。
 // harness_hash.py の _digest -> harness_hash.ts の digest で既に行ったのと同じリネームである。
 //
 // resolveDrDir はここでは純関数であり、git の exit が非 0 のときに自分で fail() を呼ぶ
@@ -15,7 +16,8 @@
 // てきた null をどう扱うかを決める。これにより git の spawn と process.exit という副作
 // 用は、main() の Usage ヘッダーの契約が既に文書化している CLI 側の wrapper に留まり、
 // この module 自身のテストが直接 import する helper の中には埋もれない。
-import { existsSync, statSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 /** 各行を stderr に書き、status 1 でプロセスを終了する。退役した Python 版 dr_common の
@@ -92,4 +94,35 @@ export function splitFrontmatter(text: string): [string[], string[]] {
     }
   }
   return [[], lines];
+}
+
+/** プロセスの cwd で `git rev-parse --show-toplevel` を実行し、resolveDrDir が読む形で返す。CLI
+ * がこれを呼ぶのは DR_DIR が未設定のときだけで、明示の上書きがあれば git は起動しない。 */
+export function gitTopLevel(): GitTopLevelResult {
+  const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
+  return { status: result.status, stdout: result.stdout ?? "", error: result.error };
+}
+
+/** dir 配下の任意の深さにある通常ファイルのうち、ファイル名を `keep` が受け入れるものを、
+ * ディレクトリを読んだ順のフルパスで返す。並べ替えは呼び出し側が行う。ディレクトリは名前に関わらず辿る。 */
+export function filesUnder(dir: string, keep: (name: string) => boolean): string[] {
+  const found: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...filesUnder(full, keep));
+    } else if (entry.isFile() && keep(entry.name)) {
+      found.push(full);
+    }
+  }
+  return found;
+}
+
+/** `now` のローカルの暦日を、ゼロ埋めした YYYY-MM-DD で返す。DR の date と index の footer が持つ形。 */
+export function localDate(now: Date): string {
+  return [
+    String(now.getFullYear()).padStart(4, "0"),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
 }

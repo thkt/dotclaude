@@ -17,9 +17,8 @@
 // json.dumps のキー順に対応し、skills/dr/tests/script-contract.test.js が import する。
 // skills/dr/tests/pre-check.test.ts が検証する。
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
-import { basename, join } from "node:path";
-import { spawnSync } from "node:child_process";
-import { fail, guardSkillDir, resolveDrDir, type GitTopLevelResult } from "./dr_common.ts";
+import { basename } from "node:path";
+import { fail, filesUnder, gitTopLevel, guardSkillDir, localDate, resolveDrDir } from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
 /** stdout オブジェクトのキー順であり、退役した Python 版 pre-check の json.dumps のキー順に
@@ -93,37 +92,13 @@ export function firstHeading(path: string): string {
   return "";
 }
 
-/** 退役した Python 版 pre-check の `sorted(dr_dir.rglob("*.md"))`: drDir 配下のあらゆる
- * 深さにある *.md ファイルすべてを、フルパスとして返す -- ソートは呼び出し側が行い、
- * `rglob` が返す Path をソートしたときと同じパス文字列の順序になる。 */
-function markdownFilesUnder(dir: string): string[] {
-  const found: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      found.push(...markdownFilesUnder(full));
-    } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      found.push(full);
-    }
-  }
-  return found;
-}
-
-/** `git rev-parse --show-toplevel`。resolveDrDir がこれを必要とするとき (DR_DIR 未設定かつ
- * CLI 引数無し) だけ読む -- pre-check.ts 自身は dr_dir の引数を持たず、退役した Python 版
- * pre-check が `resolve_dr_dir()` を引数無しで呼ぶのに対応する。 */
-function gitTopLevel(): GitTopLevelResult {
-  const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
-  return { status: result.status, stdout: result.stdout ?? "", error: result.error };
-}
-
-/** drDir 配下の既存 DR (markdownFilesUnder、ソート済み) のうち、最初の heading が title に
+/** drDir 配下の既存 DR (任意の深さの *.md、ソート済み) のうち、最初の heading が title に
  * 対して threshold 以上のスコアを持つものすべてを、formatScore(score) と既存の heading
  * テキストを添えて返す -- threshold 以上の *.md が drDir に無ければ空になる。main() から
  * 呼ばれる。 */
 function collectSimilarDrs(title: string, drDir: string, threshold: number): SimilarDr[] {
   const similarDrs: SimilarDr[] = [];
-  for (const drFile of markdownFilesUnder(drDir).sort()) {
+  for (const drFile of filesUnder(drDir, (name) => name.endsWith(".md")).sort()) {
     const existing = firstHeading(drFile);
     if (!existing) continue;
     const score = similarity(title, existing);
@@ -186,11 +161,7 @@ export function main(argv: string[]): number {
   const similarDrs = collectSimilarDrs(title, drDir, threshold);
 
   const now = new Date();
-  const date = [
-    String(now.getFullYear()).padStart(4, "0"),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("-");
+  const date = localDate(now);
 
   process.stdout.write(
     `${JSON.stringify(

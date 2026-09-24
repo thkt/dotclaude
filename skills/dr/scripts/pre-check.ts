@@ -16,9 +16,8 @@
 // mirrors its json.dumps key order and is imported by skills/dr/tests/script-contract.test.js.
 // Exercised by skills/dr/tests/pre-check.test.ts.
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
-import { basename, join } from "node:path";
-import { spawnSync } from "node:child_process";
-import { fail, guardSkillDir, resolveDrDir, type GitTopLevelResult } from "./dr_common.ts";
+import { basename } from "node:path";
+import { fail, filesUnder, gitTopLevel, guardSkillDir, localDate, resolveDrDir } from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
 /** The stdout object's key order, and the retired Python pre-check's json.dumps key order it
@@ -91,36 +90,12 @@ export function firstHeading(path: string): string {
   return "";
 }
 
-/** The retired Python pre-check's `sorted(dr_dir.rglob("*.md"))`: every *.md file under drDir,
- * at any depth, as full paths -- sorted by the caller, on the same path-string ordering
- * `rglob`'s Path results carry when sorted. */
-function markdownFilesUnder(dir: string): string[] {
-  const found: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      found.push(...markdownFilesUnder(full));
-    } else if (entry.isFile() && entry.name.endsWith(".md")) {
-      found.push(full);
-    }
-  }
-  return found;
-}
-
-/** `git rev-parse --show-toplevel`, read only when resolveDrDir needs it (DR_DIR unset and no
- * CLI argument) -- pre-check.ts takes no dr_dir argument of its own, mirroring the retired
- * Python pre-check's `resolve_dr_dir()` call with no argument. */
-function gitTopLevel(): GitTopLevelResult {
-  const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
-  return { status: result.status, stdout: result.stdout ?? "", error: result.error };
-}
-
-/** Every existing DR under drDir (markdownFilesUnder, sorted) whose first heading scores >=
+/** Every existing DR under drDir (every *.md at any depth, sorted) whose first heading scores >=
  * threshold against title, paired with formatScore(score) and the existing heading text --
  * empty when drDir carries no *.md file scoring at or above threshold. Called from main(). */
 function collectSimilarDrs(title: string, drDir: string, threshold: number): SimilarDr[] {
   const similarDrs: SimilarDr[] = [];
-  for (const drFile of markdownFilesUnder(drDir).sort()) {
+  for (const drFile of filesUnder(drDir, (name) => name.endsWith(".md")).sort()) {
     const existing = firstHeading(drFile);
     if (!existing) continue;
     const score = similarity(title, existing);
@@ -183,11 +158,7 @@ export function main(argv: string[]): number {
   const similarDrs = collectSimilarDrs(title, drDir, threshold);
 
   const now = new Date();
-  const date = [
-    String(now.getFullYear()).padStart(4, "0"),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("-");
+  const date = localDate(now);
 
   process.stdout.write(
     `${JSON.stringify(
