@@ -19,8 +19,10 @@ scenes: ["implement"]
 
 - `workflows/_lib/entry-point.ts` の `isMainModule`（CLI エントリの共有 helper）
 - `workflows/_lib/tests/_cli-fixture.ts` の `fixture`（テスト fixture 検索の共有 helper）
+- `skills/ablate/scripts/arms.ts` の `measurement_status`（run 数が `RUN_COUNT` に届いたかを決める共有 helper）
 
 ## 根拠
 
 - (research) 既存の共有 helper (entry-point.ts の isMainModule) があるのに、移植元の手書き同等処理をそのまま写した
 - #675 `skills/census/tests/list-source-files.test.ts` が、同じファイル内で `runCli`/`withTempHome` を `workflows/_lib/tests/_cli-fixture.ts` から import 済みでありながら `fixture()` だけをローカルに再定義していた。兄弟テストの `skills/outcome/tests/validate-outcome.test.ts` と `skills/research/tests/find-prior-research.test.ts` はいずれも共有の `fixture` を import しており、レビューで検出されて import に修正された
+- #746 `skills/ablate/scripts/reference_observation.ts` が `arms.ts` から `RUN_COUNT` と `PASS_THRESHOLD` を import しながら、同じ `arms.ts` が export する `measurement_status` を使わず、`counted.length < RUN_COUNT` の判定を `observe_arm` と `observe_clean_case` の 2 箇所で手書きした。build の構造レビューが検出し、現行コードにも残っている
