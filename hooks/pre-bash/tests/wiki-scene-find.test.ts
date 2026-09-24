@@ -3,7 +3,7 @@
 // Python original's SCENE_COMMANDS/find, drawn from the retired Python test's own gh-command
 // / tilde-cd / no-docs/wiki observations (T-009/T-011/T-012 there), narrowed to what find's
 // cd-walk and scene-table
-// match decide -- not _runtime()/find_wiki_rule.ts wiring, which stays out of this unit.
+// match decide -- not the runtime lookup or the find_wiki_rule.ts wiring, which stay out of this unit.
 //
 // Spawns the hook (run(), from _hook-harness.ts) rather than importing wiki_scene.ts
 // in-process: it ends in an unguarded process.exit(main()) (DR-0114, no isMainModule guard,

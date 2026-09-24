@@ -2,38 +2,23 @@
 // Shared textlint invocation for the fix and lint hooks (docs/decisions/0112-adopt-typescript-
 // for-helper-scripts.md, unit U-002): fix and lint carry over from this module's Python
 // sibling, which stays in the tree with no importer left once the proofreading hook retired
-// directly. shutil.which's PATH search is mirrored as a node:fs existence check walking
-// process.env.PATH -- the runner (bun x, then npx) and the exit-0-when-absent behavior stay
+// directly. The runner lookup uses executable.ts's which, which rejects a directory the way
+// shutil.which does; the runner (bun x, then npx) and the exit-0-when-absent behavior stay
 // exactly what that sibling already establishes.
 import { spawnSync } from "node:child_process";
-import { accessSync, constants, statSync } from "node:fs";
-import { delimiter, dirname, join } from "node:path";
+import { statSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { which } from "./executable.ts";
 
 // Not $HOME/.claude, which names the installed harness alone: a checkout run from anywhere
 // else finds no config there.
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CONFIG = join(REPO_ROOT, ".textlintrc.json");
 
-/** shutil.which's PATH search, mirrored with node:fs: true when `bin` names an executable
- * file in some PATH directory. */
-function which(bin: string): boolean {
-  const dirs = (process.env.PATH ?? "").split(delimiter);
-  for (const dir of dirs) {
-    if (!dir) continue;
-    try {
-      accessSync(join(dir, bin), constants.X_OK);
-      return true;
-    } catch {
-      continue;
-    }
-  }
-  return false;
-}
-
 function runner(): string[] | null {
-  if (which("bun")) return ["bun", "x"];
-  if (which("npx")) return ["npx"];
+  if (which("bun") !== null) return ["bun", "x"];
+  if (which("npx") !== null) return ["npx"];
   return null;
 }
 
