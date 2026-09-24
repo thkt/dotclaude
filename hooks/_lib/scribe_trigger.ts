@@ -8,17 +8,16 @@
 // No shebang and no exec bit: hooks/_lib/tests/shebang-ts.test.ts's T-013 forbids a shebang
 // line under hooks/_lib/*.ts, the same rule scribe_gate.ts follows.
 //
-// unmergedScribePrExists / lastScribeMerge / hasNewInput / defaultRunner below duplicate
-// scribe_gate.ts's own private copies of the same retired module's helpers rather than
-// importing them: DR-0116 scoped this module out of that unit, so scribe_gate.ts ported
-// its own unexported slice first. This module is that retired module's real destination; the two
-// copies stay independent per DRY's boundary (each can evolve independently -- scribe_gate.ts
-// answers a CI should-run question, this module a hook cooldown question).
+// scribeBacklogWaiting / ghBinary / defaultRunner are exported for scribe_gate.ts: which PRs and
+// issues count as a scribe backlog is one definition whether a CI gate or a hook cooldown asks,
+// and DR-0116 keeps scribe_gate.ts in hooks/_lib so it imports them in process, the shape the
+// retired Python pair had.
 import { spawnSync } from "node:child_process";
-import { accessSync, closeSync, constants, mkdirSync, openSync, statSync, utimesSync } from "node:fs";
+import { closeSync, mkdirSync, openSync, statSync, utimesSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { commands, starts_with } from "./command_scan.ts";
+import { isExecutableFile } from "./executable.ts";
 
 /** A gh invocation, injected so tests hand over canned stdout instead of a live gh process.
  * Mirrors the retired Python module's GhRunner. */
@@ -108,18 +107,6 @@ function touch(stamp: string): void {
   }
 }
 
-function isExecutableFile(candidate: string): boolean {
-  try {
-    if (!statSync(candidate).isFile()) {
-      return false;
-    }
-    accessSync(candidate, constants.X_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function isDirectory(candidate: string): boolean {
   try {
     return statSync(candidate).isDirectory();
@@ -130,7 +117,7 @@ function isDirectory(candidate: string): boolean {
 
 /** gh runs with the pull's directory as cwd, so it reads the repository off that checkout's git
  * remote rather than off wherever the hook process started. */
-function defaultRunner(directory: string, gh: string): GhRunner {
+export function defaultRunner(directory: string, gh: string): GhRunner {
   return (args) => {
     const result = spawnSync(gh, args, { cwd: directory, encoding: "utf-8" });
     if (result.error) {
@@ -184,6 +171,25 @@ function hasNewInput(cursor: string, call: GhRunner): boolean {
   return (JSON.parse(call(issues)) as unknown[]).length >= 1;
 }
 
+/** The gh binary to run: an explicit option, else CLAUDE_GH_BIN, else DEFAULT_GH. */
+export function ghBinary(override?: string): string {
+  return override || process.env.CLAUDE_GH_BIN || DEFAULT_GH;
+}
+
+/** Whether a scribe backlog is waiting: no open scribe PR already covers it, and a merged PR or
+ * closed issue has landed since the last scribe merge.
+ *
+ * A failed gh call, a non-JSON response, or a spawn error reads as no backlog rather than
+ * throwing: the CI gate would otherwise fail its job and the hook report an error on a plain
+ * pull, over a transient gh problem. */
+export function scribeBacklogWaiting(call: GhRunner): boolean {
+  try {
+    return !unmergedScribePrExists(call) && hasNewInput(lastScribeMerge(call), call);
+  } catch {
+    return false;
+  }
+}
+
 /** Whether scribe should nudge for this directory. Mirrors the retired Python module's should_prompt.
  *
  * Not a stamp on every evaluation: it would buy the gh round trips a quiet pull spends at the
@@ -196,21 +202,11 @@ export function shouldPrompt(directory: string, options: ShouldPromptOptions = {
   if (recentlyStamped(stampPath)) {
     return false;
   }
-  const binary = options.gh || process.env.CLAUDE_GH_BIN || DEFAULT_GH;
+  const binary = ghBinary(options.gh);
   if (options.runner === undefined && !isExecutableFile(binary)) {
     return false;
   }
-  const call = options.runner ?? defaultRunner(directory, binary);
-  try {
-    if (unmergedScribePrExists(call)) {
-      return false;
-    }
-    if (!hasNewInput(lastScribeMerge(call), call)) {
-      return false;
-    }
-  } catch {
-    // None of these say a backlog is waiting, and raising here would report a hook error on a
-    // plain pull.
+  if (!scribeBacklogWaiting(options.runner ?? defaultRunner(directory, binary))) {
     return false;
   }
   touch(stampPath);

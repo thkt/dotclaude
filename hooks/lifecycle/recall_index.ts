@@ -8,9 +8,7 @@
 // failure blocks the session would be worse than the indexing it skips.
 import { spawn } from "node:child_process";
 import {
-  accessSync,
   closeSync,
-  constants,
   mkdirSync,
   openSync,
   statSync,
@@ -18,6 +16,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { isExecutableFile } from "../_lib/executable.ts";
 import { parse, readStdin } from "../_lib/hook_payload.ts";
 
 // The full path, not a PATH lookup: a hook can run without the homebrew prefix, where the
@@ -38,16 +37,6 @@ function stampPath(): string {
 function recentlyIndexed(stamp: string): boolean {
   try {
     return Date.now() - statSync(stamp).mtimeMs < WINDOW_MINUTES * 60_000;
-  } catch {
-    return false;
-  }
-}
-
-function isExecutableFile(candidate: string): boolean {
-  try {
-    if (!statSync(candidate).isFile()) return false;
-    accessSync(candidate, constants.X_OK);
-    return true;
   } catch {
     return false;
   }

@@ -3,8 +3,7 @@
 // PreToolUse hook: match a gh issue create body against the skeleton its title's type points
 // at, and stop the filing when the two diverge. TypeScript side of the retired Python original (unit
 // U-002, following U-001's skeleton-selection primitives). ROOT / VALIDATOR / TEMPLATES /
-// DEFAULT_BUN / _issue_type / _template / _interpreter / _errors / main carry the Python
-// side's names and shapes.
+// _issue_type / _template / _errors / main carry the Python side's names and shapes.
 //
 // _unmatched_type_reason is not a Python-side name: it extracts the deny message
 // the retired Python original's main() builds inline (the f-string after `if template is None`) into its
@@ -21,10 +20,11 @@
 // the conversion hooks/pre-bash/tests/body-proofread-target.test.ts made once
 // hooks/pre-bash/body_proofread.ts grew a main() of its own.
 import { spawnSync } from "node:child_process";
-import { accessSync, constants, readdirSync, statSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ghFiling from "../_lib/gh_filing.ts";
+import { tsRuntime } from "../_lib/executable.ts";
 import { deny, field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -34,11 +34,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT: string = join(HERE, "..", "..");
 export const VALIDATOR: string = join(ROOT, "skills", "issue", "scripts", "validate-issue-body.ts");
 export const TEMPLATES: string = join(ROOT, "skills", "issue", "templates");
-
-// DR-0114's fixed Homebrew bun path (hooks/_lib/shebang_scope.ts's SHEBANG), the same fallback
-// shape as hooks/_lib/scribe_trigger.ts's DEFAULT_GH: a hook can run with PATH cut down to
-// nothing, so a bare "bun" is never trusted to resolve on its own.
-export const DEFAULT_BUN: string = "/opt/homebrew/bin/bun";
 
 /** The lowercased type prefix, or null when the title does not open with one
  * (the retired Python original's _issue_type).
@@ -59,40 +54,6 @@ function _isFile(path: string): boolean {
   } catch {
     return false;
   }
-}
-
-function _isExecutableFile(path: string): boolean {
-  try {
-    if (!statSync(path).isFile()) {
-      return false;
-    }
-    accessSync(path, constants.X_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** Where `name` resolves on PATH, or null when no directory on it carries an executable file
- * by that name (shutil.which("node"), read straight off process.env.PATH rather than shelling
- * out to a `which` binary that a truncated PATH could leave just as unreachable as node
- * itself).
- *
- * An empty PATH entry (a leading/trailing/doubled ":") is skipped rather than resolved against
- * cwd the way a POSIX shell's own PATH search treats it: a hook's cwd follows the command it is
- * gating, so honoring that quirk here would let a same-named file in whatever directory the
- * gated command happens to run from stand in for the real interpreter. */
-function _which(name: string): string | null {
-  for (const dir of (process.env.PATH ?? "").split(":")) {
-    if (!dir) {
-      continue;
-    }
-    const candidate = join(dir, name);
-    if (_isExecutableFile(candidate)) {
-      return candidate;
-    }
-  }
-  return null;
 }
 
 /** The repository's own template wins over the skill's: that is what the web UI files against
@@ -128,21 +89,6 @@ export function _unmatched_type_reason(issueType: string): string {
     `skills/issue/templates/ にも無く本文を照合できない。${choices}` +
     `skills/issue/templates/${issueType}.md を足す`
   );
-}
-
-/** The bun/node binary to run the (.ts) validator with, or null when neither is reachable
- * (the retired Python original's _interpreter).
- *
- * CLAUDE_BUN_BIN overrides DEFAULT_BUN when set, matching CLAUDE_GH_BIN / CLAUDE_RECALL_BIN's
- * `env or default` shape. node via PATH is the last resort for a host with no Homebrew bun
- * (docs/wiki/silent-hook-failure.md: doubt exec permission and PATH before doubting the gate
- * that never fires). */
-export function _interpreter(): string | null {
-  const candidate = process.env.CLAUDE_BUN_BIN || DEFAULT_BUN;
-  if (_isExecutableFile(candidate)) {
-    return candidate;
-  }
-  return _which("node");
 }
 
 /** The validator's findings, or null when it did not report any (the retired Python original's
@@ -222,7 +168,7 @@ function main(): number {
     return 0;
   }
 
-  const interpreter = _interpreter();
+  const interpreter = tsRuntime();
   if (interpreter === null) {
     deny(
       "issue-body-template: bun も node も見つからず validator " +
