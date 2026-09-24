@@ -21,11 +21,18 @@
 // skills/dr/tests/fixtures/update-index-cases.json's frozen README records on that one line.
 //
 // Exercised by skills/dr/tests/update-index.test.ts.
-import { existsSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { basename, join } from "node:path";
-import { spawnSync } from "node:child_process";
-import { fail, guardSkillDir, resolveDrDir, splitFrontmatter, type GitTopLevelResult } from "./dr_common.ts";
+import {
+  fail,
+  filesUnder,
+  gitTopLevel,
+  guardSkillDir,
+  localDate,
+  resolveDrDir,
+  splitFrontmatter,
+} from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
 // The retired Python update-index's STATUS_SECTIONS: the By Status heading text keyed by the
@@ -97,31 +104,6 @@ export function parseDr(path: string): [title: string, status: string, date: str
   return [title, status || "proposed", dateStr || "Not set"];
 }
 
-/** The retired Python update-index's `dr_dir.rglob("[0-9][0-9][0-9][0-9]-*.md")`: every file at
- * any depth under dir whose own name is 4 digits, a dash, then anything, ending in .md -- as full
- * paths, for the caller to sort (rglob's Path results carry no ordering of their own until
- * sorted). */
-function drFilesUnder(dir: string): string[] {
-  const found: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      found.push(...drFilesUnder(full));
-    } else if (entry.isFile() && /^\d{4}-.*\.md$/.test(entry.name)) {
-      found.push(full);
-    }
-  }
-  return found;
-}
-
-/** `git rev-parse --show-toplevel`, read only when resolveDrDir needs it (DR_DIR unset and no
- * CLI argument) -- mirroring pre-check.ts's own gitTopLevel(), duplicated here rather than
- * shared since it is a few lines wrapping a single spawnSync call. */
-function gitTopLevel(): GitTopLevelResult {
-  const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
-  return { status: result.status, stdout: result.stdout ?? "", error: result.error };
-}
-
 /** The DR List rows and the By Status buckets one pass over drDir's DR files produces: `rows`
  * carries the table lines main() joins under HEADER, and `byStatus` carries each
  * STATUS_SECTIONS key's [number, title] pairs for the By Status loop in main() to sort and
@@ -131,7 +113,10 @@ interface CollectRowsResult {
   byStatus: Map<string, Array<[number: string, title: string]>>;
 }
 
-/** Scans drDir for DR files (drFilesUnder, sorted by full path) and, for each, appends its DR
+// The retired Python update-index's rglob("[0-9][0-9][0-9][0-9]-*.md").
+const DR_FILE_NAME = /^\d{4}-.*\.md$/;
+
+/** Scans drDir for DR files (sorted by full path) and, for each, appends its DR
  * List row and buckets its [number, title] under the first STATUS_SECTIONS key its status
  * starts with. Called from main(). */
 function collectRows(drDir: string): CollectRowsResult {
@@ -139,7 +124,7 @@ function collectRows(drDir: string): CollectRowsResult {
   const byStatus = new Map<string, Array<[number: string, title: string]>>(
     STATUS_SECTIONS.map(([key]) => [key, []]),
   );
-  for (const drFile of drFilesUnder(drDir).sort()) {
+  for (const drFile of filesUnder(drDir, (name) => DR_FILE_NAME.test(name)).sort()) {
     const name = basename(drFile);
     const number = name.slice(0, 4);
     const [title, status, date] = parseDr(drFile);
@@ -199,12 +184,7 @@ export function main(argv: string[]): number {
     const entryLines = sorted.map(([num, title]) => `- **${num}**: ${title}`).join("\n");
     parts.push(`### ${heading}\n\n${entryLines}\n`);
   }
-  const now = new Date();
-  const updateDate = [
-    String(now.getFullYear()).padStart(4, "0"),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("-");
+  const updateDate = localDate(new Date());
   parts.push(FOOTER.replace("{update_date}", updateDate));
 
   const indexFile = join(drDir, "README.md");

@@ -59,17 +59,11 @@ test("the feature template carries an optional Accessibility section scoped to U
   for (const [lang, path] of Object.entries(targets)) {
     const doc = readFileSync(path, "utf8");
     assert.match(doc, /^## Accessibility \((optional|任意)\)/m, `${lang}: the optional section`);
-    if (lang === "ja") {
-      assert.match(doc, /UI に触れる issue のみ/, "ja: the UI-only condition");
-      assert.match(doc, /操作系と満たす基準/, "ja: the intent of input modes plus criteria");
-    } else {
-      assert.match(doc, /UI-touching issues only/, "en: the UI-only condition");
-      assert.match(
-        doc,
-        /input modes and the criteria/,
-        "en: the intent of input modes plus criteria",
-      );
-    }
+    const checks = [
+      ["the UI-only condition", /UI に触れる issue のみ/, /UI-touching issues only/],
+      ["the intent of input modes plus criteria", /操作系と満たす基準/, /input modes and the criteria/],
+    ];
+    for (const [what, ja, en] of checks) assert.match(doc, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
@@ -144,31 +138,13 @@ test("each language's duplication-match.md lists the three overlapping pairs and
 });
 
 test("each language's duplication-match.md states the reference runs from the body to the Plan", () => {
+  const checks = [
+    ["the direction of the reference", /参照は本文から `## Plan` へ向ける/, /reference runs from the body to `## Plan`/i],
+    ["why the direction is fixed", /plan を独立したファイルへ書き出した後で、本文の節が作られる/, /sections come into existence after it/i],
+  ];
   for (const [lang, path] of Object.entries(matchRefs)) {
     const matchRef = readFileSync(path, "utf8");
-    if (lang === "ja") {
-      assert.match(
-        matchRef,
-        /参照は本文から `## Plan` へ向ける/,
-        "ja: the direction of the reference",
-      );
-      assert.match(
-        matchRef,
-        /plan を独立したファイルへ書き出した後で、本文の節が作られる/,
-        "ja: why the direction is fixed",
-      );
-    } else {
-      assert.match(
-        matchRef,
-        /reference runs from the body to `## Plan`/i,
-        "en: the direction of the reference",
-      );
-      assert.match(
-        matchRef,
-        /sections come into existence after it/i,
-        "en: why the direction is fixed",
-      );
-    }
+    for (const [what, ja, en] of checks) assert.match(matchRef, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
@@ -193,69 +169,35 @@ test("in each language's SKILL.md the match sits as Phase 2's last step", () => 
 });
 
 test("each language's duplication-match.md states the duplicated body side is replaced with a reference to `## Plan`", () => {
+  const checks = [
+    ["replacement with a reference to the Plan", /## Plan[\s\S]{0,20}参照/, /## Plan[\s\S]{0,20}reference/i],
+    ["the rule of leaving one line per heading", /見出しが何を変更するかを述べる 1 行/, /one line that states what change/i],
+  ];
   for (const [lang, path] of Object.entries(matchRefs)) {
     const matchRef = readFileSync(path, "utf8");
-    if (lang === "ja") {
-      assert.match(
-        matchRef,
-        /## Plan[\s\S]{0,20}参照/,
-        "ja: replacement with a reference to the Plan",
-      );
-      assert.match(
-        matchRef,
-        /見出しが何を変更するかを述べる 1 行/,
-        "ja: the rule of leaving one line per heading",
-      );
-    } else {
-      assert.match(matchRef, /## Plan[\s\S]{0,20}reference/i, "en: reference to Plan");
-      assert.match(
-        matchRef,
-        /one line that states what change/i,
-        "en: the rule of leaving one line per heading",
-      );
-    }
+    for (const [what, ja, en] of checks) assert.match(matchRef, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
 test("each language's duplication-match.md states that on a conflict the plan is authoritative and the body is fixed", () => {
+  const checks = [
+    ["the mention of a conflict", /食い違う/, /conflict/i],
+    ["the policy of taking the plan as authoritative", /plan を正として/, /plan[\s\S]{0,20}(is authoritative|as authoritative|as the source of truth)/i],
+  ];
   for (const [lang, path] of Object.entries(matchRefs)) {
     const matchRef = readFileSync(path, "utf8");
-    if (lang === "ja") {
-      assert.match(matchRef, /食い違う/, "ja: the mention of a conflict");
-      assert.match(
-        matchRef,
-        /plan を正として/,
-        "ja: the policy of taking the plan as authoritative",
-      );
-    } else {
-      assert.match(matchRef, /conflict/i, "en: the mention of a conflict");
-      assert.match(
-        matchRef,
-        /plan[\s\S]{0,20}(is authoritative|as authoritative|as the source of truth)/i,
-        "en: the mention of plan authoritative",
-      );
-    }
+    for (const [what, ja, en] of checks) assert.match(matchRef, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
 test("each language's SKILL.md states the match is skipped when there is no plan draft", () => {
+  const checks = [
+    ["the mention of having no plan draft", /plan 下書きがなければ/, /no plan draft|plan draft[\s\S]{0,10}absent|without (a plan draft|one)/i],
+    ["the mention of skipping the match", /この照合は省略する/, /skip[\s\S]{0,20}match|omit[\s\S]{0,20}match/i],
+  ];
   for (const [lang, path] of Object.entries(skills)) {
     const refine = phase2(readFileSync(path, "utf8"));
-    if (lang === "ja") {
-      assert.match(refine, /plan 下書きがなければ/, "ja: the mention of having no plan draft");
-      assert.match(refine, /この照合は省略する/, "ja: the mention of skipping the match");
-    } else {
-      assert.match(
-        refine,
-        /no plan draft|plan draft[\s\S]{0,10}absent|without (a plan draft|one)/i,
-        "en: the mention of no plan draft",
-      );
-      assert.match(
-        refine,
-        /skip[\s\S]{0,20}match|omit[\s\S]{0,20}match/i,
-        "en: the mention of skipping the match",
-      );
-    }
+    for (const [what, ja, en] of checks) assert.match(refine, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
@@ -285,10 +227,10 @@ test("Phase 1's steps reach the minor-bug branch", () => {
     const doc = readFileSync(path, "utf8");
     const phase1 = section(doc, "## Phase 1", "###");
     const steps = [...phase1.matchAll(/^\d+\. .*/gm)].map((m) => m[0]);
-    assert.ok(steps.length >= 5, `${lang}: Phase 1 carries numbered steps (${steps.length})`);
-    assert.ok(
-      steps.some((step) => step.includes("/fix")),
-      `${lang}: a step offers /fix instead of filing`,
+    assert.equal(
+      steps.filter((step) => step.includes("/fix")).length,
+      1,
+      `${lang}: exactly one numbered step offers /fix instead of filing`,
     );
   }
 });
@@ -343,12 +285,11 @@ test("Phase 1 proposes /think before the body is generated", () => {
   for (const [lang, path] of Object.entries(skills)) {
     const phase1 = readFileSync(path, "utf8").split("## Phase 1")[1].split("###")[0];
     const steps = [...phase1.matchAll(/^\d+\. .*/gm)].map((m) => m[0]);
-    const think = steps.findIndex((step) => step.includes("/think"));
     const generates = lang === "ja" ? /本文を生成/ : /generate the title and body/;
-    const body = steps.findIndex((step) => generates.test(step));
-    assert.ok(think >= 0, `${lang}: a step suggests /think`);
-    assert.ok(body >= 0, `${lang}: a step generates the body`);
-    assert.ok(think < body, `${lang}: /think is proposed first (${think} < ${body})`);
+    const order = steps.flatMap((step) =>
+      step.includes("/think") ? ["think"] : generates.test(step) ? ["generate"] : [],
+    );
+    assert.deepEqual(order, ["think", "generate"], `${lang}: /think is proposed before the body is generated`);
   }
 });
 
@@ -515,10 +456,13 @@ test("Phase 4 validates before it asks for confirmation", () => {
       .split(/^## Phase 4/m)[1]
       .split(/^###/m)[0];
     const steps = [...phase4.matchAll(/^\d+\. .*/gm)].map((m) => m[0]);
-    const validate = steps.findIndex((step) => step.includes("validate-issue-body.ts"));
-    const confirm = steps.findIndex((step) => /AskUserQuestion/.test(step));
-    assert.ok(validate >= 0, `${lang}: a step runs the validator`);
-    assert.ok(confirm >= 0, `${lang}: a step asks for confirmation`);
-    assert.ok(validate < confirm, `${lang}: validation comes first (${validate} < ${confirm})`);
+    const order = steps.flatMap((step) =>
+      step.includes("validate-issue-body.ts")
+        ? ["validate"]
+        : /AskUserQuestion/.test(step)
+          ? ["confirm"]
+          : [],
+    );
+    assert.deepEqual(order, ["validate", "confirm"], `${lang}: validation comes before confirmation`);
   }
 });

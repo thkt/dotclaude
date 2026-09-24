@@ -21,11 +21,18 @@
 // skills/dr/tests/fixtures/update-index-cases.json が凍結した README ではその 1 行に現れる。
 //
 // skills/dr/tests/update-index.test.ts が検証する。
-import { existsSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { basename, join } from "node:path";
-import { spawnSync } from "node:child_process";
-import { fail, guardSkillDir, resolveDrDir, splitFrontmatter, type GitTopLevelResult } from "./dr_common.ts";
+import {
+  fail,
+  filesUnder,
+  gitTopLevel,
+  guardSkillDir,
+  localDate,
+  resolveDrDir,
+  splitFrontmatter,
+} from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
 // 退役した Python 版 update-index の STATUS_SECTIONS: By Status 見出しのテキストを、その
@@ -98,31 +105,6 @@ export function parseDr(path: string): [title: string, status: string, date: str
   return [title, status || "proposed", dateStr || "Not set"];
 }
 
-/** 退役した Python 版 update-index の `dr_dir.rglob("[0-9][0-9][0-9][0-9]-*.md")`: dir 配下
- * のあらゆる深さにあるファイルのうち、自身の名前が 4 桁の数字・ダッシュ・任意の文字列で
- * .md に終わるものをすべて、フルパスとして返す -- ソートは呼び出し側が行う (rglob が返す
- * Path はソートするまで順序を持たない)。 */
-function drFilesUnder(dir: string): string[] {
-  const found: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      found.push(...drFilesUnder(full));
-    } else if (entry.isFile() && /^\d{4}-.*\.md$/.test(entry.name)) {
-      found.push(full);
-    }
-  }
-  return found;
-}
-
-/** `git rev-parse --show-toplevel`。resolveDrDir がこれを必要とするとき (DR_DIR 未設定かつ
- * CLI 引数無し) だけ読む -- pre-check.ts 自身の gitTopLevel() をそのまま踏襲している。1 つの
- * spawnSync 呼び出しを包むだけの数行なので、共有せずここでも複製している。 */
-function gitTopLevel(): GitTopLevelResult {
-  const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
-  return { status: result.status, stdout: result.stdout ?? "", error: result.error };
-}
-
 /** drDir 配下の DR ファイルを 1 回走査して得られる DR List の行と By Status の bucket:
  * `rows` は main() が HEADER の下に join する各テーブル行を持ち、`byStatus` は
  * STATUS_SECTIONS の各キーが持つ [number, title] のペアを、main() 内の By Status ループが
@@ -132,7 +114,10 @@ interface CollectRowsResult {
   byStatus: Map<string, Array<[number: string, title: string]>>;
 }
 
-/** drDir 配下の DR ファイル (drFilesUnder、フルパスでソート済み) を走査し、それぞれについて
+// 退役した Python 版 update-index の rglob("[0-9][0-9][0-9][0-9]-*.md")。
+const DR_FILE_NAME = /^\d{4}-.*\.md$/;
+
+/** drDir 配下の DR ファイル (フルパスでソート済み) を走査し、それぞれについて
  * DR List の行を積み、[number, title] をその status が startsWith する最初の
  * STATUS_SECTIONS キーの bucket に振り分ける。main() から呼ばれる。 */
 function collectRows(drDir: string): CollectRowsResult {
@@ -140,7 +125,7 @@ function collectRows(drDir: string): CollectRowsResult {
   const byStatus = new Map<string, Array<[number: string, title: string]>>(
     STATUS_SECTIONS.map(([key]) => [key, []]),
   );
-  for (const drFile of drFilesUnder(drDir).sort()) {
+  for (const drFile of filesUnder(drDir, (name) => DR_FILE_NAME.test(name)).sort()) {
     const name = basename(drFile);
     const number = name.slice(0, 4);
     const [title, status, date] = parseDr(drFile);
@@ -200,12 +185,7 @@ export function main(argv: string[]): number {
     const entryLines = sorted.map(([num, title]) => `- **${num}**: ${title}`).join("\n");
     parts.push(`### ${heading}\n\n${entryLines}\n`);
   }
-  const now = new Date();
-  const updateDate = [
-    String(now.getFullYear()).padStart(4, "0"),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("-");
+  const updateDate = localDate(new Date());
   parts.push(FOOTER.replace("{update_date}", updateDate));
 
   const indexFile = join(drDir, "README.md");
