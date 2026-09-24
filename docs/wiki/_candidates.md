@@ -103,6 +103,8 @@
 - Jev に判断材料 (最終メッセージとツール結果の本文) を渡さないと判定にならず、常に同じ値を返す (research)
 - hook_payload.ts が export する readStdin を使わず、10 個の hook がそれぞれ同じ実装を自前で複製していた #734
 - 重複検出ツール (fallow) は一部の重複しか検出せず、残りは手動 grep で見つける必要がある #734
+- reviewer agent を fixture で起動すると本文の `${CLAUDE_PLUGIN_ROOT}` が展開されず `~/.claude` の `agents/_lib/` を読みにいく。fixture 外への到達を一律に汚染とせず、比較を崩す到達 (本物の skills) に絞る #748
+- `claude --print` で `--agent` と `--json-schema` を併用すると `structured_output` が null になり、findings は result テキスト中の JSON で返る (haiku で確認) #744
 
 ## 棄却
 

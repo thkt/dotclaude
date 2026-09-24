@@ -27,3 +27,4 @@ scenes: ["pr-create"]
 - #159 起票 PreToolUse gate と recorder 一式を入れた
 - #162 hook 配線を skill frontmatter hooks へ移設した
 - #163 issue skill へ consume 用 PostToolUse:Bash recorder を追加した
+- #746 skill-reference arm の部品を in-process テストだけで入れた PR。独立レビューが claude を実際に起動し、`--verbose` の欠落と fixture の `.claude/` 配置の誤りを見つけた。T-501 は壊れた argv をそのまま assert していた。merge 後の実走 pilot (#744) でも、fixture の symlink と汚染判定などの不具合が 3 件出た

@@ -45,3 +45,4 @@ scenes: []
 - #562 codex-herdr の実装で `workflows/code.js` と `workflows/build.js` の変更はコミット 991d4a19 に含まれたが、対応する `.ja` ミラー編集は同一コミットにも他のどのコミットにも含まれず、未コミットの作業ツリー変更のまま残った
 - #554 `workflows/code.js` の no-plan why メッセージから `args.plan` という識別子を落としたが、`.ja/workflows/code.js` 側の対応する文言は変更前のまま残り、両ツリーで停止メッセージの内容が食い違った
 - (research) `reference-notation.test.js` が `workflows/` だけを走査していた。`.ja/workflows/polish.js` に bare な `$HOME/.claude/` パスを入れても suite は green で、EN 側に入れると赤になることを変異で確認した
+- (research) prompt の監査で、`agents/reviewers/reviewer-rust.md` の英語側が "flag conservatively" と書き、ja 側の「フラグ寄り」と逆の意味になっていた。`workflows/audit.js` は英語側だけが大文字の "Do NOT" を持ち、`rules/core/OPERATION.md` の 2 行が `.ja/` に無かった。現行コードでは 3 件とも揃っている
