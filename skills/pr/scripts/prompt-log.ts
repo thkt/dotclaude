@@ -1,23 +1,29 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 // Usage: prompt-log.ts render <sessionId> --out <file> [--since <iso>]
+//        prompt-log.ts check <file>
 //
 // render reads a session's transcript, keeps the prompts a human sent, and writes them as
 // Markdown to --out with an empty `Outcome:` line after each one.
 //
-// stdout: JSON { path, prompts, dropped }
-// exit: 0 on success, 1 when a non-empty transcript holds no human prompt, 2 on a usage error
+// check reads a prompt-log Markdown file (render's own output, or one a human has since edited)
+// and verifies each `Outcome:` line starts with a word from OUTCOME_WORDS and that the file
+// carries at least one prompt block. It never checks whether the recorded word is accurate.
 //
-// TypeScript CLI for issue #727 U-001. Contract: skills/transcribe/scripts/cli.ts's subcommand
-// structure and usage-header shape; skills/issue/scripts/validate-issue-body.ts's stdout-JSON /
-// exit-code contract. A human prompt is an entry whose `type` is "user", whose
-// `message.content` is a string, and whose `origin.kind` is "human"; `promptSource` is never
-// read. A `<pasted_content ...>...</pasted_content>` body collapses to a one-line marker
-// carrying its character count, and a `<system-reminder>...</system-reminder>` block is
-// dropped entirely.
+// stdout: render -> JSON { path, prompts, dropped }; check -> JSON { errors, warnings, checks }
+// exit: 0 on success, 1 on a render with no human prompt (or an ambiguous session id) or a
+//   check that carries an error, 2 on a usage error
 //
-// Session-id ambiguity across multiple project directories (issue #727 U-002) is not handled
-// here; resolveTranscript below returns the first match.
+// TypeScript CLI for issue #727 U-001 (render) and U-002 (check; render's session-id ambiguity
+// check). Contract: skills/transcribe/scripts/cli.ts's subcommand structure and usage-header
+// shape; skills/issue/scripts/validate-issue-body.ts's stdout-JSON / exit-code contract. A
+// human prompt is an entry whose `type` is "user", whose `message.content` is a string, and
+// whose `origin.kind` is "human"; `promptSource` is never read. A
+// `<pasted_content ...>...</pasted_content>` body collapses to a one-line marker carrying its
+// character count, and a `<system-reminder>...</system-reminder>` block is dropped entirely.
+//
+// A session id that resolves to a `<sessionId>.jsonl` under more than one immediate child of
+// `projects/` is ambiguous: render refuses it rather than guessing, naming every candidate path.
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -31,7 +37,13 @@ const err = (text: string): void => {
   process.stderr.write(`${text}\n`);
 };
 
-const USAGE = "Usage: prompt-log.ts render <sessionId> --out <file> [--since <iso>]";
+const USAGE =
+  "Usage: prompt-log.ts render <sessionId> --out <file> [--since <iso>]\n" +
+  "       prompt-log.ts check <file>";
+
+// The vocabulary an `Outcome:` line has to start with (issue #727 U-002). check never checks
+// whether the recorded word is accurate, only that the line opens with one of these.
+export const OUTCOME_WORDS = ["adopted", "abandoned", "unrelated"] as const;
 
 interface ParsedArgs {
   positional: string[];
@@ -49,6 +61,14 @@ export function parseArgs(argv: string[]): ParsedArgs {
   return { positional, options };
 }
 
+/** check's own report shape, matching skills/issue/scripts/validate-issue-body.ts's contract:
+ * an errors array that decides the exit code, plus warnings and checks for the same call. */
+export interface ValidationResults {
+  errors: string[];
+  warnings: string[];
+  checks: string[];
+}
+
 /** A raw transcript line, read as loosely as the fields render touches. */
 export interface TranscriptEntry {
   type?: string;
@@ -58,20 +78,21 @@ export interface TranscriptEntry {
   message?: { role?: string; content?: unknown };
 }
 
-/** The session's transcript file, found among the immediate children of `home`'s
- * `.claude/projects/<dir>/` directories. Scaffold only: returns the first match and does not
- * reject an ambiguous session id across two project directories -- issue #727 U-002 adds that
- * check (T-526, T-527). */
-export function resolveTranscript(home: string, sessionId: string): string | null {
+/** Every `<sessionId>.jsonl` found as an immediate child of one of `home`'s
+ * `.claude/projects/<dir>/` directories -- never a file nested deeper than that. Zero entries
+ * means no transcript; two or more means the session id is ambiguous across project
+ * directories, and the caller (renderCommand) decides how to report each case. */
+export function resolveTranscript(home: string, sessionId: string): string[] {
   const projectsDir = join(home, ".claude", "projects");
-  if (!existsSync(projectsDir)) return null;
+  if (!existsSync(projectsDir)) return [];
+  const candidates: string[] = [];
   for (const name of readdirSync(projectsDir)) {
     const projectDir = join(projectsDir, name);
     if (!statSync(projectDir).isDirectory()) continue;
     const candidate = join(projectDir, `${sessionId}.jsonl`);
-    if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+    if (existsSync(candidate) && statSync(candidate).isFile()) candidates.push(candidate);
   }
-  return null;
+  return candidates;
 }
 
 /** Each line of `path` parsed as JSON, skipping a line that fails to parse. */
@@ -161,11 +182,17 @@ function renderCommand(positional: string[], options: Record<string, string>): n
     err(USAGE);
     return 2;
   }
-  const transcriptPath = resolveTranscript(homedir(), sessionId);
-  if (!transcriptPath) {
+  const candidates = resolveTranscript(homedir(), sessionId);
+  if (candidates.length === 0) {
     err(`no transcript found for session ${sessionId}`);
     return 1;
   }
+  if (candidates.length > 1) {
+    err(`ambiguous session ${sessionId}: found under ${candidates.length} project directories:`);
+    for (const candidate of candidates) err(candidate);
+    return 1;
+  }
+  const [transcriptPath] = candidates;
   const raw = readEntries(transcriptPath);
   const since = options.since;
   const kept = raw.filter(
@@ -195,11 +222,77 @@ function renderCommand(positional: string[], options: Record<string, string>): n
   return 0;
 }
 
+/** A `### N. ...` heading, the same shape promptBlock itself writes to open one prompt block. */
+const BLOCK_HEADING = /^### (\d+)\./gm;
+
+/** An `Outcome:` line's own text (everything after the label, trimmed), read from inside one
+ * block's own span -- never global, so re-running `.exec` against a new block's text always
+ * starts at that text's own beginning rather than carrying `lastIndex` over from the block
+ * before it. */
+const OUTCOME_LINE = /^Outcome:[ \t]*(.*)$/m;
+
+/** Each `### N.` block in `text`, paired with its own span through the next heading or EOF --
+ * the span that holds exactly its one `Outcome:` line. */
+function promptBlocks(text: string): Array<{ index: string; body: string }> {
+  const headings = [...text.matchAll(BLOCK_HEADING)];
+  return headings.map((heading, position) => {
+    const start = heading.index ?? 0;
+    const end =
+      position + 1 < headings.length ? (headings[position + 1].index ?? text.length) : text.length;
+    return { index: heading[1], body: text.slice(start, end) };
+  });
+}
+
+/** Whether `text` opens with one of OUTCOME_WORDS as a whole word, not merely as a prefix of a
+ * longer word. Accuracy of the word chosen is never checked (contract). */
+function startsWithOutcomeWord(text: string): boolean {
+  return OUTCOME_WORDS.some((word) => new RegExp(`^${word}\\b`).test(text));
+}
+
+/** check's own report, in validate-issue-body.ts's { errors, warnings, checks } shape: at least
+ * one prompt block is required, and each block's `Outcome:` line has to open with a word from
+ * OUTCOME_WORDS. A block carrying no `Outcome:` line at all is treated the same as an empty
+ * one. */
+export function checkPromptLog(text: string): ValidationResults {
+  const results: ValidationResults = { errors: [], warnings: [], checks: [] };
+  const blocks = promptBlocks(text);
+  if (blocks.length === 0) {
+    results.errors.push("no_prompt_block: the file carries no `### N.` prompt block");
+    return results;
+  }
+  for (const block of blocks) {
+    const match = OUTCOME_LINE.exec(block.body);
+    const outcomeText = match ? match[1].trim() : "";
+    if (startsWithOutcomeWord(outcomeText)) {
+      results.checks.push(`outcome_word:${block.index}=ok`);
+    } else {
+      const found = outcomeText === "" ? "empty" : `"${outcomeText}"`;
+      results.errors.push(
+        `outcome_word:${block.index} does not start with ${OUTCOME_WORDS.join("/")} (${found})`,
+      );
+    }
+  }
+  return results;
+}
+
+function checkCommand(positional: string[]): number {
+  const [filePath] = positional;
+  if (!filePath) {
+    err(USAGE);
+    return 2;
+  }
+  const results = checkPromptLog(readFileSync(filePath, "utf8"));
+  out(JSON.stringify(results));
+  return results.errors.length > 0 ? 1 : 0;
+}
+
 if (isMainModule(import.meta.url)) {
   const { positional, options } = parseArgs(process.argv.slice(2));
   const [command, ...rest] = positional;
   if (command === "render") {
     process.exit(renderCommand(rest, options));
+  } else if (command === "check") {
+    process.exit(checkCommand(rest));
   } else {
     err(USAGE);
     process.exit(2);

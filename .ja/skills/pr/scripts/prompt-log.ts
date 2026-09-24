@@ -1,22 +1,28 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 // Usage: prompt-log.ts render <sessionId> --out <file> [--since <iso>]
+//        prompt-log.ts check <file>
 //
 // render はセッションの transcript を読み、人間が送ったプロンプトだけを残し、プロンプトごとに
 // 空の `Outcome:` 行を添えた Markdown として --out に書く。
 //
-// stdout: JSON { path, prompts, dropped }
-// exit: 成功時 0、空でない transcript に人間のプロンプトが 1 件も無いとき 1、usage エラー時 2
+// check は prompt-log の Markdown ファイル (render 自身の出力、または人間が編集した後のもの) を
+// 読み、各 `Outcome:` 行が OUTCOME_WORDS の語で始まることと、ファイルに prompt block が 1 つ以上
+// あることを検査する。記録された語が正確かどうかは検査しない。
 //
-// issue #727 U-001 の TypeScript CLI。契約: skills/transcribe/scripts/cli.ts の subcommand 構成
-// と usage header の形、skills/issue/scripts/validate-issue-body.ts の stdout JSON / exit code
-// 契約。人間のプロンプトは `type` が "user"、`message.content` が文字列、`origin.kind` が
-// "human" の entry を指し、`promptSource` は読まない。`<pasted_content ...>...</pasted_content>`
-// の本文は文字数付きの一行マーカーへ畳み、`<system-reminder>...</system-reminder>` ブロックは
-// 丸ごと落とす。
+// stdout: render -> JSON { path, prompts, dropped }; check -> JSON { errors, warnings, checks }
+// exit: 成功時 0、人間のプロンプトが 1 件も無い render (または session id が曖昧な render)、
+//   またはエラーを持つ check のとき 1、usage エラー時 2
 //
-// 複数の project ディレクトリにまたがる session id の曖昧性判定 (issue #727 U-002) はここでは
-// 扱わず、resolveTranscript は最初に見つかった一致を返す。
+// issue #727 U-001 (render) と U-002 (check、および render の session id 曖昧性判定) の
+// TypeScript CLI。契約: skills/transcribe/scripts/cli.ts の subcommand 構成と usage header の
+// 形、skills/issue/scripts/validate-issue-body.ts の stdout JSON / exit code 契約。人間の
+// プロンプトは `type` が "user"、`message.content` が文字列、`origin.kind` が "human" の entry
+// を指し、`promptSource` は読まない。`<pasted_content ...>...</pasted_content>` の本文は文字数
+// 付きの一行マーカーへ畳み、`<system-reminder>...</system-reminder>` ブロックは丸ごと落とす。
+//
+// `projects/` の直下ディレクトリを 2 つ以上にまたがって `<sessionId>.jsonl` が見つかる
+// session id は曖昧: render は推測せず拒否し、候補パスを全て名指しする。
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -30,7 +36,13 @@ const err = (text: string): void => {
   process.stderr.write(`${text}\n`);
 };
 
-const USAGE = "Usage: prompt-log.ts render <sessionId> --out <file> [--since <iso>]";
+const USAGE =
+  "Usage: prompt-log.ts render <sessionId> --out <file> [--since <iso>]\n" +
+  "       prompt-log.ts check <file>";
+
+// `Outcome:` 行が先頭で名乗らなければならない語彙 (issue #727 U-002)。check は記録された語が
+// 正確かどうかは検査せず、その行がこのいずれかで始まっているかだけを見る。
+export const OUTCOME_WORDS = ["adopted", "abandoned", "unrelated"] as const;
 
 interface ParsedArgs {
   positional: string[];
@@ -48,6 +60,14 @@ export function parseArgs(argv: string[]): ParsedArgs {
   return { positional, options };
 }
 
+/** check 自身の report の形。skills/issue/scripts/validate-issue-body.ts の契約と揃え、
+ * errors 配列が exit code を決め、warnings と checks は同じ呼び出しに乗る。 */
+export interface ValidationResults {
+  errors: string[];
+  warnings: string[];
+  checks: string[];
+}
+
 /** transcript の生の 1 行。render が触れるフィールドだけを緩く読む。 */
 export interface TranscriptEntry {
   type?: string;
@@ -57,19 +77,21 @@ export interface TranscriptEntry {
   message?: { role?: string; content?: unknown };
 }
 
-/** セッションの transcript ファイル。`home` の `.claude/projects/<dir>/` 直下だけを候補にして
- * 探す。scaffold のみ: 最初に見つかった一致を返し、2 つの project ディレクトリに同じ
- * session id がまたがる曖昧性は拒否しない -- issue #727 U-002 がその検査を足す (T-526, T-527)。 */
-export function resolveTranscript(home: string, sessionId: string): string | null {
+/** `home` の `.claude/projects/<dir>/` 直下ディレクトリの、さらに直下だけを候補にして見つかる
+ * `<sessionId>.jsonl` の全て -- それより深く入れ子になったファイルは決して候補にしない。0 件は
+ * transcript 無し、2 件以上は project ディレクトリをまたいで session id が曖昧という意味で、
+ * どちらの場合をどう報告するかは呼び出し側 (renderCommand) が決める。 */
+export function resolveTranscript(home: string, sessionId: string): string[] {
   const projectsDir = join(home, ".claude", "projects");
-  if (!existsSync(projectsDir)) return null;
+  if (!existsSync(projectsDir)) return [];
+  const candidates: string[] = [];
   for (const name of readdirSync(projectsDir)) {
     const projectDir = join(projectsDir, name);
     if (!statSync(projectDir).isDirectory()) continue;
     const candidate = join(projectDir, `${sessionId}.jsonl`);
-    if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+    if (existsSync(candidate) && statSync(candidate).isFile()) candidates.push(candidate);
   }
-  return null;
+  return candidates;
 }
 
 /** `path` の各行を JSON として読む。パースできない行はプロンプトとして扱わずスキップする。 */
@@ -156,11 +178,17 @@ function renderCommand(positional: string[], options: Record<string, string>): n
     err(USAGE);
     return 2;
   }
-  const transcriptPath = resolveTranscript(homedir(), sessionId);
-  if (!transcriptPath) {
+  const candidates = resolveTranscript(homedir(), sessionId);
+  if (candidates.length === 0) {
     err(`no transcript found for session ${sessionId}`);
     return 1;
   }
+  if (candidates.length > 1) {
+    err(`ambiguous session ${sessionId}: found under ${candidates.length} project directories:`);
+    for (const candidate of candidates) err(candidate);
+    return 1;
+  }
+  const [transcriptPath] = candidates;
   const raw = readEntries(transcriptPath);
   const since = options.since;
   const kept = raw.filter(
@@ -190,11 +218,76 @@ function renderCommand(positional: string[], options: Record<string, string>): n
   return 0;
 }
 
+/** promptBlock 自身が 1 件のプロンプト block を開くのに書く `### N. ...` 見出しと同じ形。 */
+const BLOCK_HEADING = /^### (\d+)\./gm;
+
+/** `Outcome:` 行自身のテキスト (ラベルの後ろ、trim 済み) を、1 つの block 自身の範囲内から
+ * 読む -- global にはしない。ある block のテキストに対して `.exec` を実行し直すたびに、直前の
+ * block から `lastIndex` を引き継がず、そのテキスト自身の先頭から必ず始めるため。 */
+const OUTCOME_LINE = /^Outcome:[ \t]*(.*)$/m;
+
+/** `text` 内の各 `### N.` block を、見出し番号と、次の見出しまたは EOF までの自分自身の範囲と
+ * 対にしたもの -- ちょうどその 1 つの `Outcome:` 行を持つ範囲。 */
+function promptBlocks(text: string): Array<{ index: string; body: string }> {
+  const headings = [...text.matchAll(BLOCK_HEADING)];
+  return headings.map((heading, position) => {
+    const start = heading.index ?? 0;
+    const end =
+      position + 1 < headings.length ? (headings[position + 1].index ?? text.length) : text.length;
+    return { index: heading[1], body: text.slice(start, end) };
+  });
+}
+
+/** `text` が OUTCOME_WORDS のいずれかで、単なる長い語の接頭辞としてでなく単語として始まって
+ * いるかどうか。選ばれた語が正確かどうかは検査しない (契約)。 */
+function startsWithOutcomeWord(text: string): boolean {
+  return OUTCOME_WORDS.some((word) => new RegExp(`^${word}\\b`).test(text));
+}
+
+/** check 自身の report。validate-issue-body.ts の { errors, warnings, checks } の形に従う:
+ * prompt block が 1 つ以上あることを必須とし、各 block の `Outcome:` 行が OUTCOME_WORDS の
+ * いずれかの語で始まっていることを検査する。`Outcome:` 行自体が無い block は、空の行と同じ
+ * 扱いにする。 */
+export function checkPromptLog(text: string): ValidationResults {
+  const results: ValidationResults = { errors: [], warnings: [], checks: [] };
+  const blocks = promptBlocks(text);
+  if (blocks.length === 0) {
+    results.errors.push("no_prompt_block: the file carries no `### N.` prompt block");
+    return results;
+  }
+  for (const block of blocks) {
+    const match = OUTCOME_LINE.exec(block.body);
+    const outcomeText = match ? match[1].trim() : "";
+    if (startsWithOutcomeWord(outcomeText)) {
+      results.checks.push(`outcome_word:${block.index}=ok`);
+    } else {
+      const found = outcomeText === "" ? "empty" : `"${outcomeText}"`;
+      results.errors.push(
+        `outcome_word:${block.index} does not start with ${OUTCOME_WORDS.join("/")} (${found})`,
+      );
+    }
+  }
+  return results;
+}
+
+function checkCommand(positional: string[]): number {
+  const [filePath] = positional;
+  if (!filePath) {
+    err(USAGE);
+    return 2;
+  }
+  const results = checkPromptLog(readFileSync(filePath, "utf8"));
+  out(JSON.stringify(results));
+  return results.errors.length > 0 ? 1 : 0;
+}
+
 if (isMainModule(import.meta.url)) {
   const { positional, options } = parseArgs(process.argv.slice(2));
   const [command, ...rest] = positional;
   if (command === "render") {
     process.exit(renderCommand(rest, options));
+  } else if (command === "check") {
+    process.exit(checkCommand(rest));
   } else {
     err(USAGE);
     process.exit(2);
