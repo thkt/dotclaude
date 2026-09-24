@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import * as command_scan from "../_lib/command_scan.ts";
-import { deny, field, parse } from "../_lib/hook_payload.ts";
+import { deny, field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 export const MANAGERS: ReadonlySet<string> = new Set(["npm", "pnpm", "yarn", "bun"]);
 export const INSTALLS: ReadonlySet<string> = new Set([
@@ -164,16 +164,6 @@ export function _configured(directory: string): boolean {
     return project;
   }
   return Boolean(_setting(path.join(homedir(), ".npmrc")));
-}
-
-/** A closed stdin can make a synchronous fd-0 read throw rather than return "" -- read it as
- * empty rather than let that throw exit the hook non-zero. */
-function readStdin(): string {
-  try {
-    return readFileSync(0, "utf8");
-  } catch {
-    return "";
-  }
 }
 
 function main(): number {

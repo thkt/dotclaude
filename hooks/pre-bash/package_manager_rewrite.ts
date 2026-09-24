@@ -8,9 +8,9 @@
 // which() ports Python's shutil.which("ni") via node:fs existence checks over PATH rather than
 // node:child_process: a PATH search needs no subprocess, and every other gate in this hook
 // (readFileSync, statSync) already goes through node:fs.
-import { accessSync, constants, readFileSync, statSync } from "node:fs";
+import { accessSync, constants, statSync } from "node:fs";
 import path from "node:path";
-import { field, parse } from "../_lib/hook_payload.ts";
+import { field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 export const MANAGERS: ReadonlySet<string> = new Set(["npm", "npx", "pnpm", "yarn", "bun", "bunx"]);
 
@@ -130,7 +130,7 @@ export function convert(parts: readonly string[]): string {
 function main(): number {
   if (which("ni") === null) return 0;
 
-  const payload = parse(readFileSync(0, "utf-8"));
+  const payload = parse(readStdin());
   const command = field(field(payload, "tool_input"), "command");
   if (typeof command !== "string") return 0;
 

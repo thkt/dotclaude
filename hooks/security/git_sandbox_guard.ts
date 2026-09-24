@@ -11,11 +11,11 @@
 // Failure mode: fail-closed. A line the lexer cannot tokenize, or a probe that cannot answer,
 // is denied rather than let through.
 import { spawnSync } from "node:child_process";
-import { readFileSync, realpathSync } from "node:fs";
+import { realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import * as command_scan from "../_lib/command_scan.ts";
-import { deny, field, parse } from "../_lib/hook_payload.ts";
+import { deny, field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 // Subcommands that reach the working tree. Most move the index and leave the file behind under
 // the sandbox; checkout-index and read-tree go the other way, writing the tree from an index
@@ -254,16 +254,6 @@ export function _guarded_root(): string | null {
     return realpathSync(named);
   } catch {
     return null;
-  }
-}
-
-/** A closed stdin can make a synchronous fd-0 read throw rather than return "" -- read it as
- * empty rather than let that throw exit the hook non-zero. */
-function readStdin(): string {
-  try {
-    return readFileSync(0, "utf8");
-  } catch {
-    return "";
   }
 }
 
