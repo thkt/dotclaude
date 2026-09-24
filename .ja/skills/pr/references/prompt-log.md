@@ -4,7 +4,7 @@
 
 ## 手順
 
-1. § Base ブランチ検出が読むのと同じ reflog から、`--date=iso` を付けて、現在の branch へ最初に移った entry の時刻を `--since` として求める。
+1. § Base ブランチ検出が読むのと同じ reflog から、`--date=iso` を付けて、現在の branch へ最初に移った entry の時刻を `--since` として求める。branch を頼んだプロンプトは必ず `--since` より前にあるので、`render` はその直前の 1 件も残す。
 
    ```bash
    SINCE=$(git reflog --date=iso --format='%gd %gs' | grep "moving from .* to $(git branch --show-current)$" | tail -1 | sed -n 's/^HEAD@{\(.*\)} .*/\1/p')

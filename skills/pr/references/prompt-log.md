@@ -4,7 +4,7 @@ How `/pr`'s Phase 3 renders, fills, and attaches a prompt log to the PR it just 
 
 ## Steps
 
-1. Compute `--since` from the same reflog § Base Branch Detection reads, with `--date=iso`, taking the entry that first moved into the current branch.
+1. Compute `--since` from the same reflog § Base Branch Detection reads, with `--date=iso`, taking the entry that first moved into the current branch. `render` also keeps the last prompt before `--since`, since the prompt that asked for the branch always precedes it.
 
    ```bash
    SINCE=$(git reflog --date=iso --format='%gd %gs' | grep "moving from .* to $(git branch --show-current)$" | tail -1 | sed -n 's/^HEAD@{\(.*\)} .*/\1/p')

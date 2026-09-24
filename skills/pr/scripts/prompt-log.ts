@@ -4,7 +4,8 @@
 //        prompt-log.ts check <file>
 //
 // render reads a session's transcript, keeps the prompts a human sent, and writes them as
-// Markdown to --out with an empty `Outcome:` line after each one.
+// Markdown to --out with an empty `Outcome:` line after each one. With --since it keeps the
+// prompts at or after <iso> plus the last one before it, the prompt that started the branch.
 //
 // check reads a prompt-log Markdown file (render's own output, or one a human has since edited)
 // and verifies each `Outcome:` line starts with a word from OUTCOME_WORDS and that the file
@@ -195,9 +196,14 @@ function renderCommand(positional: string[], options: Record<string, string>): n
   const [transcriptPath] = candidates;
   const raw = readEntries(transcriptPath);
   const since = options.since;
+  const isBeforeSince = (entry: TranscriptEntry): boolean =>
+    Boolean(since) && new Date(entry.timestamp ?? "").getTime() < new Date(since).getTime();
+  // The branch is cut after the prompt that asked for its work, so that prompt always precedes
+  // --since. The last human prompt before the bound is kept as the branch's origin.
+  const beforeBound = raw.filter((entry) => isHumanPrompt(entry) && isBeforeSince(entry));
+  const origin = beforeBound[beforeBound.length - 1];
   const keepsEntry = (entry: TranscriptEntry): boolean =>
-    isHumanPrompt(entry) &&
-    (!since || new Date(entry.timestamp ?? "").getTime() >= new Date(since).getTime());
+    isHumanPrompt(entry) && (!isBeforeSince(entry) || entry === origin);
   // Partitioned in one pass rather than two `raw.filter` calls plus `kept.includes(entry)`: the
   // latter re-scans `kept` for every raw entry, squaring the cost on a large transcript.
   const kept: TranscriptEntry[] = [];
