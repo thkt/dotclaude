@@ -10,10 +10,11 @@
    SINCE=$(git reflog --date=iso --format='%gd %gs' | grep "moving from .* to $(git branch --show-current)$" | tail -1 | sed -n 's/^HEAD@{\(.*\)} .*/\1/p')
    ```
 
-2. `node skills/pr/scripts/prompt-log.ts render "$CLAUDE_SESSION_ID" --out <path> --since "$SINCE"` を実行する。
+2. node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `render <session-id> --out <path> --since "$SINCE"` を実行する。セッション ID は SKILL.md § Prompt Log Integration が持つ値をリテラルでコマンドに書く。Bash ツールは `CLAUDE_SESSION_ID` を export しない。
 3. render された各 `Outcome:` 行を、そのプロンプトに合う語で埋める (§ Outcome の語)。
-4. `node skills/pr/scripts/prompt-log.ts check <path>` を実行する。
-5. 結果で分岐する (§ 結果)。
+4. node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `check <path>` を実行する。
+5. 結果行に `<path>` を出してから、AskUserQuestion で添付を確認する。
+6. 結果で分岐する (§ 結果)。
 
 ## Outcome の語
 

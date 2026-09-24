@@ -50,7 +50,19 @@ test("T-528 skills/pr/SKILL.md names the prompt-log script with the render and c
     subcommands.length >= 2,
     `the script's usage header carries at least two subcommands (found: ${JSON.stringify(subcommands)})`,
   );
-  assert.match(doc, /scripts\/prompt-log\.ts/, "SKILL.md names the script by path");
+  // /pr runs from any repository, so a repo-relative skills/pr/scripts path resolves only when
+  // the cwd is this repository; the harness-expanded skill dir resolves everywhere.
+  assert.ok(
+    doc.includes("${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts"),
+    "SKILL.md names the script through ${CLAUDE_SKILL_DIR}",
+  );
+  // The Bash tool does not export CLAUDE_SESSION_ID, so the id reaches the command only as the
+  // value the harness substitutes into SKILL.md.
+  assert.ok(doc.includes("${CLAUDE_SESSION_ID}"), "SKILL.md carries the substituted session id");
+  for (const text of [doc, reference("en")]) {
+    assert.doesNotMatch(text, /skills\/pr\/scripts\//, "no repo-relative script path remains");
+    assert.doesNotMatch(text, /"\$CLAUDE_SESSION_ID"/, "no shell-expanded session id remains");
+  }
   for (const subcommand of subcommands) {
     assert.match(
       doc,

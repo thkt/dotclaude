@@ -10,10 +10,11 @@ How `/pr`'s Phase 3 renders, fills, and attaches a prompt log to the PR it just 
    SINCE=$(git reflog --date=iso --format='%gd %gs' | grep "moving from .* to $(git branch --show-current)$" | tail -1 | sed -n 's/^HEAD@{\(.*\)} .*/\1/p')
    ```
 
-2. Run `node skills/pr/scripts/prompt-log.ts render "$CLAUDE_SESSION_ID" --out <path> --since "$SINCE"`.
+2. Run node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `render <session-id> --out <path> --since "$SINCE"`. Write the session ID SKILL.md § Prompt Log Integration carries into the command as a literal value, since the Bash tool does not export `CLAUDE_SESSION_ID`.
 3. Fill each rendered `Outcome:` line with the word matching that prompt (§ Outcome words).
-4. Run `node skills/pr/scripts/prompt-log.ts check <path>`.
-5. Branch on the result (§ Result line).
+4. Run node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `check <path>`.
+5. Report `<path>` on the result line, then confirm the attachment through AskUserQuestion.
+6. Branch on the result (§ Result line).
 
 ## Outcome words
 

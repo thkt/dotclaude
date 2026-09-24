@@ -96,4 +96,4 @@ Call `Skill("use-workflow-pageshot")` with the current PR body string as input. 
 
 ## Prompt Log Integration
 
-Run `node skills/pr/scripts/prompt-log.ts render` and `check` on `$CLAUDE_SESSION_ID`'s transcript, confirm the attachment through AskUserQuestion, and branch on the result. Procedure, the `--since` value, and each branch: ${CLAUDE_SKILL_DIR}/references/prompt-log.md.
+Run node ${CLAUDE_SKILL_DIR}/scripts/prompt-log.ts `render` and `check` on this session's transcript (session ID ${CLAUDE_SESSION_ID}), confirm the attachment through AskUserQuestion, and branch on the result. Procedure, the `--since` value, and each branch: ${CLAUDE_SKILL_DIR}/references/prompt-log.md.
