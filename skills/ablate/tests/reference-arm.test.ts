@@ -3,7 +3,17 @@
 // build_reference_fixture and reference_arm_command directly and read what they wrote to disk;
 // no claude process is started.
 import assert from "node:assert/strict";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+  symlinkSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, sep } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -147,4 +157,28 @@ test("T-501 The command runs claude as that agent with setting sources limited t
     existsSync(join(result.cwd, ".claude", READABILITY_ELEMENT)),
     "expected cwd to be the fixture directory built for this arm and element, not an unrelated directory",
   );
+});
+
+test("T-530 The command's cwd is the fixture's real path even when the temp directory is reached through a symlink", () => {
+  // macOS reaches its temp directory through /var -> /private/var, and a claude child reports
+  // the resolved path in every Read, so a cwd left unresolved never matches the Read.
+  const base = realpathSync(mkdtempSync(join(tmpdir(), "reference-arm-symlink-")));
+  const realTmp = join(base, "real");
+  const linkedTmp = join(base, "linked");
+  mkdirSync(realTmp);
+  symlinkSync(realTmp, linkedTmp);
+
+  const previous = process.env.TMPDIR;
+  process.env.TMPDIR = linkedTmp;
+  try {
+    const { cwd } = reference_arm_command(WIPED, READABILITY_ELEMENT, REPO_ROOT);
+    assert.equal(cwd, realpathSync(cwd), "expected cwd to carry no unresolved symlink");
+    assert.ok(cwd.startsWith(`${realTmp}/`), `expected cwd under ${realTmp}, got ${cwd}`);
+  } finally {
+    if (previous === undefined) {
+      delete process.env.TMPDIR;
+    } else {
+      process.env.TMPDIR = previous;
+    }
+  }
 });

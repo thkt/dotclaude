@@ -1,8 +1,7 @@
 /// <reference types="node" />
 // 1つの skill-reference arm の run を、その stream-json transcript から判定する: その run が
-// fixture 自身が持つ対象 reference を Read したか(exposed)、fixture の外にあるパス --
-// 本物の skill ディレクトリか、`root` 配下のそれ以外のリポジトリ絶対パス -- に触れたか
-// (contaminated)。汚染された run は wiped を wiped+1 に変えてしまう。reviewer agent が
+// fixture 自身が持つ対象 reference を Read したか(exposed)、`root` 配下の本物の skill に
+// 届いたか -- `root/skills` 配下のパスか、`root` 全体を対象にした検索 -- (contaminated)。汚染された run は wiped を wiped+1 に変えてしまう。reviewer agent が
 // fixture の縮小されたツリーだけを見ているとは言えなくなるため、#743 の Proposed solution
 // step 2 はそれをスコアせず、数える run から外す。
 //
@@ -100,6 +99,18 @@ function names_path_under(value: string, base: string): boolean {
   return value === base || value.includes(`${base}/`);
 }
 
+/** `value` が `spelling` の本物の設定ツリーに、本物の skill まで届く形で触れているか。
+ * `<spelling>/skills` 配下のパスか、`ugrep -rn X ~/.claude` のようにツリー全体を対象にする
+ * `<spelling>` そのもの。`<spelling>/agents/_lib/` 配下のパスはどちらでもないので、agent が
+ * calibration と finding schema を読みにいく代替の Read では run は汚染されない。 */
+function touches_real_skills(value: string, spelling: string): boolean {
+  if (names_path_under(value, `${spelling}/skills`)) {
+    return true;
+  }
+  const escaped = spelling.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`${escaped}/?(?=$|[\\s"'])`).test(value);
+}
+
 /** tool の引数が `root` を書き表しうる形。絶対パスと、`root` が `home` 配下にあるときの
  * `~/...` と `$HOME/...` の形。reviewer agent 本文の代替文は `~/.claude/` を名指し、Bash
  * command はそのチルダを展開せずに運ぶ。 */
@@ -114,8 +125,7 @@ function root_spellings(root: string, home: string): string[] {
 /** 1つの run の stream-json transcript を、`element` について組まれた fixture
  * (reference_arm.ts の build_reference_fixture)と照らして判定する: `exposed` はその run が
  * `cwd` にある fixture 自身の `element` を読んだかどうか。`contaminated` はいずれかの tool
- * call が `root` 配下の本物のパス -- 本物の skill ディレクトリか、それ以外のリポジトリ絶対
- * パス -- に、その fixture の外で触れたかどうか。 */
+ * call が `root` 配下の本物の skill に届いたかどうか (touches_real_skills)。 */
 export function classify_exposure(
   transcript: string,
   element: string,
@@ -140,7 +150,7 @@ export function classify_exposure(
       exposed = true;
     }
     for (const value of string_leaves(block.input)) {
-      if (spellings.some((spelling) => names_path_under(value, spelling))) {
+      if (spellings.some((spelling) => touches_real_skills(value, spelling))) {
         contaminated = true;
       }
     }

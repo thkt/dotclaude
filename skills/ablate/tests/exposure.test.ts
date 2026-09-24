@@ -94,3 +94,42 @@ test("T-504 A transcript whose tool call touches the real skill directory counts
     "expected a Bash command naming ~/.claude/ to count as contaminated",
   );
 });
+
+test("T-531 A transcript whose only outside touch is the agent's own agents/_lib files under ~/.claude does not count as contaminated", () => {
+  // The reviewer agent's Calibration and Output sections point at
+  // ${CLAUDE_PLUGIN_ROOT}/agents/_lib/..., which the fixture does not expand, so the agent falls
+  // back to ~/.claude/agents/_lib/. Those files carry no skill content, so reading them leaves
+  // the wiped arm wiped. The command below is the one a #744 pilot run issued.
+  const home = "/home/reviewer";
+  const transcript =
+    line(assistantToolUse("Read", { file_path: join(CWD, fixture_relpath(ELEMENT)) })) +
+    line(
+      assistantToolUse("Bash", {
+        command:
+          "ls ~/.claude/agents/_lib/calibration/CQ.md ~/.claude/agents/_lib/finding-schema.md 2>&1",
+      }),
+    ) +
+    line(assistantToolUse("Read", { file_path: `${home}/.claude/agents/_lib/finding-schema.md` }));
+
+  const result = classify_exposure(transcript, ELEMENT, CWD, `${home}/.claude`, home);
+  assert.equal(result.exposed, true);
+  assert.equal(
+    result.contaminated,
+    false,
+    "expected reads of agents/_lib outside the fixture to leave the run uncontaminated",
+  );
+});
+
+test("T-532 A transcript whose search runs over the whole real config directory counts as contaminated", () => {
+  // A search rooted at ~/.claude itself walks the real skills tree, including the real copy of
+  // the reference the wiped arm emptied.
+  const home = "/home/reviewer";
+  for (const command of ["ugrep -rn Branches ~/.claude", "bfs ~/.claude -name '*.md'"]) {
+    const transcript = line(assistantToolUse("Bash", { command }));
+    assert.equal(
+      classify_exposure(transcript, ELEMENT, CWD, `${home}/.claude`, home).contaminated,
+      true,
+      `expected ${command} to count as contaminated`,
+    );
+  }
+});
