@@ -68,7 +68,7 @@ function scratchWithoutValidator(): { hook: string; bodyPath: string } {
   mkdirSync(join(root, "skills", "issue", "templates"), { recursive: true });
   const hook = join(root, "hooks", "pre-bash", "issue_body_gate.ts");
   copyFileSync(HOOK, hook);
-  for (const name of ["gh_filing.ts", "command_scan.ts", "hook_payload.ts"]) {
+  for (const name of ["gh_filing.ts", "command_scan.ts", "executable.ts", "hook_payload.ts"]) {
     copyFileSync(join(REPO_ROOT, "hooks", "_lib", name), join(root, "hooks", "_lib", name));
   }
   copyFileSync(

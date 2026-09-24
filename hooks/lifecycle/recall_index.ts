@@ -8,9 +8,7 @@
 // failure blocks the session would be worse than the indexing it skips.
 import { spawn } from "node:child_process";
 import {
-  accessSync,
   closeSync,
-  constants,
   mkdirSync,
   openSync,
   readFileSync,
@@ -19,6 +17,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { isExecutableFile } from "../_lib/executable.ts";
 import { parse } from "../_lib/hook_payload.ts";
 
 // The full path, not a PATH lookup: a hook can run without the homebrew prefix, where the
@@ -51,16 +50,6 @@ function readStdin(): string {
     return readFileSync(0, "utf8");
   } catch {
     return "";
-  }
-}
-
-function isExecutableFile(candidate: string): boolean {
-  try {
-    if (!statSync(candidate).isFile()) return false;
-    accessSync(candidate, constants.X_OK);
-    return true;
-  } catch {
-    return false;
   }
 }
 

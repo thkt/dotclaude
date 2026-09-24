@@ -8,17 +8,16 @@
 // No shebang and no exec bit: hooks/_lib/tests/shebang-ts.test.ts's T-013 forbids a shebang
 // line under hooks/_lib/*.ts, the same rule scribe_gate.ts follows.
 //
-// unmergedScribePrExists / lastScribeMerge / hasNewInput / defaultRunner below duplicate
-// scribe_gate.ts's own private copies of the same retired module's helpers rather than
-// importing them: DR-0116 scoped this module out of that unit, so scribe_gate.ts ported
-// its own unexported slice first. This module is that retired module's real destination; the two
-// copies stay independent per DRY's boundary (each can evolve independently -- scribe_gate.ts
-// answers a CI should-run question, this module a hook cooldown question).
+// unmergedScribePrExists / lastScribeMerge / hasNewInput / defaultRunner are exported for
+// scribe_gate.ts: which PRs and issues count as a scribe backlog is one definition whether a CI
+// gate or a hook cooldown asks, and DR-0116 keeps scribe_gate.ts in hooks/_lib so it imports them
+// in process, the shape the retired Python pair had.
 import { spawnSync } from "node:child_process";
-import { accessSync, closeSync, constants, mkdirSync, openSync, statSync, utimesSync } from "node:fs";
+import { closeSync, mkdirSync, openSync, statSync, utimesSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { commands, starts_with } from "./command_scan.ts";
+import { isExecutableFile } from "./executable.ts";
 
 /** A gh invocation, injected so tests hand over canned stdout instead of a live gh process.
  * Mirrors the retired Python module's GhRunner. */
@@ -108,18 +107,6 @@ function touch(stamp: string): void {
   }
 }
 
-function isExecutableFile(candidate: string): boolean {
-  try {
-    if (!statSync(candidate).isFile()) {
-      return false;
-    }
-    accessSync(candidate, constants.X_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function isDirectory(candidate: string): boolean {
   try {
     return statSync(candidate).isDirectory();
@@ -130,7 +117,7 @@ function isDirectory(candidate: string): boolean {
 
 /** gh runs with the pull's directory as cwd, so it reads the repository off that checkout's git
  * remote rather than off wherever the hook process started. */
-function defaultRunner(directory: string, gh: string): GhRunner {
+export function defaultRunner(directory: string, gh: string): GhRunner {
   return (args) => {
     const result = spawnSync(gh, args, { cwd: directory, encoding: "utf-8" });
     if (result.error) {
@@ -145,14 +132,14 @@ function defaultRunner(directory: string, gh: string): GhRunner {
 
 /** skills/scribe/SKILL.md Phase 1 step 1: an open scribe PR already covers the backlog, so a
  * second nudge would only invite a second run to collide with it. */
-function unmergedScribePrExists(call: GhRunner): boolean {
+export function unmergedScribePrExists(call: GhRunner): boolean {
   const output = call(["pr", "list", "--label", "scribe", "--state", "open", "--json", "number"]);
   return (JSON.parse(output) as unknown[]).length > 0;
 }
 
 /** skills/scribe/SKILL.md Phase 2 step 1: the mergedAt of the last merged scribe PR, empty when
  * none has ever merged. `-q` hands back the bare value, not a JSON-quoted string. */
-function lastScribeMerge(call: GhRunner): string {
+export function lastScribeMerge(call: GhRunner): string {
   return call([
     "pr",
     "list",
@@ -171,7 +158,7 @@ function lastScribeMerge(call: GhRunner): string {
 
 /** skills/scribe/SKILL.md Phase 2 steps 2-3. Returns on the first kind that has anything, so a
  * backlog carrying merged PRs costs one gh call rather than two. */
-function hasNewInput(cursor: string, call: GhRunner): boolean {
+export function hasNewInput(cursor: string, call: GhRunner): boolean {
   const search = cursor ? `-label:scribe merged:>${cursor}` : "-label:scribe";
   const prs = ["pr", "list", "--state", "merged", "--search", search, "--json", "number"];
   if ((JSON.parse(call(prs)) as unknown[]).length >= 1) {

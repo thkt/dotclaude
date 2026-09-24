@@ -5,34 +5,12 @@
 // / main carry the Python side's names and shapes; convert is exported the way the plan
 // requires.
 //
-// which() ports Python's shutil.which("ni") via node:fs existence checks over PATH rather than
-// node:child_process: a PATH search needs no subprocess, and every other gate in this hook
-// (readFileSync, statSync) already goes through node:fs.
-import { accessSync, constants, readFileSync, statSync } from "node:fs";
-import path from "node:path";
+// The ni lookup is hooks/_lib/executable.ts's which, the PATH scan every hook shares.
+import { readFileSync } from "node:fs";
+import { which } from "../_lib/executable.ts";
 import { field, parse } from "../_lib/hook_payload.ts";
 
 export const MANAGERS: ReadonlySet<string> = new Set(["npm", "npx", "pnpm", "yarn", "bun", "bunx"]);
-
-/** The absolute path of the first executable named `name` on PATH, null when none resolves.
- *
- * Mirrors shutil.which(name): a plain existence check is not enough, since a matching name
- * that is not executable (X_OK) is not a usable command either. */
-function which(name: string): string | null {
-  const dirs = (process.env.PATH ?? "").split(path.delimiter);
-  for (const dir of dirs) {
-    if (!dir) continue;
-    const candidate = path.join(dir, name);
-    try {
-      if (!statSync(candidate).isFile()) continue;
-      accessSync(candidate, constants.X_OK);
-      return candidate;
-    } catch {
-      continue;
-    }
-  }
-  return null;
-}
 
 function toNi(args: string): string {
   return args ? `ni ${args}` : "ni";

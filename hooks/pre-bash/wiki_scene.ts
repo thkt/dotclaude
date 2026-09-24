@@ -13,13 +13,14 @@
 // hooks/_lib/tests/_hook-harness.ts's run() rather than importing its exports directly.
 //
 // find_wiki_rule.ts runs the cd-walked directory's own docs/wiki, and find_wiki_rule.ts runs
-// through a JS runtime it resolves the same way the retired Python original's _runtime does.
+// under the runtime hooks/_lib/executable.ts's tsRuntime picks.
 import { spawnSync } from "node:child_process";
-import { accessSync, constants, readFileSync, statSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as commandScan from "../_lib/command_scan.ts";
+import { tsRuntime } from "../_lib/executable.ts";
 import { field, notify, parse } from "../_lib/hook_payload.ts";
 
 // hooks/pre-bash/wiki_scene.ts -> hooks/pre-bash -> hooks -> repo root, the same two levels
@@ -27,10 +28,6 @@ import { field, notify, parse } from "../_lib/hook_payload.ts";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const FIND_WIKI_RULE = join(ROOT, "skills", "scribe", "scripts", "find_wiki_rule.ts");
 
-// CLAUDE_BUN_BIN overrides the default bun install path the same way issue_body_gate.ts's
-// _interpreter reads it, and `node` off PATH is the fallback when neither resolves to a
-// runnable binary (the retired Python original's DEFAULT_BUN).
-const DEFAULT_BUN = "/opt/homebrew/bin/bun";
 
 // command_scan.starts_with reads position, not word presence, so `git commit -m "gh issue close
 // 42"` never matches: "gh" sits inside a message argument, not at the position a command name
@@ -74,45 +71,6 @@ export function find(command: string): readonly [string, string] | null {
   return null;
 }
 
-function _isExecutableFile(path: string): boolean {
-  try {
-    if (!statSync(path).isFile()) {
-      return false;
-    }
-    accessSync(path, constants.X_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** Where `name` resolves on PATH, or null when no directory on it carries an executable file by
- * that name -- the same hand-rolled PATH scan issue_body_gate.ts's _which uses, kept local here
- * rather than shared: this unit's target files are wiki_scene.ts and its test alone. */
-function _which(name: string): string | null {
-  for (const dir of (process.env.PATH ?? "").split(":")) {
-    if (!dir) {
-      continue;
-    }
-    const candidate = join(dir, name);
-    if (_isExecutableFile(candidate)) {
-      return candidate;
-    }
-  }
-  return null;
-}
-
-/** CLAUDE_BUN_BIN, else DEFAULT_BUN, else whatever `node` PATH resolves to. null when none of
- * the three is runnable, which reads the same as "no page" below rather than a hook error
- * (the retired Python original's _runtime). */
-function _runtime(): string | null {
-  const bun = process.env.CLAUDE_BUN_BIN || DEFAULT_BUN;
-  if (_isExecutableFile(bun)) {
-    return bun;
-  }
-  return _which("node");
-}
-
 /** The wiki pages find_wiki_rule.ts reports for `scene` under `directory`'s docs/wiki
  * (the retired Python original's _scene_pages). `directory` arrives absolute from find(), so wikiDir does too.
  *
@@ -130,7 +88,7 @@ function _scene_pages(directory: string, scene: string): string[] {
   if (!isWikiDir) {
     return [];
   }
-  const runtime = _runtime();
+  const runtime = tsRuntime();
   if (runtime === null) {
     return [];
   }
