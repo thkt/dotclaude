@@ -16,7 +16,7 @@
 // T-483 is the retirement guard itself, same shape as skills/dr/tests/dr-scripts-retirement.test.ts's
 // T-212 and skills/_lib/tests/review-score-retirement.test.ts's T-174: offendersAmong/trackedFiles/
 // assertDetectsAndMisses from workflows/_lib/tests/_retirement.ts drive a full-tree scan, and
-// only the helper's own defaults (docs/decisions/, .claude/workspace/research/) plus this file
+// only the helper's own defaults (docs/decisions/, docs/research/) plus this file
 // itself are excluded. Unlike those two callers, which check one representative name, T-483's
 // own scenario name asks for the predicate to be exercised against each retired name in turn.
 import assert from "node:assert/strict";
@@ -100,7 +100,7 @@ test(
     assert.deepEqual(
       offenders,
       [],
-      "no tracked file outside docs/decisions/ and .claude/workspace/research/ names " +
+      "no tracked file outside docs/decisions/ and docs/research/ names " +
         `report.py, arms.py, verdict.py, dr_gate.py, enforcer_map.py, usage_counts.py or ` +
         `harness_elements.py\n${offenders.join(", ")}`,
     );

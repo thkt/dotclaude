@@ -8,7 +8,7 @@
 //
 // The walk reuses offendersAmong / trackedFiles from ./_retirement.ts, the same shared core
 // gate-retirement.test.ts and ts-harness-retirement.test.ts scan with, so the historical-
-// directory exclusions (docs/decisions/, .claude/workspace/research/) live in one place.
+// directory exclusions (docs/decisions/, docs/research/) live in one place.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";

@@ -9,7 +9,7 @@
 // one change, then confirm zero residual references across git ls-files. The walk itself is
 // offendersAmong (workflows/_lib/tests/_retirement.ts), shared with record-retirement.test.ts,
 // gate-retirement.test.ts and ts-harness-retirement.test.ts, so the historical-directory
-// exclusions it applies (docs/decisions/ and .claude/workspace/research/, kept as historical
+// exclusions it applies (docs/decisions/ and docs/research/, kept as historical
 // record by that same procedure) live in one place rather than a copy per test file.
 // docs/wiki/untracked-reference-dangling.md's mention of bootstrap.py / worktree.py is the
 // research-derived basis line for its own #188/#190 §根拠 entry (a quote of a since-fixed
@@ -50,7 +50,7 @@ test(
     // This test's own file names both retired filenames in comments to describe what it
     // checks, and the docs/wiki basis line keeps the retired names as a quoted historical
     // example rather than a live reference; the historical directories
-    // (docs/decisions/, .claude/workspace/research/) are offendersAmong's own default.
+    // (docs/decisions/, docs/research/) are offendersAmong's own default.
     const offenders = offendersAmong(
       trackedFiles(REPO_ROOT),
       (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -60,7 +60,7 @@ test(
     assert.deepEqual(
       offenders,
       [],
-      "no tracked file outside docs/decisions/, .claude/workspace/research/ and " +
+      "no tracked file outside docs/decisions/, docs/research/ and " +
         `${HISTORICAL_FILE} references bootstrap.py or worktree.py\n${offenders.join(", ")}`,
     );
   },

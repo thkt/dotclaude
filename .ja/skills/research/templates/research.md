@@ -1,6 +1,6 @@
 # Research レポートテンプレート
 
-/research が Phase 7 で生成するレポートのテンプレート。スキルが出力時に読み、`{...}` を内容へ置き換え、`${CLAUDE_SESSION_ID}` を埋めて `.claude/workspace/research/YYYY-MM-DD-<slug>.md` に保存する。
+/research が Phase 7 で生成するレポートのテンプレート。スキルが出力時に読み、`{...}` を内容へ置き換え、`${CLAUDE_SESSION_ID}` を埋めて `docs/research/YYYY-MM-DD-<slug>.md` に保存する。
 
 ## Template
 

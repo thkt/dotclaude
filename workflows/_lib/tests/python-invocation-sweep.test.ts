@@ -38,7 +38,7 @@ interface Exclusion {
 }
 
 // The exclusions this sweep adds on top of offendersAmong's own historical-directory default
-// (docs/decisions/, .claude/workspace/research/). Each carries the reason it is excluded so the
+// (docs/decisions/, docs/research/). Each carries the reason it is excluded so the
 // list reads on its own instead of sending a reader to git blame or the DR.
 const EXCLUSIONS: readonly Exclusion[] = [
   {
@@ -155,7 +155,7 @@ test(
       offenders,
       [],
       "files still invoking python3 as a hook command, a shebang or a heredoc launcher " +
-        `(docs/decisions/, .claude/workspace/research/ and EXCLUSIONS's paths are excluded): ` +
+        `(docs/decisions/, docs/research/ and EXCLUSIONS's paths are excluded): ` +
         offenders.join(", "),
     );
   },

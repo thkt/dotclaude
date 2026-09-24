@@ -53,7 +53,7 @@ test("T-328 no tracked file outside the historical directories names issue_body_
 
   // This test's own file names all 3 retired paths in its comments and constants, so it is
   // passed as an extra exclusion; the historical directories (docs/decisions/,
-  // .claude/workspace/research/) are offendersAmong's own default, not repeated here.
+  // docs/research/) are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -64,7 +64,7 @@ test("T-328 no tracked file outside the historical directories names issue_body_
     offenders,
     [],
     `files still naming issue_body_gate.py, wiki_scene.py or gh_filing.py ` +
-      `(docs/decisions/ and .claude/workspace/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
+      `(docs/decisions/ and docs/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
   );
 });
 

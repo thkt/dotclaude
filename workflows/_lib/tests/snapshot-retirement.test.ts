@@ -6,7 +6,7 @@
 // rather than snapshot.py through python3.
 //
 // Same shape as workflows/_lib/tests/record-retirement.test.ts: a mention under
-// docs/decisions/ or .claude/workspace/research/ is kept as historical record (a DR / a research
+// docs/decisions/ or docs/research/ is kept as historical record (a DR / a research
 // report is written once and stays a record of what was true when it was written, not a live
 // pointer that retirement obliges to follow), so both are excluded here rather than counted as a
 // leftover reference.
@@ -35,7 +35,7 @@ function referencesRetiredPath(content: string): boolean {
 }
 
 test(
-  "T-135 no tracked file outside docs/decisions/ and .claude/workspace/research/ references " +
+  "T-135 no tracked file outside docs/decisions/ and docs/research/ references " +
     "snapshot.py as a word, and the same predicate flags a fixture line carrying it",
   () => {
     assertDetectsAndMisses(referencesRetiredPath, "snapshot.py");
@@ -51,7 +51,7 @@ test(
     assert.deepEqual(
       offenders,
       [],
-      "no tracked file outside docs/decisions/ and .claude/workspace/research/ references " +
+      "no tracked file outside docs/decisions/ and docs/research/ references " +
         `snapshot.py\n${offenders.join(", ")}`,
     );
   },

@@ -52,7 +52,7 @@ test("T-290 no tracked file outside the historical directories names git_sandbox
 
   // This test's own file names all 3 retired paths in its comments and constants, so it is
   // passed as an extra exclusion; the historical directories (docs/decisions/,
-  // .claude/workspace/research/) are offendersAmong's own default, not repeated here.
+  // docs/research/) are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -63,7 +63,7 @@ test("T-290 no tracked file outside the historical directories names git_sandbox
     offenders,
     [],
     `files still naming git_sandbox_guard.py, npm_install_guard.py or rm_to_trash.py ` +
-      `(docs/decisions/ and .claude/workspace/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
+      `(docs/decisions/ and docs/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
   );
 });
 

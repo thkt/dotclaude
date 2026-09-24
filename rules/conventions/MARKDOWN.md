@@ -20,8 +20,8 @@ Scope is judged by the path without the `.ja/` prefix.
 
 | Scope        | Paths                                                                     |
 | ------------ | ------------------------------------------------------------------------- |
-| LLM-facing   | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `.claude/workspace/**` |
-| Human-facing | `docs/**`, `README.md`                                                    |
+| LLM-facing   | `CLAUDE.md`, `agents/**`, `skills/**`, `rules/**`, `.claude/workspace/**`, `docs/research/**` |
+| Human-facing | `docs/**` other than `docs/research/**`, `README.md`                                          |
 
 ## Symbols
 

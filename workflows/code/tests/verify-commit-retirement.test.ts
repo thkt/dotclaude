@@ -8,7 +8,7 @@
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and docs in one
 // change, then confirm zero residual references across git ls-files. A mention under
-// docs/decisions/ or .claude/workspace/research/ is kept as historical record (a DR / a
+// docs/decisions/ or docs/research/ is kept as historical record (a DR / a
 // research report is written once and stays a record of what was true when it was written,
 // not a live pointer that retirement obliges to follow), so both are excluded here rather
 // than counted as a leftover reference.
@@ -38,7 +38,7 @@ function referencesRetiredPath(content: string): boolean {
 }
 
 test(
-  "T-158 no tracked file outside docs/decisions/and .claude/workspace/research/references " +
+  "T-158 no tracked file outside docs/decisions/and docs/research/references " +
     "verify-commit.py as a word, and the same predicate flags a fixture line carrying it",
   () => {
     assertDetectsAndMisses(referencesRetiredPath, "verify-commit.py");
@@ -54,7 +54,7 @@ test(
     assert.deepEqual(
       offenders,
       [],
-      "no tracked file outside docs/decisions/ and .claude/workspace/research/ references " +
+      "no tracked file outside docs/decisions/ and docs/research/ references " +
         `verify-commit.py\n${offenders.join(", ")}`,
     );
   },
