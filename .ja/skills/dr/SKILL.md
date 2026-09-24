@@ -13,6 +13,8 @@ argument-hint: "[decision title]"
 
 決定タイトルは `$ARGUMENTS` で受け取る。空なら AskUserQuestion で New decision/Update existing を確認する。New decision ならタイトルを聞き、Update existing なら `<git-root>/docs/decisions/` の既存 DR から選択させる (§ 既存 DR の更新)。新規に作るタイトルは "Adopt X for Y" のような具体的なアクションに整え、5〜64 文字に収めて `/:*?"<>|` を含めない。保存先は既定で `<git-root>/docs/decisions/` で、`DR_DIR` 環境変数を設定すると変えられる。
 
+`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従い、関連 wiki・DR と原本の適用条件・状態を現在の要求へ照合する。必要な文書更新を今回の合意範囲へ含め、実装と同じ評価へ渡す。
+
 ## 採用ゲート
 
 下表の 3 条件すべてが成り立つときだけプロセスへ進む。欠けるときは DR を作らず、上から順に当てて最初に該当した記録先へ決定を残す。
@@ -85,3 +87,7 @@ status が proposed なら本文を直接編集し、Validate と Index を実�
 | ------------------------------ | --------------------------------------------- |
 | 任意セクションを残すか落とすか | ${CLAUDE_SKILL_DIR}/references/madr-format.md |
 | 決定を説明し切る要素は何か     | ${CLAUDE_SKILL_DIR}/references/fowler-adr.md  |
+
+## 根拠と現在形
+
+Context に対象 repo・目的・適用条件を書き、More Information に原本の相対パス・必要な版と合意の出典を残す。採用を確認できない判断は proposed/未確認のままにする。DR を置換するときは由来がその DR を指す wiki の本文も同じ変更単位で照合・更新する。リンクの張り替えだけでは完了にしない。

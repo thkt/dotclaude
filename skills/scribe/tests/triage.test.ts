@@ -18,7 +18,7 @@ import {
   runCli,
   withTempHome,
 } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-import { merge, type Pattern } from "../scripts/triage.ts";
+import { merge, readStore, triage, type Pattern } from "../scripts/triage.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "triage.ts");
@@ -136,3 +136,82 @@ test(
     assert.equal(firstLine, "#!/usr/bin/env node", "shebang line");
   },
 );
+
+test("research links survive candidate round-trips and old and new paths count once", () => {
+  const dir = mkdtempSync(join(tmpdir(), "triage-research-"));
+  try {
+    const store = join(dir, "_candidates.md");
+    writeFileSync(
+      store,
+      "## 単発\n\n- retained pattern [prior](../../.claude/workspace/research/report.md)\n",
+    );
+    const rows = merge(readStore(store), [
+      {
+        name: "retained pattern",
+        evidence: [
+          "[research:report.md](../research/report.md)",
+          "[root layout](../../research/report.md)",
+          "[another label](../research/report.md)",
+        ],
+      },
+    ]);
+    const report = triage(rows);
+    assert.equal(report.pages.length, 0, "one moved report cannot satisfy recurrence");
+    assert.equal(report.candidates[0].name, "retained pattern");
+    assert.deepEqual(report.candidates[0].evidence, [
+      "[research:report.md](../research/report.md)",
+    ]);
+    writeFileSync(store, `## 単発\n\n- ${rows[0].name} ${rows[0].evidence?.join(" ")}\n`);
+    assert.deepEqual(readStore(store)[0].evidence, report.candidates[0].evidence);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("distinct identified reports promote while duplicate markers do not", () => {
+  const a = "[research:a.md](../research/a.md)";
+  const b = "[research:b.md](../research/b.md)";
+  const report = triage(
+    merge(
+      [],
+      [
+        { name: "one", evidence: [a, a] },
+        { name: "two", evidence: [a, b] },
+      ],
+    ),
+  );
+  assert.deepEqual(
+    report.pages.map((p) => [p.name, p.count]),
+    [["two", 2]],
+  );
+  assert.deepEqual(
+    report.candidates.map((p) => [p.name, p.count]),
+    [["one", 1]],
+  );
+});
+
+test("legacy unidentified research stays traceable without becoming an extra identified source", () => {
+  const report = triage(
+    merge(
+      [
+        { name: "old", evidence: ["(research)"] },
+        { name: "retained", evidence: ["#12", "(research)"] },
+      ],
+      [{ name: "old", evidence: ["[research:a.md](../research/a.md)"] }],
+    ),
+  );
+  assert.deepEqual(report.candidates[0].evidence, [
+    "(research)",
+    "[research:a.md](../research/a.md)",
+  ]);
+  assert.equal(
+    report.candidates[0].count,
+    1,
+    "unidentified research is not evidence of a second source",
+  );
+  assert.equal(
+    report.pages[0].name,
+    "retained",
+    "legacy candidate counts retain their established behavior",
+  );
+});

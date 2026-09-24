@@ -68,14 +68,43 @@ const ACTION: Record<string, string> = { page: "update", candidate: "promote", n
 // The candidate store's two headings, in the order read_store/readStore recognizes them.
 const STORE_SECTIONS = ["## 昇格待ち", "## 単発"] as const;
 
-// A store row's evidence markers: a GitHub reference number, or a bare "(research)" tag.
-const EVIDENCE = /#\d+|\(research\)/g;
+// Research links identify a source; legacy anonymous evidence remains readable.
+const RESEARCH_LINK =
+  /\[[^\]]+\]\(((?:\.\.\/\.\.\/(?:\.claude\/workspace\/)?|\.\.\/|docs\/|\.claude\/workspace\/)?research\/[^\s)]+\.md)(?:#[^)]+)?\)/;
+const EVIDENCE = new RegExp(`${RESEARCH_LINK.source}|#\\d+|\\(research\\)`, "g");
+
+function uniqueEvidence(items: readonly string[]): string[] {
+  const sources = new Map<string, string>();
+  for (const item of items) {
+    const target = RESEARCH_LINK.exec(item)?.[1];
+    if (!target) {
+      sources.set(item, item);
+      continue;
+    }
+    const relative = target.startsWith("../research/")
+      ? `docs/${target.slice(3)}`
+      : target.replace(/^\.\.\/\.\.\//, "");
+    const name = relative.replace(/^(?:docs\/|\.claude\/workspace\/)?research\//, "");
+    const href = relative.startsWith("docs/") ? `../${relative.slice(5)}` : `../../${relative}`;
+    const normalized = `[research:${name}](${href})`;
+    const previous = sources.get(name);
+    if (
+      !previous ||
+      relative.startsWith("docs/") ||
+      (!previous.includes("(../research/") && relative.startsWith("research/"))
+    ) {
+      sources.set(name, normalized);
+    }
+  }
+  return [...sources.values()];
+}
 
 function toRow(pattern: Pattern): Row {
-  const evidence = pattern.evidence ?? [];
+  const evidence = uniqueEvidence(pattern.evidence ?? []);
+  const hasIdentifiedResearch = evidence.some((item) => RESEARCH_LINK.test(item));
   const row: Row = {
     name: pattern.name ?? "",
-    count: evidence.length,
+    count: evidence.filter((item) => item !== "(research)" || !hasIdentifiedResearch).length,
     evidence,
     existing: pattern.existing ?? "none",
   };
@@ -164,7 +193,7 @@ export function merge(store: readonly Pattern[], fresh: readonly Pattern[]): Pat
     const at = index.get(name);
     if (at === undefined) {
       index.set(name, merged.length);
-      merged.push({ ...p, evidence: [...(p.evidence ?? [])] });
+      merged.push({ ...p, evidence: uniqueEvidence(p.evidence ?? []) });
       continue;
     }
     const seen = merged[at].evidence;
@@ -173,6 +202,7 @@ export function merge(store: readonly Pattern[], fresh: readonly Pattern[]): Pat
         seen.push(e);
       }
     }
+    merged[at].evidence = uniqueEvidence(seen);
     // The accumulated row's existing is only the fixed value read_store attached. Which side
     // fresh saw the same name on this time is what the row actually is now, so it wins.
     if (p.existing !== undefined) {

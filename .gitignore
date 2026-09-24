@@ -32,6 +32,10 @@ history/
 !/.claude/workspace/research/
 /.claude/workspace/research/*
 !/.claude/workspace/research/*.md
+/research/*
+!/research/*.md
+/docs/research/*
+!/docs/research/*.md
 /.credentials.json
 /agent-memory/
 /chrome/

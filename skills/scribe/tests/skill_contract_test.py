@@ -107,7 +107,12 @@ class SkillContract(unittest.TestCase):
         ]
         self.assertTrue(lines, "the store holds candidate lines to check against")
         for line in lines:
-            self.assertRegex(line, r"^- \S.*?(?: (?:#\d+|\(research\)))+$", line)
+            self.assertRegex(
+                line,
+                r"^- \S.*?(?: (?:#\d+|\(research\)|\[[^\]]+\]"
+                r"\((?:\.\./research|\.\./\.\./(?:\.claude/workspace/)?research)/[^)]+\)))+$",
+                line,
+            )
 
     def test_the_call_the_skill_writes_hands_triage_the_store(self) -> None:
         """A line the cap deferred reaches a page again only if the store is in the ranking.

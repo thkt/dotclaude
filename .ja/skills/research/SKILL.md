@@ -26,7 +26,7 @@ argument-hint: "[research subject or question]"
 
 ## Phase 2: 過去調査スキャン
 
-`$ARGUMENTS` から小文字ハイフン区切りの slug を作り、`${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> .claude/workspace/research` を実行する。標準出力の JSON `{ candidates: [{file, shared}, ...], slug_words: int }` (shared 降順) をパースする。
+`$ARGUMENTS` から小文字ハイフン区切りの slug を作り、`${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> docs/research research .claude/workspace/research` を実行する。標準出力の JSON `{ candidates: [{file, shared, path, aliases}, ...], slug_words: int }` (shared 降順) をパースする。
 
 - 候補が 0 件のとき、レポートの Prior research を `none found` として先へ進む
 - shared 2 以上、または shared が `slug_words` と等しい候補は下表のとおり引き継ぐ
@@ -78,7 +78,7 @@ ${CLAUDE_SKILL_DIR}/../../rules/core/OPERATION.md § Debug Investigation Protoco
 
 ## Phase 8: 出力
 
-${CLAUDE_SKILL_DIR}/templates/research.md の骨格に従ってレポートを生成し、`${CLAUDE_SESSION_ID}`を埋めて`.claude/workspace/research/YYYY-MM-DD-<slug>.md` に保存する。
+${CLAUDE_SKILL_DIR}/templates/research.md の骨格に従ってレポートを生成し、`${CLAUDE_SESSION_ID}`を埋めて`docs/research/YYYY-MM-DD-<slug>.md` に保存する。
 
 保存後、テンプレートの Next Steps 表から渡し先を選んで会話で提案する。いずれも自動実行しない。提案には保存したレポートのパスと、slug の元になった語をそのまま添える。`/think` はその語から slug を作り、同じ script でこのレポートを引くので、語がずれると引けなくなる。
 
@@ -97,5 +97,9 @@ ${CLAUDE_SKILL_DIR}/templates/research.md の骨格に従ってレポートを�
 | advisor           | Phase 6 | advisor を起動した、または省略理由を記録した                                                                        |
 | ソース            | Phase 7 | すべての発見事項に明示的なソース、または `unknown, requires X` 注記がある                                           |
 | triage            | Phase 7 | すべての次のアクションに紐付け先 (質問 / OUTCOME / incident) の明記、または「記録のみ」がある                       |
-| 保存              | Phase 8 | 出力を `.claude/workspace/research/` に保存した                                                                     |
+| 保存              | Phase 8 | 出力を `docs/research/` に保存した                                                                     |
 | 渡し先            | Phase 8 | Next Steps 表から渡し先を提案し、レポートのパスと slug の語を添えた                                                 |
+
+## 原本と共有
+
+複数の保存先を調べるときは返された `path` を読む。同名・原文同一の移行コピーは `aliases` にまとまり、異なる内容なら両方を返す。後者は原本と版を照合してから採用する。未追跡原本も読めるが、保存・commit・共有を区別し、共有範囲が未確認の資料を自動公開しない。

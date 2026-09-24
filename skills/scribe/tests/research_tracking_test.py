@@ -38,6 +38,10 @@ class ResearchTracking(unittest.TestCase):
         target = ROOT / ".claude" / "workspace" / "research" / "scratch.json"
         self.assertEqual(check_ignore(target), 0, f"{target} is not git-ignored")
 
+    def test_root_research_keeps_markdown_and_ignores_raw_outputs(self) -> None:
+        self.assertEqual(check_ignore(ROOT / "docs" / "research" / "report.md"), 1)
+        self.assertEqual(check_ignore(ROOT / "docs" / "research" / "scratch.json"), 0)
+
     def test_git_check_ignore_keeps_ignoring_a_file_under_claude_workspace_planning(
         self,
     ) -> None:

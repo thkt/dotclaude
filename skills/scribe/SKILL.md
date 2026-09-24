@@ -1,8 +1,8 @@
 ---
 name: scribe
-description: Extract recurring patterns from past closed PRs/issues and the research findings in .claude/workspace/research/, verify them against the latest code, and propose them to docs/wiki/ via PR.
+description: Extract recurring patterns from past closed PRs/issues and research findings in the target repository’s docs/research/, verify them against the latest code, and propose them to docs/wiki/ via PR.
 when_to_use: scribe 実行, wiki 抽出, 共通項の蒸留, PR/issue からの知見蓄積, research 成果の蓄積, run scribe, wiki extraction, distill recurring patterns
-allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Read Write Edit LS
+allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../research/scripts/*) Read Write Edit LS
 ---
 
 # /scribe - Accumulate PR / issue / research recurring patterns into the wiki
@@ -17,7 +17,7 @@ The patterns worth picking up are procedures that recur as a routine or a conven
 | Progress record           | The cursor is the mergedAt of the last merged scribe PR. For a research file, compare that mergedAt against its last commit time                                         |
 | Where the threshold lives | `scripts/triage.ts` decides whether a pattern becomes a page or a candidate; this skill does not judge it                                                                |
 | Facts only                | Write only facts stated in PRs / issues and research files, plus facts verified in the current code. No guessing                                                         |
-| No research paths         | Never write `.claude/workspace/research/` file paths under `docs/wiki/`. The wiki carries the distilled pattern, and a path would send the reader back to the raw report |
+| Identify originals | Research evidence links to its original. Keep a legacy `(research)` marker unresolved when its source is unknown; never guess the mapping |
 | Worktree isolation        | Edit and commit inside an isolated worktree; never touch the user's working tree. The worktree is created in Phase 6, so Phase 6 is the only Phase that writes           |
 
 ## Phase 1: Preconditions and onboarding
@@ -30,8 +30,16 @@ The patterns worth picking up are procedures that recur as a routine or a conven
 ## Phase 2: Scope
 
 1. Get the mergedAt of the last merged scribe PR with `gh pr list --label scribe --state merged --limit 1 --json mergedAt -q '.[0].mergedAt'`
-2. If no mergedAt comes back, this is the first run. Take all of `gh pr list --state merged --search '-label:scribe'`, `gh issue list --state closed`, and `find .claude/workspace/research -name '*.md'` as the scope
-3. If a mergedAt comes back, take the PRs from `gh pr list --state merged --search "-label:scribe merged:><mergedAt>"`, the issues from `gh issue list --state closed --search "closed:><mergedAt>"`, and the files from `git log --since="<mergedAt>" --name-only --diff-filter=AM --pretty=format: -- '.claude/workspace/research/*.md' | sort -u` plus the untracked ones from `git ls-files --others --exclude-standard -- '.claude/workspace/research/*.md'` as the scope. A report not yet committed has no git log entry, and it is exactly the one a local run is most likely to hold
+2. List originals recursively in all roots with `${CLAUDE_SKILL_DIR}/../research/scripts/find-prior-research.ts --all docs/research research .claude/workspace/research`. Only repository-contained regular files qualify. Read `path`; identical same-relative-name copies share `aliases` and count once. Compare differing same-name originals before using them; versions are not independent evidence. With no mergedAt, include all originals and all results of `gh pr list --state merged --search '-label:scribe'` and `gh issue list --state closed`
+3. With mergedAt, keep PR/issue searches bounded by `merged:><mergedAt>` / `closed:><mergedAt>`. Select original paths listed by these commands:
+
+   ```sh
+   git log --since="<mergedAt>" --name-only --diff-filter=AM --pretty=format: -- 'docs/research/*.md' 'research/*.md' '.claude/workspace/research/*.md'
+   git ls-files --others --exclude-standard -- 'docs/research/*.md' 'research/*.md' '.claude/workspace/research/*.md'
+   git diff --name-only HEAD -- docs/research research .claude/workspace/research
+   ```
+
+   Include a candidate when any `aliases` path matches. A manual run checks research even with no new PR/issue; automatic gate triggers do not expand.
 4. Only `*.md` counts as a research target; read no other format. Use each file's last commit time as the cursor, not its filesystem mtime or the `Generated:` line inside it. A checkout resets mtime to the checkout moment regardless of when the content last changed in git, so mtime cannot anchor the comparison. `Generated:` carries the date the file was produced and stays there through later edits, so it drops updates too
 5. Even with PRs, issues, and research all empty, go on to Phase 3 when `docs/wiki/_candidates.md` holds a line with two or more pieces of evidence. Report "nothing new" and stop only when that line is absent too
 
@@ -43,12 +51,14 @@ The patterns worth picking up are procedures that recur as a routine or a conven
 4. Add what you read to the array, grouped per pattern. Add only the evidence when the pattern is in the array already. Design decisions and their history belong to `docs/decisions/` and are out of scope
 5. Read `docs/wiki/_candidates.md`. When a pattern in the array points at the same thing as an existing candidate line, use that line's body verbatim as the `name`
 6. Pass that array to `${CLAUDE_SKILL_DIR}/scripts/triage.ts '<JSON array of patterns>' docs/wiki/_candidates.md`. The script reads the candidate lines from both sections of `_candidates.md` into the array, then applies the two-evidence threshold and the per-run page cap, splitting the result into `pages` (create/promote/update), `candidates`, and `deferred` (left for a later run). Do not judge the threshold or the cap yourself
-7. Prepare how `docs/wiki/_candidates.md` changes. `candidates` go under the 単発 section and `deferred` under the 昇格待ち section, and the line of a pattern that became a page is removed. A line takes the form `- <one-line content> <evidence>`, with `#number` and `(research)` listed space-separated. When the line is already there, add only the evidence. The write happens inside Phase 6's worktree
+7. Prepare how `docs/wiki/_candidates.md` changes. `candidates` go under the 単発 section and `deferred` under the 昇格待ち section, and the line of a pattern that became a page is removed. A line takes the form `- <one-line content> <evidence>`, with `#number` and `[research:name.md](../research/name.md)` listed space-separated. When the line is already there, add only the evidence. The write happens inside Phase 6's worktree
+
+Use `[research:name.md](../research/name.md)` for an identified original. Link to the existing legacy location when it has not moved. Triage counts old/new paths and label variants of one original once. When an unresolved `(research)` coexists with identified research on a pattern, it adds no independent source because independence is unknown. Verify mappings from content, version, and migration records; moving or copying a report is not another occurrence.
 
 | Field      | Value                                                                                                           |
 | ---------- | --------------------------------------------------------------------------------------------------------------- |
 | `name`     | The key deciding whether two patterns are the same. One from a candidate line carries that line's body verbatim |
-| `evidence` | The array of evidence. `#number` from a PR/issue, `(research)` from a research file                             |
+| `evidence` | Evidence array: `#number` for PR/issue, Markdown relative links for research originals. Retain unresolved legacy `(research)` markers |
 | `existing` | `page` when it sits on an existing page, `candidate` when in `_candidates.md`, else `none`                      |
 
 ## Phase 4: Cross-check against the latest code
@@ -76,6 +86,8 @@ For a page being created, promoted, or updated, write the DR file path in its �
 In addition, inspect the 由来 links of every page, including existing pages. Verify the DR file exists and check its status; if superseded, read the successor DR. Settle the relink target as the successor when the pattern still holds, and settle the wording that marks it as no longer holding when it does not. Here too, the write happens inside Phase 6's worktree。
 
 ## Phase 6: PR creation
+
+Before publication, confirm every linked original exists with the same content on the shared base or in this change under existing authorization. Do not automatically add untracked or unapproved originals. Hold publication that depends on a missing original and report the needed sharing check and operation.
 
 Move only the pages in Phase 3's `pages`, and state `deferred` in the PR body as what was left. Reference repairs, 由来 repairs, and the structure-page rewrites Phase 4 step 4 settled sit outside the cap, so run them even when `pages` is empty. Create a PR even for candidate-only additions, and skip the PR only when there is no change at all.
 

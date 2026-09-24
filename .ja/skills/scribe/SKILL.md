@@ -1,8 +1,8 @@
 ---
 name: scribe
-description: 過去の closed PR / issue と .claude/workspace/research/ の調査結果から繰り返しの共通項を抽出し、最新コードと突き合わせて docs/wiki/ に PR で提案する。
+description: 過去の closed PR / issue と対象 repo の docs/research/ の調査結果から繰り返しの共通項を抽出し、最新コードと突き合わせて docs/wiki/ に PR で提案する。
 when_to_use: scribe 実行, wiki 抽出, 共通項の蒸留, PR/issue からの知見蓄積, research 成果の蓄積, run scribe, wiki extraction, distill recurring patterns
-allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Read Write Edit LS
+allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../research/scripts/*) Read Write Edit LS
 ---
 
 # /scribe - PR / issue / research 共通項の wiki 蓄積
@@ -17,7 +17,7 @@ allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scri
 | 進捗の記録          | cursor は最後にマージされた scribe PR の mergedAt。research ファイルはその mergedAt と最終コミット時刻を比べる                               |
 | 閾値の所在          | ページにするか候補に置くかの判定は `scripts/triage.ts` が持ち、この skill は判定しない                                                       |
 | 事実のみ            | PR / issue と research ファイルに書かれた事実、および現在のコードで確認できた事実のみ書く。推測で埋めない                                    |
-| research は引かない | `.claude/workspace/research/` のファイルパスを `docs/wiki/` 配下に書かない。wiki は蒸留した共通項を置く場所で、パスは読者を原資料へ送り返す  |
+| 原本の識別 | research の根拠は原本への相対リンクで特定する。旧 `(research)` の原本が不明なら保持し、推測で対応付けない |
 | worktree 隔離       | 編集 / commit は隔離 worktree 内で行い、ユーザーの作業ツリーを動かさない。worktree を作るのは Phase 6 なので、書き込む Phase は Phase 6 だけ |
 
 ## Phase 1: 前提確認とオンボーディング
@@ -30,8 +30,16 @@ allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scri
 ## Phase 2: スコープ決定
 
 1. 最後にマージされた scribe PR の mergedAt を `gh pr list --label scribe --state merged --limit 1 --json mergedAt -q '.[0].mergedAt'` で取得する
-2. mergedAt が取れなければ初回。`gh pr list --state merged --search '-label:scribe'` と `gh issue list --state closed` の全件、および `find .claude/workspace/research -name '*.md'` の全件を対象にする
-3. mergedAt が取れたら差分だけを対象にする。PR は `gh pr list --state merged --search "-label:scribe merged:><mergedAt>"` で集める。issue は `gh issue list --state closed --search "closed:><mergedAt>"` で集める。調査ファイルは `git log --since="<mergedAt>" --name-only --diff-filter=AM --pretty=format: -- '.claude/workspace/research/*.md' | sort -u` で集める。これに未追跡分の `git ls-files --others --exclude-standard -- '.claude/workspace/research/*.md'` を加える。未コミットのレポートは git log に載らず、それこそローカル run が持っていやすい 1 件になる
+2. `${CLAUDE_SKILL_DIR}/../research/scripts/find-prior-research.ts --all docs/research research .claude/workspace/research` で新旧配置の原本を再帰的に列挙する。対象 repo 内の通常ファイルだけを読む。`path` を読み、root 相対名・原文同一のコピーは `aliases` で 1 件として扱う。同名で内容が違う原本は両方を確認し、版の違いを独立した根拠数にしない。mergedAt が無ければ初回として全原本と `gh pr list --state merged --search '-label:scribe'`、`gh issue list --state closed` の全件を対象にする
+3. mergedAt があれば PR/issue は従来どおり `merged:><mergedAt>`／`closed:><mergedAt>` で絞る。原本は次のコマンドが列挙したパスを対象にする。
+
+   ```sh
+   git log --since="<mergedAt>" --name-only --diff-filter=AM --pretty=format: -- 'docs/research/*.md' 'research/*.md' '.claude/workspace/research/*.md'
+   git ls-files --others --exclude-standard -- 'docs/research/*.md' 'research/*.md' '.claude/workspace/research/*.md'
+   git diff --name-only HEAD -- docs/research research .claude/workspace/research
+   ```
+
+   `aliases` のどれかが該当すれば含める。手動実行は PR/issue が増えていなくても研究を調べる。自動 gate の起動条件は広げない。
 4. research の対象は `*.md` だけとし、他の形式は読まない。cursor には各ファイルの最終コミット時刻を使い、mtime とファイル内の `Generated:` 行は使わない。checkout は内容の変更時期と無関係に mtime を checkout 時刻へ戻すので、mtime では比較の基準にならない。`Generated:` は生成時の日付で、後から追記してもその日付のままなので、更新を取りこぼす
 5. PR/issue/research のいずれも 0 件でも、`docs/wiki/_candidates.md` に根拠 2 件以上の行があれば Phase 3 へ進む。その行も無いときだけ「新規なし」と報告して終了する
 
@@ -43,12 +51,14 @@ allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scri
 4. 読んだ内容を共通項ごとにまとめ、配列へ足す。同じ共通項が配列にあれば根拠だけを足す。設計判断とその経緯は `docs/decisions/` の領分なので対象外
 5. `docs/wiki/_candidates.md` を読み、配列の共通項が既存の候補行と同じものを指すなら、その行の本文をそのまま `name` に使う
 6. その配列を `${CLAUDE_SKILL_DIR}/scripts/triage.ts '<共通項の JSON 配列>' docs/wiki/_candidates.md` に渡す。script が `_candidates.md` の両方の節から候補行を読んで配列へ混ぜ、閾値 2 件と 1 回あたりのページ上限を当て、`pages` (新規/昇格/更新)、`candidates`、`deferred` (今回は見送り) に分ける。閾値と上限を自分で判定しない
-7. `docs/wiki/_candidates.md` を書き換える形を用意する。`candidates` は「単発」節へ、`deferred` は「昇格待ち」節へ置き、`pages` になった共通項の行は消す。行は `- <内容 1 行> <根拠>` の形にし、根拠は `#番号` と `(research)` をスペース区切りで並べる。既に行があれば根拠だけを足す。書き込みは Phase 6 の worktree 内で行う
+7. `docs/wiki/_candidates.md` を書き換える形を用意する。`candidates` は「単発」節へ、`deferred` は「昇格待ち」節へ置き、`pages` になった共通項の行は消す。行は `- <内容 1 行> <根拠>` の形にし、根拠は `#番号` と `[research:name.md](../research/name.md)` をスペース区切りで並べる。既に行があれば根拠だけを足す。書き込みは Phase 6 の worktree 内で行う
+
+研究リンクのラベルは `[research:name.md](../research/name.md)` とする。旧配置だけにある原本は実在する旧配置へリンクする。同じ原本の新旧パスやラベル違いは triage が 1 件にまとめる。旧 `(research)` が識別済み原本と同じ項目に残るときは、別原本と確認できないため追加の 1 件には数えない。原本の特定は現在の内容・版・移行対応で確認し、移動やコピー自体を再発の根拠にしない。
 
 | フィールド | 値                                                                                                            |
 | ---------- | ------------------------------------------------------------------------------------------------------------- |
 | `name`     | 共通項の同一性を決めるキー。候補行から来たものは行の本文がそのまま入る。ページのファイル名は Phase 6 で決める |
-| `evidence` | 根拠の配列。PR/issue 由来は `#番号`、research 由来は `(research)`                                             |
+| `evidence` | 根拠の配列。PR/issue は `#番号`、research は原本への Markdown 相対リンク。旧 `(research)` は不明のまま保持 |
 | `existing` | 既存ページにあれば `page`、`_candidates.md` にあれば `candidate`、無ければ `none`                             |
 
 ## Phase 4: 最新コードとの突き合わせ
@@ -76,6 +86,8 @@ allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scri
 あわせて、既存ページも含めた全ページの由来リンクを点検する。DR ファイルの実在と status を確認し、superseded なら後継 DR を読む。共通項が引き続き成立する場合は由来の張り替え先を後継に決め、成立しない場合は不成立として書き直す内容を決める。ここでも書き込みは Phase 6 で行う。
 
 ## Phase 6: PR 作成
+
+wiki からリンクする原本が共有先の base または今回の許可済み変更に同じ内容で存在するか確認する。未追跡・共有未確認の原本を自動で取り込まない。欠ける原本に依存する公開は保留し、共有確認と必要な操作を報告する。
 
 扱うページは Phase 3 の `pages` に限り、`deferred` は PR 本文に残しとして明記する。参照修理と由来修理、そして Phase 4 手順 4 が決めた構造ページの書き直しは上限の外なので、`pages` が 0 件でも実施する。候補への追記だけでも PR を作り、変更が何も無いときだけ作らない。
 
