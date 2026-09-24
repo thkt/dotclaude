@@ -17,7 +17,7 @@ scenes: []
 
 ## 参照コード
 
-- `settings.json` の `hooks.PostToolUse`（matcher ごとの登録）
+- `settings.json` の `PostToolUse`（hooks 配下の matcher ごとの登録）
 
 ## 根拠
 
