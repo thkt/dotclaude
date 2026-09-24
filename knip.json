@@ -67,7 +67,8 @@
     "skills/**/*.{js,mjs,ts}",
     ".ja/skills/**/*.{js,mjs,ts}",
     "tests/**/*.{js,ts}",
-    "agents/**/*.{js,ts}"
+    "agents/**/*.{js,ts}",
+    "mods/**/*.ts"
   ],
   "ignoreBinaries": ["codex", "markdownlint-cli2", "rumdl", "osascript"],
   "ignoreDependencies": ["oxfmt", "^@?textlint"],
@@ -76,6 +77,8 @@
     "hooks/**/tests/fixtures/**",
     "tests/fixtures/**",
     "agents/**/tests/fixtures/**",
-    "skills/*/test/cases/**"
+    "skills/*/test/cases/**",
+    "mods/*/hooks/register.ts",
+    "mods/*/tests/**"
   ]
 }
