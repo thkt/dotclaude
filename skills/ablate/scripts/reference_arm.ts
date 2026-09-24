@@ -1,0 +1,193 @@
+/// <reference types="node" />
+// Builds the wiped and wiped+1 fixture directories for one skill-reference harness element, and
+// the claude invocation that runs the reviewer agent against that fixture.
+//
+// Mirrors skills/ablate/scripts/arms.ts's arm_command shape: reference_arm_command takes
+// (arm, element) in the same order arm_command does. claude carries no flag to pass a working
+// directory of its own, so the return value is an {argv, cwd} pair rather than argv alone -- the
+// caller launches the child process from cwd instead of passing it on argv.
+//
+// This classification only ever runs two arms, wiped and wiped+1: full-harness runs unmodified
+// with no restricting flag (arms.ts's own arm_command comment), so it needs no fixture built for
+// it at all, and build_reference_fixture refuses any other arm name the same way arm_command's
+// WIPED_PLUS_ONE branch refuses a missing element.
+//
+// Constant and function names stay snake_case, the same convention arms.ts and verdict.ts hold
+// in this same directory.
+import {
+  cpSync,
+  existsSync,
+  globSync,
+  mkdirSync,
+  mkdtempSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, dirname, join } from "node:path";
+import { _frontmatter_lines } from "../../_lib/harness_elements.ts";
+import { WIPED, WIPED_PLUS_ONE } from "./arms.ts";
+
+export interface FixtureCommand {
+  argv: string[];
+  cwd: string;
+}
+
+/** One agent file's resolved identity: its repo-relative path and the skill names its
+ * `skills:` frontmatter lists, in the order that frontmatter lists them. */
+interface ReviewerAgent {
+  path: string;
+  skills: string[];
+}
+
+/** The items of an agent's single-line `skills: [a, b]` frontmatter field, the shape every
+ * file under agents/ holds it in (no multi-line dash list appears there, unlike a skill's own
+ * `paths:` frontmatter, so this reads only that one shape rather than reusing
+ * harness_elements.ts's `_read_array`, which expects JSON-quoted items and would parse none of
+ * these bareword names). Empty when the field is absent or not a bracketed list. */
+function agentSkillNames(lines: string[]): string[] {
+  const fieldLine = lines.find((line) => line.startsWith("skills:"));
+  if (fieldLine === undefined) {
+    return [];
+  }
+  const match = fieldLine
+    .slice("skills:".length)
+    .trim()
+    .match(/^\[(.*)\]$/);
+  if (match === null) {
+    return [];
+  }
+  return match[1]
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+/** The reviewer agent under agents/reviewers/*.md whose `skills:` frontmatter names
+ * `skillName`, plus every skill name that same frontmatter lists. Scoped to agents/reviewers/
+ * rather than every agents/**\/*.md: a skill can also appear in a non-reviewer agent's
+ * `skills:` field (agents/enhancers/enhancer-code.md also names
+ * use-context-reviewer-readability), and this classification runs the reviewer agent, not
+ * whichever agent happens to name the skill first. Throws when no reviewer agent names it,
+ * since a skill-reference element with no reviewer agent naming its skill has nothing for
+ * build_reference_fixture to run as. */
+function findReviewerAgent(skillName: string, root: string): ReviewerAgent {
+  for (const relPath of globSync("agents/reviewers/*.md", { cwd: root }).sort()) {
+    const absPath = join(root, relPath);
+    if (!statSync(absPath).isFile()) {
+      continue;
+    }
+    const lines = _frontmatter_lines(absPath);
+    if (lines === null) {
+      continue;
+    }
+    const skills = agentSkillNames(lines);
+    if (skills.includes(skillName)) {
+      return { path: relPath, skills };
+    }
+  }
+  throw new Error(
+    `no agent under agents/ names skill ${JSON.stringify(skillName)} in its skills: frontmatter`,
+  );
+}
+
+/** Copies one repo-relative file from root into fixtureRoot at the same relative path,
+ * creating the destination's parent directories first. Silently does nothing when the source
+ * is absent or not a regular file, since a named skill's SKILL.md is best-effort context for
+ * the fixture's project-scope discovery, not itself the element under measurement. */
+function copyFileInto(root: string, relPath: string, fixtureRoot: string): void {
+  const source = join(root, relPath);
+  if (!existsSync(source) || !statSync(source).isFile()) {
+    return;
+  }
+  const destination = join(fixtureRoot, relPath);
+  mkdirSync(dirname(destination), { recursive: true });
+  cpSync(source, destination);
+}
+
+/** Copies a skills/<name> directory from root into fixtureRoot at the same relative path,
+ * every regular file included except dotfiles (macOS's .DS_Store and the like, which carry no
+ * prompt content). */
+function copySkillDir(root: string, skillDir: string, fixtureRoot: string): void {
+  cpSync(join(root, skillDir), join(fixtureRoot, skillDir), {
+    recursive: true,
+    filter: (source) => !basename(source).startsWith("."),
+  });
+}
+
+/** The element's own skill directory (skills/<name>) and skill name, read off the element's
+ * skills/<name>/references/<file>.md shape (the one shape classify() resolves to
+ * skill-reference, harness_elements.ts's `_is_skill_reference`). */
+function ownSkill(element: string): { dir: string; name: string } {
+  const dir = dirname(dirname(element));
+  return { dir, name: basename(dir) };
+}
+
+// The headless invocation this arm starts from: --print for non-interactive mode and
+// --output-format stream-json for a parseable event stream rather than a single JSON blob
+// (verified against https://docs.claude.com/en/docs/claude-code/cli-reference), reused instead
+// of hand-copying the two flags at every call site.
+export const BASE_COMMAND: readonly string[] = [
+  "claude",
+  "--print",
+  "--output-format",
+  "stream-json",
+];
+
+/** Builds the fixture directory for one arm and one skill-reference element, returning its
+ * absolute path.
+ *
+ * wiped holds every file of the element's own skill unchanged except the target reference,
+ * which is emptied. wiped+1 holds the same tree with the target reference at its original
+ * content. Both arms also hold the reviewer agent whose `skills:` frontmatter names the
+ * element's own skill, and every skill that frontmatter names in turn, so the fixture's
+ * project-scope discovery can resolve that agent the same way it would inside the real
+ * repository -- the element's own skill in full (its SKILL.md and every references/ page,
+ * since the element itself lives inside that tree), and each other named skill by its
+ * SKILL.md, the file project-scope discovery reads to resolve a skill's existence. */
+export function build_reference_fixture(arm: string, element: string, root: string): string {
+  if (arm !== WIPED && arm !== WIPED_PLUS_ONE) {
+    throw new Error(
+      `reference arm classification only supports ${JSON.stringify(WIPED)} and ` +
+        `${JSON.stringify(WIPED_PLUS_ONE)}, got ${JSON.stringify(arm)}`,
+    );
+  }
+
+  const { dir: ownSkillDir, name: ownSkillName } = ownSkill(element);
+  const agent = findReviewerAgent(ownSkillName, root);
+
+  const fixtureRoot = mkdtempSync(join(tmpdir(), "reference-arm-"));
+
+  copySkillDir(root, ownSkillDir, fixtureRoot);
+  for (const skillName of agent.skills) {
+    if (skillName === ownSkillName) {
+      continue;
+    }
+    copyFileInto(root, join("skills", skillName, "SKILL.md"), fixtureRoot);
+  }
+  copyFileInto(root, agent.path, fixtureRoot);
+
+  if (arm === WIPED) {
+    writeFileSync(join(fixtureRoot, element), "");
+  }
+
+  return fixtureRoot;
+}
+
+/** The claude invocation for one arm and one skill-reference element: BASE_COMMAND restricted
+ * to project settings, running as the reviewer agent the fixture holds, from that fixture's own
+ * directory as cwd. claude has no flag for a working directory, so this pair replaces the
+ * single argv arm_command returns. */
+export function reference_arm_command(arm: string, element: string, root: string): FixtureCommand {
+  const cwd = build_reference_fixture(arm, element, root);
+  const { name: ownSkillName } = ownSkill(element);
+  const agent = findReviewerAgent(ownSkillName, root);
+  const argv = [
+    ...BASE_COMMAND,
+    "--setting-sources",
+    "project",
+    "--agent",
+    basename(agent.path, ".md"),
+  ];
+  return { argv, cwd };
+}
