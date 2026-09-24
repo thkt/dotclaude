@@ -59,17 +59,11 @@ test("the feature template carries an optional Accessibility section scoped to U
   for (const [lang, path] of Object.entries(targets)) {
     const doc = readFileSync(path, "utf8");
     assert.match(doc, /^## Accessibility \((optional|任意)\)/m, `${lang}: the optional section`);
-    if (lang === "ja") {
-      assert.match(doc, /UI に触れる issue のみ/, "ja: the UI-only condition");
-      assert.match(doc, /操作系と満たす基準/, "ja: the intent of input modes plus criteria");
-    } else {
-      assert.match(doc, /UI-touching issues only/, "en: the UI-only condition");
-      assert.match(
-        doc,
-        /input modes and the criteria/,
-        "en: the intent of input modes plus criteria",
-      );
-    }
+    const checks = [
+      ["the UI-only condition", /UI に触れる issue のみ/, /UI-touching issues only/],
+      ["the intent of input modes plus criteria", /操作系と満たす基準/, /input modes and the criteria/],
+    ];
+    for (const [what, ja, en] of checks) assert.match(doc, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
@@ -144,19 +138,13 @@ test("each language's duplication-match.md lists the three overlapping pairs and
 });
 
 test("each language's duplication-match.md states the reference runs from the body to the Plan", () => {
-  const expected = {
-    ja: [
-      [/参照は本文から `## Plan` へ向ける/, "the direction of the reference"],
-      [/plan を独立したファイルへ書き出した後で、本文の節が作られる/, "why the direction is fixed"],
-    ],
-    en: [
-      [/reference runs from the body to `## Plan`/i, "the direction of the reference"],
-      [/sections come into existence after it/i, "why the direction is fixed"],
-    ],
-  };
+  const checks = [
+    ["the direction of the reference", /参照は本文から `## Plan` へ向ける/, /reference runs from the body to `## Plan`/i],
+    ["why the direction is fixed", /plan を独立したファイルへ書き出した後で、本文の節が作られる/, /sections come into existence after it/i],
+  ];
   for (const [lang, path] of Object.entries(matchRefs)) {
     const matchRef = readFileSync(path, "utf8");
-    for (const [pattern, what] of expected[lang]) assert.match(matchRef, pattern, `${lang}: ${what}`);
+    for (const [what, ja, en] of checks) assert.match(matchRef, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
@@ -181,59 +169,35 @@ test("in each language's SKILL.md the match sits as Phase 2's last step", () => 
 });
 
 test("each language's duplication-match.md states the duplicated body side is replaced with a reference to `## Plan`", () => {
-  const expected = {
-    ja: [
-      [/## Plan[\s\S]{0,20}参照/, "replacement with a reference to the Plan"],
-      [/見出しが何を変更するかを述べる 1 行/, "the rule of leaving one line per heading"],
-    ],
-    en: [
-      [/## Plan[\s\S]{0,20}reference/i, "replacement with a reference to the Plan"],
-      [/one line that states what change/i, "the rule of leaving one line per heading"],
-    ],
-  };
+  const checks = [
+    ["replacement with a reference to the Plan", /## Plan[\s\S]{0,20}参照/, /## Plan[\s\S]{0,20}reference/i],
+    ["the rule of leaving one line per heading", /見出しが何を変更するかを述べる 1 行/, /one line that states what change/i],
+  ];
   for (const [lang, path] of Object.entries(matchRefs)) {
     const matchRef = readFileSync(path, "utf8");
-    for (const [pattern, what] of expected[lang]) assert.match(matchRef, pattern, `${lang}: ${what}`);
+    for (const [what, ja, en] of checks) assert.match(matchRef, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
 test("each language's duplication-match.md states that on a conflict the plan is authoritative and the body is fixed", () => {
-  const expected = {
-    ja: [
-      [/食い違う/, "the mention of a conflict"],
-      [/plan を正として/, "the policy of taking the plan as authoritative"],
-    ],
-    en: [
-      [/conflict/i, "the mention of a conflict"],
-      [
-        /plan[\s\S]{0,20}(is authoritative|as authoritative|as the source of truth)/i,
-        "the policy of taking the plan as authoritative",
-      ],
-    ],
-  };
+  const checks = [
+    ["the mention of a conflict", /食い違う/, /conflict/i],
+    ["the policy of taking the plan as authoritative", /plan を正として/, /plan[\s\S]{0,20}(is authoritative|as authoritative|as the source of truth)/i],
+  ];
   for (const [lang, path] of Object.entries(matchRefs)) {
     const matchRef = readFileSync(path, "utf8");
-    for (const [pattern, what] of expected[lang]) assert.match(matchRef, pattern, `${lang}: ${what}`);
+    for (const [what, ja, en] of checks) assert.match(matchRef, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
 test("each language's SKILL.md states the match is skipped when there is no plan draft", () => {
-  const expected = {
-    ja: [
-      [/plan 下書きがなければ/, "the mention of having no plan draft"],
-      [/この照合は省略する/, "the mention of skipping the match"],
-    ],
-    en: [
-      [
-        /no plan draft|plan draft[\s\S]{0,10}absent|without (a plan draft|one)/i,
-        "the mention of having no plan draft",
-      ],
-      [/skip[\s\S]{0,20}match|omit[\s\S]{0,20}match/i, "the mention of skipping the match"],
-    ],
-  };
+  const checks = [
+    ["the mention of having no plan draft", /plan 下書きがなければ/, /no plan draft|plan draft[\s\S]{0,10}absent|without (a plan draft|one)/i],
+    ["the mention of skipping the match", /この照合は省略する/, /skip[\s\S]{0,20}match|omit[\s\S]{0,20}match/i],
+  ];
   for (const [lang, path] of Object.entries(skills)) {
     const refine = phase2(readFileSync(path, "utf8"));
-    for (const [pattern, what] of expected[lang]) assert.match(refine, pattern, `${lang}: ${what}`);
+    for (const [what, ja, en] of checks) assert.match(refine, lang === "ja" ? ja : en, `${lang}: ${what}`);
   }
 });
 
