@@ -1,0 +1,4 @@
+{
+  "description": "Read に掛けた tool.call hook が、結果がモデルに届く前に、ファイル内容中の認証情報の形をした文字列を [REDACTED:<kind>] に置き換える",
+  "modules": ["./register.ts"]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "thkt-mods",
+  "owner": {
+    "name": "thkt",
+    "url": "https://github.com/thkt"
+  },
+  "metadata": {
+    "description": "このマシンの Claude Code 専用の mod。パスで登録する。リポジトリ root にある配布用の build marketplace とは別物。"
+  },
+  "plugins": [
+    {
+      "name": "redact",
+      "source": "./redact",
+      "description": "Read ツールの結果に含まれる認証情報の形をした文字列を、モデルが読む前に伏せる。"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "thkt-mods",
+  "owner": {
+    "name": "thkt",
+    "url": "https://github.com/thkt"
+  },
+  "metadata": {
+    "description": "Local-only mods for this machine's Claude Code. Registered by path; not the distributed build marketplace at the repository root."
+  },
+  "plugins": [
+    {
+      "name": "redact",
+      "source": "./redact",
+      "description": "Masks credential-shaped strings in a Read tool result before the model reads it."
+    }
+  ]
+}

@@ -11,8 +11,17 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true
   },
-  "include": ["hooks/**/*.ts", "skills/**/*.ts", "workflows/**/*.ts", "tests/**/*.ts", "agents/**/*.ts"],
+  "include": [
+    "hooks/**/*.ts",
+    "skills/**/*.ts",
+    "workflows/**/*.ts",
+    "tests/**/*.ts",
+    "agents/**/*.ts",
+    "mods/**/*.ts"
+  ],
   // exclude はここが正本ではなく .oxlintrc.json の ignorePatterns 内
   // "skills/*/test/cases/**" の写し。正本を編集したらここも合わせて直す。
-  "exclude": ["skills/*/test/cases/**"]
+  // mods/*/hooks/register.ts と mods/*/tests/ は 'claude-code' の型を import する。その宣言は
+  // /plugin-types が各マシンの .claude/types/ に書き出すもので、CI には無い。
+  "exclude": ["skills/*/test/cases/**", "mods/*/hooks/register.ts", "mods/*/tests/**"]
 }
