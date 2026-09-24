@@ -2,7 +2,7 @@
 name: pr
 description: ブランチ変更を分析し、draft の pull request を作成する。base ブランチは分岐元から検出し、本文は prose review で精査してから上げる。UI 変更があればスクリーンショットを撮って PR に添付する。
 when_to_use: PR作って, プルリクエスト, pull request, PR作成
-allowed-tools: Bash(git:*) Bash(gh:*) Bash(cat:*) Read Skill
+allowed-tools: Bash(git:*) Bash(gh:*) Bash(cat:*) Bash(node:*) Read Skill AskUserQuestion
 model: opus
 argument-hint: "[issue reference or context]"
 ---
@@ -36,6 +36,7 @@ commit なし、Git リポジトリでない、gh 認証失敗のいずれかを
 2. `git push -u origin HEAD` で現在ブランチを push する
 3. 本文を一時ファイルに書き出し、`gh pr create --draft --title "<title>" --body-file <path>` で PR を作成する (§ 作成の制約)。pageshot 成果物があれば § Pageshot 統合の `--attach` を足す
 4. 成功時は `Created draft PR: #<number> <title> (base: <base>) <PR URL>` を出す。添付の失敗は § 作成の制約に従う
+5. prompt log を render し check した上で、添付を確認する (§ Prompt Log 統合)
 
 ## 分析ソース
 
@@ -92,3 +93,7 @@ pageshot 成果物は本文へ手書きせず `--attach` で渡す。gh が uplo
 - `mode=screenshot artifact=<path>` `gh pr create` に `--attach "<path>#<title>"` を足す。`#` の後ろが alt text になり、PR タイトルを使う
 - `mode=video artifact=<path>` `gh pr create` に `--attach "<path>"` を足す。動画は alt text を持たない
 - `mode=failed` 欠落項目を報告し、pageshot をスキップして PR 作成を続行
+
+## Prompt Log 統合
+
+`$CLAUDE_SESSION_ID` の transcript に対して `node skills/pr/scripts/prompt-log.ts render` と `check` を実行し、AskUserQuestion で添付を確認してから結果で分岐する。手順、`--since` の値、各分岐: ${CLAUDE_SKILL_DIR}/references/prompt-log.md。

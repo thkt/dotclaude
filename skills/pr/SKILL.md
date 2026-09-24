@@ -2,7 +2,7 @@
 name: pr
 description: Analyzes branch changes and opens a draft pull request. Detects the base branch from where this one was cut, refines the body through a prose review before it goes up, and captures a screenshot and attaches it to the PR when the change touches the UI.
 when_to_use: PR作って, プルリクエスト, pull request, PR作成
-allowed-tools: Bash(git:*) Bash(gh:*) Bash(cat:*) Read Skill
+allowed-tools: Bash(git:*) Bash(gh:*) Bash(cat:*) Bash(node:*) Read Skill AskUserQuestion
 model: opus
 argument-hint: "[issue reference or context]"
 ---
@@ -36,6 +36,7 @@ If there are no commits, the directory is not a git repository, or gh auth fails
 2. Push the current branch with `git push -u origin HEAD`
 3. Write the body to a temp file and create the PR with `gh pr create --draft --title "<title>" --body-file <path>` (§ Creation Constraints). If a pageshot artifact exists, add the `--attach` from § Pageshot Integration
 4. On success, display `Created draft PR: #<number> <title> (base: <base>) <PR URL>`. A failed attachment follows § Creation Constraints
+5. Render and check the prompt log, then confirm attaching it (§ Prompt Log Integration)
 
 ## Analysis Sources
 
@@ -92,3 +93,7 @@ Call `Skill("use-workflow-pageshot")` with the current PR body string as input. 
 - `mode=screenshot artifact=<path>` add `--attach "<path>#<title>"` to `gh pr create`. The text after `#` becomes the alt text, and the PR title is used
 - `mode=video artifact=<path>` add `--attach "<path>"` to `gh pr create`. Video carries no alt text
 - `mode=failed` report missing items, skip pageshot, and continue PR creation
+
+## Prompt Log Integration
+
+Run `node skills/pr/scripts/prompt-log.ts render` and `check` on `$CLAUDE_SESSION_ID`'s transcript, confirm the attachment through AskUserQuestion, and branch on the result. Procedure, the `--since` value, and each branch: ${CLAUDE_SKILL_DIR}/references/prompt-log.md.
