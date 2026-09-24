@@ -39,10 +39,22 @@ test("the mode tokens pr branches on are the ones pageshot emits", () => {
 test("the create step attaches the pageshot artifact through gh --attach", () => {
   for (const lang of LANGS) {
     const doc = skill(lang);
-    assert.match(doc, /--attach "<path>#<title>"/, `${lang}: the screenshot branch passes the artifact and alt text`);
-    assert.match(doc, /--attach "<path>"/, `${lang}: the video branch passes the artifact without alt text`);
+    assert.match(
+      doc,
+      /--attach "<path>#<title>"/,
+      `${lang}: the screenshot branch passes the artifact and alt text`,
+    );
+    assert.match(
+      doc,
+      /--attach "<path>"/,
+      `${lang}: the video branch passes the artifact without alt text`,
+    );
     assert.doesNotMatch(doc, /drag|ドラッグ/, `${lang}: no manual upload instruction remains`);
-    assert.doesNotMatch(pageshot(lang), /manual|手動/, `${lang}: pageshot no longer hands off to a manual step`);
+    assert.doesNotMatch(
+      pageshot(lang),
+      /manual|手動/,
+      `${lang}: pageshot no longer hands off to a manual step`,
+    );
   }
 });
 
@@ -79,7 +91,11 @@ test("the shared body rules carry the template priority in order", () => {
     found.forEach((idx, i) => {
       assert.ok(idx >= 0, `${lang}: the rules write ${PRIORITY[i]}`);
     });
-    assert.deepEqual(found, [...found].sort((a, b) => a - b), `${lang}: it keeps the order`);
+    assert.deepEqual(
+      found,
+      [...found].sort((a, b) => a - b),
+      `${lang}: it keeps the order`,
+    );
   }
 });
 
@@ -152,12 +168,19 @@ test("base detection reads the reflog and guards the result with an ancestor che
 
 // Nothing asks before the PR goes up. Draft is what stands between an unreviewed body and a PR
 // requesting review, and the base on the result line is the only place the detected branch is
-// shown. Dropping either leaves the run with no signal at all.
+// shown. Dropping either leaves the run with no signal at all. A confirmation after the PR
+// exists, for the optional prompt-log attachment, is a separate step and out of this scope.
 test("the PR goes up as a draft, since nothing confirms before creating it", () => {
   for (const lang of LANGS) {
     const doc = skill(lang);
     assert.match(doc, /gh pr create --draft/, `${lang}: the create step passes --draft`);
-    assert.doesNotMatch(doc, /AskUserQuestion/, `${lang}: no step asks for confirmation`);
+    const bodyStart = doc.indexOf("---", 3) + 3;
+    const beforeCreate = doc.slice(bodyStart, doc.indexOf("gh pr create --draft"));
+    assert.doesNotMatch(
+      beforeCreate,
+      /AskUserQuestion/,
+      `${lang}: no step asks for confirmation before creating the PR`,
+    );
     assert.match(doc, /\(base: <base>\)/, `${lang}: the result line shows the detected base`);
   }
 });
@@ -171,6 +194,10 @@ test("the title rule lives with the shared writing rules, not in build.js", () =
     assert.match(rules, /^## (Title|タイトル)$/m, `${lang}: the rules carry a title section`);
     assert.match(rules, /feat:/, `${lang}: it names the prefix to strip`);
     const ship = read(at(lang, "workflows", "build.js"));
-    assert.doesNotMatch(ship, /Conventional Commits subject/, `${lang}: build.js states no title rule`);
+    assert.doesNotMatch(
+      ship,
+      /Conventional Commits subject/,
+      `${lang}: build.js states no title rule`,
+    );
   }
 });
