@@ -17,13 +17,17 @@
 // 手書きでパースする方が、そのために依存を増やすより小さく収まる
 // (rules/PRINCIPLES.md Reuse Ordering)。
 import { globSync, readFileSync, statSync } from "node:fs";
-import { extname, join, sep } from "node:path";
+import { dirname, extname, join, sep } from "node:path";
 import { isMainModule } from "../../workflows/_lib/entry-point.ts";
 import { pythonJsonStringify } from "./python_json.ts";
 
 export const ALWAYS_LOADED = "always-loaded";
 export const PATH_TRIGGERED = "path-triggered";
 export const GLOB_TRIGGERED = "glob-triggered";
+// 隣の SKILL.md が ${CLAUDE_SKILL_DIR}/references/<file> というパスで名指しする
+// skills/<name>/references/<file>.md ページ -- skill が読み込むことで取り込まれる
+// プロンプト内容。
+export const SKILL_REFERENCE = "skill-reference";
 export const NON_PROMPT = "non-prompt";
 
 // 集団の供給リスト。プローズの契約ではなくスクリプトの定数として持つ
@@ -133,11 +137,39 @@ export function _read_array(lines: string[], key: string): string[] {
   return [];
 }
 
+/** `path` が skills/<name>/references/<file>.md ページであり、隣の skills/<name>/SKILL.md が
+ * それを `${CLAUDE_SKILL_DIR}/references/<file>` というテキストそのままで名指ししているか
+ * どうか (rules/conventions/SKILLS.md の参照表記)。references/ ページが誰にも読み込まれない
+ * 死重ではなく、取り込まれるプロンプト内容として数えられる唯一の形。 */
+function _is_skill_reference(path: string): boolean {
+  const referencesDir = dirname(path);
+  if (referencesDir.split(sep).pop() !== "references") {
+    return false;
+  }
+  const skillDir = dirname(referencesDir);
+  if (dirname(skillDir).split(sep).pop() !== "skills") {
+    return false;
+  }
+  const skillMdPath = join(skillDir, "SKILL.md");
+  let skillMdText: string;
+  try {
+    if (!statSync(skillMdPath).isFile()) {
+      return false;
+    }
+    skillMdText = readFileSync(skillMdPath, "utf8");
+  } catch {
+    return false;
+  }
+  const fileName = path.split(sep).pop() as string;
+  return skillMdText.includes(`\${CLAUDE_SKILL_DIR}/references/${fileName}`);
+}
+
 /** ハーネスファイルを 1 件分類する。上から下へ読み、最初に一致した規則を採る
  * (skills/census/SKILL.md Phase 4 の表と同じ形): .md でないファイルは常に non-prompt。
  * rules/**\/*.md ファイル (またはルートの CLAUDE.md) は frontmatter を持たなければ
  * always-loaded、非空の `paths` キーを持てば path-triggered。docs/wiki/**\/*.md ページは
- * 非空の `globs` キーを持てば glob-triggered。集団が持ちうるそれ以外
+ * 非空の `globs` キーを持てば glob-triggered。隣の SKILL.md がパスで名指しする
+ * skills/<name>/references/<file>.md ページは skill-reference。集団が持ちうるそれ以外
  * (名前で呼ばれる SKILL.md、spawn 時にだけ読み込まれるレビュアー定義、プロースとして
  * 注入されず実行されるスクリプト) はすべて non-prompt。 */
 export function classify(path: string): string {
@@ -164,6 +196,10 @@ export function classify(path: string): string {
       return GLOB_TRIGGERED;
     }
     return NON_PROMPT;
+  }
+
+  if (_is_skill_reference(path)) {
+    return SKILL_REFERENCE;
   }
 
   return NON_PROMPT;

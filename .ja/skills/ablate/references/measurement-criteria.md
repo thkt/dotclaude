@@ -18,28 +18,33 @@ Phase 2 が各要素の観測を組む際と、`${CLAUDE_SKILL_DIR}/scripts/verd
 を発火させる。`path-triggered` は `paths:` frontmatter に自身の条件を既に持ち、下表のタスクは
 その条件が一致する具体的なファイルの形を 1 つ挙げる。
 
-| 規則                                     | 分類            | 起動タスク ID        | タスク                                                                                        |
-| ------------------------------------------ | --------------- | ------------------- | ------------------------------------------------------------------------------------------------- |
-| `CLAUDE.md`                                | always-loaded   | `T-scope-choice`    | 開始前にツール・構造・スコープ・プロセスのいずれかを選ぶ必要があるタスク                     |
-| `rules/PRINCIPLES.md`                      | always-loaded   | `T-reuse-check`     | 既存のヘルパー・util・パターンがコードベースに既にあり、それが要件を満たす実装タスク         |
-| `rules/conventions/MIRROR.md`              | always-loaded   | `T-ja-mirror`       | `.ja/` 配下のファイルを編集し、同一の変更で英語ミラーを更新する                              |
-| `rules/conventions/PROSE.md`               | always-loaded   | `T-vague-prose`     | correct や normal のような曖昧な語を含む文を、LLM 向けファイルで書く、または直す              |
-| `rules/core/BOUNDARIES.md`                 | always-loaded   | `T-enhance-early`   | 基本の経路が動くと確認する前に、エラー処理や性能対応を加える                                  |
-| `rules/core/OPERATION.md`                  | always-loaded   | `T-sandbox-op`      | 一時ファイルを書く、バックグラウンドで動く、または sandbox が制限するパスに触れる bash コマンド |
-| `rules/core/OUTCOME.md`                    | always-loaded   | `T-outcome-write`   | あるリポジトリの `.claude/OUTCOME.md` を新規作成、または更新する                             |
-| `rules/core/PREFLIGHT.md`                  | always-loaded   | `T-impl-scope`      | 既存コードへの実装スコープの変更で、2 ファイル以上に及ぶもの                                  |
-| `rules/development/TOOLS.md`               | always-loaded   | `T-search-choice`   | 文字列検索と構造検索のどちらを選ぶか一意に決まらないコード探索タスク                          |
-| `rules/conventions/DOCUMENTS.md`           | path-triggered  | `T-doc-routing`     | 新しい指示を `rules/`・`docs/decisions/`・`CLAUDE.md`・`docs/wiki/` のどこに置くか決める      |
-| `rules/conventions/MARKDOWN.md`            | path-triggered  | `T-md-prose`        | LLM 向け、または人間向けのパス配下で Markdown の文を書く、または編集する                      |
-| `rules/conventions/PLUGIN.md`              | path-triggered  | `T-plugin-edit`     | `.claude-plugin/` 配下のプラグインマニフェストを編集する                                      |
-| `rules/conventions/SKILL_REFACTOR.md`      | path-triggered  | `T-skill-refactor`  | 既存の skill を規約に沿わせ直す                                                                |
-| `rules/conventions/SKILLS.md`              | path-triggered  | `T-skill-author`    | `skills/` 配下に新しい skill を書き起こす                                                      |
-| `rules/conventions/SUBAGENT.md`            | path-triggered  | `T-agent-author`    | `agents/` 配下の subagent 定義を書き起こす、または編集する                                     |
-| `rules/conventions/WORKFLOWS.md`           | path-triggered  | `T-workflow-author` | `workflows/` 配下のワークフロースクリプトを書き起こす、または編集する                          |
-| `rules/development/E2E.md`                 | path-triggered  | `T-e2e-spec`        | E2E / Playwright の spec を書く、または編集する                                                |
-| `rules/development/SOURCING.md`            | path-triggered  | `T-api-source`      | 対象言語でフレームワークやライブラリの API を呼ぶソースコードを書く                            |
-| `rules/development/TESTING.md`             | path-triggered  | `T-test-edit`       | 変わった振る舞いに対して、対象言語のテストファイルを追加、または編集する                        |
-| `rules/development/TIDYINGS.md`            | path-triggered  | `T-cleanup-pass`    | 本タスクの後、コミットの前に、編集したファイルへ加える片付けの一手                             |
+| 規則                                                                       | 分類            | 起動タスク ID       | タスク                                                                                                         |
+| -------------------------------------------------------------------------- | --------------- | ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                                                                | always-loaded   | `T-scope-choice`    | 開始前にツール・構造・スコープ・プロセスのいずれかを選ぶ必要があるタスク                                       |
+| `rules/PRINCIPLES.md`                                                      | always-loaded   | `T-reuse-check`     | 既存のヘルパー・util・パターンがコードベースに既にあり、それが要件を満たす実装タスク                           |
+| `rules/conventions/MIRROR.md`                                              | always-loaded   | `T-ja-mirror`       | `.ja/` 配下のファイルを編集し、同一の変更で英語ミラーを更新する                                                |
+| `rules/conventions/PROSE.md`                                               | always-loaded   | `T-vague-prose`     | correct や normal のような曖昧な語を含む文を、LLM 向けファイルで書く、または直す                               |
+| `rules/core/BOUNDARIES.md`                                                 | always-loaded   | `T-enhance-early`   | 基本の経路が動くと確認する前に、エラー処理や性能対応を加える                                                   |
+| `rules/core/OPERATION.md`                                                  | always-loaded   | `T-sandbox-op`      | 一時ファイルを書く、バックグラウンドで動く、または sandbox が制限するパスに触れる bash コマンド                |
+| `rules/core/OUTCOME.md`                                                    | always-loaded   | `T-outcome-write`   | あるリポジトリの `.claude/OUTCOME.md` を新規作成、または更新する                                               |
+| `rules/core/PREFLIGHT.md`                                                  | always-loaded   | `T-impl-scope`      | 既存コードへの実装スコープの変更で、2 ファイル以上に及ぶもの                                                   |
+| `rules/development/TOOLS.md`                                               | always-loaded   | `T-search-choice`   | 文字列検索と構造検索のどちらを選ぶか一意に決まらないコード探索タスク                                           |
+| `rules/conventions/DOCUMENTS.md`                                           | path-triggered  | `T-doc-routing`     | 新しい指示を `rules/`・`docs/decisions/`・`CLAUDE.md`・`docs/wiki/` のどこに置くか決める                       |
+| `rules/conventions/MARKDOWN.md`                                            | path-triggered  | `T-md-prose`        | LLM 向け、または人間向けのパス配下で Markdown の文を書く、または編集する                                       |
+| `rules/conventions/PLUGIN.md`                                              | path-triggered  | `T-plugin-edit`     | `.claude-plugin/` 配下のプラグインマニフェストを編集する                                                       |
+| `rules/conventions/SKILL_REFACTOR.md`                                      | path-triggered  | `T-skill-refactor`  | 既存の skill を規約に沿わせ直す                                                                                |
+| `rules/conventions/SKILLS.md`                                              | path-triggered  | `T-skill-author`    | `skills/` 配下に新しい skill を書き起こす                                                                      |
+| `rules/conventions/SUBAGENT.md`                                            | path-triggered  | `T-agent-author`    | `agents/` 配下の subagent 定義を書き起こす、または編集する                                                     |
+| `rules/conventions/WORKFLOWS.md`                                           | path-triggered  | `T-workflow-author` | `workflows/` 配下のワークフロースクリプトを書き起こす、または編集する                                          |
+| `rules/development/E2E.md`                                                 | path-triggered  | `T-e2e-spec`        | E2E / Playwright の spec を書く、または編集する                                                                |
+| `rules/development/SOURCING.md`                                            | path-triggered  | `T-api-source`      | 対象言語でフレームワークやライブラリの API を呼ぶソースコードを書く                                            |
+| `rules/development/TESTING.md`                                             | path-triggered  | `T-test-edit`       | 変わった振る舞いに対して、対象言語のテストファイルを追加、または編集する                                       |
+| `rules/development/TIDYINGS.md`                                            | path-triggered  | `T-cleanup-pass`    | 本タスクの後、コミットの前に、編集したファイルへ加える片付けの一手                                             |
+| `skills/use-context-reviewer-readability/references/ai-antipatterns.md`    | skill-reference | `T-strategy-static` | 実行時に分岐が変わらない計算処理を、Strategy interface と複数の実装クラスで切り替えるコードをレビューする      |
+| `skills/use-context-reviewer-readability/references/control-flow.md`       | skill-reference | `T-branch-lookup`   | 1 つの離散値で分岐する `if (code === ...) return ...` を 6 個以上連ねたコードをレビューする                    |
+| `skills/use-context-reviewer-testability/references/pure-functions.md`     | skill-reference | `T-inplace-mutate`  | `cart.push(item)` のように、配列やオブジェクトの引数を新しい値を返す代わりにその場で変更する関数をレビューする |
+| `skills/use-context-root-cause-analysis/references/hypothesis-examples.md` | skill-reference | `T-two-hypotheses`  | ブレインストーミングで仮説が 2 つしか残らず、3 つ目を生む diff がまだ絞り込めていないバグの根本原因を調べる    |
+| `skills/use-context-reviewer-silence/references/detection-patterns.md`     | skill-reference | `T-fire-forget`     | `fetchData()` のような非同期関数を `await` も `.then()` も `.catch()` も付けずに呼ぶコードをレビューする       |
 
 ## `complies` と `restored_complies` が指すもの
 

@@ -17,13 +17,17 @@
 // line, `paths:` followed by `  - "..."` lines) are narrow enough that hand-parsing the two
 // shapes stays smaller than adding a dependency for them (rules/PRINCIPLES.md Reuse Ordering).
 import { globSync, readFileSync, statSync } from "node:fs";
-import { extname, join, sep } from "node:path";
+import { dirname, extname, join, sep } from "node:path";
 import { isMainModule } from "../../workflows/_lib/entry-point.ts";
 import { pythonJsonStringify } from "./python_json.ts";
 
 export const ALWAYS_LOADED = "always-loaded";
 export const PATH_TRIGGERED = "path-triggered";
 export const GLOB_TRIGGERED = "glob-triggered";
+// A skills/<name>/references/<file>.md page that the sibling skills/<name>/SKILL.md names by
+// its ${CLAUDE_SKILL_DIR}/references/<file> path -- prompt content pulled in when the skill
+// reads it.
+export const SKILL_REFERENCE = "skill-reference";
 export const NON_PROMPT = "non-prompt";
 
 // The population's supply list, held as a script constant rather than a prose contract
@@ -133,11 +137,39 @@ export function _read_array(lines: string[], key: string): string[] {
   return [];
 }
 
+/** Whether `path` is a skills/<name>/references/<file>.md page whose sibling
+ * skills/<name>/SKILL.md names it by its exact `${CLAUDE_SKILL_DIR}/references/<file>` text
+ * (rules/conventions/SKILLS.md's reference notation) -- the one shape a references/ page
+ * counts as pulled-in prompt content rather than dead weight nothing loads. */
+function _is_skill_reference(path: string): boolean {
+  const referencesDir = dirname(path);
+  if (referencesDir.split(sep).pop() !== "references") {
+    return false;
+  }
+  const skillDir = dirname(referencesDir);
+  if (dirname(skillDir).split(sep).pop() !== "skills") {
+    return false;
+  }
+  const skillMdPath = join(skillDir, "SKILL.md");
+  let skillMdText: string;
+  try {
+    if (!statSync(skillMdPath).isFile()) {
+      return false;
+    }
+    skillMdText = readFileSync(skillMdPath, "utf8");
+  } catch {
+    return false;
+  }
+  const fileName = path.split(sep).pop() as string;
+  return skillMdText.includes(`\${CLAUDE_SKILL_DIR}/references/${fileName}`);
+}
+
 /** Classifies one harness file. Read top to bottom, first match taken
  * (skills/census/SKILL.md Phase 4's table shape): a non-.md file is never prompt
  * content; a rules/**\/*.md file (or the root CLAUDE.md) with no frontmatter is always
  * loaded and one carrying a non-empty `paths` key is path-triggered; a docs/wiki/**\/*.md
- * page with a non-empty `globs` key is glob-triggered. Everything else the population
+ * page with a non-empty `globs` key is glob-triggered; a skills/<name>/references/<file>.md
+ * page its sibling SKILL.md names by path is skill-reference. Everything else the population
  * can hold (a SKILL.md invoked by name, a reviewer definition loaded only when spawned,
  * a script that is executed rather than injected as prose) is non-prompt. */
 export function classify(path: string): string {
@@ -164,6 +196,10 @@ export function classify(path: string): string {
       return GLOB_TRIGGERED;
     }
     return NON_PROMPT;
+  }
+
+  if (_is_skill_reference(path)) {
+    return SKILL_REFERENCE;
   }
 
   return NON_PROMPT;
