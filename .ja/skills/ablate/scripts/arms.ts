@@ -53,9 +53,9 @@ function isSkillReferenceElement(element: string): boolean {
  * 通常の discovery を通して再読み込みするのではなく、element ファイルの中身を CLI に読ませて
  * system prompt に追記する形 (--append-system-prompt-file) で harness element を1つだけ復元する。
  * path は実行時の cwd (リポジトリ root) から解決される。skill-reference な element
- * (skill 自身が既に読み込んでいる skills/<name>/references/<file>.md ページ) は拒否する:
- * --append-system-prompt-file で復元すると、wiped baseline が実際には取り除いていない
- * 内容を二重に読み込むことになり、ablation がその element の効果を切り分けられなくなる。
+ * (SKILL.md が名指しする skills/<name>/references/<file>.md ページ) は拒否する: wiped は
+ * user skill ごとそのページを落とすので、ページだけを戻すと「skill 無し」と「SKILL.md 抜きの
+ * ページ」を比べることになり、skill の中でのそのページの効果について何も言えない。
  * full-harness は制限フラグなしで無改変のまま実行し、上限側の比較対象となる。 */
 export function arm_command(arm: string, element: string | null = null): string[] {
   const command = [...BASE_COMMAND];

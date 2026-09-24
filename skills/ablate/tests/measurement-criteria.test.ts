@@ -80,18 +80,10 @@ function readTriggerTable(): TriggerRow[] {
   return rows;
 }
 
-test("Every element path named in the measurement-criteria trigger table exists in the repository", () => {
+test("T-494 Every element path named in the measurement-criteria trigger table exists in the repository", () => {
   const rows = readTriggerTable();
-  const skillReferenceRows = rows.filter((row) => row.classification === "skill-reference");
-  const namedPaths = new Set(skillReferenceRows.map((row) => row.rule));
-
-  for (const expectedPath of EXAMPLES_BEARING_PATHS) {
-    assert.ok(
-      namedPaths.has(expectedPath),
-      `${expectedPath} is not named as a skill-reference row in the trigger table`,
-    );
-  }
-  for (const row of skillReferenceRows) {
+  assert.ok(rows.length > 0, "the trigger table carries at least one row");
+  for (const row of rows) {
     assert.ok(
       existsSync(join(REPO_ROOT, row.rule)),
       `${row.rule} does not exist in the repository`,
@@ -99,7 +91,7 @@ test("Every element path named in the measurement-criteria trigger table exists 
   }
 });
 
-test("Each of the five Examples-bearing reference files has exactly one trigger task row classified as skill-reference", () => {
+test("T-495 Each of the five Examples-bearing reference files has exactly one trigger task row classified as skill-reference", () => {
   const rows = readTriggerTable();
   for (const path of EXAMPLES_BEARING_PATHS) {
     const matches = rows.filter(

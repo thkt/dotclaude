@@ -53,9 +53,9 @@ function isSkillReferenceElement(element: string): boolean {
  * one harness element by having the CLI read the element file and append its content to the
  * system prompt (--append-system-prompt-file), rather than reloading it through normal
  * discovery. The path resolves against the run's cwd, the repo root. A skill-reference element
- * (a skills/<name>/references/<file>.md page the skill itself already pulls in) is refused:
- * restoring it through --append-system-prompt-file would double-load content the wiped
- * baseline never actually dropped, so the ablation could not isolate that element's effect.
+ * (a skills/<name>/references/<file>.md page its SKILL.md names) is refused: wiped drops the
+ * whole user skill along with it, so restoring the page alone compares no skill against the
+ * page without its SKILL.md, which says nothing about the page's effect inside its skill.
  * full-harness runs unmodified, with no restricting flag, as the upper-bound comparison
  * point. */
 export function arm_command(arm: string, element: string | null = null): string[] {

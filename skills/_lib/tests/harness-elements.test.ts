@@ -86,10 +86,7 @@ test("T-353 a key whose next line does not start with a dash yields an empty lis
   assert.deepEqual(_read_array(["paths:", "not a dash line"], "paths"), []);
 });
 
-// T-491/T-492/T-493 (U-001): the skill-reference branch classify() is meant to gain, added
-// right before its final NON_PROMPT return (skills/_lib/harness_elements.ts's SKILL_REFERENCE
-// export carries this branch's target value; the branch itself lands in the Green step).
-test("A references file whose sibling SKILL.md names it by its CLAUDE_SKILL_DIR path classifies as skill-reference", () => {
+test("T-491 A references file whose sibling SKILL.md names it by its CLAUDE_SKILL_DIR path classifies as skill-reference", () => {
   const root = writeTree("harness-elements-skill-reference-named", {
     "skills/checkout/SKILL.md":
       "---\nname: checkout\n---\nAssemble the name per ${CLAUDE_SKILL_DIR}/references/branch-naming.md.\n",
@@ -103,7 +100,7 @@ test("A references file whose sibling SKILL.md names it by its CLAUDE_SKILL_DIR 
   }
 });
 
-test("A references file whose sibling SKILL.md does not name it classifies as non-prompt", () => {
+test("T-492 A references file whose sibling SKILL.md does not name it classifies as non-prompt", () => {
   const root = writeTree("harness-elements-skill-reference-unnamed", {
     "skills/checkout/SKILL.md": "---\nname: checkout\n---\nNo reference to the naming page here.\n",
     "skills/checkout/references/branch-naming.md": "# Branch naming\n",
@@ -116,7 +113,7 @@ test("A references file whose sibling SKILL.md does not name it classifies as no
   }
 });
 
-test("A rules file keeps its always-loaded or path-triggered classification in a tree that also carries skill references", () => {
+test("T-493 A rules file keeps its always-loaded or path-triggered classification in a tree that also carries skill references", () => {
   const root = writeTree("harness-elements-skill-reference-alongside-rules", {
     "rules/PRINCIPLES.md": "# Principles\n",
     "rules/development/TESTING.md": '---\npaths:\n  - "**/*.test.ts"\n---\n# Testing\n',
