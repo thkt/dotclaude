@@ -98,13 +98,16 @@
 - plan の値 (files.includes 等) と実装が食い違うと build workflow はそのユニットで止まり、以降を手作業で進める #707
 - 複合 Bash コマンドは全パートが sandbox.excludedCommands に一致しないと除外されないので、パイプ相手を除外に足さず sandbox.network.allowedDomains でホストを開ける #726
 - インストーラが管理する hook が settings.json に別表記で二重登録されたら、インストーラの書く表記を残して古い表記を消す #726
-- agy は Claude Code の Bash sandbox 内で起動できない (127.0.0.1 への bind と ~/.gemini 配下への log 書き込みが拒否される) (research)
-- Jev の Choice には `noMatch` と `noIssue` の逃げ道を入れ、閾値は絶対値でなく clean 側との相対で決める (research)
-- Jev に判断材料 (最終メッセージとツール結果の本文) を渡さないと判定にならず、常に同じ値を返す (research)
+- agy は Claude Code の Bash sandbox 内で起動できない (127.0.0.1 への bind と ~/.gemini 配下への log 書き込みが拒否される) (research) [research:2026-09-14-antigravity-cli-google-ai-studio.md](../research/2026-09-14-antigravity-cli-google-ai-studio.md)
+- Jev の Choice には `noMatch` と `noIssue` の逃げ道を入れ、閾値は絶対値でなく clean 側との相対で決める (research) [research:2026-09-19-jev-guardrail-hook-candidate.md](../research/2026-09-19-jev-guardrail-hook-candidate.md)
+- Jev に判断材料 (最終メッセージとツール結果の本文) を渡さないと判定にならず、常に同じ値を返す (research) [research:2026-09-19-jev-guardrail-hook-candidate.md](../research/2026-09-19-jev-guardrail-hook-candidate.md)
 - hook_payload.ts が export する readStdin を使わず、10 個の hook がそれぞれ同じ実装を自前で複製していた #734
 - 重複検出ツール (fallow) は一部の重複しか検出せず、残りは手動 grep で見つける必要がある #734
 - reviewer agent を fixture で起動すると本文の `${CLAUDE_PLUGIN_ROOT}` が展開されず `~/.claude` の `agents/_lib/` を読みにいく。fixture 外への到達を一律に汚染とせず、比較を崩す到達 (本物の skills) に絞る #748
 - `claude --print` で `--agent` と `--json-schema` を併用すると `structured_output` が null になり、findings は result テキスト中の JSON で返る (haiku で確認) #744
+- gh pr edit --attach は画像・動画拡張子のみ受け付け .md 等のテキストは拒否する。テキストは gh pr comment --body-file で投稿する #752
+- git log --diff-filter=AM に移動後のパスだけを pathspec で渡すと git mv によるリネームがペアリングされず全件が新規追加として現れる。旧パスも pathspec に含めるとリネームとして正しく除外される #756
+- opus の reviewer agent は SKILL.md 経由で preload された reference を対象欠陥のレビュー中に自発的に Read しない。reference 露出率で run を絞る計測は露出 0 のため unmeasured になる [research:2026-09-24-ablate-control-flow-exposure.md](../research/2026-09-24-ablate-control-flow-exposure.md)
 
 ## 棄却
 

@@ -18,10 +18,10 @@ research や調査の過程で、ある DR の reassessment trigger(再評価す
 
 ## 参照コード
 
-- `docs/decisions/0058-inline-single-consumer-agent-context-skills-into-agents.md` の `### Reassessment Triggers`(research が照合する対象の節。118 件中 109 件の DR がこの節を h2 または h3 で持つ)
+- `docs/decisions/0058-inline-single-consumer-agent-context-skills-into-agents.md` の `### Reassessment Triggers`(research が照合する対象の節。119 件中 110 件の DR がこの節を h2 または h3 で持つ)
 
 ## 根拠
 
 - (research) reviewer 構造調査で、ADR-0058 の reassessment trigger(複数 consumer だった skill が単一 consumer 化)が充足していることを検知した
 - (research) issue-53 aiano annotation framework 調査で、ADR-0002 の reassessment trigger(charter creep)が充足していることを検知した
-- (research) Antigravity CLI の AI Studio key 経路調査で、DR-0079 の trigger(Antigravity の quota 改善)の判定条件が変わった可能性を検知した。AI Studio key 経路は使用量を account quota から project quota へ移すため、再判定を Next Action に載せた
+- (research) Antigravity CLI の AI Studio key 経路調査で、DR-0079 の trigger(Antigravity の quota 改善)の判定条件が変わった可能性を検知した。AI Studio key 経路は使用量を account quota から project quota へ移すため、再判定を Next Action に載せた [research:2026-09-14-antigravity-cli-google-ai-studio.md](../research/2026-09-14-antigravity-cli-google-ai-studio.md)
