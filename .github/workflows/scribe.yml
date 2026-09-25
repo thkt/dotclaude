@@ -73,6 +73,18 @@ jobs:
           claude_args: |
             --allowedTools "Bash(git:*) Bash(gh:*) Bash(find:*) Bash(skills/scribe/scripts/*) Bash(skills/scribe/../research/scripts/*) Read Write Edit LS"
 
+      # The run log carries only permission_denials_count, and a run whose tools were denied
+      # still ends in success (#757). The transcript naming each denied call lives in this
+      # file on the runner and is gone once the job ends, so keep it for a week.
+      - name: Keep the claude transcript
+        if: always() && steps.gate.outputs.should_run == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: scribe-execution-output
+          path: ${{ runner.temp }}/claude-execution-output.json
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Report failure to the tracking issue
         if: failure()
         env:
