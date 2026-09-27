@@ -163,7 +163,7 @@ const referenceIssue = referenceProblem();
 if (referenceIssue) {
   return await stop("invalid-reports", referenceIssue);
 }
-// Revising an existing PR. Canonical source: revision.ts and README § 既存PRの修正. The adopted findings,
+// Revising an existing PR. Canonical source: revision.ts and the README section on revising an existing PR. The adopted findings,
 // expected result, and permission scope arrive as one text (request), and only a PR this workflow
 // published is a target. Args cannot change mid-run, so Codex's hash checks of a request file are not needed.
 const revising = input.revision !== undefined;
@@ -602,7 +602,7 @@ const freshPrompt =
   `3. Put the output of \`git -C ${shq(worktree)} rev-parse HEAD\` in base_sha, and the output of \`git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json\` in config_blob.\n` +
   setupStep +
   `\n5. Last, run \`git rev-parse HEAD\` and put its output in checkout_head.`;
-// Canonical source: README § 既存PRの修正. The earlier checkout (worktree) is reused at the published head with no tracked
+// Canonical source: the README section on revising an existing PR. The earlier checkout (worktree) is reused at the published head with no tracked
 // or untracked changes. No stash, reset, rebase, or porting of working changes.
 const revisionBase = revising ? revisionRow.base_sha : "";
 const revisionPrompt =
