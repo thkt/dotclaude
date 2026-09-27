@@ -27,7 +27,16 @@ const TREES = workflowTrees("audit");
 
 // Each name gets its own test, so a failure names the workflow rather than a file position
 // inside a sweep.
-const NAMED_WORKFLOWS = ["adrift", "assert", "audit", "build", "code", "polish", "shake"];
+const NAMED_WORKFLOWS = [
+  "adrift",
+  "assert",
+  "audit",
+  "build",
+  "code",
+  "implement",
+  "polish",
+  "shake",
+];
 
 const WORKFLOW_TREE_DIRS = [
   { label: "en", dir: join(here, "..", "..") },
