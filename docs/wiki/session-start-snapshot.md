@@ -29,3 +29,4 @@ scenes: []
 - #505 hook を配線した同じ session で 5 回試しても発火しなかった
 - #521 settings.json を追跡下へ置いた
 - #726 herdr の SessionStart hook を 1 件に寄せ、26 の agent 定義に omitClaudeMd を足した変更を、新しい session の `/status` と audit 実行で確認した
+- #761 recall_index.ts を SessionStart から外し herdr の SessionStart matcher を絞った `settings.json` の変更を、次のセッションを起動して SessionStart で recall_index.ts が走らず herdr の hook が走ることで確かめる手順にした
