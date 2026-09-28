@@ -33,3 +33,5 @@ scenes: ["pr-create"]
 - #742 build の Plan スコープ外一覧に、作業ツリーにあった別件の未コミット変更 (`settings.json`、`knip.json`、`hooks/herdr-agent-state.sh` など) が並び、独立レビューが scope_creep として挙げた
 - #745 同じ一覧に並んだ `skills/pr/tests/template-priority.test.js` は、この PR の prompt-log 手順が必要とするテスト変更だった。コミットしないまま CI に出し、CI がそのテスト (`the PR goes up as a draft, since nothing confirms before creating it`) で落ちた。後続のコミットでテストの変更を PR に入れた
 - #746 同じ別件の未コミット変更が、Plan スコープ外一覧と scope_creep の指摘に再び並んだ
+- #760 この作業と無関係な差分が同じ `settings.json` にあるため、`allowLocalBinding` の追加を含む `settings.json` の差分を Scope の「含めない」に挙げて別に扱った
+- #761 #760 から外した `settings.json` の変更を独立した PR として取り込んだ

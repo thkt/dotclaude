@@ -7,7 +7,7 @@ scenes: []
 
 ## 内容
 
-入力から一意に決まる判定は script に置き、agent には内容の判断だけを残す。閾値、上限、並び順、節の切り出し、必須集合の充足は前者に当たり、何を書くか、どれが同じ共通項かは後者に当たる。skill の散文が閾値を述べていると、実行のたびに解釈が揺れ、テストからも掛けられない。workflow でも同じで、git の照会や値の書き写しを agent に任せず、payload と argv で verifier に渡し、agent には stdout の逐語中継だけを残す。
+入力から一意に決まる判定は script に置き、agent には内容の判断だけを残す。閾値、上限、並び順、節の切り出し、必須集合の充足は前者に当たり、何を書くか、どれが同じ共通項かは後者に当たる。skill の散文が閾値を述べていると、実行のたびに解釈が揺れ、テストからも掛けられない。workflow でも同じで、git の照会や値の書き写しを agent に任せず、payload と argv で verifier に渡し、agent には stdout の逐語中継だけを残す。argv に載せにくい PR 本文のような長い値は base64 の行で渡し、agent が書き込んだ結果を script が digest で照合する。
 
 ## 定型手順
 
@@ -27,6 +27,7 @@ scenes: []
 - `workflows/code.js` の `commitPostcondition` (コミットの実在と検証結果を verifier の report の head と verdict から決め、agent の自己申告に頼らない)
 - `workflows/build.js` の `relayScript` (payload を argv 1 要素で verifier に渡し、stdout を逐語で持ち帰る。解釈は `relayedJson` が script 側で行う)
 - `workflows/build.js` の `prTitle` (PR タイトルを issue タイトルから script が決め、shq で gh コマンドに直接載せる)
+- `workflows/implement.js` の `sameBody` (agent が書き込んだ PR 本文の digest を、script が持つ本文の digest と照合する。本文は `base64Lines` で base64 の行にして渡す)
 
 ## 根拠
 
@@ -37,3 +38,4 @@ scenes: []
 - #389 issue の plan 選定と節の切り出しを pick-plan.py へ出し、種別ごとの必須節を FLOOR として validator に持たせた。移す過程で「slug が issue のタイトルに一致する」という前提が崩れ、実行で確かめられる形にして初めて分かった
 - #623 build の戻り値と PR 本文が agent の読みで git の事実と食い違った。commit の実在は verifier の report で、変更ファイル一覧は diff-files.py で、PR タイトルは script が issue タイトルから決める形にし、relay agent には stdout の逐語中継だけを残した
 - (research) `workflows/assert.js` の Cleanup が worktree の削除を best-effort の agent prompt に委ねていて、168 MB の assert worktree が 1 週間残置していた。削除は入力から一意に決まる操作で、agent の判断を要さない
+- #760 smoke run で、agent が PR 本文を書き写すときに半角カナを全角に変え、`\uXXXX` を元の文字に戻した。本文を UTF-8 の base64 で渡し、digest (FNV-1a と長さ) で照合する形にした
