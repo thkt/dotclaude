@@ -2,6 +2,7 @@
   "cleanupPeriodDays": 9999,
   "env": {
     "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD": "1",
+    "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
     "CLAUDE_CODE_TMPDIR": "/tmp/claude",
@@ -23,6 +24,7 @@
       "Write(*)",
       "Bash(gh *)",
       "Bash(git *)",
+      "Bash(claude --print *)",
       "Bash(bun *)",
       "Bash(npm *)",
       "Bash(pnpm *)",
@@ -121,9 +123,9 @@
       "Edit(//**/.claude/agent-memory/**)",
       "Edit(//**/.claude/agent-memory-local/**)"
     ],
-    "defaultMode": "auto"
+    "defaultMode": "auto",
+    "disableBypassPermissionsMode": "disable"
   },
-  "model": "claude-fable-5-1[1m]",
   "hooks": {
     "PostToolUse": [
       {
@@ -314,17 +316,7 @@
     ],
     "SessionStart": [
       {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/recall_index.ts",
-            "timeout": 60
-          }
-        ]
-      },
-      {
-        "matcher": "*",
+        "matcher": "^(startup|resume|clear|compact|fork)$",
         "hooks": [
           {
             "type": "command",
@@ -393,7 +385,8 @@
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "html@skills": true,
-    "typesafe@typesafe-ai": true
+    "typesafe@typesafe-ai": true,
+    "redact@thkt-mods": true
   },
   "extraKnownMarketplaces": {
     "agent-browser": {
@@ -425,6 +418,12 @@
         "source": "github",
         "repo": "typesafe-ai/skills"
       }
+    },
+    "thkt-mods": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/thkt/.claude/mods"
+      }
     }
   },
   "outputStyle": "Concise",
@@ -432,21 +431,27 @@
   "sandbox": {
     "enabled": true,
     "failIfUnavailable": true,
-    "filesystem": {
-      "allowWrite": ["~/.Trash", "~/.claude/.git", "~/.claude/workflows"]
-    },
-    "enableWeakerNetworkIsolation": true,
-    "excludedCommands": ["afplay", "scout"],
     "network": {
       "allowedDomains": [
         "api.github.com",
         "raw.githubusercontent.com",
         "github.com",
         "code.claude.com"
-      ]
-    }
+      ],
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "allowWrite": ["~/.Trash", "~/.claude/.git", "~/.claude/workflows"]
+    },
+    "enableWeakerNetworkIsolation": true,
+    "excludedCommands": ["afplay", "scout"]
   },
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
+    }
+  },
   "advisorModel": "opus",
   "promptSuggestionEnabled": false,
   "autoUpdatesChannel": "latest",

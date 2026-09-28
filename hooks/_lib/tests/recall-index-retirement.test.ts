@@ -4,8 +4,8 @@
 // hooks/lifecycle/recall_index.ts, the TypeScript replacement the preceding units built
 // (hooks/lifecycle/recall_index.ts, hooks/lifecycle/tests/recall-index.test.ts). This file
 // guards the retirement itself, the same shape as workflows/_lib/tests/gate-retirement.test.ts:
-// no tracked file still names the retired path, and settings.json's SessionStart command
-// names the .ts replacement rather than the retired .py. The walk and its historical-directory
+// no tracked file still names the retired path, and no settings.json SessionStart command
+// names the retired .py. The walk and its historical-directory
 // exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts), reused here rather than
 // re-derived.
 import assert from "node:assert/strict";
@@ -54,14 +54,10 @@ test("T-247 no tracked file outside docs/decisions/ and docs/research/ reference
   );
 });
 
-test("T-248 settings.json's SessionStart command names hooks/lifecycle/recall_index.ts and no command in settings.json names recall_index.py", () => {
+// recall_index.ts is unwired from SessionStart for now, so only the retired .py is guarded here.
+test("T-248 no SessionStart command in settings.json names recall_index.py", () => {
   const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
   const sessionStartCommandList = hookCommands(settings, "SessionStart");
-  assert.ok(
-    sessionStartCommandList.some((command) => command.includes("hooks/lifecycle/recall_index.ts")),
-    `no SessionStart command names hooks/lifecycle/recall_index.ts: ${sessionStartCommandList.join(", ")}`,
-  );
-
   assert.equal(
     sessionStartCommandList.some((command) => RETIRED_PYTHON.test(command)),
     false,
