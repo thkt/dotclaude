@@ -810,7 +810,9 @@ const recordPrefix = destinationDir.includes("/")
   ? `${destinationDir.slice(0, destinationDir.lastIndexOf("/"))}/`
   : "";
 // destination の親ディレクトリ内 (destination を除く) の保存記録。撮影の入力に使わない配置として扱う。
+// repo 直下の destination には親ディレクトリが無い。Codex の dirname(destination) が "." になるのと同じ扱い。
 const isRecordFile = (path) =>
+  recordPrefix !== "" &&
   /\.(json|txt|log|stdout|stderr|diff)$/.test(path) &&
   path.startsWith(recordPrefix) &&
   !path.startsWith(`${destinationDir}/`);
