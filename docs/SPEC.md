@@ -88,8 +88,7 @@ The order below is the registration order in `settings.json`. Within one matcher
 | PostToolUse       | `Write\|Edit`      | `gates`                                         | none               | 120     |
 | PostToolUse       | `Bash`             | `gates changed`                                 | none               | 120     |
 | PostToolUse       | `*`                | `integrations/amphetamine_agent_session.ts background` | none         | 15      |
-| SessionStart      | `*`                | `lifecycle/recall_index.ts`                     | none               | 60      |
-| SessionStart      | `*`                | `herdr-agent-state.sh session`                  | none               | 10      |
+| SessionStart      | `^(startup\|resume\|clear\|compact\|fork)$` | `herdr-agent-state.sh session` | none               | 10      |
 | UserPromptSubmit  | none               | `integrations/amphetamine_agent_session.ts acquire` | none           | 15      |
 | UserPromptSubmit  | none               | `codegraph prompt-hook`                         | none               | 10      |
 | Stop              | none               | `lifecycle/failure-alert.sh stop`               | none               | 60      |
@@ -114,7 +113,7 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | `textlint_fix.ts`               | Write / Edit (`*.md`)   | Auto-fixes a Markdown file that passes the Japanese check         | advisory     |
 | `mirror_prose_guard.ts`         | Write / Edit (`.ja/**`) | Warns about a `.ja/` file with no Japanese character. Never blocks | advisory    |
 | `amphetamine_agent_session.ts`  | UserPromptSubmit / PostToolUse / Stop | Holds the Mac awake through a reference count per session_id | fail-open |
-| `recall_index.ts`               | SessionStart            | Catches recall's cross-session index up in the background         | fail-open    |
+| `recall_index.ts`               | SessionStart            | Catches recall's cross-session index up in the background. Not wired into SessionStart for now | fail-open    |
 | `failure-alert.sh`              | Stop / StopFailure      | Sounds a turn that ended as anything but `end_turn`. Subagents are out of scope | fail-open |
 | `statusline.sh`                 | `statusLine` key        | Renders the model name and usage. Partial display is accepted. It is registered under the top-level `statusLine` key, not in the `hooks` map | fail-open |
 | `herdr-agent-state.sh`          | SessionStart            | Reports state only when herdr's environment variables are all set | fail-open    |
