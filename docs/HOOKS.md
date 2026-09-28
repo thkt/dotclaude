@@ -84,7 +84,6 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | PostToolUse        | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/mirror_prose_guard.ts, assay, formatter, gates                                                                 |
 | PostToolUse        | Bash               | gates changed                                                                                                                                                     |
 | PostToolUse        | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
-| SessionStart       | \*                 | lifecycle/recall_index.ts                                                                                                                                         |
 | UserPromptSubmit   | -                  | integrations/amphetamine_agent_session acquire                                                                                                                    |
 | Stop / StopFailure | -                  | lifecycle/failure-alert, integrations/amphetamine_agent_session release                                                                                           |
 | statusLine         | -                  | lifecycle/statusline                                                                                                                                              |
@@ -121,7 +120,7 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | Hook             | Trigger           | Failure Mode | Purpose                                                             |
 | ---------------- | ----------------- | ------------ | ------------------------------------------------------------------- |
 | statusline.sh    | statusLine        | fail-open    | Status line display, and a TTL sweep of its own per-session state   |
-| recall_index.ts  | SessionStart      | fail-open    | Background update of the recall cross-session index                 |
+| recall_index.ts  | SessionStart      | fail-open    | Background update of the recall cross-session index. Not wired into SessionStart for now |
 | failure-alert.sh | Stop, StopFailure | fail-open    | Sound a turn that ended badly. Silent on end_turn and in a subagent |
 
 ### integrations/
