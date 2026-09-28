@@ -8,11 +8,11 @@ kind: structure
 
 ## 内容
 
-workflow は `adrift` `assert` `audit` `build` `code` `polish` `shake` の 7 本で、いずれも agent を呼ぶ script として走る。
+workflow は `adrift` `assert` `audit` `build` `code` `implement` `polish` `shake` の 8 本で、いずれも agent を呼ぶ script として走る。
 
 ## 境界
 
-- 7 本は独立して起動する。入れ子は 2 経路だけで、`assert.js` が audit を、`build.js` が code を呼ぶ
+- 8 本は独立して起動する。入れ子は 2 経路だけで、`assert.js` が audit を、`build.js` が code を呼ぶ
 - 入れ子の呼び方は 2 経路で揃っていない。`build.js` は `sibling` を通し、bare 名が解決できなければ `build:` 名前空間へ落とす。`assert.js` は `workflow("audit")` を直に呼ぶ
 - script が持つのは制御フローと判定だけで、git 操作もファイル読み書きも agent に渡す
 - `workflows/_lib/run-workflow.ts` はテスト用の実行器で、本番サンドボックスの供給を写している。両者の食い違いの扱いは `harness-production-divergence.md` が持つ
@@ -21,7 +21,7 @@ workflow は `adrift` `assert` `audit` `build` `code` `polish` `shake` の 7 本
 
 | 対象 | 契約 |
 | --- | --- |
-| `args.repo` | 7 本すべてで必須。省略した起動は本体に入る前に `stopped: "no-repo"` で止まる |
+| `args.repo` | 8 本すべてで必須。省略した起動は本体に入る前に `stopped: "no-repo"` で止まる |
 | 起動前の停止 | `{ stopped: "<理由>", why }` を返す。`why` には呼び出し側が次に取る操作を書く。理由の語彙は workflow ごとに持つ |
 | `meta` と実行の形 | ファイル先頭の `export const meta`。本体は注入されたグローバルを引数に取る関数本体として走り、トップレベルの `return` が返り値になる |
 | 入れ子の引数 | 親が `repo` を明示的に渡す。`assert` は `skipPreflight: true` を、`build` は `model` と `commit` を添える |

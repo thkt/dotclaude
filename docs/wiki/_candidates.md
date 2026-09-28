@@ -70,7 +70,6 @@
 - 同じ事実を 2 体の agent に聞かない。verifier の report が持つフィールド (head) を使い、再取得の relay を足さない #623
 - prefix 除去の正規表現は正準の列挙 (verify-commit.ts の COMMIT_TYPES) と同じ集合に限定する。任意語だと WIP: や RFC: の先頭語が消える #623
 - 手元の gate (oxlint/oxfmt) は Python を見ないので、push 前に CI と同じ版の ruff (0.16.4) を手元で走らせる。E501 だけで CI が落ちた #623
-- PR 本文の Review focus 節で、振る舞いが変わったファイルと comment のみの変更ファイルを分けて示す #648
 - TS 化で knip.json の glob 拡張だけでは足りず、CLI 入口ファイル (entry) と静的 import されない test fixture (ignoreFiles) は明示しないと未使用 export として新規に誤検出される #653
 - knip の project glob は TS 化した層 (hooks/**、skills/**/*.ts) を足さないと、その層の .ts は dead-export 検出ゼロのまま tsc だけが見る (research)
 - issue を拾う前に ## Plan の有無と Blocked by の open 状態で着手可能性を機械的に絞る。build は Plan の無い issue を no-plan で止める (research)
@@ -108,6 +107,8 @@
 - gh pr edit --attach は画像・動画拡張子のみ受け付け .md 等のテキストは拒否する。テキストは gh pr comment --body-file で投稿する #752
 - git log --diff-filter=AM に移動後のパスだけを pathspec で渡すと git mv によるリネームがペアリングされず全件が新規追加として現れる。旧パスも pathspec に含めるとリネームとして正しく除外される #756
 - opus の reviewer agent は SKILL.md 経由で preload された reference を対象欠陥のレビュー中に自発的に Read しない。reference 露出率で run を絞る計測は露出 0 のため unmeasured になる [research:2026-09-24-ablate-control-flow-exposure.md](../research/2026-09-24-ablate-control-flow-exposure.md)
+- 移植した skill が移植元の読んでいた設定項目の定義 (Codex の `scripts/README.md` の target-config 節) を読まないと、agent は設定値の意味を取り違えて Issue に書き、後段の独立レビューがその記述と差分の食い違いで止まる #764
+- 一時的に配線を外す hook は本体と自身のテストを残し、配線を戻すときに戻す assert と docs の記述を PR 本文に書いておく #761
 
 ## 棄却
 
