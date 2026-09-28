@@ -628,6 +628,30 @@ test("with required: false, a Markdown-only change needs no capture, and a later
   assert.equal(reused.result.capture.decision, "reused");
 });
 
+test("after a capture, a saved record beside the destination reuses it, and a destination at the repo root has no record place", async () => {
+  const codeThenRecord = (record) => ({
+    diff: [
+      { exit_code: 0, raw: ":100644 100644 aaa bbb M\tsrc/app.js\n" },
+      { exit_code: 0, raw: `:100644 100644 aaa bbb M\t${record}\n` },
+    ],
+    review: [
+      (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
+      (_, { tree }) =>
+        reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "ok" }] }),
+    ],
+  });
+  const nested = await withCapture(CAPTURE, codeThenRecord("trial/evidence/run.json"));
+  assert.equal(nested.result.captures, 1);
+  assert.equal(nested.result.capture.decision, "reused");
+
+  const atRoot = await withCapture(
+    { ...CAPTURE, destination: "generated" },
+    codeThenRecord("run.json"),
+  );
+  assert.equal(atRoot.result.captures, 2);
+  assert.equal(atRoot.result.capture.decision, "execute");
+});
+
 test("a change to a capture definition, a mode change, or required: true forces a capture even when the path ends in .md", async () => {
   const definition = await withCapture(
     { ...CAPTURE, command: [...CAPTURE.command, "trial/capture-notes.md"] },

@@ -831,7 +831,9 @@ const recordPrefix = destinationDir.includes("/")
   ? `${destinationDir.slice(0, destinationDir.lastIndexOf("/"))}/`
   : "";
 // Saved records in the destination's parent directory (excluding the destination), treated as a place that capture does not read from.
+// A destination at the repo root has no such parent, the same as Codex's dirname(destination) of ".".
 const isRecordFile = (path) =>
+  recordPrefix !== "" &&
   /\.(json|txt|log|stdout|stderr|diff)$/.test(path) &&
   path.startsWith(recordPrefix) &&
   !path.startsWith(`${destinationDir}/`);
