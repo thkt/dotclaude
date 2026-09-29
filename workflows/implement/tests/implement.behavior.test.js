@@ -605,6 +605,12 @@ test("a code change is captured before the check, its media is installed, and th
     /"\$H"'\/scripts\/capture\.ts'/,
     "{harness} expands to the shell variable H",
   );
+  assert.match(
+    prompts.capture,
+    /H="\$\(P="\$HOME\/\.claude\/workflows\/implement\/harness"/,
+    "H points at the vendored adapter",
+  );
+  assert.doesNotMatch(prompts.capture, /\.agents/, "a capture does not depend on ~/.agents");
   assert.match(prompts.capture, /\.claude\/worktrees\/implement-12-capture-1/);
   assert.match(prompts.review, /list\.png/);
 });

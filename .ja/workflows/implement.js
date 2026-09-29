@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Codex の orchestrator.ts と同じ流れで、合意済み Issue を隔離 worktree 上に 1 回の実装パスで実装し、撮影・check・独立レビュー・修正のループを accepted まで回したあと、1 つの commit にまとめて push し、draft PR を作って同じ head の CI を待つ。check と撮影の合否は終了コードで、媒体は形式を検査してから取り込み、レビューの受理は finding ID ごとの更新を script が検査して算出するので、自己申告の合格や過去指摘の取りこぼしは通らない。最初の書き込みの前に Issue・accepted の tree・実行ユーザー・push 先を script が照合し直し、書き込みのたびに結果を読み戻す。書き込みを再試行せず、PR を ready にもしない。修正ループに回数上限は無く、要求の変更・対象の変更・不正な応答・人の判断待ちで止まる。公開を切ったときは verified_local で終わる。",
   whenToUse:
-    "/scoping で合意した Issue を、Codex の implement と同じ流れで headless に実装し、draft PR まで進めたいとき。この workflow が公開した PR を、人が採用した修正依頼で直すときも使える。そのときは PR の URL と修正依頼を渡し、PR は新しく作らず本文を作り直す。実装を伴わない既存差分のレビューは polish か audit を使う。対象の Issue 番号と対象リポジトリの絶対パスを渡す。対象リポジトリのルートには Codex の対象契約どおり repository・remote・baseBranch・setup・check・ciChecks・capture を持つ .dotagents.json が要り、capture の {harness} は Codex のハーネス ~/.agents に展開する。check や撮影がローカルの server の socket を開くので、sandbox が有効なセッションでは sandbox.network.allowLocalBinding を true にしてから起動する。既定で draft PR まで公開する。公開を切ると、検証済みの branch と worktree を人に残して終わる。ready への切り替え・公開本文の照合・人のレビューは /implement スキルと人が持つ。",
+    "/scoping で合意した Issue を headless に実装し、draft PR まで進めたいとき。この workflow が公開した PR を、人が採用した修正依頼で直すときも使える。そのときは PR の URL と修正依頼を渡し、PR は新しく作らず本文を作り直す。実装を伴わない既存差分のレビューは polish か audit を使う。対象の Issue 番号と対象リポジトリの絶対パスを渡す。対象リポジトリのルートには Codex の対象契約どおり repository・remote・baseBranch・setup・check・ciChecks・capture を持つ .dotagents.json が要り、capture の {harness} は Codex のハーネス ~/.agents に展開する。check や撮影がローカルの server の socket を開くので、sandbox が有効なセッションでは sandbox.network.allowLocalBinding を true にしてから起動する。既定で draft PR まで公開する。公開を切ると、検証済みの branch と worktree を人に残して終わる。ready への切り替え・公開本文の照合・人のレビューは /implement スキルと人が持つ。",
   phases: [
     { title: "Target" },
     { title: "Prepare" },
@@ -681,7 +681,9 @@ const CAPTURE_RULES = capture
   : [
       "この対象は撮影を宣言していない。合意した Issue が媒体を必要とするなら、実行前に撮影を設定するため needs_human を返す。",
     ];
+const TESTING_RULE = `変更が、非同期 UI の E2E テスト、外部入力の境界、失敗後の経路、対象の版の再取得、検査が何を成功と数えるか、のいずれかを変えるときは、\`cat ${bundled("skills/implement/references/testing.md")}\` を実行し、該当する場合を適用する。それ以外では読まない。`;
 const REPAIR_RULES = [
+  TESTING_RULE,
   "テストを作成・更新する前に、対象の test 方針があればそれと次の共通基準を適用する。各テストを削除したら見逃す現実的なバグは何かを問う。追加の担保を実行時間・不安定さ・保守コストと比べ、コストに見合わないテストは削除か統合する。安心感・テスト数・カバレッジ指標のためだけにテストを残さない。失われる検出条件と残る検証を説明する。",
   "findings では、この変更が影響する検証が防ぐ具体的なバグ、既存の検証に加えるもの、テストを追加・維持・統合・削除した理由を説明する。失われる検出条件、残る検証、未検証の限界を書く。十分な既存テストは再利用し、テストごとの台帳は作らない。",
   "文書のみの変更と付随する更新には、対象の文書方針があれば適用する。現行の運用手順を正確に保ち、過去の結果は証拠に残す。文書の事実・数量・条件・範囲・権限・未確認の主張・参照を元の資料と照合する。",
@@ -792,7 +794,7 @@ const hostFailure = (message) =>
   ].join("\n");
 
 // ---- 撮影: 正本は correction.ts の verifyHost と captureDecision ----
-// {harness} は Codex のハーネス ~/.agents に展開する。ハーネスは版ごとにアダプターの位置を動かすので、その中のパスは対象の capture コマンドだけから決める。
+// {harness} は workflows/implement/harness に展開する。これは Codex のハーネスの capture アダプター (scripts/capture・scripts/shared) の複製で、~/.agents が無くても撮影が動く。配置は Codex のハーネスと同じなので、対象の `bun {harness}/scripts/capture/capture.ts` というコマンドはどちらでも解決する。
 const captureArg = (arg) => arg.split("{harness}").map(shq).join('"$H"');
 const captureLine = (argv) => argv.map(captureArg).join(" ");
 // 撮影コマンドの引数が直接指す checkout 内の定義ファイル。文書の拡張子でも撮り直しの対象にする。
@@ -863,8 +865,8 @@ const CAPTURE_SCHEMA = closed({
 const runCapture = (output, label) =>
   agent(
     `撮影を 1 回実行し、結果をそのまま返す。何も直さない。\n` +
-      `1. \`test -d "$HOME/.agents/scripts" && mkdir ${shq(output)}\` を実行する。0 以外で終わったら started: false・timed_out: false・exit_code: -1 にし、その出力を log_tail に入れて手順 3 へ進む。\n` +
-      `2. \`cd ${shq(worktree)} && H="$HOME/.agents" && ${captureLine([...capture.command, output])}\` を、Bash tool の timeout parameter を 600000 にして実行し、started: true にする。時間切れなら timed_out: true・exit_code: -1 に、そうでなければ timed_out: false にして終了コードを exit_code に入れる。結合出力の末尾 80 行を log_tail に入れる。\n` +
+      `1. \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && mkdir ${shq(output)}\` を実行する。0 以外で終わったら started: false・timed_out: false・exit_code: -1 にし、その出力を log_tail に入れて手順 3 へ進む。\n` +
+      `2. \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` を、Bash tool の timeout parameter を 600000 にして実行し、started: true にする。時間切れなら timed_out: true・exit_code: -1 に、そうでなければ timed_out: false にして終了コードを exit_code に入れる。結合出力の末尾 80 行を log_tail に入れる。\n` +
       `3. \`${stageTree}\` を実行し、tree id を tree に入れる (失敗したら空文字)。`,
     {
       label,

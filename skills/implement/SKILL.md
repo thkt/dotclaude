@@ -2,7 +2,7 @@
 name: implement
 description: Carry an agreed GitHub Issue through the implement workflow to implementation, verification, a draft PR, and CI confirmation, then check the published body and switch the PR to ready. Do NOT use to settle requirements (use /scoping) or for a review-only request.
 when_to_use: 合意済みIssueを実装, Issueから実装, PR作成まで進める, 既存PRの修正, implement issue
-allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[issue number or URL] [--no-publish]"
 ---
