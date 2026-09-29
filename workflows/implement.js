@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Implements an agreed Issue in an isolated worktree with one implementation pass, runs a capture, check, independent review, and repair loop until the review is accepted, then commits once, pushes, opens a draft PR, and waits for CI on the same head, following the same flow as Codex's orchestrator.ts. The check and the capture pass on their exit codes, media is installed only after its format is validated, and the script decides acceptance by validating one update per finding ID, so a self-reported pass or a dropped prior finding cannot get through. Before the first write the script re-confirms the Issue, the accepted tree, the actor, and the push target, and it reads back the result of every write. It never retries a write and never switches the PR to ready. The repair loop has no round cap; it stops on changed requirements, a changed target, an invalid reply, or a pending human decision. With publishing turned off it ends at verified_local.",
   whenToUse:
-    "Implementing, headlessly, an Issue agreed through /scoping up to a draft PR, in the same flow as Codex's implement. It also revises a PR it published, from a revision request a human adopted: pass the PR URL and the request, and it rewrites the body instead of opening a new PR. A review of an existing diff without implementation goes to polish or audit. Pass the Issue number and the target repository's absolute path. The target repository's root needs a .dotagents.json carrying repository, remote, baseBranch, setup, check, ciChecks, and capture, as the Codex target contract defines them, and {harness} in capture expands to the Codex harness at ~/.agents. The check or the capture may open a local server socket, so a session with the sandbox on sets sandbox.network.allowLocalBinding to true before launching. Publishing up to a draft PR is the default. With publishing turned off, the run ends by leaving the verified branch and worktree to a human. The switch to ready, the published-body check, and human review stay with the /implement skill and the human.",
+    "Implementing, headlessly, an Issue agreed through /scoping up to a draft PR. It also revises a PR it published, from a revision request a human adopted: pass the PR URL and the request, and it rewrites the body instead of opening a new PR. A review of an existing diff without implementation goes to polish or audit. Pass the Issue number and the target repository's absolute path. The target repository's root needs a .dotagents.json carrying repository, remote, baseBranch, setup, check, ciChecks, and capture, as the Codex target contract defines them, and {harness} in capture expands to the Codex harness at ~/.agents. The check or the capture may open a local server socket, so a session with the sandbox on sets sandbox.network.allowLocalBinding to true before launching. Publishing up to a draft PR is the default. With publishing turned off, the run ends by leaving the verified branch and worktree to a human. The switch to ready, the published-body check, and human review stay with the /implement skill and the human.",
   phases: [
     { title: "Target" },
     { title: "Prepare" },
@@ -702,7 +702,9 @@ const CAPTURE_RULES = capture
   : [
       "This target declares no capture. If the agreed Issue needs media, return needs_human to configure required capture before execution.",
     ];
+const TESTING_RULE = `When the change alters an async UI's E2E test, an external-input boundary, a path after a failure, how a target's version is re-read, or what a check counts as success, run \`cat ${bundled("skills/implement/references/testing.md")}\` and apply the matching case. Otherwise do not read it.`;
 const REPAIR_RULES = [
+  TESTING_RULE,
   "Before creating or updating tests, apply the target test policy when present and these common test criteria. Ask what realistic bug deleting each relevant test would miss. Compare its additional assurance with runtime, flakiness and maintenance cost; actively remove or consolidate tests that do not justify that cost. Do not retain tests merely for reassurance, test counts or coverage metrics. Explain any lost detection conditions and the remaining verification.",
   "In findings, explain the concrete bugs prevented by verification affected by this change, what it adds beyond existing verification, and why tests were added, retained, consolidated or removed. State lost detection conditions, remaining verification and unverified limits. Reuse sufficient existing tests; do not create a per-test ledger.",
   "Apply the target documentation policy when present to documentation-only changes and accompanying updates; keep current operating instructions accurate and historical results in evidence. Compare document facts, quantities, conditions, scope, authority, unverified claims and references with original sources.",
@@ -813,7 +815,7 @@ const hostFailure = (message) =>
   ].join("\n");
 
 // ---- Capture: canonical source is verifyHost and captureDecision in correction.ts ----
-// {harness} expands to the Codex harness at ~/.agents. The adapter's path inside it comes from the target's capture command alone, since the harness moves it between versions.
+// {harness} expands to workflows/implement/harness, a vendored copy of the Codex harness's capture adapter (scripts/capture, scripts/shared), so a capture runs without ~/.agents. The layout stays the same as the Codex harness's, so a target's `bun {harness}/scripts/capture/capture.ts` command resolves in both.
 const captureArg = (arg) => arg.split("{harness}").map(shq).join('"$H"');
 const captureLine = (argv) => argv.map(captureArg).join(" ");
 // Definition files in the checkout that the capture command's arguments point at directly. A change to one forces a recapture, whatever its extension.
@@ -884,8 +886,8 @@ const CAPTURE_SCHEMA = closed({
 const runCapture = (output, label) =>
   agent(
     `Run the capture once and return the result verbatim. Do not fix anything.\n` +
-      `1. Run \`test -d "$HOME/.agents/scripts" && mkdir ${shq(output)}\`. If it exits non-zero, set started: false, timed_out: false, and exit_code: -1, put its output in log_tail, and go to step 3.\n` +
-      `2. Run \`cd ${shq(worktree)} && H="$HOME/.agents" && ${captureLine([...capture.command, output])}\` with the Bash tool's timeout parameter set to 600000, and set started: true. On a timeout set timed_out: true and exit_code: -1; otherwise set timed_out: false and put its exit code in exit_code. Put the last 80 lines of its combined output in log_tail.\n` +
+      `1. Run \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && mkdir ${shq(output)}\`. If it exits non-zero, set started: false, timed_out: false, and exit_code: -1, put its output in log_tail, and go to step 3.\n` +
+      `2. Run \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` with the Bash tool's timeout parameter set to 600000, and set started: true. On a timeout set timed_out: true and exit_code: -1; otherwise set timed_out: false and put its exit code in exit_code. Put the last 80 lines of its combined output in log_tail.\n` +
       `3. Run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).`,
     {
       label,

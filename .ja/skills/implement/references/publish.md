@@ -6,15 +6,16 @@ draft PR の公開 (修正では本文の書き換え) と、同じ head の CI 
 
 1. workflow の戻り値の `ci` と `remaining` を読む。`ci.status: passed` は、公開した head で `ciChecks` の check が成功し、他の登録済み check にも失敗・保留が無かったことを示す。
 2. `gh pr view <n> --json <項目>` で実際の本文と対象を読む。項目は url・state・isDraft・body・author・headRefName・headRefOid。加えて headRepository・headRepositoryOwner・isCrossRepository・baseRefName・closingIssuesReferences・statusCheckRollup も読む。head の repo が対象 repo で、別 repo からの PR でないことも確かめる。本文の事実・数量・条件・範囲・否定・未確認事項・リンクを照合する (published_body_check)。照合先は Issue・accepted の評価要約・check 結果。生成時の省略や整形で意味が変わっていないかを読む。`remaining` に `rendered_media_check` があれば、添付した媒体の表示・再生と説明・配置を PR 画面で確認する。
-3. 本文を直す必要があれば、`isDraft: true` を確認してから `gh pr edit <n> --body-file <path>` で更新し、最新本文を読み戻す。書込み直前にも最新本文・head と変更案を照合し、他者の変更があれば上書きせず取り込み方をユーザーに尋ねる。
-4. ready 直前に、確認した版と最新の対象・本文・head・Issue・評価要約・check 結果、`gh api user` の実効主体、対象 repo の権限、同じ head の CI を再照合する。変更があれば関係する手順へ戻る。
-5. すべて揃ったら `gh pr ready <n>` で切り替える。`gh pr view <n> --json isDraft,headRefOid,url,body,statusCheckRollup` で、`isDraft: false`・head・本文・同じ head の CI が確認した版と一致することを読み戻す (mark_ready)。PR URL、確認した版と結果、未確認事項を返す。
+3. 本文が日本語なら、最新の本文をファイルに保存し、`${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint --config ${CLAUDE_SKILL_DIR}/../../.textlintrc.json <file>` を実行する。指摘された文は `${CLAUDE_SKILL_DIR}/../../rules/conventions/PROSE.md` に沿って書き直し、未確認の事項が確認済みに変わっていないか、Issue と根拠に照らして確かめる。そのあと次の修正へ進む。accepted の評価と保存済みの根拠は書き換えない。
+4. 本文を直す必要があれば、`isDraft: true` を確認してから `gh pr edit <n> --body-file <path>` で更新し、最新本文を読み戻す。書込み直前にも最新本文・head と変更案を照合し、他者の変更があれば上書きせず取り込み方をユーザーに尋ねる。
+5. ready 直前に、確認した版と最新の対象・本文・head・Issue・評価要約・check 結果、`gh api user` の実効主体、対象 repo の権限、同じ head の CI を再照合する。変更があれば関係する手順へ戻る。
+6. すべて揃ったら `gh pr ready <n>` で切り替える。`gh pr view <n> --json isDraft,headRefOid,url,body,statusCheckRollup` で、`isDraft: false`・head・本文・同じ head の CI が確認した版と一致することを読み戻す (mark_ready)。PR URL、確認した版と結果、未確認事項を返す。
 
 ## 不備の戻し先
 
 | 不備                            | 戻し先                                          |
 | ------------------------------- | ----------------------------------------------- |
-| 説明だけの不備                  | 手順 3 の本文修正と再確認                       |
+| 説明だけの不備                  | 手順 4 の本文修正と再確認                       |
 | 成果物の不備                    | SKILL.md § 既存 PR の修正                       |
 | 事実不足                        | 調査。結果を本文か Issue に反映して手順 2 へ    |
 | 要求・権限の変更                | 人の判断。draft を維持して待つ                  |
