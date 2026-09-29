@@ -109,6 +109,9 @@
 - opus の reviewer agent は SKILL.md 経由で preload された reference を対象欠陥のレビュー中に自発的に Read しない。reference 露出率で run を絞る計測は露出 0 のため unmeasured になる [research:2026-09-24-ablate-control-flow-exposure.md](../research/2026-09-24-ablate-control-flow-exposure.md)
 - 移植した skill が移植元の読んでいた設定項目の定義 (Codex の `scripts/README.md` の target-config 節) を読まないと、agent は設定値の意味を取り違えて Issue に書き、後段の独立レビューがその記述と差分の食い違いで止まる #764
 - 一時的に配線を外す hook は本体と自身のテストを残し、配線を戻すときに戻す assert と docs の記述を PR 本文に書いておく #761
+- Issue の本文とコメントに未合意点が残るときは /implement を起動せず /scoping に戻す #766
+- macOS の sandbox 内では Chromium を起動できず、capture を設定した repo の workflow は sandbox を外したセッションで走らせる #767
+- Codex 版にあった手順が /implement への移植から落ち、後から戻す必要が出た #767
 
 ## 棄却
 
