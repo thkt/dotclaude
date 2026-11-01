@@ -1,11 +1,11 @@
 /// <reference types="node" />
 // Differential tests for command_scan.ts's commands_with_env() against the frozen table
 // hooks/_lib/tests/fixtures/command-scan-tokens.json captured from the retired Python module,
-// over the same corpus command-scan-corpus.test.ts already ties to that table (DR-0112). Unlike
-// hook-payload-parity.test.ts's PY_DRIVER, this file never spawns python3 itself: the frozen
-// table already is that retired module's answer for every corpus row, captured once by the unit
-// that built it, so a fresh python3 call here would only re-derive what the fixture
-// already holds.
+// over the same corpus command-scan-corpus.test.ts already ties to that table (DR-0112). This
+// file spawns no interpreter: the frozen table already is that retired module's answer for every
+// corpus row, captured once by the unit that built it
+// (docs/wiki/fixture-freeze-before-port.md), so re-deriving it here would only restate the
+// fixture.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
