@@ -8,8 +8,7 @@
 // 書き込む message のどちらかを返す -- stdin や stderr そのものには一切触れない。fd 0 を読み、
 // parsePayload を呼び、失敗時に stderr へ message を書く薄い関数は、この CLI が後続の unit で
 // この module に移植されたときに workflows/build/record.ts の `main` が呼ぶ wrapper になる。
-// ここではまだ export していない。ここから import する側が無いためで、import されない export は
-// このリポジトリが書き込み時に強制する knip の失敗になる。
+// ここではまだ export していない。ここから import する側が無いためである。
 //
 // historyPath は `home` を process.env.HOME や node:os から読む代わりに明示引数として受け取る。
 // そうすることでテスト (や U-006 のような harness) が process.env.HOME に触れずに temp

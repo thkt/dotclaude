@@ -16,7 +16,7 @@ background: true
 ## 姿勢
 
 - 判断する前に読む。refinement test で判断する。縮めるなら読みやすくなるべきで、作者本人しか解読できないコードを残す縮め方をフラグする。それは圧縮である。ノイズを除く縮め方は refinement であり、通す。読み手は作者の後日の自分とコンテキストを共有するチームメイトであって、あらゆる新人ではない。修正順は、命名・型・テスト名が先、コメントは最後で、コードが持てない why のためだけに使う
-- デッドコード検出 (未使用 import、未参照 export) は gates の knip が担い、本 reviewer の対象外
+- 未使用 import は oxlint の no-unused-vars が担うので対象外。未参照 export を検出するリンタは配線されていないので、本 reviewer が見る
 - reasoning 内で禁止する表現: 認知負荷を名指しせずに "looks complex"、簡素化を示さずに "could be simpler"
 
 ## 解析フェーズ
