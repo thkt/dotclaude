@@ -15,6 +15,8 @@
 // (docs/wiki/absence-test-positive-control-fixture.md).
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 
 const HISTORICAL_DIRS = [
   "docs/decisions/",
@@ -54,13 +56,17 @@ export function offendersAmong(
 
 const trackedFilesCache = new Map<string, string[]>();
 
-/** Every path `git ls-files` reports under `repoRoot`, in tree order, cached per root. */
+/** Every path `git ls-files` reports under `repoRoot` that is still on disk, in tree order,
+ * cached per root. The index keeps an entry for a file deleted but not yet staged, and a caller
+ * that reads each path straight (the full-tree sweeps in tests/table-paragraph.test.ts,
+ * tests/live-instructions.test.ts and hooks/_lib/tests/mirror-prose.test.ts) would stop at
+ * ENOENT on it. offendersAmong skips such a path through its own read guard either way. */
 export function trackedFiles(repoRoot: string): string[] {
   let files = trackedFilesCache.get(repoRoot);
   if (!files) {
     files = execFileSync("git", ["ls-files", "-z"], { cwd: repoRoot, encoding: "utf8" })
       .split("\0")
-      .filter(Boolean);
+      .filter((path) => path && existsSync(join(repoRoot, path)));
     trackedFilesCache.set(repoRoot, files);
   }
   return files;
