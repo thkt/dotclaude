@@ -1,8 +1,8 @@
 /// <reference types="node" />
-// Shared bun-shebang and git-discovery primitives for hooks/**'s TypeScript shebang checks: the
-// .ts counterpart of hooks/_lib/tests/shebang_test.py's SHEBANG / STALE_SHEBANG / EXEC_MODE /
-// _tracked_entries. Every exec-bit check and every shebang-content check reads the bun path from
-// SHEBANG rather than typing the literal again.
+// Shared bun-shebang and git-discovery primitives for hooks/**'s TypeScript shebang checks.
+// Every exec-bit check and every shebang-content check reads the bun path from SHEBANG rather
+// than typing the literal again. hooks/_lib/tests/shebang-ts.test.ts and
+// hooks/_lib/tests/shebang-scope.test.ts hold these to their cases.
 //
 // DR-0114 fixes the interpreter path: settings.json runs hooks on a truncated PATH, so the
 // shebang line has to resolve without a shim, and Homebrew's `#!/opt/homebrew/bin/bun` is the
@@ -32,7 +32,7 @@ export const FIXTURES_ROOT = "hooks/_lib/tests/fixtures";
 export const FIXTURES_EXCLUDE = `:(exclude)${FIXTURES_ROOT}/**`;
 
 /** (git file mode, absolute path) for every tracked file the pathspec matches, read from
- * `git ls-files -s` like shebang_test.py's `_tracked_entries`. git resolves the pathspec, so an
+ * `git ls-files -s`. git resolves the pathspec, so an
  * include glob and an `:(exclude)` token go in one call; nothing is added or removed here.
  *
  * Wildcards follow git's default matching, where `*` crosses `/`: `hooks/*.ts` reaches every
@@ -56,8 +56,8 @@ export function trackedEntries(
   return entries;
 }
 
-/** shebang_test.py's `is_file()` guard: an index entry whose file was removed with a plain `rm`
- * is skipped rather than aborting the scan. */
+/** An index entry whose file was removed with a plain `rm` is skipped rather than aborting the
+ * scan. */
 function readTextOrNull(absolutePath: string): string | null {
   try {
     return readFileSync(absolutePath, "utf8");
@@ -76,8 +76,8 @@ function relative(absolutePath: string): string {
   return path.relative(REPO, absolutePath);
 }
 
-/** shebang_test.py's ExecutableShebang.test_T_001 with the pathspec and the expected shebang as
- * arguments, so one call scans hooks/'s real .ts files and another a positive-control fixture. */
+/** The exec-bit and shebang check, taking the pathspec and the expected shebang as arguments,
+ * so one call scans hooks/'s real .ts files and another a positive-control fixture. */
 export function executableShebangOffenders(
   pathspec: string | readonly string[],
   shebang: string,
@@ -91,9 +91,8 @@ export function executableShebangOffenders(
   return offenders;
 }
 
-/** shebang_test.py's NoStaleShebang.test_T_002 with the pathspec and the stale line as arguments.
- * readFileSync's utf8 decoding never throws on invalid bytes, so the python side's
- * UnicodeDecodeError skip has no counterpart here. */
+/** The stale-shebang check, taking the pathspec and the stale line as arguments. readFileSync's
+ * utf8 decoding never throws on invalid bytes, so no decode-error skip is needed. */
 export function staleShebangOffenders(
   pathspec: string | readonly string[],
   staleLine: string,
@@ -122,8 +121,8 @@ function collectCommandScripts(node: unknown, out: string[]): void {
   }
 }
 
-/** shebang_test.py's `_settings_command_scripts`: the repo-relative .ts paths a list of hook
- * `command` strings names, read from each command's whitespace-split tokens. */
+/** The repo-relative .ts paths a list of hook `command` strings names, read from each command's
+ * whitespace-split tokens. */
 function settingsCommandScripts(commands: readonly string[]): string[] {
   const scripts: string[] = [];
   for (const command of commands) {
@@ -136,8 +135,8 @@ function settingsCommandScripts(commands: readonly string[]): string[] {
   return scripts;
 }
 
-/** shebang_test.py's SettingsCommandShebang.test_T_003 with the settings tree as an argument, so
- * the same call checks the repository's settings.json and a settings-shaped fixture. The mode
+/** The settings-command shebang check, taking the settings tree as an argument, so the same
+ * call checks the repository's settings.json and a settings-shaped fixture. The mode
  * map covers fixtures too, because the fixture names a path under fixtures/ on purpose. */
 export function settingsCommandShebangOffenders(settings: unknown, shebang: string): string[] {
   const hooksNode =
@@ -159,7 +158,7 @@ export function settingsCommandShebangOffenders(settings: unknown, shebang: stri
   return offenders;
 }
 
-/** shebang_test.py's LibHasNoShebang.test_T_004 with the pathspec as an argument. */
+/** The check that a library file carries no shebang, taking the pathspec as an argument. */
 export function libHasShebangOffenders(pathspec: string | readonly string[]): string[] {
   const offenders: string[] = [];
   for (const [, absolutePath] of trackedEntries(pathspec)) {
