@@ -1,11 +1,10 @@
 /// <reference types="node" />
-// knip.json lists workflows/_lib/gate.ts (and its .ja mirror) as an `entry` point, so knip's
-// unused-export report never flags a name this file exports but nothing else reads -- entry
-// files are allowed to carry an API surface knip cannot trace to a caller. That suppression is
-// right for `main` (the process that spawns the file is the reader, not an importer) but wrong
-// for every other export: a name with no reader anywhere else is dead weight knip's own report
-// cannot catch here. This file is that catch: it re-derives, independently of knip, which of
-// gate.ts's runtime-value exports (`export const` / `export function` / `export class`; a
+// No linter in this repository reports an export that nothing else reads: oxlint's
+// no-unused-vars stops at a module's own scope, and the knip run that once covered
+// workflows/_lib/gate.ts retired with the gates hook. Being unread is right for `main` (the
+// process that spawns the file is the reader, not an importer) and wrong for every other
+// export: a name with no reader anywhere else is dead weight. This file is that catch: it
+// derives which of gate.ts's runtime-value exports (`export const` / `export function` / `export class`; a
 // type-only `export interface` carries no importable value and sits outside this check) no
 // tracked file outside gate.ts and its .ja mirror ever names, anywhere in that file's own text --
 // a broad "reader" search, not a strict `import {}` parse, because a name can be read by a

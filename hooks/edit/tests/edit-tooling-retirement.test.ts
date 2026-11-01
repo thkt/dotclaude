@@ -35,8 +35,8 @@ const RETIRED_NAMES = [
 
 // The paths those names belonged to. Content alone cannot answer whether the file itself is
 // gone: a module still in the tree whose own text never spells its filename leaves the name
-// scan with nothing to report, which is how hooks/_lib/textlint.py stayed tracked while this
-// test passed.
+// scan with nothing to report, so a name scan can pass while the file is still tracked. The
+// path check below is what closes that hole.
 const RETIRED_PATHS = [
   "hooks/_lib/rust_target.py",
   "hooks/edit/rumdl_check.py",

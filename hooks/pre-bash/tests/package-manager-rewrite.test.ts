@@ -104,8 +104,8 @@ test("T-301 a manager that is not installed leaves the command unchanged rather 
 });
 
 // package_manager_rewrite.ts and npm_install_guard.ts both carry a top-level
-// `process.exit(main())` (DR-0114, no isMainModule guard) -- the same hazard T-299's PY_DRIVER
-// comment and npm-install-guard.test.ts's header describe. A plain `import` of either hits it:
+// `process.exit(main())` (DR-0114, no isMainModule guard) -- the same hazard this file's own
+// header and npm-install-guard.test.ts's header describe. A plain `import` of either hits it:
 // ESM evaluates an imported module's top-level code, exit call included, before the importer's
 // own code resumes, so the import itself would end this file's process before a single
 // assertion ran. A subprocess does not dodge that (the same process.exit fires inside it too);

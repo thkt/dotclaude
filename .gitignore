@@ -117,6 +117,8 @@ plugins/*
 !plugins/README.md
 # claude.ai アカウントから同期されるスキル。ここでの編集はアカウントに保存されない
 skills/synced/
+# Claude Code が削除した skill の置き場。追跡すると root から走るテストがここを歩く
+skills/.trash/
 
 # Local state
 BACKLOG.md

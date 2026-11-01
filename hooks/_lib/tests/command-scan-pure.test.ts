@@ -1,9 +1,9 @@
 /// <reference types="node" />
 // Ports the subcommand / git_subcommand / flag_value / starts_with / before_pathspec /
 // git_clean_only_lists cases from hooks/_lib/tests/command_scan_test.py to the .ts side
-// (DR-0112). These six take an already-tokenized command list and never touch shlex, so unlike
-// hook-payload-parity.test.ts this file needs no python3 driver: the input/expected-output table
-// below is the same one command_scan_test.py runs, read straight off its assertions.
+// (DR-0112). These six take an already-tokenized command list and never touch a shell lexer, so
+// the input/expected-output table below is all the fixture they need: it was read straight off
+// the retired Python suite's own assertions.
 import assert from "node:assert/strict";
 import test from "node:test";
 import {

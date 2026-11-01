@@ -8,8 +8,7 @@
 // the caller writes to stderr -- it never touches stdin or stderr itself. The thin function
 // that reads fd 0, calls parsePayload, and writes the message to stderr on failure is the
 // wrapper workflows/build/record.ts's `main` will call once that CLI is ported onto this
-// module in a later unit; it is not exported yet because nothing here imports it, and an
-// unimported export is a knip failure this repository enforces on write.
+// module in a later unit; it is not exported yet because nothing here imports it.
 //
 // historyPath takes `home` as an explicit argument rather than reading it from
 // process.env.HOME or node:os itself, so a test (or a harness like U-006's) can point it at a

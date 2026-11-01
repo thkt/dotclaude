@@ -17,7 +17,7 @@ background: true
 ## 姿勢
 
 - エラーは可視化されるか、ドキュメント化された理由で意図的に抑制されなければならない。サイレントなデフォルトは、本番ログでしか姿を見せないバグを隠す
-- 機械検出可能な形の列挙は gates plugin のリンタが担う (空 catch なら no-empty、.catch のない promise や fire-and-forget 呼び出しなら no-floating-promises)。本 reviewer はリンタが判断できないこと、つまり抑制根拠が成り立つか、log のみの catch が十分か、エラーがユーザーに可視化されるかを判定する。ここでの promise や async の finding はその根拠やエラーの行き先に関するものであり、形そのものは対象にしない
+- no-empty と no-floating-promises を有効にしたリンタは配線されていないので、空 catch も .catch のない promise も形そのものから本 reviewer が見る。判定の中心はリンタが扱えないほうで、抑制根拠が成り立つか、log のみの catch が十分か、エラーがユーザーに可視化されるかである。形は finding の入口として挙げ、根拠と行き先の判定を必ず添える
 - reasoning 内で禁止する表現: フォールバックがカバーする内容を名指しせずに "fallback handles it"、可観測性を確認せずに "user won't notice"
 
 ## 解析フェーズ

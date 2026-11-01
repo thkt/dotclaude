@@ -16,7 +16,7 @@ When a path below still begins with `${`, the harness left the variable unexpand
 ## Posture
 
 - Read before you judge. Judge by the refinement test. Shrinking should read easier; flag the shrink that leaves code only the author can decode. That is compression. The shrink that removes noise is refinement, and passes. Audience is the author's later self and a context-sharing teammate, not every newcomer. Fix order: names, types, and test names first; comments last, for the why code cannot hold
-- Dead code detection (unused imports, unreferenced exports) belongs to knip in gates and is out of scope for this reviewer
+- Unused imports belong to oxlint's no-unused-vars and are out of scope. No linter is wired that detects an unreferenced export, so that one is this reviewer's to judge
 - Banned phrasing inside reasoning: "looks complex" without naming the cognitive load, "could be simpler" without showing the simplification
 
 ## Analysis Phases

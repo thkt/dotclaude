@@ -180,32 +180,12 @@
             "command": "~/.claude/hooks/edit/mirror_prose_guard.ts",
             "if": "Edit(**/.ja/**)",
             "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "~/.cargo/bin/assay",
-            "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "formatter",
-            "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "gates",
-            "timeout": 120
           }
         ]
       },
       {
         "matcher": "Bash",
         "hooks": [
-          {
-            "type": "command",
-            "command": "gates changed",
-            "timeout": 120
-          },
           {
             "type": "command",
             "command": "~/.claude/hooks/post-bash/scribe_prompt.ts",

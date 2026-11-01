@@ -1,7 +1,6 @@
 /// <reference types="node" />
-// Tests for hooks/_lib/shebang_scope.ts, the shared bun-shebang / git-discovery module that
-// mirrors hooks/_lib/tests/shebang_test.py's SHEBANG / STALE_SHEBANG / EXEC_MODE /
-// _tracked_entries for the .ts side (DR-0114).
+// Tests for hooks/_lib/shebang_scope.ts, the shared bun-shebang / git-discovery module behind
+// the .ts side's exec-bit and shebang checks (DR-0114).
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";

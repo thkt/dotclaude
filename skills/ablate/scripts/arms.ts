@@ -2,8 +2,7 @@
 // and the pass threshold, and the two functions that build an arm's CLI command and read its
 // measurement status.
 //
-// Constant and function names stay exactly as the Python version declared them, not camelCased
-// the way hook_payload.ts renames hook_payload.py's edited_file.
+// Constant and function names stay exactly as the Python version declared them, not camelCased.
 
 import { statSync } from "node:fs";
 import { classify, SKILL_REFERENCE } from "../../_lib/harness_elements.ts";

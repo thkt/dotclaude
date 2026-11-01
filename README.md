@@ -12,7 +12,7 @@ This repository contains personal configurations for Claude AI, including:
 - Custom slash commands for systematic development workflows (27 skills)
 - Specialized AI agents for code review, generation, and analysis (28 agents)
 - Core AI operation principles and development best practices
-- Quality pipeline hooks (guardrails, formatter, gates) and the unwired reviews
+- The guardrails quality pipeline hook, plus the unwired formatter, gates, assay and reviews
   command
 - Japanese language support
 
@@ -159,22 +159,24 @@ The build workflow runs `gh` inside the sandbox. On macOS with the sandbox enabl
 
 ### Hook Tools (Recommended)
 
-Quality pipeline hooks wired in `settings.json` run automatically during Claude
-Code sessions to catch lint errors, format code, and enforce quality gates. The
-install command includes reviews, but `settings.json` does not wire it, so it
-does not run automatically.
+guardrails, wired in `settings.json`, runs automatically during Claude Code
+sessions to catch lint errors and security violations before a write. formatter,
+gates, assay and reviews are installable, but `settings.json` wires none of
+them, so they do not run automatically. CI runs oxlint and the type check.
+Nothing formats JS/TS.
 
 ```bash
 brew tap thkt/tap
-brew install guardrails formatter reviews gates
+brew install guardrails
 ```
 
-| Tool       | Hook        | Timing                | Role                              |
-| ---------- | ----------- | --------------------- | --------------------------------- |
-| guardrails | PreToolUse  | Before Write/Edit     | Lint (oxlint) + security checks   |
-| formatter  | PostToolUse | After Write/Edit      | Auto-format (oxfmt)               |
-| reviews    | Not wired   | No automatic run      | Static-analysis command           |
-| gates      | PostToolUse | After Write/Edit/Bash | Quality gates (knip, tsgo, madge) |
+| Tool       | Hook       | Timing            | Role                              |
+| ---------- | ---------- | ----------------- | --------------------------------- |
+| guardrails | PreToolUse | Before Write/Edit | Lint (oxlint) + security checks   |
+| formatter  | Not wired  | No automatic run  | Formatting (oxfmt)                |
+| gates      | Not wired  | No automatic run  | Quality gates (knip, tsgo, madge) |
+| assay      | Not wired  | No automatic run  | Spec document quality validation  |
+| reviews    | Not wired  | No automatic run  | Static-analysis command           |
 
 Per-project configuration is done via `.claude/tools.json`. See
 [thkt/tap](https://github.com/thkt/homebrew-tap) for details.

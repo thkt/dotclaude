@@ -1,5 +1,6 @@
 ---
-status: "accepted"
+status: "superseded by DR-0121"
+date: "2026-11-01"
 ---
 
 # ADR-0013: Hook Trinity パターンの採用 - claude-reviews による Pre-flight 分析の確実な実行
@@ -62,7 +63,7 @@ reviews     → PreToolUse(Skill)       → プロジェクト全体の分析
 ### 設計原則
 
 - **Fail-open**: ツール未検出・実行失敗でも exit 0（audit をブロックしない）
-- **並列実行**: 4ツールを `std::thread` で並列（timeout 制約対応）
+- **並列実行**: 4 ツールを `std::thread` で並列（timeout 制約対応）
 - **Raw テキスト出力**: ツール出力をそのまま渡す（JSON パースしない。fragile なパース層を避ける）
 - **CLI サニタイズ**: ANSI エスケープ・連続空行を除去（全ツール共通）
 - **プロジェクト設定**: `.claude-reviews.json` でツール個別の有効/無効
@@ -79,7 +80,7 @@ reviews     → PreToolUse(Skill)       → プロジェクト全体の分析
 ### Negative
 
 - 新規 Rust プロジェクトのビルド・配布コスト
-- 4つのランタイム依存（knip, oxlint, tsgo, npx）のインストールが前提
+- 4 つのランタイム依存（knip, oxlint, tsgo, npx）のインストールが前提
 - hook timeout (45s) 内に全ツール完了する必要がある
 
 ### Neutral

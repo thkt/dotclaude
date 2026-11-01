@@ -6,12 +6,10 @@
 // _heredoc_body / _flag / _lint_section / _checklist / main carry the Python side's names and
 // shapes.
 //
-// _lint_section inlines hooks/_lib/textlint.py's runner-detection and lint() logic rather than
-// importing a hooks/_lib/textlint.ts counterpart: no such module exists yet, and this is its
-// only TypeScript call site, so a shared module would sit unused by a second caller (YAGNI
-// Boundary -- the abstraction gate opens once a second caller needs it). hooks/_lib/japanese.ts's
-// hasJapanese is japanese.py's has_japanese ported; japanese.py itself stays in the tree until
-// #644 retires its last Python caller.
+// _lint_section duplicates hooks/_lib/textlint.ts's runner detection and lint logic rather than
+// importing it. That module exists and this is a second call site, so the YAGNI abstraction
+// gate is open and the duplication is one piece of knowledge held twice. The two differ only in
+// where each computes the config path from. Merging them is deferred, not justified.
 //
 // Advisory, same as the Python side: findings ride back as additionalContext and never stop
 // the call.
@@ -33,15 +31,15 @@ import * as ghFiling from "../_lib/gh_filing.ts";
 import { field, notify, parse, readStdin } from "../_lib/hook_payload.ts";
 import { hasJapanese } from "../_lib/japanese.ts";
 
-// hooks/_lib/textlint.py's REPO_ROOT / CONFIG, computed the same way shebang_scope.ts computes
+// The REPO_ROOT / CONFIG pair, computed the same way shebang_scope.ts computes
 // its own REPO: not $HOME/.claude, which names the installed harness alone, but two levels up
 // from this file (hooks/pre-bash -> hooks -> the checkout root), so a checkout run from
 // anywhere else still finds its own config.
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TEXTLINT_CONFIG = join(REPO_ROOT, ".textlintrc.json");
 
-/** bun x, then npx -- the same order hooks/_lib/textlint.py's _runner tries, and null when
- * neither is on PATH. */
+/** bun x, then npx -- the same order hooks/_lib/textlint.ts tries, and null when neither is
+ * on PATH. */
 function _textlint_runner(): readonly [string, ...string[]] | null {
   if (spawnSync("which", ["bun"]).status === 0) {
     return ["bun", "x"];

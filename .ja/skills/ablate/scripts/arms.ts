@@ -1,8 +1,7 @@
 // このモジュールが置き換える Python 版の arm helper を TypeScript へ移植したもの。arm 名の
 // 一覧、実行回数、合格閾値、そして arm の CLI コマンドを組む関数と測定状態を読む関数を持つ。
 //
-// 定数名と関数名は Python 版が宣言したとおりに保つ。hook_payload.ts が hook_payload.py の
-// edited_file を camelCase に改名したのとは違う形。
+// 定数名と関数名は Python 版が宣言したとおりに保つ。camelCase へ改名していない。
 
 import { statSync } from "node:fs";
 import { classify, SKILL_REFERENCE } from "../../_lib/harness_elements.ts";
