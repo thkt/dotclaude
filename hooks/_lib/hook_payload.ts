@@ -1,13 +1,12 @@
 /// <reference types="node" />
-// Typed reads of a hook payload, and the one write a PreToolUse hook makes. The TypeScript
-// side of hooks/_lib/hook_payload.py; both stay in the tree while the consumers move over one
-// at a time, and hooks/_lib/tests/hook-payload-parity.test.ts holds the two to the same answers.
+// Typed reads of a hook payload, and the one write a PreToolUse hook makes. Every hook in this
+// repository reads its payload through here, and hooks/_lib/tests/hook-payload-parity.test.ts
+// pins the read path against literal expected values.
 //
 // JSON.parse returns `any`, and a `typeof x === "object"` check narrows only to `object`, so a
 // field read straight from the payload spreads that looseness through every caller a type
 // checker follows. This module is the one place that admits it. Values leave here as
-// `unknown`, which a caller has to narrow before using -- the same contract hook_payload.py's
-// docstring states for `object`.
+// `unknown`, which a caller has to narrow before using.
 
 import { readFileSync } from "node:fs";
 

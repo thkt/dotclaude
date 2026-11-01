@@ -21,7 +21,7 @@
     }
   },
   {
-    "id": "T-003-missing-key",
+    "id": "T-540-missing-key",
     "payload": {
       "hook_event_name": "PreToolUse",
       "tool_name": "Bash",
@@ -29,7 +29,7 @@
     }
   },
   {
-    "id": "T-003-type-mismatch",
+    "id": "T-540-type-mismatch",
     "payload": {
       "hook_event_name": "PreToolUse",
       "tool_name": "Bash",
