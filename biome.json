@@ -11,7 +11,9 @@
       "!workflows/*.js",
       "!.ja/workflows/*.js",
       "!plugins/**",
-      "!skills/*/test/cases/**"
+      "!skills/*/test/cases/**",
+      "!bridge-spawn",
+      "!seed-admin"
     ]
   },
   "formatter": {

@@ -149,12 +149,21 @@ test("T-004 the same script placed under src/ yields a parse diagnostic", () => 
 const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 
 // Held as a literal so this copy cannot drift toward whatever files.includes contains.
+// bridge-spawn/ and seed-admin/ are harness runtime directories the live ~/.claude checkout
+// grows, and their mode denies the owner scandir, so biome walking them ends the whole run at
+// `internalError/io` before any lint diagnostic. Neither is tracked and neither is in
+// .gitignore, so `vcs.useIgnoreFile` does not reach them the way it reaches skills/synced/.
+// Both carry no `/**`, unlike the entries above: `!bridge-spawn/**` matches what is inside the
+// directory and leaves the directory itself in the traversal, so biome still scandirs it and
+// still exits on the io error (confirmed against biome 2.5.12). `!bridge-spawn` prunes it.
 const PLANNED_FILES_INCLUDES = [
   "**",
   "!workflows/*.js",
   "!.ja/workflows/*.js",
   "!plugins/**",
   "!skills/*/test/cases/**",
+  "!bridge-spawn",
+  "!seed-admin",
 ];
 
 // Every way a biome.json edit can stop the rule from reaching the tracked tree as a failure, as
@@ -184,7 +193,7 @@ test("T-005 biome.json keeps noExcessiveCognitiveComplexity at error with maxAll
   );
 });
 
-test("T-006 biome.json's files.includes equals the five planned entries exactly and the file carries no overrides key", () => {
+test("T-006 biome.json's files.includes equals the seven planned entries exactly and the file carries no overrides key", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
   assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
 });

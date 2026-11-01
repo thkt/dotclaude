@@ -1,8 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { trackedFiles } from "../workflows/_lib/tests/_retirement.ts";
 
 // These sweep every instruction directory, so they belong to no single skill. Living here also
 // keeps them outside their own scan, which is why no self-exemption is needed below.
@@ -10,33 +11,37 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 type InstructionFile = { lang: "en" | ".ja"; rel: string; full: string };
 
-// One prefix/dir pair's worth of instructionFiles's walk: every markdown/js/py file directly
-// under root/prefix/dir, __pycache__ excluded. Letting readdir throw on a missing directory
-// keeps a deleted instruction tree from quietly shrinking the sweep to the directories that
-// remain.
-const scanInstructionDir = async (
+// One prefix/dir pair's worth of instructionFiles's list: every markdown/js/py file under
+// root/prefix/dir that git tracks. `git ls-files` is the source rather than a filesystem walk
+// because the live ~/.claude checkout grows directories holding no instruction this harness
+// reads -- skills/synced/ caches the claude.ai account's own skills (.gitignore), and a walk
+// reads those bodies as if this repository wrote them -- and because __pycache__ already sits
+// outside what git tracks. The assertion below keeps a deleted instruction tree from quietly
+// shrinking the sweep to the directories that remain, the way letting readdir throw on a
+// missing directory did.
+const scanInstructionDir = (
   prefix: "" | ".ja",
   lang: "en" | ".ja",
   dir: string,
-): Promise<InstructionFile[]> => {
-  const found: InstructionFile[] = [];
-  const base = join(root, prefix, dir);
-  for (const entry of await readdir(base, { recursive: true, withFileTypes: true })) {
-    if (!entry.isFile() || !/\.(md|js|py)$/.test(entry.name)) continue;
-    const full = join(entry.parentPath, entry.name);
-    const rel = full.slice(join(root, prefix).length + 1);
-    if (rel.includes("__pycache__")) continue;
-    found.push({ lang, rel, full });
-  }
-  return found;
+): InstructionFile[] => {
+  const base = prefix === "" ? `${dir}/` : `${prefix}/${dir}/`;
+  const tracked = trackedFiles(root).filter((rel) => rel.startsWith(base));
+  assert.ok(tracked.length > 0, `${base} holds no tracked file`);
+  return tracked
+    .filter((rel) => /\.(md|js|py)$/.test(rel))
+    .map((rel) => ({
+      lang,
+      rel: prefix === "" ? rel : rel.slice(prefix.length + 1),
+      full: join(root, rel),
+    }));
 };
 
-const instructionFiles = async () => {
+const instructionFiles = () => {
   const found: InstructionFile[] = [];
   for (const prefix of ["", ".ja"] as const) {
     const lang: "en" | ".ja" = prefix === "" ? "en" : prefix;
     for (const dir of ["skills", "agents", "rules", "workflows"]) {
-      found.push(...(await scanInstructionDir(prefix, lang, dir)));
+      found.push(...scanInstructionDir(prefix, lang, dir));
     }
   }
   return found;
@@ -58,7 +63,7 @@ test("no live instruction or convention still carries the old name ADR", async (
   }
 
   // when_to_use lists the words a user types, so ADR stays there to reach whoever types it.
-  const files = (await instructionFiles()).filter((f) => f.rel !== EXEMPT);
+  const files = instructionFiles().filter((f) => f.rel !== EXEMPT);
   assert.ok(files.length > 100, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
     const text = (await readFile(full, "utf8")).replace(/^when_to_use:.*$/gm, "");
@@ -74,7 +79,7 @@ test("no skill names a bundled asset by a home-anchored path", async () => {
   const RUNNING_SIDE = /\.claude\/settings\.json/;
   const HOME_ANCHORED = /~\/\.claude\/|\$HOME\/\.claude\//;
   // A test under skills/ is not an instruction the harness reads, so a path it names is a fixture.
-  const files = (await instructionFiles()).filter(
+  const files = instructionFiles().filter(
     (f) => f.rel.startsWith("skills/") && !f.rel.includes("/tests/"),
   );
   assert.ok(files.length > 40, `the number scanned (${files.length})`);
@@ -102,7 +107,7 @@ test("every agent naming a bundled asset pairs the plugin form with the fallback
   // holds under a plugin.
   const RUNNING_SIDE = /(~|\$HOME)\/\.claude\/(settings\.json|cache\/|history\/)/;
   const HOME_ANCHORED = /~\/\.claude\/|\$HOME\/\.claude\//;
-  const files = (await instructionFiles()).filter(
+  const files = instructionFiles().filter(
     (f) => f.rel.startsWith("agents/") && !f.rel.includes("/tests/"),
   );
   assert.ok(files.length > 20, `the number scanned (${files.length})`);
@@ -127,7 +132,7 @@ test("every agent naming a bundled asset pairs the plugin form with the fallback
 // short list in its own body. Nothing at run time reports the gap: the wider grant only ever shows
 // up as a prompt that did not appear.
 test("no skill grants Bash without narrowing it to the commands it names", async () => {
-  const files = (await instructionFiles()).filter((f) => f.rel.endsWith("/SKILL.md"));
+  const files = instructionFiles().filter((f) => f.rel.endsWith("/SKILL.md"));
   assert.ok(files.length > 40, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
     const grant = (await readFile(full, "utf8")).match(/^allowed-tools:.*$/m)?.[0] ?? "";
@@ -139,7 +144,7 @@ test("no skill grants Bash without narrowing it to the commands it names", async
 // instruction points at a directory that sits under no project root.
 test("no live instruction or convention names a workspace/ without .claude/", async () => {
   const BARE_WORKSPACE = /(?<!\.claude\/)(?<![\w/.])workspace\//;
-  const files = await instructionFiles();
+  const files = instructionFiles();
   assert.ok(files.length > 100, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
     const text = await readFile(full, "utf8");

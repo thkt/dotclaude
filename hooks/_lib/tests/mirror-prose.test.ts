@@ -12,18 +12,24 @@
 // than the live repo: a temp tree keeps the exclusion behavior deterministic and keeps the test
 // from depending on -- or mutating -- this checkout's actual .ja/ content. node_modules/,
 // projects/, and logs/ replace the retired Python module's __pycache__/.git exclusions -- the
-// ones this repo's own tree can actually grow under a plain filesystem walk (git ls-files
-// already leaves gitignored directories out, so a walk that reused it would not need this
-// exclusion at all; mirror_prose's sweep walks the filesystem directly, the same way the retired
-// Python module's rglob did).
+// ones a temp tree's fixtures stand in for under a plain filesystem walk.
+//
+// The two live-checkout sweeps at the bottom take their file list from `git ls-files` instead of
+// that walk. A walk reads whatever the live ~/.claude checkout grew: skills/synced/ caches the
+// claude.ai account's own skills (.gitignore) and answers to no rule of this repository, while
+// bridge-spawn/ and seed-admin/ are harness runtime directories whose mode denies the owner
+// scandir, so readdirSync ends the sweep at EPERM before it reaches any prose. git ls-files
+// leaves all three out, and what it reports -- the tracked tree -- is the mirror this repository
+// is responsible for.
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { editedFile } from "../hook_payload.ts";
 import { check, checkEnglish } from "../mirror_prose.ts";
+import { trackedFiles } from "../../../workflows/_lib/tests/_retirement.ts";
 
 function tempRoot(prefix: string): string {
   return mkdtempSync(path.join(tmpdir(), prefix));
@@ -46,8 +52,8 @@ function editedPath(absolutePath: string): string {
 }
 
 // .git and __pycache__ carry the retired Python module's own two exclusions; the other three
-// are what this repo's tree grows that its rglob never met. A worktree keeps .git as a file,
-// so only the primary checkout reaches that entry at all.
+// are what this repo's tree grows that its rglob never met. The walk below runs over temp trees
+// alone, so these names are what a fixture placed under them stands for.
 const EXCLUDED_DIR_NAMES = new Set(["node_modules", "projects", "logs", ".git", "__pycache__"]);
 
 /** mirror_prose_test.py's MirrorSweep.rglob walk, adapted to prune node_modules/, projects/,
@@ -66,20 +72,28 @@ function walk(root: string): string[] {
   return out;
 }
 
-/** mirror_prose_test.py's test_no_mirror_file_lost_its_japanese, parameterized by root instead
- * of the live repo. */
-function jaSweepOffenders(root: string): string[] {
-  return walk(root)
+/** mirror_prose_test.py's test_no_mirror_file_lost_its_japanese, parameterized by the root the
+ * offenders are named against and the files to read -- `walk` for a temp tree, `trackedUnder`
+ * for this checkout. */
+function jaSweepOffenders(root: string, files: string[]): string[] {
+  return files
     .filter((absolute) => check(absolute) !== null)
     .map((absolute) => path.relative(root, absolute));
 }
 
-/** mirror_prose_test.py's test_no_english_side_file_kept_the_japanese_original, parameterized by
- * root instead of the live repo. */
-function englishSweepOffenders(root: string): string[] {
-  return walk(root)
+/** mirror_prose_test.py's test_no_english_side_file_kept_the_japanese_original, parameterized
+ * the same way. */
+function englishSweepOffenders(root: string, files: string[]): string[] {
+  return files
     .filter((absolute) => checkEnglish(absolute) !== null)
     .map((absolute) => path.relative(root, absolute));
+}
+
+/** Every file `git ls-files` reports under `repo`/`prefix`, as an absolute path. */
+function trackedUnder(repo: string, prefix: string): string[] {
+  return trackedFiles(repo)
+    .filter((relative) => relative.startsWith(prefix))
+    .map((relative) => path.join(repo, relative));
 }
 
 test("T-366 an edited .ja file whose english twin is missing is reported, and one whose twin exists is not", () => {
@@ -112,7 +126,7 @@ test("T-367 the sweep excludes node_modules, projects and logs, and the same pre
     writeFixture(root, "logs/.ja/sample.ts", englishOnly),
   ];
 
-  const offenders = jaSweepOffenders(root);
+  const offenders = jaSweepOffenders(root, walk(root));
   for (const absolute of excluded) {
     assert.ok(
       !offenders.includes(path.relative(root, absolute)),
@@ -136,7 +150,7 @@ test("T-368 an english-side file that kept the japanese original is reported by 
   writeFixture(root, relative, japaneseBody);
   writeFixture(root, path.join(".ja", relative), japaneseBody);
 
-  const offenders = englishSweepOffenders(root);
+  const offenders = englishSweepOffenders(root, walk(root));
   assert.ok(
     offenders.includes(relative),
     `the english-side file left in Japanese must be reported by its own relative path: ${offenders.join(", ")}`,
@@ -151,11 +165,15 @@ const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".
 // including what landed while no hook was watching". These two restore that reading.
 test("no .ja file in this checkout lost its Japanese", () => {
   const mirror = path.join(REPO, ".ja");
-  assert.ok(existsSync(mirror), "this checkout carries a .ja/ tree for the sweep to read");
+  const files = trackedUnder(REPO, ".ja/");
+  assert.ok(files.length > 0, "this checkout tracks a .ja/ tree for the sweep to read");
 
-  assert.deepEqual(jaSweepOffenders(mirror), [], ".ja/ files that lost their Japanese");
+  assert.deepEqual(jaSweepOffenders(mirror, files), [], ".ja/ files that lost their Japanese");
 });
 
 test("no english-side file in this checkout kept the japanese original", () => {
-  assert.deepEqual(englishSweepOffenders(REPO), [], "English-side files still in Japanese");
+  const files = trackedUnder(REPO, "");
+  assert.ok(files.length > 0, "this checkout tracks files for the sweep to read");
+
+  assert.deepEqual(englishSweepOffenders(REPO, files), [], "English-side files still in Japanese");
 });

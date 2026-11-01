@@ -2,9 +2,10 @@
 // before the rows it governs. workflows/ and commands/ hold no markdown.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { trackedFiles } from "../workflows/_lib/tests/_retirement.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SCANNED = ["agents", "rules", "skills", "docs"];
@@ -46,21 +47,15 @@ const nextNonEmpty = (lines: string[], i: number) => {
   return "";
 };
 
-const markdownUnder = async (dir: string): Promise<string[]> => {
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const out: string[] = [];
-  for (const e of entries) {
-    const path = join(dir, e.name);
-    if (e.isDirectory()) {
-      if (!SKIPPED.has(relative(root, path))) out.push(...(await markdownUnder(path)));
-    } else if (e.name.endsWith(".md")) out.push(path);
-  }
-  return out;
+// `git ls-files` is the source rather than a filesystem walk: the live ~/.claude checkout grows
+// skills/synced/, the cache of the claude.ai account's own skills (.gitignore), and those pages
+// answer to no convention of this repository.
+const markdownUnder = (dir: string): string[] => {
+  const base = `${relative(root, dir)}/`;
+  return trackedFiles(root)
+    .filter((rel) => rel.startsWith(base) && rel.endsWith(".md"))
+    .filter((rel) => ![...SKIPPED].some((skipped) => rel.startsWith(`${skipped}/`)))
+    .map((rel) => join(root, rel));
 };
 
 // A fenced block carries its own tables and prose, and MARKDOWN.md exempts code from every rule.
@@ -93,7 +88,7 @@ const scan = async () => {
   const seen = new Set();
   for (const prefix of ["", ".ja"]) {
     for (const dir of SCANNED) {
-      for (const path of await markdownUnder(join(root, prefix, dir))) {
+      for (const path of markdownUnder(join(root, prefix, dir))) {
         for (const { line, text } of paragraphsAfterTables(await readFile(path, "utf8"))) {
           const key = keyFor(relative(root, path), text);
           seen.add(key);
@@ -113,15 +108,13 @@ test("no explanation sits below the table it explains", async () => {
 });
 
 // An empty scan reports the same zero offenders as a clean tree.
-test("the scan reaches the files it names", async () => {
-  const counts = await Promise.all(
-    SCANNED.map(async (dir) => (await markdownUnder(join(root, dir))).length),
-  );
+test("the scan reaches the files it names", () => {
+  const counts = SCANNED.map((dir) => markdownUnder(join(root, dir)).length);
   assert.ok(Math.min(...counts) > 0, `every scanned directory holds markdown: ${counts}`);
 });
 
-test("historical originals are excluded while current wiki pages remain scanned", async () => {
-  const files = (await markdownUnder(join(root, "docs"))).map((path) => relative(root, path));
+test("historical originals are excluded while current wiki pages remain scanned", () => {
+  const files = markdownUnder(join(root, "docs")).map((path) => relative(root, path));
   assert.ok(files.some((path) => path.startsWith("docs/wiki/")));
   assert.ok(!files.some((path) => path.startsWith("docs/research/")));
 });
