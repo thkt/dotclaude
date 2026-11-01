@@ -26,7 +26,6 @@ This repository holds scripts and Markdown, nothing else. Most binaries invoked 
 | ------------------------------------------- | --------------------------------------- | ------------------------------- |
 | Hook scripts                                | `hooks/**/*.ts`, `hooks/**/*.sh`        | This repository                 |
 | Skill / agent / workflow definitions        | `skills/`, `agents/`, `workflows/`      | This repository                 |
-| `guardrails`                                | Rust binary                             | `brew install thkt/tap/{tool}`  |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLIs                               | `brew install thkt/tap/{tool}`  |
 | `ast-grep`                                  | Rust binary                             | `brew install ast-grep`         |
 | `codegraph`                                 | Binary behind a mise shim               | mise                            |
@@ -77,7 +76,6 @@ The order below is the registration order in `settings.json`. Within one matcher
 | PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.ts`                   | none               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | none               | 30      |
 | PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.ts`                         | `**/*.rs`          | 60      |
-| PreToolUse        | `Write\|Edit`      | `guardrails`                                    | none               | 30      |
 | PreToolUse        | `EnterPlanMode`    | Inline `echo` deny                              | none               | none    |
 | PreToolUse        | `WebFetch\|WebSearch` | Inline `echo` deny                           | none               | none    |
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
@@ -294,7 +292,7 @@ A workflow can nest another one level deep. That is how a routing table is reuse
 
 ### Local
 
-`guardrails` checks a write against oxlint's rules before it lands, and `rust_pre_edit.ts` checks a `.rs` write with clippy. After an edit, `rumdl_check.ts`, `textlint_fix.ts` and `rust_post_edit.ts` run. The gates, assay and formatter binaries do not. Type checking runs in CI alone.
+The only check before a write is `rust_pre_edit.ts`'s clippy, which takes `.rs`. After an edit, `rumdl_check.ts`, `textlint_fix.ts` and `rust_post_edit.ts` run. Not one of the guardrails, gates, assay and formatter binaries does. Linting and type checking for JS and TS run in CI alone.
 
 ### CI
 
@@ -322,7 +320,6 @@ The lint targets and thresholds live in configuration files. This document does 
 | `.rumdl.toml`         | Which Markdown rules are disabled                                       |
 | `.oxlintrc.json`      | JavaScript static checks                                                |
 | `biome.json`          | The cognitive-complexity cap. That one rule only; the formatter and every other rule are off |
-| `.guardrails.json`    | The guardrails rules, and the exemption for deliberately vulnerable fixtures |
 | `ruff.toml`           | Python checks and formatting                                            |
 | `pyrightconfig.json`  | Python type checking                                                    |
 

@@ -31,7 +31,7 @@ MCP Servers: zero calls over the same window.
 - [ ] scout - ~/GitHub/cli/scout (web fetch / search CLI)
 - [ ] recall - ~/GitHub/cli/recall (session search)
 - [ ] shields - ~/GitHub/cli/shields (PreToolUse guard hook; currently unwired in settings.json)
-- [ ] guardrails - ~/GitHub/cli/guardrails (lint hook)
+- [ ] guardrails - ~/GitHub/cli/guardrails (lint hook, currently unwired in settings.json)
 - [ ] kiku - ~/GitHub/cli/kiku (Slack semantic search)
 - [ ] kagami - ~/GitHub/apps/kagami (session tracking app)
 - [ ] tally - ~/GitHub/cli/tally (engineering time tracking)

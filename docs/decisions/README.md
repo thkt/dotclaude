@@ -126,7 +126,8 @@ This directory contains important decisions about the project.
 | [0118](0118-adopt-biome-cognitive-complexity-beside-oxlint.md) | Adopt Biome cognitive complexity beside oxlint | accepted | 2026-09-13 |
 | [0119](0119-keep-research-reports-under-docs-research-in-every-repository.md) | Keep research reports under docs/research in every repository | accepted | 2026-09-25 |
 | [0120](0120-keep-the-implement-workflows-deviations-from-codexs-implement.md) | Keep the implement workflow's deviations from Codex's implement | accepted | 2026-09-28 |
-| [0121](0121-narrow-the-hook-trinity-to-guardrails-alone.md) | Narrow the hook trinity to guardrails alone | accepted | 2026-11-01 |
+| [0121](0121-narrow-the-hook-trinity-to-guardrails-alone.md) | Narrow the hook trinity to guardrails alone | superseded by DR-0122 | 2026-11-01 |
+| [0122](0122-leave-the-quality-pipeline-binaries-entirely-unwired.md) | Leave the quality pipeline binaries entirely unwired | accepted | 2026-11-01 |
 
 ## By Status
 
@@ -236,7 +237,7 @@ This directory contains important decisions about the project.
 - **0118**: Adopt Biome cognitive complexity beside oxlint
 - **0119**: Keep research reports under docs/research in every repository
 - **0120**: Keep the implement workflow's deviations from Codex's implement
-- **0121**: Narrow the hook trinity to guardrails alone
+- **0122**: Leave the quality pipeline binaries entirely unwired
 
 ### Deprecated
 
@@ -261,6 +262,7 @@ This directory contains important decisions about the project.
 - **0086**: ADR-0086: Plan 節なし issue の plan を build 内で自律生成する
 - **0091**: ADR-0091: リファレンス注入をフラットインデックスと glob 照合で決定的に行う
 - **0107**: Track research reports in git while the rest of the workspace stays untracked
+- **0121**: Narrow the hook trinity to guardrails alone
 
 ### Rejected
 

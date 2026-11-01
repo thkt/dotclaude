@@ -26,7 +26,6 @@
 | ------------------------------------------- | --------------------------------------- | ------------------------------- |
 | hook スクリプト                             | `hooks/**/*.ts`, `hooks/**/*.sh`        | 本リポジトリ                    |
 | skill / agent / workflow 定義               | `skills/`, `agents/`, `workflows/`      | 本リポジトリ                    |
-| `guardrails`                                | Rust バイナリ                           | `brew install thkt/tap/{tool}`  |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLI                                | `brew install thkt/tap/{tool}`  |
 | `ast-grep`                                  | Rust バイナリ                           | `brew install ast-grep`         |
 | `codegraph`                                 | mise shim 経由のバイナリ                | mise                            |
@@ -77,7 +76,6 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.ts`                   | なし               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | なし               | 30      |
 | PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.ts`                         | `**/*.rs`          | 60      |
-| PreToolUse        | `Write\|Edit`      | `guardrails`                                    | なし               | 30      |
 | PreToolUse        | `EnterPlanMode`    | インライン `echo` による deny                   | なし               | なし    |
 | PreToolUse        | `WebFetch\|WebSearch` | インライン `echo` による deny                | なし               | なし    |
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
@@ -294,7 +292,7 @@ workflow は他の workflow を 1 階層だけ入れ子にできる。ルーテ�
 
 ### ローカル
 
-書き込み前に `guardrails` が oxlint 規則で、`.rs` では `rust_pre_edit.ts` が clippy で見る。編集後は `rumdl_check.ts`、`textlint_fix.ts`、`rust_post_edit.ts` が走る。gates、assay、formatter のバイナリは走らない。型検査は CI だけが回す。
+書き込み前の検査は `rust_pre_edit.ts` の clippy だけで、`.rs` を対象に取る。編集後は `rumdl_check.ts`、`textlint_fix.ts`、`rust_post_edit.ts` が走る。guardrails、gates、assay、formatter のバイナリは 1 つも走らない。JS と TS の lint と型検査は CI だけが回す。
 
 ### CI
 
@@ -322,7 +320,6 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | `.rumdl.toml`         | Markdown 検査で無効にする規則                                           |
 | `.oxlintrc.json`      | JavaScript の静的検査                                                   |
 | `biome.json`          | 認知的複雑度の上限。規則はこの 1 本だけで、formatter と他の規則は止めている |
-| `.guardrails.json`    | guardrails の規則と、意図的に脆弱な fixture への除外                    |
 | `ruff.toml`           | Python の検査と整形                                                     |
 | `pyrightconfig.json`  | Python の型検査                                                         |
 

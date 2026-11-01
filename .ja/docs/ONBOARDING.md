@@ -31,7 +31,7 @@ MCP Servers: 同じ期間の呼び出しは 0 件。
 - [ ] scout. ~/GitHub/cli/scout (Web 取得/検索 CLI)
 - [ ] recall. ~/GitHub/cli/recall (セッション検索)
 - [ ] shields. ~/GitHub/cli/shields (PreToolUse ガードフック。現在 settings.json 未配線)
-- [ ] guardrails. ~/GitHub/cli/guardrails (lint フック)
+- [ ] guardrails. ~/GitHub/cli/guardrails (lint フック。現在 settings.json 未配線)
 - [ ] kiku. ~/GitHub/cli/kiku (Slack セマンティック検索)
 - [ ] kagami. ~/GitHub/apps/kagami (セッション追跡アプリ)
 - [ ] tally. ~/GitHub/cli/tally (エンジニアリング時間追跡)

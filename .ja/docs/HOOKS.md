@@ -48,7 +48,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 | イベント         | Matcher            | フック                                                                                                                                                            |
 | ---------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PreToolUse       | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread, pre-bash/issue_body_gate |
-| PreToolUse       | Write/Edit         | edit/rust_pre_edit.ts, guardrails                                                                                                                                 |
+| PreToolUse       | Write/Edit         | edit/rust_pre_edit.ts                                                                                                                                             |
 | PreToolUse       | EnterPlanMode      | deny (計画は /think へ誘導)                                                                                                                                       |
 | PreToolUse       | WebFetch/WebSearch | deny (scout CLI へ誘導)                                                                                                                                           |
 | PostToolUse      | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/rumdl_check.ts, edit/mirror_prose_guard.ts                                                                     |
@@ -117,40 +117,18 @@ hook が読み込む共有コード。単体では登録しない。`japanese.ts
 
 ## Quality Pipeline (Rust バイナリ)
 
-書き込み前に品質強制を挟む Rust バイナリ。リポジトリは独立し、`brew install thkt/tap/guardrails` でインストールする。
+このファミリーのバイナリは 1 つも `settings.json` に配線されていない。書き込み前後の品質強制は `hooks/` 配下の TypeScript hook と CI が持つ。
 
-```mermaid
-flowchart LR
-    W[Write/Edit] --> G[guardrails]
-    G -->|pass| AP[適用]
-```
+CI が引き継ぐのは oxlint と tsc による型検査である。`knip` `depcruise` `circular` `coupling` `jscpd` を見るものは残っていない。JS/TS の書き込み時整形も、spec 文書の品質検証も、guardrails のカスタム規則が見ていた sensitiveFile や XSS も残らない。oxfmt は devDependency のまま誰も呼ばない。書き込み前に残る検査は `rust_pre_edit.ts` の clippy で、`.rs` だけを対象に取る。
 
-### guardrails
-
-PreToolUse フック。Write/Edit 適用前にコードを検証する。
-
-| 観点           | 詳細                                                   |
-| -------------- | ------------------------------------------------------ |
-| Linter         | oxlint (優先)/biome (フォールバック)                   |
-| カスタムルール | sensitiveFile, cryptoWeak, XSS, eval など (網羅でない) |
-| ブロッキング   | あり。critical/high severity でブロック                |
-| Source         | [thkt/guardrails](https://github.com/thkt/guardrails)  |
-
-### プロジェクト設定
-
-guardrails はプロジェクトルートの `.claude/tools.json` を読む。プロジェクト単位で `"enabled": false` により無効化できる。
-
-```json
-{
-  "guardrails": { "rules": { "oxlint": true } }
-}
-```
-
-### 休止中
-
-shields (コマンドガード、ファイル ACL、secrets チェック) と reviews (skill 実行前の静的解析コンテキスト注入) は同ファミリーのバイナリだが、意図的に settings.json から外して休止中。
-
-formatter (oxfmt による整形)、gates (静的ゲート群)、assay (spec.md/eval-criteria.md の文書品質検証) も同じく外した。このリポジトリの `.claude/tools.json` が gates に有効化していたのは `knip` `tsgo` `oxlint` `depcruise` `circular` `coupling` `jscpd` である。うち oxlint と型検査は CI が引き継ぐ。残る `knip` `depcruise` `circular` `coupling` `jscpd` を見るものは無い。JS/TS の書き込み時整形も spec 文書の品質検証も無い。oxfmt は devDependency のまま誰も呼ばない。
+| バイナリ   | 担っていた仕事                                                                                     | 外した記録 |
+| ---------- | -------------------------------------------------------------------------------------------------- | ---------- |
+| guardrails | PreToolUse。oxlint 規則と sensitiveFile・cryptoWeak・XSS・eval などの規則で critical/high をブロック | DR-0122    |
+| formatter  | PostToolUse。oxfmt による JS/TS の整形                                                             | DR-0121    |
+| gates      | PostToolUse。`knip` `tsgo` `oxlint` `depcruise` `circular` `coupling` `jscpd` の静的ゲート         | DR-0121    |
+| assay      | PostToolUse。spec.md/eval-criteria.md の文書品質検証                                               | DR-0121    |
+| shields    | コマンドガード、ファイル ACL、secrets チェック                                                     | 配線せず   |
+| reviews    | skill 実行前の静的解析コンテキスト注入                                                             | 配線せず   |
 
 ## 設計原則
 
@@ -181,7 +159,7 @@ fail-closed の hook が特定の失敗を 1 つだけ無視するのは格下�
 
 外部アプリが `settings.json` へ書き込んだ hook 配線は、そのアプリをアンインストールしても残る。残った配線は非ブロッキングのまま毎イベント失敗し続ける。会話と `git diff` のどちらにも出ないので、気付く経路は transcript の `hook_non_blocking_error` と `stop_hook_summary` の `hookErrors` に限られる。
 
-hook が毎回出す 1 行を `settings.json` 側の設定で消す口はない。`suppressOutput` は hook が返す JSON のキーで、stdout 専用。stderr へ出す guardrails の定型行は、出力さえあれば `hook_success` として記録され描画される。
+hook が毎回出す 1 行を `settings.json` 側の設定で消す口はない。`suppressOutput` は hook が返す JSON のキーで、stdout 専用。stderr へ出す行は、出力さえあれば `hook_success` として記録され描画される。
 
 `autoMemoryEnabled: false` で auto-memory の読み書きを止められる。バイナリ内の `/pause-memory` は `isEnabled: () => false` のまま埋め込まれており、有効化しても動作しない。
 

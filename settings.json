@@ -266,12 +266,6 @@
             "if": "Edit(**/*.rs)",
             "timeout": 60,
             "statusMessage": "clippy..."
-          },
-          {
-            "type": "command",
-            "command": "guardrails",
-            "timeout": 30,
-            "statusMessage": "guardrails..."
           }
         ]
       },
@@ -366,7 +360,8 @@
     "typescript-lsp@claude-plugins-official": true,
     "html@skills": true,
     "typesafe@typesafe-ai": true,
-    "redact@thkt-mods": true
+    "redact@thkt-mods": true,
+    "figma@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "agent-browser": {
