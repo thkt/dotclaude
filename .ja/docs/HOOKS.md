@@ -8,40 +8,38 @@ Rust バイナリは sentinels プラグインとしても配布するが、登�
 
 | レイヤー         | 実体                           | 登録方式                         |
 | ---------------- | ------------------------------ | -------------------------------- |
-| スクリプト hooks | `~/.claude/hooks/**/*.{sh,py}` | `settings.json`                  |
+| スクリプト hooks | `~/.claude/hooks/**/*.{sh,ts}` | `settings.json`                  |
 | Rust バイナリ    | `brew install thkt/tap/{tool}` | `settings.json` (コマンド直登録) |
 
 ### 言語
 
-hook をシェルスクリプトで書くのは、仕事が数個の判定と 1 回の fork で済むとき。構造が要るほど処理が長いか、テストと共有するときは Python か TypeScript で書く。`mirror_prose_guard.ts` が後者で、規則そのものは `_lib/mirror_prose.ts` にあり、リポジトリ一括検査のテストも同じモジュールを読む。
+hook をシェルスクリプトで書くのは、仕事が数個の判定と 1 回の fork で済むとき。構造が要るほど処理が長いか、テストと共有するときは TypeScript で書く (DR-0114)。`mirror_prose_guard.ts` が後者で、規則そのものは `_lib/mirror_prose.ts` にあり、リポジトリ一括検査のテストも同じモジュールを読む。Python は hook の実装言語から外した (DR-0121)。
 
 テストは hook 本体と同じ言語で書く。シェルに残すのは、スタブとしてシェルスクリプトを PATH へ置くものだけで、`amphetamine_agent_session` の osascript と `rust-edit` の cargo がこれにあたる。
-
-Python 側では、1 つのメソッドが最初の失敗で止まると残りのアサーションが走らない。これは 2 つの形で起こる。複数のアサーションを並べた場合は `subTest` で 1 件ずつ包む。hook の出力を `json.loads` に直接渡した場合は、何も返さない hook で例外がメソッドごと落とすので、空を `{}` に倒してから読む。どちらも落ちる件数が静かに減るだけなので、テストは green のままになる。
 
 ## 命名
 
 ディレクトリがイベントを答えるので、ファイル名は対象と操作を答える。形は `<対象>_<操作>` で、対象はこの hook が見るもの、操作はそれに対して何をするか。読み手は先頭の語で対象を絞り込める。
 
-Python はアンダースコアで区切る。shell はハイフンで区切る。`_lib/` のモジュールは import されるので、語の区切りにアンダースコアが要る。hook 本体どうしは import しないため、技術的な縛りが無い。それでも揃えるのは、テスト名が `<hook 名>_test.py` で一致し、hook からテストを変換なしで引けるため。
+TypeScript はアンダースコアで区切る。shell はハイフンで区切る。`_lib/` のモジュールは import されるので、語の区切りにアンダースコアが要る。hook 本体どうしは import しないため、技術的な縛りが無い。それでも揃えるのは、hook 名からテスト名を機械的に引けるため。テスト側はハイフンで区切る (`rust_post_edit.ts` に対して `rust-edit.test.ts`)。
 
 操作を表す語は、名詞としても読める語 (guard/gate/fix/index/alert/rewrite) を選ぶ。`notify` のような動詞専用の語は名前として据わりが悪い。既に英語として読める動詞句 (`rm_to_trash`, `body_proofread`) はそのまま置く。
 
 例外は 2 つ。外部アプリを丸ごと扱うものは `<アプリ名>_<管理対象>` とし、`amphetamine_agent_session` は「エージェントのターン中だけ」という限定を名前に残す。1 語で足りるものは 1 語で置く (`statusline`)。複数の hook をまとめて見るテストは、その群を表す名前を持つ (`rust-edit.test.ts` は pre/post の 2 本と `_lib/rust_target.ts` を見る)。
 
-| 種別            | 形                  | 例                          |
-| --------------- | ------------------- | --------------------------- |
-| Python hook     | `<対象>_<操作>.py`  | 現存せず (hook はすべて TypeScript) |
-| shell hook      | `<対象>-<操作>.sh`  | `failure-alert.sh`          |
-| _lib モジュール | `<名詞>.py`         | `japanese.py`               |
-| Python テスト   | `<hook 名>_test.py` | `japanese_test.py`          |
-| shell テスト    | `<hook 名>.test.sh` | `failure-alert.test.sh`     |
+| 種別                  | 形                   | 例                        |
+| --------------------- | -------------------- | ------------------------- |
+| TypeScript hook       | `<対象>_<操作>.ts`   | `rm_to_trash.ts`          |
+| shell hook            | `<対象>-<操作>.sh`   | `failure-alert.sh`        |
+| _lib モジュール       | `<名詞>.ts`          | `japanese.ts`             |
+| TypeScript テスト     | `<hook 名>.test.ts`  | `rm-to-trash.test.ts`     |
+| shell テスト          | `<hook 名>.test.sh`  | `failure-alert.test.sh`   |
 
 ## 実行の絞り込み
 
-Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の仕事には Python が要る。そのため fast-exit を何よりも先に走らせる。Python 本体の前にシェルラッパーを置けば、そこで抜ける呼び出しはインタープリタ起動を払わずに済み、本体が読み込むモジュール次第で 7ms から 17ms 浮く。それでも該当する hook はすべて 1 ファイルを選んでいる。`amphetamine_agent_session`、`package_manager_rewrite`、`body_proofread`、`security/` の 3 本は、いずれも生の payload への部分文字列の検査で始まり、何も parse しないまま返る。
+Bash ゲートの hook はすべての Bash 呼び出しで発火する。そのため fast-exit を何よりも先に走らせる。該当する hook はすべて 1 ファイルを選んでいる。`amphetamine_agent_session`、`package_manager_rewrite`、`body_proofread`、`security/` の 3 本は、いずれも生の payload への部分文字列の検査で始まり、何も parse しないまま返る。
 
-`settings.json` の `if` 条件はこの絞り込みを代われない。`cd /tmp && git commit` を取りこぼすからである。fast-exit にできるのは、追い返す呼び出しから import を外すこと。この頻度で発火する Python hook は重いモジュールを遅らせ、`re` と `subprocess` は必要とする関数の中で読む。`json` や `shutil` のような軽いモジュールと、hook が hot path で必ず通るモジュールは、遅らせても差が出ない。
+`settings.json` の `if` 条件はこの絞り込みを代われない。`cd /tmp && git commit` を取りこぼすからである。fast-exit にできるのは、追い返す呼び出しの経路から重い仕事を外すこと。部分文字列の検査で返る経路は、payload を parse せず外部コマンドも起動しない。
 
 ## イベントマップ
 
@@ -105,18 +103,15 @@ Claude Code の外にあるアプリを動かす hook。対象のアプリが無
 
 ### _lib/
 
-hook が読み込む共有コード。単体では登録しない。`japanese.py` は言語そのものを判定し、`mirror_prose.ts` は `.ja/` の中身を検査する。前者はどのファイルにも使える述語で、後者はミラーだけを対象に取る。
+hook が読み込む共有コード。単体では登録しない。`japanese.ts` は言語そのものを判定し、`mirror_prose.ts` は `.ja/` の中身を検査する。前者はどのファイルにも使える述語で、後者はミラーだけを対象に取る。
 
 | モジュール      | 利用元                                                      |
 | --------------- | ----------------------------------------------------------- |
 | command_scan.ts | body_proofread, wiki_scene, scribe_trigger, gh_filing, security の 3 本 |
 | gh_filing.ts    | body_proofread, issue_body_gate                             |
-| hook_payload.py | 現存せず。後続スライスが消す residue                        |
 | hook_payload.ts | hook すべてと mirror_prose, rust_target, amphetamine_state  |
 | mirror_prose.ts | mirror_prose_guard と .ja/ 一括検査テスト                   |
-| japanese.py     | 現存せず。後続スライスが消す residue                        |
 | japanese.ts     | body_proofread, mirror_prose, textlint_fix                  |
-| textlint.py     | 現存せず。後続スライスが消す residue                        |
 | textlint.ts     | textlint_fix                                                |
 | rust_target.ts  | rust_pre_edit, rust_post_edit                               |
 

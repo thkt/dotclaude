@@ -8,25 +8,19 @@ The Rust binaries are also distributed as sentinels plugins, but registration go
 
 | Layer         | Implementation                 | Registration                     |
 | ------------- | ------------------------------ | -------------------------------- |
-| Script hooks  | `~/.claude/hooks/**/*.{sh,py}` | `settings.json`                  |
+| Script hooks  | `~/.claude/hooks/**/*.{sh,ts}` | `settings.json`                  |
 | Rust binaries | `brew install thkt/tap/{tool}` | `settings.json` (direct command) |
 
 ### Language
 
-A hook is a shell script when its work is a few checks and a fork, and Python or TypeScript when
-the logic is long enough to want structure or is shared with a test. `mirror_prose_guard.ts` is
+A hook is a shell script when its work is a few checks and a fork, and TypeScript when the logic
+is long enough to want structure or is shared with a test (DR-0114). `mirror_prose_guard.ts` is
 the second kind: its rule lives in `_lib/mirror_prose.ts` and the repository-wide sweep test
-imports the same module.
+imports the same module. Python is no longer a hook implementation language (DR-0121).
 
 A test is written in the language of the hook it covers. The ones that stay in shell are those
 placing a shell-script stub on PATH: `amphetamine_agent_session` for osascript, `rust-edit` for
 cargo.
-
-On the Python side, one method stops at its first failure and skips the assertions after it.
-That happens in two shapes. A method asserting several things wraps each one in `subTest`. A
-method handing the hook's output straight to `json.loads` falls to `{}` first, since a hook
-that returns nothing raises there and takes the whole method down. Either shape quietly lowers
-the count of what can fail, and the suite stays green.
 
 ## Naming
 
@@ -34,10 +28,10 @@ The directory answers which event, so the filename answers the target and the op
 shape is `<target>_<operation>`: the target is what this hook looks at, the operation is what it
 does to it. A reader narrows by the leading word.
 
-Python separates with underscores, shell with hyphens. A module under `_lib/` is imported, so underscores are required between its
+TypeScript separates with underscores, shell with hyphens. A module under `_lib/` is imported, so underscores are required between its
 words, and the hooks themselves import none of each other, so nothing technical binds them.
-They match anyway because it makes the test name land on `<hook name>_test.py`, reachable from
-the hook with no conversion in between.
+They match anyway because it makes the test name derivable from the hook name. The test side
+separates with hyphens (`rust-edit.test.ts` for `rust_post_edit.ts`).
 
 The word carrying the operation is one that also reads as a noun (guard, gate, fix, index,
 alert, rewrite). A verb-only word like `notify` sits poorly as a name. A verb phrase that
@@ -48,28 +42,24 @@ Two exceptions. Something wrapping an external app whole takes `<app>_<what it m
 word covers stays one word (`statusline`). A test covering several hooks at once carries a name
 for that group (`rust-edit.test.ts` covers the pre/post pair plus `_lib/rust_target.ts`).
 
-| Kind        | Shape                 | Example                     |
-| ----------- | --------------------- | --------------------------- |
-| Python hook | `<target>_<op>.py` | none remain (every hook is TypeScript) |
-| shell hook  | `<target>-<op>.sh`    | `failure-alert.sh`          |
-| _lib module | `<noun>.py`           | `japanese.py`               |
-| Python test | `<hook name>_test.py` | `japanese_test.py`          |
-| shell test  | `<hook name>.test.sh` | `failure-alert.test.sh`     |
+| Kind            | Shape                 | Example                 |
+| --------------- | --------------------- | ----------------------- |
+| TypeScript hook | `<target>_<op>.ts`    | `rm_to_trash.ts`        |
+| shell hook      | `<target>-<op>.sh`    | `failure-alert.sh`      |
+| _lib module     | `<noun>.ts`           | `japanese.ts`           |
+| TypeScript test | `<hook name>.test.ts` | `rm-to-trash.test.ts`   |
+| shell test      | `<hook name>.test.sh` | `failure-alert.test.sh` |
 
 ## Narrowing the work
 
-A hook on the Bash gate fires for every call while its actual work needs Python, so its
-fast-exit runs before anything else. A shell wrapper in front of the Python body saves the
-interpreter start on the calls that exit there, 7 ms to 17 ms depending on what the body
-imports. Every one of these hooks takes the single file instead: `amphetamine_agent_session`,
+A hook on the Bash gate fires for every call, so its fast-exit runs before anything else.
+Every one of these hooks takes the single file: `amphetamine_agent_session`,
 `package_manager_rewrite`, `body_proofread`, and the three under `security/` all open with a
 substring check over the raw payload and return before parsing anything.
 
 An `if` condition in `settings.json` cannot take over that filter, since it would miss
-`cd /tmp && git commit`. What the fast-exit can do is keep the imports off the calls it turns
-away: a Python hook firing that often defers the heavy modules, so `re` and `subprocess` load
-inside the functions that need them. A light module like `json` or `shutil`, and anything the
-hook reaches on its own hot path, buys nothing measurable from being deferred.
+`cd /tmp && git commit`. What the fast-exit can do is keep the heavy work off the calls it turns
+away: the path that returns on a substring check parses no payload and spawns no command.
 
 ## Event Map
 
@@ -133,7 +123,7 @@ Hooks driving an app outside Claude Code. Each one exits 0 when the app it targe
 
 ### _lib/
 
-Shared code the hooks pull in, never registered on its own. `japanese.py` judges the language
+Shared code the hooks pull in, never registered on its own. `japanese.ts` judges the language
 itself; `mirror_prose.ts` inspects what sits under `.ja/`. The first is a predicate any file can
 take, the second takes the mirror alone as its subject.
 
@@ -141,12 +131,9 @@ take, the second takes the mirror alone as its subject.
 | --------------- | ---------------------------------------------------------------- |
 | command_scan.ts | body_proofread, wiki_scene, scribe_trigger, gh_filing, and the three security hooks |
 | gh_filing.ts    | body_proofread, issue_body_gate                                  |
-| hook_payload.py | none remain; residue a later slice removes                       |
 | hook_payload.ts | every hook, plus mirror_prose, rust_target and amphetamine_state |
 | mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                       |
-| japanese.py     | none remain; residue a later slice removes                       |
 | japanese.ts     | body_proofread, mirror_prose, textlint_fix                       |
-| textlint.py     | none remain; residue a later slice removes                       |
 | textlint.ts     | textlint_fix                                                     |
 | rust_target.ts  | rust_pre_edit, rust_post_edit                                    |
 

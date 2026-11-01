@@ -2,7 +2,7 @@
 // Golden tests for hooks/_lib/textlint.ts: for a given PATH and edited file, lint() invokes the
 // runner and reads its stdout back verbatim, and fix() stays silent when no runner is found.
 // These began as a differential suite against a Python sibling (unit U-002,
-// docs/decisions/0112-adopt-typescript-for-helper-scripts.md); textlint.py retires with this
+// docs/decisions/0112-adopt-typescript-for-helper-scripts.md); that sibling retired with this
 // unit (DR-0121), and the expectations the suite already asserted against the TypeScript side
 // stay. The module resolves CONFIG from its own file's location (the real repo's
 // .textlintrc.json), so this test controls the runner instead: a stub `bun` on PATH plays the

@@ -1,11 +1,11 @@
 /// <reference types="node" />
 // Golden tests for hooks/_lib/hook_payload.ts's read path, pinning field, editedFile and
 // notification against literal expected values. This file began as a differential suite
-// diffing hook_payload.ts against hook_payload.py (contract: docs/decisions/0112-adopt-
+// diffing hook_payload.ts against its Python counterpart (contract: docs/decisions/0112-adopt-
 // typescript-for-helper-scripts.md's Success Criteria, "the CLI contract does not change across
 // the migration; the first slice confirms it with a differential test diffing the Python and
 // TypeScript outputs"). That contract is discharged: every hook now imports the .ts side, and
-// hook_payload.py retires with this unit (DR-0121). The literal expectations below are the ones
+// that counterpart retired with this unit (DR-0121). The literal expectations below are the ones
 // the differential suite had already written by hand and cross-checked against the Python
 // reference while it existed, so dropping the Python half removes a comparison, not a pin.
 //
@@ -80,7 +80,7 @@ test("T-004 every fixture payload yields a non-empty tool_name", () => {
 test("T-541 notification returns the envelope shape hooks/edit/rumdl_check.ts's notify call depends on, with the finding verbatim in both channels", () => {
   const message = "violation.md:2:1 [MD022] headings should be surrounded by blank lines";
 
-  // Captured from hook_payload.py's own notify before it retired, so the envelope this asserts
+  // Captured from the Python counterpart's own notify before it retired, so the envelope this asserts
   // is the one the Python side produced rather than a restatement of the TypeScript output.
   assert.deepEqual(notification(message, "PostToolUse"), {
     systemMessage: message,

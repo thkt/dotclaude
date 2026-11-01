@@ -24,7 +24,7 @@
 
 | 要素                                        | 実体                                    | 供給元                          |
 | ------------------------------------------- | --------------------------------------- | ------------------------------- |
-| hook スクリプト                             | `hooks/**/*.py`, `hooks/**/*.sh`        | 本リポジトリ                    |
+| hook スクリプト                             | `hooks/**/*.ts`, `hooks/**/*.sh`        | 本リポジトリ                    |
 | skill / agent / workflow 定義               | `skills/`, `agents/`, `workflows/`      | 本リポジトリ                    |
 | `guardrails`                                | Rust バイナリ                           | `brew install thkt/tap/{tool}`  |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLI                                | `brew install thkt/tap/{tool}`  |
@@ -120,8 +120,8 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | ------------------ | --------------------------------------------------------------- |
 | `command_scan.ts`  | Bash 行のどこがコマンド位置かの判定。ラッパーと環境変数代入を剥がす |
 | `gh_filing.ts`     | `gh issue create` / `gh pr create` の本文フラグの綴り            |
-| `hook_payload.py`  | payload の型付き読み出しと deny 封筒の生成                       |
-| `japanese.py`      | 日本語判定としきい値                                             |
+| `hook_payload.ts`  | payload の型付き読み出しと deny 封筒の生成                       |
+| `japanese.ts`      | 日本語判定としきい値                                             |
 | `mirror_prose.ts`  | `.ja/` 配下で日本語が消えた状態の検出                            |
 | `rust_target.ts`   | cargo ワークスペース根の解決と clippy 出力の整形                 |
 | `textlint.ts`      | textlint の設定解決と実行                                        |
@@ -368,7 +368,7 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 
 | 追加するもの | 触るファイル                                                            | 確認                                        |
 | ------------ | ----------------------------------------------------------------------- | ------------------------------------------- |
-| hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `find hooks -name '*_test.py'` と `find hooks sandbox -name '*.test.sh'` |
+| hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `node --test "hooks/**/tests/*.test.ts"` と `find hooks sandbox -name '*.test.sh'` |
 | skill        | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
 | agent        | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
 | workflow     | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`             | `node --test "workflows/**/tests/*.test.js" "workflows/**/tests/*.test.ts"` |

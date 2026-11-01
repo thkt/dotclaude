@@ -24,7 +24,7 @@ This repository holds scripts and Markdown, nothing else. Most binaries invoked 
 
 | Component                                   | Implementation                          | Supplied by                     |
 | ------------------------------------------- | --------------------------------------- | ------------------------------- |
-| Hook scripts                                | `hooks/**/*.py`, `hooks/**/*.sh`        | This repository                 |
+| Hook scripts                                | `hooks/**/*.ts`, `hooks/**/*.sh`        | This repository                 |
 | Skill / agent / workflow definitions        | `skills/`, `agents/`, `workflows/`      | This repository                 |
 | `guardrails`                                | Rust binary                             | `brew install thkt/tap/{tool}`  |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLIs                               | `brew install thkt/tap/{tool}`  |
@@ -120,8 +120,8 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | ------------------ | --------------------------------------------------------------- |
 | `command_scan.ts`  | Which token on a Bash line sits in command position, after stripping wrappers and assignments |
 | `gh_filing.ts`     | The body-flag spellings of `gh issue create` / `gh pr create`    |
-| `hook_payload.py`  | Typed payload reads and the deny envelope                        |
-| `japanese.py`      | Japanese detection and its threshold                             |
+| `hook_payload.ts`  | Typed payload reads and the deny envelope                        |
+| `japanese.ts`      | Japanese detection and its threshold                             |
 | `mirror_prose.ts`  | Detection of a `.ja/` file whose Japanese is gone                |
 | `rust_target.ts`   | Cargo workspace root resolution and clippy output shaping        |
 | `textlint.ts`      | textlint config resolution and invocation                       |
@@ -368,7 +368,7 @@ Here are the files a new component touches, and the command that confirms the ad
 
 | Adding   | Files to touch                                                          | Confirmation                                |
 | -------- | ----------------------------------------------------------------------- | ------------------------------------------- |
-| A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `find hooks -name '*_test.py'` and `find hooks sandbox -name '*.test.sh'` |
+| A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `node --test "hooks/**/tests/*.test.ts"` and `find hooks sandbox -name '*.test.sh'` |
 | A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
 | An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
 | A workflow | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`           | `node --test "workflows/**/tests/*.test.js" "workflows/**/tests/*.test.ts"` |
