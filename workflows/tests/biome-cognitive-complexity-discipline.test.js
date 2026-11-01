@@ -143,18 +143,24 @@ test("T-004 the same script placed under src/ yields a parse diagnostic", () => 
 
 // T-005 requires exactly "error", not "warn", because lint() above no longer passes
 // `--error-on-warnings`: a "warn"-level diagnostic would print but leave the exit code 0.
-// T-005/T-006 read biome.json itself: the rule's level, its threshold, the exact
-// `files.includes` (compared as a list, not a count, per
-// docs/wiki/count-comparison-masks-filtered-set-drift.md), and the absence of `overrides`.
+// T-006 compares `files.includes` as a list, not a count, per
+// docs/wiki/count-comparison-masks-filtered-set-drift.md.
 const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 
 // Held as a literal so this copy cannot drift toward whatever files.includes contains.
+// bridge-spawn/ and seed-admin/ are runtime directories of the live ~/.claude checkout that
+// deny scandir, and biome walking one ends the run at `internalError/io`. Neither is tracked
+// nor gitignored, so `vcs.useIgnoreFile` does not reach them as it reaches skills/synced/.
+// Both carry no `/**`, unlike the entries above: `!bridge-spawn/**` matches what is inside and
+// leaves the directory in the traversal, so biome still exits on the io error (biome 2.5.12).
 const PLANNED_FILES_INCLUDES = [
   "**",
   "!workflows/*.js",
   "!.ja/workflows/*.js",
   "!plugins/**",
   "!skills/*/test/cases/**",
+  "!bridge-spawn",
+  "!seed-admin",
 ];
 
 // Every way a biome.json edit can stop the rule from reaching the tracked tree as a failure, as
@@ -184,7 +190,7 @@ test("T-005 biome.json keeps noExcessiveCognitiveComplexity at error with maxAll
   );
 });
 
-test("T-006 biome.json's files.includes equals the five planned entries exactly and the file carries no overrides key", () => {
+test("T-006 biome.json's files.includes equals the seven planned entries exactly and the file carries no overrides key", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
   assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
 });

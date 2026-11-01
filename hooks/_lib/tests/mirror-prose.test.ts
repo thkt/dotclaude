@@ -2,28 +2,27 @@
 // Ports hooks/_lib/tests/mirror_prose_test.py's TargetSelection / Verdict / EnglishVerdict /
 // MirrorSweep suites to mirror_prose.ts's side (DR-0112, issue #644, unit U-001). `check`'s own
 // determination is the "correspondence" this unit's goal names: a .ja file's prose either still
-// pairs with Japanese (a character survives) or it does not (the file went English-only and its
-// Japanese twin -- the Japanese half of its own prose, not a second file -- is missing).
+// carries a Japanese character or the file went English-only. The twin that goes missing is the
+// Japanese half of that file's own prose, not a second file.
 // `_python_prose` (the retired Python module's lines 44-70) stays out of scope here; unit U-002
 // (mirror-prose-python.test.ts) covers it.
 //
-// The two full-tree sweeps mirror_prose_test.py's MirrorSweep class ran against the real repo
-// move here as their own scenarios (T-367, T-368), each against an isolated temp tree rather
-// than the live repo: a temp tree keeps the exclusion behavior deterministic and keeps the test
-// from depending on -- or mutating -- this checkout's actual .ja/ content. node_modules/,
-// projects/, and logs/ replace the retired Python module's __pycache__/.git exclusions -- the
-// ones this repo's own tree can actually grow under a plain filesystem walk (git ls-files
-// already leaves gitignored directories out, so a walk that reused it would not need this
-// exclusion at all; mirror_prose's sweep walks the filesystem directly, the same way the retired
-// Python module's rglob did).
+// MirrorSweep's two full-tree sweeps move here as T-367 and T-368, each against an isolated
+// temp tree. A temp tree keeps the exclusion behavior deterministic, and keeps the test from
+// depending on -- or mutating -- this checkout's actual .ja/ content. node_modules/, projects/,
+// and logs/ replace the retired Python module's __pycache__/.git exclusions.
+//
+// The two live-checkout sweeps at the bottom read trackedFiles instead of that walk, for the
+// reason its own doc gives.
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { editedFile } from "../hook_payload.ts";
 import { check, checkEnglish } from "../mirror_prose.ts";
+import { trackedFiles } from "../../../workflows/_lib/tests/_retirement.ts";
 
 function tempRoot(prefix: string): string {
   return mkdtempSync(path.join(tmpdir(), prefix));
@@ -46,13 +45,12 @@ function editedPath(absolutePath: string): string {
 }
 
 // .git and __pycache__ carry the retired Python module's own two exclusions; the other three
-// are what this repo's tree grows that its rglob never met. A worktree keeps .git as a file,
-// so only the primary checkout reaches that entry at all.
+// are what this repo's tree grows that its rglob never met. The walk runs over temp trees only,
+// so T-367's fixtures are what exercise these entries.
 const EXCLUDED_DIR_NAMES = new Set(["node_modules", "projects", "logs", ".git", "__pycache__"]);
 
-/** mirror_prose_test.py's MirrorSweep.rglob walk, adapted to prune node_modules/, projects/,
- * and logs/ during the walk itself rather than filtering them out afterward -- pruning is what
- * keeps a real node_modules subtree from being read file by file. */
+/** mirror_prose_test.py's MirrorSweep.rglob walk, pruning EXCLUDED_DIR_NAMES during the walk
+ * rather than filtering them out afterward, which is what T-367 asserts. */
 function walk(root: string): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -66,20 +64,26 @@ function walk(root: string): string[] {
   return out;
 }
 
-/** mirror_prose_test.py's test_no_mirror_file_lost_its_japanese, parameterized by root instead
- * of the live repo. */
-function jaSweepOffenders(root: string): string[] {
-  return walk(root)
+/** mirror_prose_test.py's test_no_mirror_file_lost_its_japanese, over the files given: `walk`
+ * for a temp tree, `trackedUnder` for this checkout. Offenders are named against `root`. */
+function jaSweepOffenders(root: string, files: string[]): string[] {
+  return files
     .filter((absolute) => check(absolute) !== null)
     .map((absolute) => path.relative(root, absolute));
 }
 
-/** mirror_prose_test.py's test_no_english_side_file_kept_the_japanese_original, parameterized by
- * root instead of the live repo. */
-function englishSweepOffenders(root: string): string[] {
-  return walk(root)
+/** mirror_prose_test.py's test_no_english_side_file_kept_the_japanese_original, the same way. */
+function englishSweepOffenders(root: string, files: string[]): string[] {
+  return files
     .filter((absolute) => checkEnglish(absolute) !== null)
     .map((absolute) => path.relative(root, absolute));
+}
+
+/** The files trackedFiles reports under `repo`/`prefix`, as absolute paths. */
+function trackedUnder(repo: string, prefix: string): string[] {
+  return trackedFiles(repo)
+    .filter((relative) => relative.startsWith(prefix))
+    .map((relative) => path.join(repo, relative));
 }
 
 test("T-366 an edited .ja file whose english twin is missing is reported, and one whose twin exists is not", () => {
@@ -112,7 +116,7 @@ test("T-367 the sweep excludes node_modules, projects and logs, and the same pre
     writeFixture(root, "logs/.ja/sample.ts", englishOnly),
   ];
 
-  const offenders = jaSweepOffenders(root);
+  const offenders = jaSweepOffenders(root, walk(root));
   for (const absolute of excluded) {
     assert.ok(
       !offenders.includes(path.relative(root, absolute)),
@@ -136,7 +140,7 @@ test("T-368 an english-side file that kept the japanese original is reported by 
   writeFixture(root, relative, japaneseBody);
   writeFixture(root, path.join(".ja", relative), japaneseBody);
 
-  const offenders = englishSweepOffenders(root);
+  const offenders = englishSweepOffenders(root, walk(root));
   assert.ok(
     offenders.includes(relative),
     `the english-side file left in Japanese must be reported by its own relative path: ${offenders.join(", ")}`,
@@ -151,11 +155,15 @@ const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".
 // including what landed while no hook was watching". These two restore that reading.
 test("no .ja file in this checkout lost its Japanese", () => {
   const mirror = path.join(REPO, ".ja");
-  assert.ok(existsSync(mirror), "this checkout carries a .ja/ tree for the sweep to read");
+  const files = trackedUnder(REPO, ".ja/");
+  assert.ok(files.length > 0, "this checkout tracks a .ja/ tree for the sweep to read");
 
-  assert.deepEqual(jaSweepOffenders(mirror), [], ".ja/ files that lost their Japanese");
+  assert.deepEqual(jaSweepOffenders(mirror, files), [], ".ja/ files that lost their Japanese");
 });
 
 test("no english-side file in this checkout kept the japanese original", () => {
-  assert.deepEqual(englishSweepOffenders(REPO), [], "English-side files still in Japanese");
+  const files = trackedUnder(REPO, "");
+  assert.ok(files.length > 0, "this checkout tracks files for the sweep to read");
+
+  assert.deepEqual(englishSweepOffenders(REPO, files), [], "English-side files still in Japanese");
 });
