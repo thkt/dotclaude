@@ -112,6 +112,9 @@
 - Issue の本文とコメントに未合意点が残るときは /implement を起動せず /scoping に戻す #766
 - macOS の sandbox 内では Chromium を起動できず、capture を設定した repo の workflow は sandbox を外したセッションで走らせる #767
 - Codex 版にあった手順が /implement への移植から落ち、後から戻す必要が出た #767
+- リポジトリ全体を歩く検査が harness の runtime ディレクトリ (read 拒否) や account 側の skill キャッシュ (gitignore 配下) まで読んでしまう。走査は raw な directory walk でなく git ls-files 由来の tracked ファイル一覧に合わせる。git ls-files は staging 前の削除も index のエントリとして報告するため、ファイルを直接読む走査側は existsSync で存在確認してから読む #770
+- biome.json で read 拒否されるディレクトリを除外するとき、末尾に /** を付けた否定パターン (`!dir/**`) はディレクトリ自身を traversal に残すため io error が再発する。ディレクトリ自身を traversal から外すには末尾無しの `!dir` にする #770
+- ツールを退役するとき、そのツールのルールを避けるために書かれたコードの形は、同じルールが別の現行ツールに今も存在するなら元に戻さず残す (Chesterton's Fence) #772
 
 ## 棄却
 
