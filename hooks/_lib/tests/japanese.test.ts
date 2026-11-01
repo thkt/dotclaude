@@ -1,9 +1,8 @@
 /// <reference types="node" />
-// Ports hooks/_lib/tests/japanese_test.py's Threshold / CharacterClass suites to the .ts side
-// (DR-0112). Each python test pairs a passing case with its failing neighbor; this file keeps
-// that pairing inside one T-NNN test per test scenario rather than splitting further, since a
-// scaffold that only fails the first assertion in a group can otherwise slip a wrong answer
-// through the rest.
+// The threshold and character-class checks for hooks/_lib/japanese.ts (DR-0112). Each scenario
+// pairs a passing case with its failing neighbor, and this file keeps that pairing inside one
+// T-NNN test rather than splitting further, since a scaffold that only fails the first
+// assertion in a group can otherwise slip a wrong answer through the rest.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { DEFAULT_THRESHOLD, hasJapanese, JAPANESE } from "../japanese.ts";
@@ -62,7 +61,7 @@ test("T-239 punctuation alone, English letters, and digits do not count", () => 
   );
 });
 
-test("T-267 the character class counts every match in the text and covers the four scripts japanese.py listed", () => {
+test("T-267 the character class counts every match in the text and covers hiragana, katakana, the long-vowel mark and CJK ideographs", () => {
   // Without the global flag String.match returns the first match alone, and every count
   // collapses to 1, which passes any threshold of 1 and fails every larger one.
   assert.ok(JAPANESE.global, "the pattern must count every match, not only the first");

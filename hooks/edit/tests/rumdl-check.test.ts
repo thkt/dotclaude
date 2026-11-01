@@ -53,7 +53,7 @@ test("T-384 an edited markdown file reaches rumdl and its findings arrive throug
     out,
     "an edited .md file with rumdl findings must be reported, but the hook stayed silent",
   );
-  // The shape hook_payload.py's notify writes, and hook_payload.ts's notification() mirrors:
+  // The shape hook_payload.ts's notification() writes:
   // systemMessage for the human, hookSpecificOutput.additionalContext for the agent, both
   // carrying the same finding, under a hookEventName naming the event actually firing.
   const parsed = JSON.parse(out) as {
