@@ -12,7 +12,7 @@ const SCANNED = ["agents", "rules", "skills", "docs"];
 // The same row lets a conclusion the table derives stay below it, and a DR's narrative reaches
 // that shape 24 times. Listing each would make an allowlist nobody prunes, so the directory stays
 // out and this line carries the judgement (#450).
-// Research originals retain the source text; current wiki rules stay in the scan.
+// Research originals retain the source text.
 const SKIPPED = new Set(["docs/decisions", "docs/research"]);
 
 // MARKDOWN.md's row exempts a conclusion the table derives, and no regex separates one from an

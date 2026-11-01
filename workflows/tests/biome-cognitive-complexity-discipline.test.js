@@ -143,9 +143,8 @@ test("T-004 the same script placed under src/ yields a parse diagnostic", () => 
 
 // T-005 requires exactly "error", not "warn", because lint() above no longer passes
 // `--error-on-warnings`: a "warn"-level diagnostic would print but leave the exit code 0.
-// T-005/T-006 read biome.json itself: the rule's level, its threshold, the exact
-// `files.includes` (compared as a list, not a count, per
-// docs/wiki/count-comparison-masks-filtered-set-drift.md), and the absence of `overrides`.
+// T-006 compares `files.includes` as a list, not a count, per
+// docs/wiki/count-comparison-masks-filtered-set-drift.md.
 const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 
 // Held as a literal so this copy cannot drift toward whatever files.includes contains.

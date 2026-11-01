@@ -2,16 +2,15 @@
 // Ports hooks/_lib/tests/mirror_prose_test.py's TargetSelection / Verdict / EnglishVerdict /
 // MirrorSweep suites to mirror_prose.ts's side (DR-0112, issue #644, unit U-001). `check`'s own
 // determination is the "correspondence" this unit's goal names: a .ja file's prose either still
-// pairs with Japanese (a character survives) or it does not (the file went English-only and its
-// Japanese twin -- the Japanese half of its own prose, not a second file -- is missing).
+// carries a Japanese character or the file went English-only. The twin that goes missing is the
+// Japanese half of that file's own prose, not a second file.
 // `_python_prose` (the retired Python module's lines 44-70) stays out of scope here; unit U-002
 // (mirror-prose-python.test.ts) covers it.
 //
-// The two full-tree sweeps mirror_prose_test.py's MirrorSweep class ran against the real repo
-// move here as their own scenarios (T-367, T-368), each against an isolated temp tree rather
-// than the live repo: a temp tree keeps the exclusion behavior deterministic and keeps the test
-// from depending on -- or mutating -- this checkout's actual .ja/ content. node_modules/,
-// projects/, and logs/ replace the retired Python module's __pycache__/.git exclusions.
+// MirrorSweep's two full-tree sweeps move here as T-367 and T-368, each against an isolated
+// temp tree. A temp tree keeps the exclusion behavior deterministic, and keeps the test from
+// depending on -- or mutating -- this checkout's actual .ja/ content. node_modules/, projects/,
+// and logs/ replace the retired Python module's __pycache__/.git exclusions.
 //
 // The two live-checkout sweeps at the bottom read trackedFiles instead of that walk, for the
 // reason its own doc gives.
@@ -50,9 +49,8 @@ function editedPath(absolutePath: string): string {
 // so T-367's fixtures are what exercise these entries.
 const EXCLUDED_DIR_NAMES = new Set(["node_modules", "projects", "logs", ".git", "__pycache__"]);
 
-/** mirror_prose_test.py's MirrorSweep.rglob walk, adapted to prune node_modules/, projects/,
- * and logs/ during the walk itself rather than filtering them out afterward -- pruning is what
- * keeps a real node_modules subtree from being read file by file. */
+/** mirror_prose_test.py's MirrorSweep.rglob walk, pruning EXCLUDED_DIR_NAMES during the walk
+ * rather than filtering them out afterward, which is what T-367 asserts. */
 function walk(root: string): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(root, { withFileTypes: true })) {

@@ -1,17 +1,15 @@
 /// <reference types="node" />
-// The retirement-scan helpers shared by the "no tracked file still names X" tests
-// (gate-retirement.test.ts, record-retirement.test.ts, ts-harness-retirement.test.ts). Each of
-// those files used to carry its own copy of the same walk: skip docs/decisions/ and
-// docs/research/ and its legacy roots (historical records, per docs/wiki/retire-rename-procedure.md),
-// skip whatever extra path the caller names, read the rest, and keep the ones a predicate flags.
-// This module gives that walk one home, in the same shape as workflows/_lib/tests/_brace.ts
+// One home for the walk the "no tracked file still names X" tests share: skip docs/decisions/
+// and docs/research/ and its legacy roots (historical records, per
+// docs/wiki/retire-rename-procedure.md), skip whatever extra path the caller names, read the
+// rest, and keep the ones a predicate flags. Same shape as workflows/_lib/tests/_brace.ts
 // (small, independently testable, named exports; no .ja mirror, per rules/conventions/MIRROR.md).
 //
 // offendersAmong is the pure core: it takes the file list and a reader as arguments instead of
 // calling `git ls-files` / `readFileSync` itself, so retirement.test.ts drives it with a
-// synthetic tree and a reader that fails on demand. trackedFiles is the git-backed list the
-// three retirement tests hand it, cached per process because the tree does not change while a
-// test file runs. assertDetectsAndMisses is the positive control every absence scan pairs with
+// synthetic tree and a reader that fails on demand. trackedFiles is the git-backed list its
+// callers hand it, cached per process because the tree does not change while a test file runs.
+// assertDetectsAndMisses is the positive control every absence scan pairs with
 // (docs/wiki/absence-test-positive-control-fixture.md).
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -98,9 +96,7 @@ export function assertDetectsAndMisses(
 
 /** Runs one retirement test's full body: scans `trackedFiles(repoRoot)` with `offendersAmong`
  * under `extraExclusions`, and asserts the result is empty. `retiredLabel` names the retired
- * path in the failure message. Consolidates the offendersAmong-call-plus-assert.deepEqual glue
- * that gate-retirement.test.ts and ts-harness-retirement.test.ts each still repeat once per
- * retired path. */
+ * path in the failure message. */
 export function assertNoResidualReferences(
   repoRoot: string,
   read: (path: string) => string,
