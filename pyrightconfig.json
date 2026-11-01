@@ -1,6 +1,5 @@
 {
   "extraPaths": [
-    "hooks/_lib",
     "workflows/build",
     "skills/dr/scripts",
     ".ja/skills/dr/scripts",
