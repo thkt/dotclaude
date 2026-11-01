@@ -57,10 +57,12 @@ export function offendersAmong(
 const trackedFilesCache = new Map<string, string[]>();
 
 /** Every path `git ls-files` reports under `repoRoot` that is still on disk, in tree order,
- * cached per root. The index keeps an entry for a file deleted but not yet staged, and a caller
- * that reads each path straight (the full-tree sweeps in tests/table-paragraph.test.ts,
- * tests/live-instructions.test.ts and hooks/_lib/tests/mirror-prose.test.ts) would stop at
- * ENOENT on it. offendersAmong skips such a path through its own read guard either way. */
+ * cached per root. A full-tree sweep takes its files from here rather than walking the
+ * filesystem. A walk reads whatever the live ~/.claude checkout grew: gitignored caches
+ * (skills/synced/) and runtime directories it cannot scandir (bridge-spawn/, seed-admin/).
+ * The on-disk filter drops the index entry a file deleted but not yet staged leaves behind,
+ * which a caller reading each path straight hits as ENOENT. offendersAmong skips that path
+ * through its own read guard either way. */
 export function trackedFiles(repoRoot: string): string[] {
   let files = trackedFilesCache.get(repoRoot);
   if (!files) {

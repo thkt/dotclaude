@@ -149,13 +149,11 @@ test("T-004 the same script placed under src/ yields a parse diagnostic", () => 
 const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 
 // Held as a literal so this copy cannot drift toward whatever files.includes contains.
-// bridge-spawn/ and seed-admin/ are harness runtime directories the live ~/.claude checkout
-// grows, and their mode denies the owner scandir, so biome walking them ends the whole run at
-// `internalError/io` before any lint diagnostic. Neither is tracked and neither is in
-// .gitignore, so `vcs.useIgnoreFile` does not reach them the way it reaches skills/synced/.
-// Both carry no `/**`, unlike the entries above: `!bridge-spawn/**` matches what is inside the
-// directory and leaves the directory itself in the traversal, so biome still scandirs it and
-// still exits on the io error (confirmed against biome 2.5.12). `!bridge-spawn` prunes it.
+// bridge-spawn/ and seed-admin/ are runtime directories of the live ~/.claude checkout that
+// deny scandir, and biome walking one ends the run at `internalError/io`. Neither is tracked
+// nor gitignored, so `vcs.useIgnoreFile` does not reach them as it reaches skills/synced/.
+// Both carry no `/**`, unlike the entries above: `!bridge-spawn/**` matches what is inside and
+// leaves the directory in the traversal, so biome still exits on the io error (biome 2.5.12).
 const PLANNED_FILES_INCLUDES = [
   "**",
   "!workflows/*.js",

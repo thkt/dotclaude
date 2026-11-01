@@ -11,16 +11,10 @@
 // move here as their own scenarios (T-367, T-368), each against an isolated temp tree rather
 // than the live repo: a temp tree keeps the exclusion behavior deterministic and keeps the test
 // from depending on -- or mutating -- this checkout's actual .ja/ content. node_modules/,
-// projects/, and logs/ replace the retired Python module's __pycache__/.git exclusions -- the
-// ones a temp tree's fixtures stand in for under a plain filesystem walk.
+// projects/, and logs/ replace the retired Python module's __pycache__/.git exclusions.
 //
-// The two live-checkout sweeps at the bottom take their file list from `git ls-files` instead of
-// that walk. A walk reads whatever the live ~/.claude checkout grew: skills/synced/ caches the
-// claude.ai account's own skills (.gitignore) and answers to no rule of this repository, while
-// bridge-spawn/ and seed-admin/ are harness runtime directories whose mode denies the owner
-// scandir, so readdirSync ends the sweep at EPERM before it reaches any prose. git ls-files
-// leaves all three out, and what it reports -- the tracked tree -- is the mirror this repository
-// is responsible for.
+// The two live-checkout sweeps at the bottom read trackedFiles instead of that walk, for the
+// reason its own doc gives.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -52,8 +46,8 @@ function editedPath(absolutePath: string): string {
 }
 
 // .git and __pycache__ carry the retired Python module's own two exclusions; the other three
-// are what this repo's tree grows that its rglob never met. The walk below runs over temp trees
-// alone, so these names are what a fixture placed under them stands for.
+// are what this repo's tree grows that its rglob never met. The walk runs over temp trees only,
+// so T-367's fixtures are what exercise these entries.
 const EXCLUDED_DIR_NAMES = new Set(["node_modules", "projects", "logs", ".git", "__pycache__"]);
 
 /** mirror_prose_test.py's MirrorSweep.rglob walk, adapted to prune node_modules/, projects/,
@@ -72,24 +66,22 @@ function walk(root: string): string[] {
   return out;
 }
 
-/** mirror_prose_test.py's test_no_mirror_file_lost_its_japanese, parameterized by the root the
- * offenders are named against and the files to read -- `walk` for a temp tree, `trackedUnder`
- * for this checkout. */
+/** mirror_prose_test.py's test_no_mirror_file_lost_its_japanese, over the files given: `walk`
+ * for a temp tree, `trackedUnder` for this checkout. Offenders are named against `root`. */
 function jaSweepOffenders(root: string, files: string[]): string[] {
   return files
     .filter((absolute) => check(absolute) !== null)
     .map((absolute) => path.relative(root, absolute));
 }
 
-/** mirror_prose_test.py's test_no_english_side_file_kept_the_japanese_original, parameterized
- * the same way. */
+/** mirror_prose_test.py's test_no_english_side_file_kept_the_japanese_original, the same way. */
 function englishSweepOffenders(root: string, files: string[]): string[] {
   return files
     .filter((absolute) => checkEnglish(absolute) !== null)
     .map((absolute) => path.relative(root, absolute));
 }
 
-/** Every file `git ls-files` reports under `repo`/`prefix`, as an absolute path. */
+/** The files trackedFiles reports under `repo`/`prefix`, as absolute paths. */
 function trackedUnder(repo: string, prefix: string): string[] {
   return trackedFiles(repo)
     .filter((relative) => relative.startsWith(prefix))

@@ -12,13 +12,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 type InstructionFile = { lang: "en" | ".ja"; rel: string; full: string };
 
 // One prefix/dir pair's worth of instructionFiles's list: every markdown/js/py file under
-// root/prefix/dir that git tracks. `git ls-files` is the source rather than a filesystem walk
-// because the live ~/.claude checkout grows directories holding no instruction this harness
-// reads -- skills/synced/ caches the claude.ai account's own skills (.gitignore), and a walk
-// reads those bodies as if this repository wrote them -- and because __pycache__ already sits
-// outside what git tracks. The assertion below keeps a deleted instruction tree from quietly
-// shrinking the sweep to the directories that remain, the way letting readdir throw on a
-// missing directory did.
+// root/prefix/dir that git tracks. trackedFiles's doc gives why git rather than a walk, and
+// __pycache__ sits outside what git tracks either way. The assertion keeps a deleted
+// instruction tree from quietly shrinking the sweep to the directories that remain, the way
+// letting readdir throw on a missing directory did.
 const scanInstructionDir = (
   prefix: "" | ".ja",
   lang: "en" | ".ja",

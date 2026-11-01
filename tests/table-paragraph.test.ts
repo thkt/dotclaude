@@ -47,9 +47,7 @@ const nextNonEmpty = (lines: string[], i: number) => {
   return "";
 };
 
-// `git ls-files` is the source rather than a filesystem walk: the live ~/.claude checkout grows
-// skills/synced/, the cache of the claude.ai account's own skills (.gitignore), and those pages
-// answer to no convention of this repository.
+// Tracked files, not a walk: a walk also reads the gitignored skills/synced/ (trackedFiles).
 const markdownUnder = (dir: string): string[] => {
   const base = `${relative(root, dir)}/`;
   return trackedFiles(root)
