@@ -53,8 +53,8 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火し、実際の
 | PreToolUse       | Write/Edit         | edit/rust_pre_edit.ts, guardrails                                                                                                                                 |
 | PreToolUse       | EnterPlanMode      | deny (計画は /think へ誘導)                                                                                                                                       |
 | PreToolUse       | WebFetch/WebSearch | deny (scout CLI へ誘導)                                                                                                                                           |
-| PostToolUse      | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/mirror_prose_guard.ts, assay, formatter, gates                                                                 |
-| PostToolUse      | Bash               | gates changed                                                                                                                                                     |
+| PostToolUse      | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/rumdl_check.ts, edit/mirror_prose_guard.ts                                                                     |
+| PostToolUse      | Bash               | post-bash/scribe_prompt                                                                                                                                           |
 | PostToolUse      | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
 | UserPromptSubmit | -                  | integrations/amphetamine_agent_session acquire                                                                                                                    |
 | Stop/StopFailure | -                  | lifecycle/failure-alert, integrations/amphetamine_agent_session release                                                                                           |
@@ -122,15 +122,12 @@ hook が読み込む共有コード。単体では登録しない。`japanese.py
 
 ## Quality Pipeline (Rust バイナリ)
 
-編集ライフサイクルに品質強制を挟む Rust バイナリ。リポジトリは独立し、`brew install thkt/tap/{tool}` でインストールする (assay はローカルビルド)。
+書き込み前に品質強制を挟む Rust バイナリ。リポジトリは独立し、`brew install thkt/tap/guardrails` でインストールする。
 
 ```mermaid
 flowchart LR
     W[Write/Edit] --> G[guardrails]
     G -->|pass| AP[適用]
-    AP --> F[formatter]
-    AP --> A[assay]
-    AP --> GA[gates]
 ```
 
 ### guardrails
@@ -144,52 +141,21 @@ PreToolUse フック。Write/Edit 適用前にコードを検証する。
 | ブロッキング   | あり。critical/high severity でブロック                |
 | Source         | [thkt/guardrails](https://github.com/thkt/guardrails)  |
 
-### formatter
-
-PostToolUse フック。Write/Edit 後にファイルを自動整形する。
-
-| 観点         | 詳細                                                |
-| ------------ | --------------------------------------------------- |
-| Formatter    | oxfmt (優先)/biome (フォールバック) + EOF 改行      |
-| ブロッキング | なし (常に exit 0、エラーは stderr へ)              |
-| Source       | [thkt/formatter](https://github.com/thkt/formatter) |
-
-### gates
-
-PostToolUse フック。編集のたびに品質ゲートを強制する。
-
-| 観点             | 詳細                                                                                     |
-| ---------------- | ---------------------------------------------------------------------------------------- |
-| 静的ゲート       | knip, tsgo, litmus (テスト品質), circular (循環依存)。litmus/circular はバイナリ埋め込み |
-| スクリプトゲート | lint, type-check, test (package.json から検出)                                           |
-| ブロッキング     | ゲート失敗時に fix prompt でブロック。ツール欠落は fail-open                             |
-| Source           | [thkt/gates](https://github.com/thkt/gates)                                              |
-
-### assay
-
-PostToolUse フック。spec.md/eval-criteria.md の保存時に文書品質を検証する。
-
-| 観点     | 詳細                                       |
-| -------- | ------------------------------------------ |
-| 対象     | spec.md, eval-criteria.md                  |
-| チェック | complete/unambiguous/verifiable/consistent |
-| 配布     | ローカルビルド (`~/.cargo/bin/assay`)      |
-
 ### プロジェクト設定
 
-guardrails/formatter/gates はプロジェクトルートの `.claude/tools.json` を共有する。各ツールはプロジェクト単位で `"enabled": false` により無効化できる。
+guardrails はプロジェクトルートの `.claude/tools.json` を読む。プロジェクト単位で `"enabled": false` により無効化できる。
 
 ```json
 {
-  "guardrails": { "rules": { "oxlint": true } },
-  "formatter": { "formatters": { "oxfmt": true } },
-  "gates": { "knip": true, "tsgo": true }
+  "guardrails": { "rules": { "oxlint": true } }
 }
 ```
 
 ### 休止中
 
 shields (コマンドガード、ファイル ACL、secrets チェック) と reviews (skill 実行前の静的解析コンテキスト注入) は同ファミリーのバイナリだが、意図的に settings.json から外して休止中。
+
+formatter (oxfmt による整形)、gates (静的ゲート群)、assay (spec.md/eval-criteria.md の文書品質検証) も同じく外した。このリポジトリの `.claude/tools.json` が gates に有効化していたのは `knip` `tsgo` `oxlint` `depcruise` `circular` `coupling` `jscpd` である。うち oxlint と型検査は CI が引き継ぐ。残る `knip` `depcruise` `circular` `coupling` `jscpd` を見るものは無い。JS/TS の書き込み時整形も spec 文書の品質検証も無い。oxfmt は devDependency のまま誰も呼ばない。
 
 ## 設計原則
 
@@ -220,7 +186,7 @@ fail-closed の hook が特定の失敗を 1 つだけ無視するのは格下�
 
 外部アプリが `settings.json` へ書き込んだ hook 配線は、そのアプリをアンインストールしても残る。残った配線は非ブロッキングのまま毎イベント失敗し続ける。会話と `git diff` のどちらにも出ないので、気付く経路は transcript の `hook_non_blocking_error` と `stop_hook_summary` の `hookErrors` に限られる。
 
-hook が毎回出す 1 行を `settings.json` 側の設定で消す口はない。`suppressOutput` は hook が返す JSON のキーで、stdout 専用。stderr へ出す formatter や gates の定型行は、出力さえあれば `hook_success` として記録され描画される。
+hook が毎回出す 1 行を `settings.json` 側の設定で消す口はない。`suppressOutput` は hook が返す JSON のキーで、stdout 専用。stderr へ出す guardrails の定型行は、出力さえあれば `hook_success` として記録され描画される。
 
 `autoMemoryEnabled: false` で auto-memory の読み書きを止められる。バイナリ内の `/pause-memory` は `isEnabled: () => false` のまま埋め込まれており、有効化しても動作しない。
 

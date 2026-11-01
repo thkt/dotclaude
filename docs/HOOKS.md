@@ -81,8 +81,8 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | PreToolUse         | Write/Edit         | edit/rust_pre_edit.ts, guardrails                                                                                                                                 |
 | PreToolUse         | EnterPlanMode      | deny (planning is routed to /think)                                                                                                                               |
 | PreToolUse         | WebFetch/WebSearch | deny (routed to the scout CLI)                                                                                                                                    |
-| PostToolUse        | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/mirror_prose_guard.ts, assay, formatter, gates                                                                 |
-| PostToolUse        | Bash               | gates changed                                                                                                                                                     |
+| PostToolUse        | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/rumdl_check.ts, edit/mirror_prose_guard.ts                                                                     |
+| PostToolUse        | Bash               | post-bash/scribe_prompt                                                                                                                                           |
 | PostToolUse        | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
 | UserPromptSubmit   | -                  | integrations/amphetamine_agent_session acquire                                                                                                                    |
 | Stop / StopFailure | -                  | lifecycle/failure-alert, integrations/amphetamine_agent_session release                                                                                           |
@@ -152,15 +152,12 @@ take, the second takes the mirror alone as its subject.
 
 ## Quality Pipeline (Rust Binaries)
 
-Rust binaries that insert quality enforcement into the edit lifecycle. Separate repositories, installed via `brew install thkt/tap/{tool}` (assay is a local build).
+A Rust binary that inserts quality enforcement before a write. Separate repository, installed via `brew install thkt/tap/guardrails`.
 
 ```mermaid
 flowchart LR
     W[Write/Edit] --> G[guardrails]
     G -->|pass| AP[apply]
-    AP --> F[formatter]
-    AP --> A[assay]
-    AP --> GA[gates]
 ```
 
 ### guardrails
@@ -174,52 +171,21 @@ PreToolUse hook. Validates code before Write/Edit is applied.
 | Blocking     | Yes. Blocks on critical/high severity                       |
 | Source       | [thkt/guardrails](https://github.com/thkt/guardrails)       |
 
-### formatter
-
-PostToolUse hook. Auto-formats files after Write/Edit.
-
-| Aspect    | Detail                                              |
-| --------- | --------------------------------------------------- |
-| Formatter | oxfmt (priority) / biome (fallback) + EOF newline   |
-| Blocking  | Never (exit 0 always, errors logged to stderr)      |
-| Source    | [thkt/formatter](https://github.com/thkt/formatter) |
-
-### gates
-
-PostToolUse hook. Enforces quality gates on every edit.
-
-| Aspect       | Detail                                                                                                       |
-| ------------ | ------------------------------------------------------------------------------------------------------------ |
-| Static gates | knip, tsgo, litmus (test quality), circular (circular imports). litmus / circular are embedded in the binary |
-| Script gates | lint, type-check, test (detected from package.json)                                                          |
-| Blocking     | Blocks with a fix prompt on gate failure. Missing tools fail open                                            |
-| Source       | [thkt/gates](https://github.com/thkt/gates)                                                                  |
-
-### assay
-
-PostToolUse hook. Validates document quality when spec.md / eval-criteria.md is saved.
-
-| Aspect       | Detail                                           |
-| ------------ | ------------------------------------------------ |
-| Targets      | spec.md, eval-criteria.md                        |
-| Checks       | complete / unambiguous / verifiable / consistent |
-| Distribution | Local build (`~/.cargo/bin/assay`)               |
-
 ### Project Configuration
 
-guardrails / formatter / gates share `.claude/tools.json` at the project root. Each tool can be disabled per project with `"enabled": false`.
+guardrails reads `.claude/tools.json` at the project root. It can be disabled per project with `"enabled": false`.
 
 ```json
 {
-  "guardrails": { "rules": { "oxlint": true } },
-  "formatter": { "formatters": { "oxfmt": true } },
-  "gates": { "knip": true, "tsgo": true }
+  "guardrails": { "rules": { "oxlint": true } }
 }
 ```
 
 ### Dormant
 
 shields (command guard, file ACL, secrets check) and reviews (static analysis context injection before skills) belong to the same binary family but are intentionally left unregistered in settings.json.
+
+formatter (oxfmt formatting), gates (the static gate set) and assay (spec.md / eval-criteria.md document-quality validation) are unregistered too. This repository's `.claude/tools.json` enabled `knip` `tsgo` `oxlint` `depcruise` `circular` `coupling` `jscpd` in gates. CI takes over oxlint and the type check. Nothing covers the remaining `knip` `depcruise` `circular` `coupling` `jscpd`. Nothing formats JS/TS at write time, and nothing validates spec-document quality. oxfmt stays a devDependency that nothing invokes.
 
 ## Design Principles
 
@@ -254,7 +220,7 @@ Combine small hooks to achieve complex behavior.
 
 An external app that writes its own hook wiring into `settings.json` leaves it behind after uninstall. The leftover wiring keeps failing non-blockingly on every event. It shows up neither in the conversation nor in `git diff`, so the only way to notice it is the transcript's `hook_non_blocking_error` and `stop_hook_summary`'s `hookErrors`.
 
-There is no `settings.json` setting that suppresses a hook's routine per-call output line. `suppressOutput` is a key in the hook's own JSON response, and it applies to stdout only. The formatter and gates print their routine lines to stderr, and Claude Code renders stderr for any hook that produced output, recording it as `hook_success`.
+There is no `settings.json` setting that suppresses a hook's routine per-call output line. `suppressOutput` is a key in the hook's own JSON response, and it applies to stdout only. guardrails prints its routine line to stderr, and Claude Code renders stderr for any hook that produced output, recording it as `hook_success`.
 
 `autoMemoryEnabled: false` stops auto-memory reads and writes. The binary still ships `/pause-memory`, but it stays hardcoded to `isEnabled: () => false`, so enabling it has no effect.
 

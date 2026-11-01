@@ -26,7 +26,7 @@ This repository holds scripts and Markdown, nothing else. Most binaries invoked 
 | ------------------------------------------- | --------------------------------------- | ------------------------------- |
 | Hook scripts                                | `hooks/**/*.py`, `hooks/**/*.sh`        | This repository                 |
 | Skill / agent / workflow definitions        | `skills/`, `agents/`, `workflows/`      | This repository                 |
-| `guardrails`, `formatter`, `gates`, `assay` | Rust binaries                           | `brew install thkt/tap/{tool}`  |
+| `guardrails`                                | Rust binary                             | `brew install thkt/tap/{tool}`  |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLIs                               | `brew install thkt/tap/{tool}`  |
 | `ast-grep`                                  | Rust binary                             | `brew install ast-grep`         |
 | `codegraph`                                 | Binary behind a mise shim               | mise                            |
@@ -83,10 +83,6 @@ The order below is the registration order in `settings.json`. Within one matcher
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
 | PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.ts`                          | `**/*.md`          | 60      |
 | PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.ts`                    | `**/.ja/**`        | 10      |
-| PostToolUse       | `Write\|Edit`      | `assay`                                         | none               | 30      |
-| PostToolUse       | `Write\|Edit`      | `formatter`                                     | none               | 30      |
-| PostToolUse       | `Write\|Edit`      | `gates`                                         | none               | 120     |
-| PostToolUse       | `Bash`             | `gates changed`                                 | none               | 120     |
 | PostToolUse       | `*`                | `integrations/amphetamine_agent_session.ts background` | none         | 15      |
 | SessionStart      | `^(startup\|resume\|clear\|compact\|fork)$` | `herdr-agent-state.sh session` | none               | 10      |
 | UserPromptSubmit  | none               | `integrations/amphetamine_agent_session.ts acquire` | none           | 15      |
@@ -298,7 +294,7 @@ A workflow can nest another one level deep. That is how a routing table is reuse
 
 ### Local
 
-External binaries run right after an edit and after a Bash call. `gates` has a 120-second budget, looking at the whole diff on `Write` / `Edit` and at the changed files alone as `gates changed` after Bash.
+`guardrails` checks a write against oxlint's rules before it lands, and `rust_pre_edit.ts` checks a `.rs` write with clippy. After an edit, `rumdl_check.ts`, `textlint_fix.ts` and `rust_post_edit.ts` run. The gates, assay and formatter binaries do not. Type checking runs in CI alone.
 
 ### CI
 
@@ -329,7 +325,6 @@ The lint targets and thresholds live in configuration files. This document does 
 | `.guardrails.json`    | The guardrails rules, and the exemption for deliberately vulnerable fixtures |
 | `ruff.toml`           | Python checks and formatting                                            |
 | `pyrightconfig.json`  | Python type checking                                                    |
-| `knip.json`           | Unused dependency detection                                             |
 
 ### Cross-cutting tests
 

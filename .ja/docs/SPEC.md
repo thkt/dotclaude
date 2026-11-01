@@ -26,7 +26,7 @@
 | ------------------------------------------- | --------------------------------------- | ------------------------------- |
 | hook スクリプト                             | `hooks/**/*.py`, `hooks/**/*.sh`        | 本リポジトリ                    |
 | skill / agent / workflow 定義               | `skills/`, `agents/`, `workflows/`      | 本リポジトリ                    |
-| `guardrails`, `formatter`, `gates`, `assay` | Rust バイナリ                           | `brew install thkt/tap/{tool}`  |
+| `guardrails`                                | Rust バイナリ                           | `brew install thkt/tap/{tool}`  |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLI                                | `brew install thkt/tap/{tool}`  |
 | `ast-grep`                                  | Rust バイナリ                           | `brew install ast-grep`         |
 | `codegraph`                                 | mise shim 経由のバイナリ                | mise                            |
@@ -83,10 +83,6 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
 | PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.ts`                          | `**/*.md`          | 60      |
 | PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.ts`                    | `**/.ja/**`        | 10      |
-| PostToolUse       | `Write\|Edit`      | `assay`                                         | なし               | 30      |
-| PostToolUse       | `Write\|Edit`      | `formatter`                                     | なし               | 30      |
-| PostToolUse       | `Write\|Edit`      | `gates`                                         | なし               | 120     |
-| PostToolUse       | `Bash`             | `gates changed`                                 | なし               | 120     |
 | PostToolUse       | `*`                | `integrations/amphetamine_agent_session.ts background` | なし        | 15      |
 | SessionStart      | `^(startup\|resume\|clear\|compact\|fork)$` | `herdr-agent-state.sh session` | なし               | 10      |
 | UserPromptSubmit  | なし               | `integrations/amphetamine_agent_session.ts acquire` | なし           | 15      |
@@ -298,7 +294,7 @@ workflow は他の workflow を 1 階層だけ入れ子にできる。ルーテ�
 
 ### ローカル
 
-編集と Bash の直後に外部バイナリが走る。`gates` は 120 秒の枠を持ち、`Write`/`Edit` では差分全体を、`Bash` の後は `gates changed` として変更分だけを見る。
+書き込み前に `guardrails` が oxlint 規則で、`.rs` では `rust_pre_edit.ts` が clippy で見る。編集後は `rumdl_check.ts`、`textlint_fix.ts`、`rust_post_edit.ts` が走る。gates、assay、formatter のバイナリは走らない。型検査は CI だけが回す。
 
 ### CI
 
@@ -329,7 +325,6 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | `.guardrails.json`    | guardrails の規則と、意図的に脆弱な fixture への除外                    |
 | `ruff.toml`           | Python の検査と整形                                                     |
 | `pyrightconfig.json`  | Python の型検査                                                         |
-| `knip.json`           | 未使用依存の検出                                                        |
 
 ### 横断テスト
 

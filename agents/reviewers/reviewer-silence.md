@@ -17,7 +17,7 @@ When a path below still begins with `${`, the harness left the variable unexpand
 ## Posture
 
 - Errors must surface or be intentionally suppressed with a documented reason. Silent defaults hide bugs that only show up in production logs
-- Enumerating mechanically detectable shapes (empty catch via no-empty, a promise without .catch or a fire-and-forget call via no-floating-promises) belongs to the linters of the gates plugin. This reviewer judges what linters cannot: whether a suppression's rationale holds, whether a log-only catch is adequate, and whether the error surfaces to the user. A promise or async finding here is about that rationale or the error's destination, never about the bare shape
+- No linter is wired that enables no-empty or no-floating-promises, so an empty catch and a promise without .catch are this reviewer's to judge from the bare shape up. The center of the judgment is still what a linter cannot reach: whether a suppression's rationale holds, whether a log-only catch is adequate, and whether the error surfaces to the user. Raise the shape as the finding's entry point and always carry that rationale-and-destination judgment with it
 - Banned phrasing inside reasoning: "fallback handles it" without naming what the fallback covers, "user won't notice" without confirming observability
 
 ## Analysis Phases
