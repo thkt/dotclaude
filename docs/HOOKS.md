@@ -68,7 +68,7 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | Event              | Matcher            | Hooks                                                                                                                                                             |
 | ------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PreToolUse         | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread, pre-bash/issue_body_gate |
-| PreToolUse         | Write/Edit         | edit/rust_pre_edit.ts, guardrails                                                                                                                                 |
+| PreToolUse         | Write/Edit         | edit/rust_pre_edit.ts                                                                                                                                             |
 | PreToolUse         | EnterPlanMode      | deny (planning is routed to /think)                                                                                                                               |
 | PreToolUse         | WebFetch/WebSearch | deny (routed to the scout CLI)                                                                                                                                    |
 | PostToolUse        | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/rumdl_check.ts, edit/mirror_prose_guard.ts                                                                     |
@@ -139,40 +139,18 @@ take, the second takes the mirror alone as its subject.
 
 ## Quality Pipeline (Rust Binaries)
 
-A Rust binary that inserts quality enforcement before a write. Separate repository, installed via `brew install thkt/tap/guardrails`.
+Not one binary in this family is wired into `settings.json`. The TypeScript hooks under `hooks/` and CI carry the quality enforcement around a write.
 
-```mermaid
-flowchart LR
-    W[Write/Edit] --> G[guardrails]
-    G -->|pass| AP[apply]
-```
+CI takes over oxlint and the type check. Nothing covers `knip`, `depcruise`, `circular`, `coupling` or `jscpd`. Nothing formats JS or TS at write time, nothing validates spec-document quality, and nothing covers the custom rules guardrails carried, sensitiveFile and XSS among them. oxfmt stays a devDependency that nothing invokes. The only check left before a write is `rust_pre_edit.ts`'s clippy, which takes `.rs` alone.
 
-### guardrails
-
-PreToolUse hook. Validates code before Write/Edit is applied.
-
-| Aspect       | Detail                                                      |
-| ------------ | ----------------------------------------------------------- |
-| Linter       | oxlint (priority) / biome (fallback)                        |
-| Custom rules | sensitiveFile, cryptoWeak, XSS, eval, etc. (not exhaustive) |
-| Blocking     | Yes. Blocks on critical/high severity                       |
-| Source       | [thkt/guardrails](https://github.com/thkt/guardrails)       |
-
-### Project Configuration
-
-guardrails reads `.claude/tools.json` at the project root. It can be disabled per project with `"enabled": false`.
-
-```json
-{
-  "guardrails": { "rules": { "oxlint": true } }
-}
-```
-
-### Dormant
-
-shields (command guard, file ACL, secrets check) and reviews (static analysis context injection before skills) belong to the same binary family but are intentionally left unregistered in settings.json.
-
-formatter (oxfmt formatting), gates (the static gate set) and assay (spec.md / eval-criteria.md document-quality validation) are unregistered too. This repository's `.claude/tools.json` enabled `knip` `tsgo` `oxlint` `depcruise` `circular` `coupling` `jscpd` in gates. CI takes over oxlint and the type check. Nothing covers the remaining `knip` `depcruise` `circular` `coupling` `jscpd`. Nothing formats JS/TS at write time, and nothing validates spec-document quality. oxfmt stays a devDependency that nothing invokes.
+| Binary     | What it carried                                                                                       | Retired by |
+| ---------- | ----------------------------------------------------------------------------------------------------- | ---------- |
+| guardrails | PreToolUse. oxlint's rules plus sensitiveFile, cryptoWeak, XSS and eval, blocking on critical/high     | DR-0122    |
+| formatter  | PostToolUse. oxfmt formatting for JS and TS                                                           | DR-0121    |
+| gates      | PostToolUse. The `knip` `tsgo` `oxlint` `depcruise` `circular` `coupling` `jscpd` static gates         | DR-0121    |
+| assay      | PostToolUse. spec.md / eval-criteria.md document-quality validation                                    | DR-0121    |
+| shields    | Command guard, file ACL, secrets check                                                                | never wired |
+| reviews    | Static analysis context injection before skills                                                       | never wired |
 
 ## Design Principles
 
@@ -207,7 +185,7 @@ Combine small hooks to achieve complex behavior.
 
 An external app that writes its own hook wiring into `settings.json` leaves it behind after uninstall. The leftover wiring keeps failing non-blockingly on every event. It shows up neither in the conversation nor in `git diff`, so the only way to notice it is the transcript's `hook_non_blocking_error` and `stop_hook_summary`'s `hookErrors`.
 
-There is no `settings.json` setting that suppresses a hook's routine per-call output line. `suppressOutput` is a key in the hook's own JSON response, and it applies to stdout only. guardrails prints its routine line to stderr, and Claude Code renders stderr for any hook that produced output, recording it as `hook_success`.
+There is no `settings.json` setting that suppresses a hook's routine per-call output line. `suppressOutput` is a key in the hook's own JSON response, and it applies to stdout only. A line written to stderr is rendered for any hook that produced output, recorded as `hook_success`.
 
 `autoMemoryEnabled: false` stops auto-memory reads and writes. The binary still ships `/pause-memory`, but it stays hardcoded to `isEnabled: () => false`, so enabling it has no effect.
 

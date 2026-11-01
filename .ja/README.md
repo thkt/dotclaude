@@ -11,7 +11,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 - 体系的な開発ワークフローのためのカスタムスラッシュコマンド (27 skills)
 - コードレビュー、生成、分析のための専門 AI エージェント (28 agents)
 - AI 動作のコア原則と開発のベストプラクティス
-- 品質パイプラインフック (guardrails) と未配線の formatter, gates, assay, reviews
+- 品質パイプラインバイナリ 6 本。いずれも未配線
 - 日本語サポート
 
 ## 📁 構造
@@ -143,22 +143,22 @@ build workflow は `gh` を sandbox 内で実行する。macOS で sandbox を�
 
 ### Hook ツール (推奨)
 
-`settings.json` に配線された guardrails は Claude Code セッション中に自動実行され、lint エラーとセキュリティ違反を書き込み前に検出する。formatter, gates, assay, reviews はインストール対象だが `settings.json` に配線されておらず、自動実行されない。oxlint と型検査は CI が回す。JS/TS の整形を回すものは無い。
+このファミリーのバイナリは 1 つも `settings.json` に配線されておらず、自動実行されない (DR-0121, DR-0122)。品質保証は `hooks/` 配下の TypeScript hook と CI が持つ。インストールは任意で、下表はどのバイナリが何を担っていたかの記録である。
 
 ```bash
 brew tap thkt/tap
-brew install guardrails
 ```
 
-| ツール     | フック      | タイミング    | 役割                                 |
-| ---------- | ----------- | ------------- | ------------------------------------ |
-| guardrails | PreToolUse  | Write/Edit 前 | Lint (oxlint) + セキュリティチェック |
-| formatter  | 未配線      | 自動実行なし  | 整形 (oxfmt)                         |
-| gates      | 未配線      | 自動実行なし  | 品質ゲート (knip, tsgo, madge)       |
-| assay      | 未配線      | 自動実行なし  | spec 文書の品質検証                  |
-| reviews    | 未配線      | 自動実行なし  | 静的解析コマンド                     |
+| ツール     | 担っていた仕事                                        |
+| ---------- | ----------------------------------------------------- |
+| guardrails | Write/Edit 前の Lint (oxlint) とセキュリティチェック   |
+| formatter  | 整形 (oxfmt)                                          |
+| gates      | 品質ゲート (knip, tsgo, madge)                        |
+| assay      | spec 文書の品質検証                                   |
+| reviews    | 静的解析コマンド                                      |
+| shields    | コマンドガード、ファイル ACL、secrets チェック        |
 
-プロジェクト単位の設定は `.claude/tools.json` で行う。詳細は[thkt/tap](https://github.com/thkt/homebrew-tap)を参照。
+詳細は[thkt/tap](https://github.com/thkt/homebrew-tap)を参照。
 
 ### 外部 CLI ツール (任意)
 
