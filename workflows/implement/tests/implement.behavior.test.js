@@ -4,15 +4,24 @@
 // CI classification, and the run rows.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync, execSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runWorkflow } from "../../_lib/run-workflow.ts";
 
 const implementJs = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "implement.js");
-const writeBodyTs = join(dirname(fileURLToPath(import.meta.url)), "..", "write-body.ts");
+const workflowsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+// write-body.ts found no transcript holding the body, as on a host that keeps none.
+const NO_READ_BACK = { extract_exit: 1, extract_out: '{"ok":false,"reason":"no transcript"}', body_digest: "" };
 const repo = "/abs/target-repo";
 // The verification-loop tests stop at verified_local; publishArgs takes the default publish path.
 const args = { issue: "12", repo, publish: false };
@@ -107,8 +116,6 @@ const FILLED = {
   },
   prepare: { config_blob: CONFIG_BLOB, checkout_head: BASE_SHA },
   snapshot: { config_blob: CONFIG_BLOB },
-  // write-body.ts read the body back from the transcript, so the agent copied nothing.
-  body: { extract_exit: 0 },
 };
 const KIND_BY_PROPERTY = [
   ["run_id", "record"],
@@ -119,6 +126,7 @@ const KIND_BY_PROPERTY = [
   ["edit_exit", "edit"],
   ["pulls_json", "pulls"],
   ["parent", "commit"],
+  ["extract_exit", "read"],
   ["body_digest", "body"],
   ["effective_url", "probe"],
   ["remote_head", "pushed"],
@@ -222,6 +230,11 @@ const makeStubs = (overrides = {}) => {
       tree,
       files: "src/login.js\n",
     }),
+    // write-body.ts read the body back from the transcript, so the copy below is not asked for.
+    read: (prompt) => {
+      published.body = dataIn(prompt);
+      return { extract_exit: 0, extract_out: '{"ok":true}', body_digest: digestOf(published.body) };
+    },
     body: (prompt) => {
       published.body = bodyIn(prompt);
       return { write_exit: 0, body_digest: digestOf(published.body) };
@@ -1258,108 +1271,124 @@ const stepCommand = (prompt, step) => {
   return line.slice(line.indexOf("`") + 1, line.lastIndexOf("`:"));
 };
 
-// The body step's commands run for real against one accepted review. `write` decides how the file
-// gets written: by write-body.ts from a transcript, or by the block the agent would copy.
-const runBodyStep = async (write) => {
+// The body step's commands run for real against one accepted review. The overrides decide how the
+// file gets written: by write-body.ts from a transcript, or by the block a second agent copies.
+const TRICKY = 'のーと and ﾉｰﾄ give 0; `　pen　` trims; it\'s "quoted" $HOME \\ back';
+const runBodyStep = async (writers) => {
   const dir = mkdtempSync(join(tmpdir(), "implement-body-"));
   const localFile = join(dir, "pr.md");
-  const tricky = 'のーと and ﾉｰﾄ give 0; `　pen　` trims; it\'s "quoted" $HOME \\ back';
   const swap = (cmd) =>
     cmd.replace(`'${repo}/.claude/worktrees/implement-12-pr.md'`, `'${localFile}'`);
-  let wrote = "";
-  let reportedDigest = "";
-  const { result, rows } = await run(
+  const sh = (cmd, env = process.env) => execSync(swap(cmd), { shell: "/bin/bash", env }).toString();
+  const { result, rows, kinds } = await run(
     {
       review: [
-        (_, { tree }) => ({ ...reviewReply(tree), assessments: { ...assessments, tests: tricky } }),
+        (_, { tree }) => ({ ...reviewReply(tree), assessments: { ...assessments, tests: TRICKY } }),
       ],
-      body: [
-        (prompt) => {
-          const exits = write({ prompt, dir, localFile, swap });
-          wrote = readFileSync(localFile, "utf8");
-          reportedDigest = execSync(swap(stepCommand(prompt, 3)), { shell: "/bin/bash" })
-            .toString()
-            .trim();
-          return { ...exits, body_digest: reportedDigest };
-        },
-      ],
+      ...writers({ dir, localFile, sh }),
       readback: [
         (prompt) => {
           const rest = join(dir, "pr.json");
+          const wrote = readFileSync(localFile, "utf8");
           writeFileSync(rest, JSON.stringify({ ...restPr(""), body: wrote, extra: "dropped" }));
           const cmd = stepCommand(prompt, 1).replace(/^gh api '[^']*'/, `cat '${rest}'`);
           return { readback_exit: 0, pr_json: execSync(cmd, { shell: "/bin/bash" }).toString() };
         },
       ],
-      ci: [() => ({ view_exit: 0, view_json: JSON.stringify(ciView(wrote)) })],
+      ci: [() => ({ view_exit: 0, view_json: JSON.stringify(ciView(readFileSync(localFile, "utf8"))) })],
     },
     publishArgs,
   );
-  assert.ok(wrote.includes(tricky), "the file carries the assessment exactly");
-  assert.equal(reportedDigest, digestOf(wrote));
+  const wrote = readFileSync(localFile, "utf8");
+  assert.ok(wrote.includes(TRICKY), "the file carries the assessment exactly");
   assert.equal(result.status, "published_draft", `${result.stopped}: ${result.why}`);
-  return { result, rows };
+  assert.equal(result.body_digest, digestOf(wrote));
+  return { result, rows, kinds };
 };
 
-// The agent that copied about 10 KB of base64 changed one or two characters, and the digest check
-// stopped the run before publication. The first command reads the body out of the agent's own prompt,
-// which Claude Code keeps in the agent's transcript, so no character passes through the model.
-test("the body step's first command writes the body from a transcript holding the agent's own prompt, and the run records that nothing was copied", async () => {
-  const { result, rows } = await runBodyStep(({ prompt, dir, localFile }) => {
-    // The transcript as the harness stores it: a frame line, then the computed text indented.
-    const agents = join(dir, "projects", "-abs-target-repo", "session-1", "subagents", "workflows", "wf_1");
-    mkdirSync(agents, { recursive: true });
-    const stored = `[Workflow harness — computed task]\n${prompt.replace(/^/gm, "  ")}`;
-    writeFileSync(
-      join(agents, "agent-a1.jsonl"),
-      `${JSON.stringify({ type: "user", message: { role: "user", content: stored } })}\n`,
-    );
-    // The command names the bundled script, the body's digest, and the file. Run this tree's script.
-    const [, wanted, target] = / '([0-9a-f]{8}:\d+)' '([^']+)'$/.exec(stepCommand(prompt, 1));
-    assert.equal(target, `${repo}/.claude/worktrees/implement-12-pr.md`);
-    assert.match(stepCommand(prompt, 1), /workflows\/implement\/write-body\.ts/);
-    execFileSync("node", [writeBodyTs, wanted, localFile, join(dir, "projects")]);
-    return { extract_exit: 0, write_exit: 0 };
-  });
-  assert.equal(result.body_transport, "transcript");
-  assert.equal(rows.at(-1).body_transport, "transcript");
+// An agent that copied about 10 KB of base64 changed one or two characters, and the digest check
+// stopped the run before publication. The read-back agent's first command reads the body out of
+// that agent's own prompt, which Claude Code keeps as the first line of its transcript. The test
+// runs the command exactly as the agent receives it, with HOME pointing at a tree that holds this
+// repository's workflows directory and one stored transcript.
+test("the read-back command, run as the agent receives it, writes the body from the transcript holding the agent's own prompt, and no copy is asked for", async () => {
+  const { result, rows, kinds } = await runBodyStep(({ dir, sh }) => ({
+    read: [
+      (prompt) => {
+        const home = join(dir, "home");
+        const agents = join(home, ".claude", "projects", "-abs-target-repo", "session-1", "subagents", "workflows", "wf_1");
+        mkdirSync(agents, { recursive: true });
+        symlinkSync(workflowsDir, join(home, ".claude", "workflows"));
+        // The transcript as the harness stores it: a frame line, then the computed text indented.
+        const stored = `[Workflow harness — computed task]\n${prompt.replace(/^/gm, "  ")}`;
+        writeFileSync(
+          join(agents, "agent-a1.jsonl"),
+          `${JSON.stringify({ type: "user", message: { role: "user", content: stored } })}\n{"type":"assistant"}\n`,
+        );
+        // The data block is ASCII and carries no shell command for the agent to run.
+        const data = prompt.slice(prompt.indexOf("PR_BODY_B64_BEGIN"));
+        assert.match(data, /^[\x20-\x7e\n]+$/);
+        assert.ok(!data.includes("base64 -d"));
+        const extract_out = sh(stepCommand(prompt, 1), { ...process.env, HOME: home });
+        assert.equal(JSON.parse(extract_out).ok, true);
+        return { extract_exit: 0, extract_out, body_digest: sh(stepCommand(prompt, 2)).trim() };
+      },
+    ],
+  }));
+  assert.ok(!kinds.includes("body"), "no agent copied the body");
+  assert.deepEqual([result.body_transport, result.body_fallback], ["transcript", ""]);
+  assert.deepEqual([rows.at(-1).body_transport, rows.at(-1).body_fallback], ["transcript", ""]);
 });
 
-test("when the body cannot be read back, the block the agent copies writes a body carrying half-width kana, quotes, and backticks byte for byte, and the run records the copy", async () => {
-  const { result, rows } = await runBodyStep(({ prompt, swap }) => {
-    // The agent copies only ASCII, which it cannot rewrite the way it rewrote ﾉｰﾄ into ノート.
-    assert.match(bodyBlock(prompt), /^[\x20-\x7e\n]+$/);
-    assert.ok(
-      !bodyBlock(prompt)
-        .split("\n")
-        .some((l) => l.length > 120),
-      "short lines",
-    );
-    execSync(swap(bodyBlock(prompt)), { shell: "/bin/bash" });
-    return { extract_exit: 1, write_exit: 0 };
-  });
+test("when the read-back finds no transcript, a second agent's block writes a body carrying half-width kana, quotes, and backticks byte for byte, and the run records the copy and why", async () => {
+  const { result, rows } = await runBodyStep(({ sh }) => ({
+    read: [NO_READ_BACK],
+    body: [
+      (prompt) => {
+        // The agent copies only ASCII, which it cannot rewrite the way it rewrote ﾉｰﾄ into ノート.
+        assert.match(bodyBlock(prompt), /^[\x20-\x7e\n]+$/);
+        assert.ok(
+          !bodyBlock(prompt)
+            .split("\n")
+            .some((l) => l.length > 120),
+          "short lines",
+        );
+        sh(bodyBlock(prompt));
+        return { write_exit: 0, body_digest: sh(stepCommand(prompt, 2)).trim() };
+      },
+    ],
+  }));
   assert.equal(result.body_transport, "copied");
-  assert.equal(rows.at(-1).body_transport, "copied");
+  assert.match(result.body_fallback, /write-body\.ts exited 1: .*no transcript/);
+  assert.deepEqual(
+    [rows.at(-1).body_transport, rows.at(-1).body_fallback],
+    [result.body_transport, result.body_fallback],
+  );
 });
 
-test("a body that differs from the generated one stops as pr-body-mismatch whichever way it was written, and the stop says which", async () => {
-  for (const [extract_exit, transport] of [
-    [0, "transcript"],
-    [1, "copied"],
-  ]) {
-    const { result, rows, kinds } = await run(
-      { body: [{ extract_exit, write_exit: 0, body_digest: digestOf("rewritten") }] },
-      publishArgs,
-    );
-    assert.equal(result.stopped, "pr-body-mismatch", transport);
-    assert.equal(result.body_transport, transport);
-    assert.equal(rows.at(-1).body_transport, transport);
-    assert.ok(!kinds.some((k) => WRITES.includes(k)), transport);
+// Which way the file was written is decided by the script from the read-back's own result, so a
+// read-back that reports success with another body, or returns nothing, counts as no read-back.
+test("a read-back that returns nothing, or a file whose digest differs, goes to the copy, and a copy that also differs stops as pr-body-mismatch without writing", async () => {
+  const cases = [
+    [null, /returned no result/],
+    [{ extract_exit: 0, extract_out: '{"ok":true}', body_digest: digestOf("another body") }, /digest of the file read back differed/],
+    [NO_READ_BACK, /exited 1/],
+  ];
+  for (const [read, reason] of cases) {
+    const held = await run({ read: [read] }, publishArgs);
+    assert.equal(held.result.status, "published_draft", String(reason));
+    assert.equal(held.result.body_transport, "copied");
+    assert.match(held.result.body_fallback, reason);
+
+    const { result, rows, kinds } = await run({ read: [read], body: mangledBody.body }, publishArgs);
+    assert.equal(result.stopped, "pr-body-mismatch", String(reason));
+    assert.equal(rows.at(-1).body_transport, "copied");
+    assert.ok(!kinds.some((k) => WRITES.includes(k)), String(reason));
   }
 });
 
 // ---- Ship and CI ----
-const SHIP_KINDS = ["pulls", "commit", "body", "probe", "push", "create", "readback", "attach"];
+const SHIP_KINDS = ["pulls", "commit", "read", "body", "probe", "push", "create", "readback", "attach"];
 const WRITES = ["push", "create", "attach"];
 
 test("by default an accepted run commits once, pushes, opens a draft PR, reads it back, and ends published_draft once CI passes", async () => {
@@ -1378,7 +1407,8 @@ test("by default an accepted run commits once, pushes, opens a draft PR, reads i
   assert.equal(result.ci.status, "passed");
   assert.deepEqual(
     kinds.filter((k) => SHIP_KINDS.includes(k) || k === "ci"),
-    ["pulls", "commit", "body", "probe", "push", "create", "readback", "ci"],
+    // The body is read back from the transcript, so no agent is asked to copy it.
+    ["pulls", "commit", "read", "probe", "push", "create", "readback", "ci"],
   );
   assert.ok(!result.remaining.includes("ci"));
   assert.ok(!result.remaining.includes("publication"));
@@ -1468,11 +1498,12 @@ test("publication gates before the first write stop without pushing: a changed t
     ],
     [
       "pr-body-mismatch",
-      { body: [{ write_exit: 0, body_digest: digestOf("Closes #12\n(rewritten)") }] },
+      { read: [NO_READ_BACK], body: [{ write_exit: 0, body_digest: digestOf("Closes #12\n(rewritten)") }] },
     ],
     [
       "pr-body-mismatch",
       {
+        read: [NO_READ_BACK],
         body: [(prompt) => ({ write_exit: 1, body_digest: digestOf(bodyIn(prompt)) })],
       },
     ],
@@ -1667,7 +1698,10 @@ const shotReply = (patch) => [
 ];
 const failedCheck = (_, { tree }) => ({ exit_code: 1, log_tail: "boom", tree });
 const noTree = { exit_code: 0, log_tail: "", tree: "" };
-const mangledBody = { body: [{ write_exit: 0, body_digest: digestOf("rewritten") }] };
+const mangledBody = {
+  read: [NO_READ_BACK],
+  body: [{ write_exit: 0, body_digest: digestOf("rewritten") }],
+};
 const badMedia = {
   install: [
     { stdout: JSON.stringify({ ok: false, reason: "Invalid capture media: a.png" }), tree: treeOf(2) },
@@ -1904,6 +1938,14 @@ test("a retry that is not the value a stop returned stops as invalid-retry befor
 
 // The body agent's first command writes the PR body from its last argument, an ASCII-only JSON
 // string in shell single quotes. Decoding it recovers the body the script generated.
+// The body in the read-back prompt: the base64 lines between the two data markers.
+function dataIn(prompt) {
+  const start = prompt.indexOf("PR_BODY_B64_BEGIN\n");
+  const end = prompt.indexOf("\nPR_BODY_B64_END", start);
+  const lines = prompt.slice(start + "PR_BODY_B64_BEGIN\n".length, end);
+  return Buffer.from(lines.replace(/\s+/g, ""), "base64").toString("utf8");
+}
+
 function bodyIn(prompt) {
   const block = bodyBlock(prompt);
   const lines = block.split("\n").slice(1, -1);

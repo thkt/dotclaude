@@ -32,7 +32,7 @@ workflow は background で走り、完了は通知で届く。完了まで状�
 
 ## Phase 3: 結果の扱い
 
-戻り値の `status` か `stopped` で分ける。どの場合も、戻り値の branch・worktree・commit・URL・review の要約・残作業 (`remaining`) をユーザーに返す。
+戻り値の `status` か `stopped` で分ける。どの場合も、戻り値の branch・worktree・commit・URL・review の要約・残作業 (`remaining`) をユーザーに返す。戻り値の `body_transport` が `copied` なら、PR 本文を transcript から読み戻せず agent が写したことと、`body_fallback` の理由も返す。
 
 | 戻り値                    | 扱い                                                                                     |
 | ------------------------- | ---------------------------------------------------------------------------------------- |

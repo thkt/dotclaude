@@ -29,9 +29,12 @@ scope: [meta, workflows]
 
 Chosen option: "A bundled script reads the block back from the agent's own transcript", because Claude Code already stores the agent's prompt on disk byte for byte, so the body can reach the file with no model in the path, and the script's generation and digest check stay where they are.
 
-The body agent's prompt still carries the base64 heredoc. Its first step runs `workflows/implement/write-body.ts <digest> <file>`. That script scans the agent transcripts under `$HOME/.claude/projects/<project>/<session>/subagents/` that changed in the last two hours, decodes each `PR_BODY_B64` block found in a user message, and writes the one whose body carries the digest the workflow passed. When it exits non-zero, the agent runs the heredoc as before. The step after that computes the digest of the file, and the script compares it as before.
+The body step is two agent calls, and the second runs only when the first does not hold.
 
-The run records which way the file was written. `body_transport` is `transcript` or `copied`, in the return value and in the run's row in `implement-runs.jsonl`, and a copy is also written to the run log.
+1. The read-back call. Its prompt carries the base64 lines between `PR_BODY_B64_BEGIN` and `PR_BODY_B64_END` as data, with no command that writes them. The agent runs `workflows/implement/write-body.ts <digest> <file>` and then the digest command. That script scans the agent transcripts under `$HOME/.claude/projects/<project>/<session>/subagents/` that changed in the last two hours, reads the first line of each, decodes each block in that prompt, and writes the one whose body carries the digest the workflow passed. An entry it cannot read is skipped.
+2. The copy call. It is the earlier step unchanged: the agent runs the base64 heredoc and the digest command.
+
+The script decides which call wrote the file: the read-back holds when it exited 0 and the digest of the file equals the digest of the generated body. `body_transport` is `transcript` or `copied`, and `body_fallback` is why the read-back did not hold. Both are in the return value and in the run's row in `implement-runs.jsonl`, the reason also goes to the run log, and the `/implement` skill relays a copy to the person.
 
 ### Consequences
 
@@ -39,12 +42,15 @@ The run records which way the file was written. `body_transport` is `transcript`
 - Good, because the block is chosen by the digest of its decoded body, so a block from another run or an earlier body cannot be taken
 - Good, because a host with no transcript, or a Claude Code release that moves it, falls back to the copy and is no worse off than before
 - Bad, because the transcript path and the shape of its lines are Claude Code internals with no stated contract. A change there turns every run back into a copy, and only `body_transport` shows it
+- Good, because the read-back prompt holds no command that writes the block, so the agent has nothing to copy by mistake, and which call wrote the file does not rest on what a model reports
+- Good, because the read-back call runs on haiku, where the single copy call ran on sonnet
 - Bad, because the base64 block stays in the prompt for the script to read, so the prompt is no shorter
-- Neutral, because the body agent stays on sonnet for the case where it has to copy
+- Bad, because a host that cannot read back pays for two agent calls where it paid for one
+- Bad, because the digest exists a second time in `write-body.ts`, since a workflow script cannot be imported. A change on one side alone makes every read-back miss
 
 ### Confirmation
 
-`workflows/implement/tests/write-body.test.ts` runs the script against transcripts built in a temp directory: it writes the body byte for byte from an indented prompt, takes the block with the wanted digest among several, writes nothing for another digest, ignores a block an assistant message quotes, and skips a transcript older than the window. `workflows/implement/tests/implement.behavior.test.js` runs the body step's own first command against a transcript holding that step's prompt, then the digest command, and checks that the run publishes and records `transcript`. It also runs the fallback block and checks `copied`. The script was run for real twice on 2026-11-12: against the transcript of the body agent that failed on Issue #167, where it recovered the 6,185-character body the workflow expected, and from inside a live subagent in a sandboxed session, where it found its own transcript while the agent was running.
+`workflows/implement/tests/write-body.test.ts` runs the script against transcripts built in a temp directory: it writes the body byte for byte from an indented prompt in either block form, takes the block with the wanted digest among several, writes nothing for another digest, ignores a block an assistant message quotes or a later line holds, skips a transcript older than the window, and goes on past a directory it cannot list. It also checks that the script's digest equals the one each `implement.js` defines. `workflows/implement/tests/implement.behavior.test.js` runs the read-back call's first command exactly as the agent receives it, with `HOME` pointing at a tree that holds the repository's `workflows` directory and one stored transcript, then the digest command, and checks that the run publishes, records `transcript`, and asks for no copy. It also runs the copy call's block and checks `copied` with its reason, and checks that a read-back that returns nothing or another body goes to the copy. The script was run for real twice on 2026-11-12: against the transcript of the body agent that failed on Issue #167, where it recovered the 6,185-character body the workflow expected, and from inside a live subagent in a sandboxed session, where it found its own transcript while the agent was running.
 
 ## Pros and Cons of the Options
 
@@ -81,7 +87,7 @@ Layout observed on Claude Code 2026-11-12: `$HOME/.claude/projects/<encoded cwd>
 
 ### Reassessment Triggers
 
-- `body_transport` is `copied` in a run on Claude Code, which means the transcript moved or changed shape
-- A `pr-body-mismatch` stop occurs with `body_transport: transcript`, which means the stored prompt is not the prompt the script built
+- `body_transport` is `copied` in a run on Claude Code, which means the transcript moved or changed shape. `body_fallback` says which
+- `body_fallback` reports a digest that differed after a read-back that exited 0, which means the stored prompt is not the prompt the script built
 - Workflow scripts gain a way to write a file, at which point neither the transcript nor the copy is needed
 - The scan of `$HOME/.claude/projects` takes long enough to matter. It took about one second over 1,042 project directories

@@ -3,7 +3,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  utimesSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,11 +22,16 @@ const BODY = 'Closes #12\n\nのーと and ﾉｰﾄ give 0; `　pen　` trims; i
 const OTHER = "Closes #99\n\nanother run's body\n";
 
 // The prompt as the harness stores it: a frame line, then every line of the computed text indented.
-const prompt = (body: string) => {
-  const lines = (Buffer.from(body, "utf8").toString("base64").match(/.{1,76}/g) ?? []).join("\n");
-  const text = `Write the PR body.\n\`\`\`sh\nbase64 -d > '/w/pr.md' <<'PR_BODY_B64'\n${lines}\nPR_BODY_B64\n\`\`\`\n3. digest`;
-  return `[Workflow harness — computed task]\n${text.replace(/^/gm, "  ")}`;
-};
+// The read-back prompt carries the body between two data markers, and the copy prompt in a heredoc.
+const base64Lines = (body: string) =>
+  (Buffer.from(body, "utf8").toString("base64").match(/.{1,76}/g) ?? []).join("\n");
+const framed = (text: string) => `[Workflow harness — computed task]\n${text.replace(/^/gm, "  ")}`;
+const prompt = (body: string) =>
+  framed(`Read the PR body back.\n1. write-body\n2. digest\nPR_BODY_B64_BEGIN\n${base64Lines(body)}\nPR_BODY_B64_END`);
+const copyPrompt = (body: string) =>
+  framed(
+    `Write the PR body.\n\`\`\`sh\nbase64 -d > '/w/pr.md' <<'PR_BODY_B64'\n${base64Lines(body)}\nPR_BODY_B64\n\`\`\`\n2. digest`,
+  );
 const userLine = (content: unknown) =>
   JSON.stringify({ type: "user", message: { role: "user", content } });
 const assistantLine = JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text: "ok" }] } });
@@ -100,4 +113,48 @@ test("a host with no projects directory, or a call without its arguments, exits 
   const { projects, out } = project();
   assert.equal(run(digest(BODY), out, join(projects, "missing")).code, 1);
   assert.equal(run("", out, projects).code, 1);
+});
+
+test("the body in a copy prompt's heredoc is read the same way", () => {
+  const { projects, agents, out } = project();
+  transcript(agents, "a1", [userLine(copyPrompt(BODY))]);
+  assert.equal(run(digest(BODY), out, projects).code, 0);
+  assert.equal(readFileSync(out, "utf8"), BODY);
+});
+
+// The prompt is the first line of a transcript, and the lines after it run to megabytes.
+test("a block on a later line of a transcript is not read", () => {
+  const { projects, agents, out } = project();
+  transcript(agents, "a1", [userLine("the prompt, with no block"), userLine(prompt(BODY))]);
+  assert.equal(run(digest(BODY), out, projects).code, 1);
+});
+
+// A project directory the sandbox denies, or one whose mode forbids listing, must not end the scan
+// before it reaches the agent's own transcript.
+test("a directory that cannot be listed is skipped, and the scan still finds the body", () => {
+  const { projects, agents, out } = project();
+  const denied = join(projects, "-abs-secrets-tool", "session-9", "subagents");
+  mkdirSync(denied, { recursive: true });
+  chmodSync(denied, 0o000);
+  try {
+    transcript(agents, "a1", [userLine(prompt(BODY))]);
+    const { code, report } = run(digest(BODY), out, projects);
+    assert.deepEqual([code, report.ok], [0, true]);
+    assert.equal(readFileSync(out, "utf8"), BODY);
+  } finally {
+    chmodSync(denied, 0o700);
+  }
+});
+
+// implement.js cannot be imported, so write-body.ts carries its own copy of the digest. A change on
+// one side alone makes every read-back miss, and the run falls to the agent's copy without an error.
+test("the digest equals the one implement.js computes, for both the English and the .ja script", () => {
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+  const samples = ["", "a", BODY, OTHER, "trailing space  \n\n", "𝒳 surrogate pair", "ﾉｰﾄ"];
+  for (const rel of ["workflows/implement.js", ".ja/workflows/implement.js"]) {
+    const source = /const digest = \(text\) => \{[\s\S]*?\n\};/.exec(readFileSync(join(root, rel), "utf8"));
+    assert.ok(source, `${rel} no longer defines digest in the expected form`);
+    const workflowDigest = new Function(`${source[0]} return digest;`)();
+    for (const sample of samples) assert.equal(digest(sample), workflowDigest(sample), rel);
+  }
 });
