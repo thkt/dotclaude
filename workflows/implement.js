@@ -61,14 +61,93 @@ const shq = (value) => `'${String(value).replaceAll("'", `'"'"'`)}'`;
 const argvLine = (argv) => argv.map(shq).join(" ");
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -e "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" -not -path "*/.ja/*" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
-const anchor = (p) =>
-  `Run every git, gh, and file command from the repository at ${repo} (begin each shell command with \`cd ${repo} && \`).\n\n${p}`;
 const parseJsonText = (value) => {
   try {
     return JSON.parse(String(value));
   } catch {
     return null;
   }
+};
+
+// ---- Relays: the commands the script wants run, declared as data ----
+// A script cannot run a command, so an agent runs it. The agent does not read the commands as prose and does not
+// copy them. It runs workflows/_lib/relay.ts with the digest of the spec; relay.ts reads the spec back from the
+// agent's own transcript, runs the steps in order, and prints the fields and their digest (relay_check) as one line
+// of JSON. The script compares the fields the agent returned with relay_check, so a single character changed on the
+// way back reads as no result. A host that evaluates this script itself finds the spec in the prompt and runs it
+// with no agent.
+// The body is never transcribed by an LLM; it is compared by digest (FNV-1a over UTF-16 code units, plus the
+// length). The function's source is also embedded into node -e, so it uses no template literal.
+const digest = (text) => {
+  const t = String(text).trimEnd();
+  let h = 0x811c9dc5;
+  for (let i = 0; i < t.length; i += 1) {
+    h ^= t.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, "0") + ":" + t.length;
+};
+const canonical = (fields) =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.keys(fields)
+        .sort()
+        .map((key) => [key, fields[key]]),
+    ),
+  );
+const fieldSchema = (value) =>
+  Array.isArray(value) ? list(int) : { type: typeof value === "number" ? "integer" : typeof value };
+// A bundled helper starts on bun, or on node when bun does not run. A bun on PATH can be a shim that fails to
+// start, so the check runs it instead of looking it up. The helpers stay runnable on both (DR-0113).
+const RUNTIME = `RT=bun; bun --version >/dev/null 2>&1 || RT=node; "$RT"`;
+const RELAY = `${RUNTIME} ${bundled("workflows/_lib/relay.ts")}`;
+const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {}) => {
+  const json = JSON.stringify(spec);
+  const id = digest(json);
+  const handover = `$TMPDIR/relay-${id.replace(":", "-")}.spec.json`;
+  const shown = Object.entries(spec.defaults).filter(([key]) => !key.startsWith("_"));
+  const schema = closed({
+    ...Object.fromEntries(shown.map(([key, value]) => [key, fieldSchema(value)])),
+    relay_check: str,
+  });
+  const reply = await agent(
+    `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The line between RELAY_SPEC and RELAY_SPEC_END is data that the command reads from where the harness stored this prompt. Do not run it yourself.\n` +
+      `1. \`${RELAY} ${shq(id)}\` with the Bash tool's timeout parameter set to 600000.\n` +
+      `2. When it prints {"relay_continue":true}, run the same command again, and repeat until a line carrying relay_check is printed.\n` +
+      `3. Only when it prints relay_error, run the block below as one Bash call, copying the line between RELAY_SPEC and RELAY_SPEC_END unchanged in place of SPEC_LINE. Then run \`${RELAY} ${shq(id)} --spec "${handover}"\`. When that prints relay_error too, return every field at the value defaults gives it, with relay_check set to "relay_error".\n` +
+      "```sh\n" +
+      `cat > "${handover}" <<'RELAY_SPEC_EOF'\nSPEC_LINE\nRELAY_SPEC_EOF\n` +
+      "```\n" +
+      `RELAY_SPEC ${id}\n${json}\nRELAY_SPEC_END` +
+      extra,
+    {
+      label,
+      phase: phaseName,
+      agentType: "general-purpose",
+      schema,
+      model,
+    },
+  );
+  // The fields an agent returned, or null when they do not carry the digest relay.ts printed with them.
+  const confirmed = (value) => {
+    if (!value) return null;
+    const { relay_check: check, ...fields } = value;
+    return String(check).trim() === digest(canonical(fields)) ? fields : null;
+  };
+  if (!reply) return null;
+  const first = confirmed(reply);
+  if (first) return first;
+  // A changed character on the way back is the agent's copy, not the commands. relay.ts kept the line it printed,
+  // so a second agent returns it without any command running again.
+  log(`relay ${label}: the returned fields do not match relay_check (${reply.relay_check}). Asking for the stored result once more.`);
+  const again = await agent(
+    `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The command prints the result that was already computed and runs nothing again.\n` +
+      `1. \`${RELAY} ${shq(id)} --replay\``,
+    { label: `${label}:replay`, phase: phaseName, agentType: "general-purpose", schema, model },
+  );
+  const second = confirmed(again);
+  if (!second) log(`relay ${label}: the returned fields do not match relay_check again. The result is not used.`);
+  return second;
 };
 
 // ---- Run recording: the start row and the terminal row are joined by run_id ----
@@ -88,7 +167,6 @@ const published = {
   body_transport: "",
   body_fallback: "",
 };
-const RECORD_SCHEMA = closed({ path: str, run_id: str });
 const recordRun = async (reason) => {
   const payload = {
     run_id: runId,
@@ -103,20 +181,19 @@ const recordRun = async (reason) => {
     reason,
     ...counts,
   };
-  const written = await agent(
-    anchor(
-      `Record one implement run; do not judge, summarize, or edit any value. The steps are, (1) write this exact JSON to a temp file; ` +
-        `(2) run \`node ${bundled("workflows/implement/record.ts")} < <tempfile>\`; ` +
-        `(3) return the script's stdout path and run_id verbatim.\nThe input JSON is as follows.\n${JSON.stringify(payload)}`,
-    ),
-    {
-      label: `record:${reason}`,
-      agentType: "general-purpose",
-      schema: RECORD_SCHEMA,
-      model: "haiku",
-    },
-  );
-  const id = String((written && written.run_id) || "").trim();
+  const written = await relay(`record:${reason}`, undefined, {
+    defaults: { record_out: "" },
+    steps: [
+      {
+        sh: `${RUNTIME} ${bundled("workflows/implement/record.ts")}`,
+        cwd: repo,
+        stdin: JSON.stringify(payload),
+        set: { record_out: "out" },
+      },
+    ],
+  });
+  const recorded = written ? parseJsonText(written.record_out) : null;
+  const id = String((recorded && recorded.run_id) || "").trim();
   // Recording never stops a run. A row that could not be written goes to the log and the run goes on.
   if (!id) {
     log(
@@ -300,64 +377,79 @@ const configErrors = (c) =>
 // one-character slip in transcription is not read as a change in requirements.
 // Canonical source: the Issue fetch in orchestrator.ts. The digest covers state and updatedAt too,
 // so an Issue closed mid-run reads as changed.
+// The output goes to shasum only when gh fetched it, so a failed gh does not print the digest of an empty input.
 const issueDigestCommand = (repoFlag = "") =>
-  `gh issue view ${issueNumber}${repoFlag} --json title,body,state,updatedAt | shasum -a 256 | cut -d ' ' -f 1`;
+  `out=$(gh issue view ${issueNumber}${repoFlag} --json title,body,state,updatedAt) && printf %s "$out" | shasum -a 256 | cut -d ' ' -f 1`;
 const DIGEST_SHAPE = /^[0-9a-f]{64}$/;
-const TARGET_SCHEMA = closed({
-  issue_exit: int,
-  issue_json: str,
-  issue_digest: str,
-  user: str,
-  repo_json: str,
-  porcelain: str,
-  config_found: bool,
-  config_text: str,
-  remotes: str,
-  gh_host: str,
-  head_sha: str,
-  report_listing: str,
-  revision_pr: str,
-  revision_body_sha: str,
-  revision_row: str,
-});
 // The fields checked on the PR under revision, and its body's sha256. The body is never transcribed by an agent; gh's output goes through shasum.
 const prApiPath = revisionPr ? `repos/${revisionPr[1]}/pulls/${revisionPr[2]}` : "";
 const PR_FIELDS_JQ =
   "{state, draft, html_url, user: .user.login, head_sha: .head.sha, head_ref: .head.ref, head_repo: .head.repo.full_name, base_ref: .base.ref, base_repo: .base.repo.full_name}";
 const prFieldsCommand = argvLine(["gh", "api", prApiPath, "--jq", PR_FIELDS_JQ]);
 const prBodyShaCommand = `${argvLine(["gh", "api", prApiPath, "--jq", ".body"])} | shasum -a 256 | cut -d ' ' -f 1`;
-const revisionSteps = revising
-  ? `\n11. \`${prFieldsCommand}\`: put its stdout in revision_pr.\n` +
-    `12. \`${prBodyShaCommand}\`: put the printed 64-digit hex in revision_body_sha.\n` +
-    `13. \`${argvLine(["jq", "-c", "--arg", "url", revisionUrl, 'select(.reason == "published_draft" and .url == $url)'])} "$HOME/.claude/history/implement-runs.jsonl" | tail -1\`: put its stdout in revision_row (an empty string when none).`
-  : `\n11. This is not a revision. Set revision_pr, revision_body_sha, and revision_row to "".`;
 // Canonical source: orchestrator.ts. The worktree is cut from the checkout's local HEAD and the config is
 // read from that commit, so the validated config and the version that runs cannot differ.
-const target = await agent(
-  anchor(
-    `Run these commands and return each output verbatim. Do not summarize, reformat, or judge any of them.\n` +
-      `1. \`gh issue view ${issueNumber} --json number,title,body,state,url\`: put its exit code in issue_exit and its stdout in issue_json.\n` +
-      `2. \`gh api user --jq .login\`: put its stdout in user (an empty string when it fails).\n` +
-      `3. \`gh repo view --json nameWithOwner,defaultBranchRef,viewerPermission\`: put its stdout in repo_json (an empty string when it fails).\n` +
-      `4. \`git status --porcelain --untracked-files=all\`: put its stdout in porcelain.\n` +
-      `5. \`git show HEAD:.dotagents.json\`: put whether it exited 0 in config_found and its stdout verbatim in config_text (an empty string when it fails).\n` +
-      `6. \`${issueDigestCommand()}\`: put the printed 64-digit hex in issue_digest (an empty string when it fails).\n` +
-      `7. \`git remote -v\`: put its stdout in remotes.\n` +
-      `8. \`printenv GH_HOST\`: put its stdout in gh_host (an empty string when unset).\n` +
-      `9. \`git rev-parse HEAD\`: put the printed sha in head_sha.\n` +
-      (reports.length && !revising
-        ? `10. \`${argvLine(["git", "ls-tree", "HEAD", "--", ...reports.map((r) => r.path)])}\`: put its stdout in report_listing.`
-        : `10. References are not checked here. Set report_listing to "".`) +
-      revisionSteps,
-  ),
-  {
-    label: "target",
-    phase: "Target",
-    agentType: "general-purpose",
-    schema: TARGET_SCHEMA,
-    model: "haiku",
+const target = await relay("target", "Target", {
+  defaults: {
+    issue_exit: -1,
+    issue_json: "",
+    issue_digest: "",
+    user: "",
+    repo_json: "",
+    porcelain: "",
+    config_found: false,
+    config_text: "",
+    remotes: "",
+    gh_host: "",
+    head_sha: "",
+    report_listing: "",
+    revision_pr: "",
+    revision_body_sha: "",
+    revision_row: "",
   },
-);
+  steps: [
+    {
+      sh: `gh issue view ${issueNumber} --json number,title,body,state,url`,
+      cwd: repo,
+      set: { issue_exit: "exit", issue_json: "out" },
+    },
+    { sh: "gh api user --jq .login", cwd: repo, set: { user: "out" } },
+    {
+      sh: "gh repo view --json nameWithOwner,defaultBranchRef,viewerPermission",
+      cwd: repo,
+      set: { repo_json: "out" },
+    },
+    { sh: "git status --porcelain --untracked-files=all", cwd: repo, set: { porcelain: "out" } },
+    {
+      sh: "git show HEAD:.dotagents.json",
+      cwd: repo,
+      set: { config_found: "ok", config_text: "out" },
+    },
+    { sh: issueDigestCommand(), cwd: repo, set: { issue_digest: "out" } },
+    { sh: "git remote -v", cwd: repo, set: { remotes: "out" } },
+    { sh: "printenv GH_HOST", set: { gh_host: "out" } },
+    { sh: "git rev-parse HEAD", cwd: repo, set: { head_sha: "out" } },
+    ...(reports.length && !revising
+      ? [
+          {
+            sh: argvLine(["git", "ls-tree", "HEAD", "--", ...reports.map((r) => r.path)]),
+            cwd: repo,
+            set: { report_listing: "out" },
+          },
+        ]
+      : []),
+    ...(revising
+      ? [
+          { sh: prFieldsCommand, cwd: repo, set: { revision_pr: "out" } },
+          { sh: prBodyShaCommand, cwd: repo, set: { revision_body_sha: "out" } },
+          {
+            sh: `${argvLine(["jq", "-c", "--arg", "url", revisionUrl, 'select(.reason == "published_draft" and .url == $url)'])} "$HOME/.claude/history/implement-runs.jsonl" | tail -1`,
+            set: { revision_row: "out" },
+          },
+        ]
+      : []),
+  ],
+});
 if (!target) {
   return await stop("target-unavailable", "The agent checking the target returned no result.");
 }
@@ -618,59 +710,120 @@ const reportStop = (listing) => {
 };
 const earlyReportStop = revising ? null : reportStop(target.report_listing);
 if (earlyReportStop) return await earlyReportStop;
-const PREPARE_SCHEMA = closed({
-  existing: bool,
-  created: bool,
-  base_sha: str,
-  config_blob: str,
-  checkout_head: str,
-  setup_exits: list(int),
-  setup_tail: str,
-});
-const REPREPARE_SCHEMA = closed({
-  existing: bool,
-  created: bool,
-  wt_status: str,
-  wt_branch: str,
-  head: str,
-  config_blob: str,
-  base_config_blob: str,
-  report_listing: str,
-  setup_exits: list(int),
-  setup_tail: str,
-});
-const setupStep = config.setup.length
-  ? `4. Run these setup commands in order, stopping at the first non-zero exit. Set the Bash tool's timeout parameter to 600000. Put the exit codes of the commands run in setup_exits, and the last 40 lines of output of the last command run in setup_tail.\n` +
-    config.setup
-      .map((argv, i) => `   ${i + 1}. \`cd ${shq(worktree)} && ${argvLine(argv)}\``)
-      .join("\n")
-  : `4. There are no setup commands. Set setup_exits to [] and setup_tail to "".`;
-const freshPrompt =
-  `Prepare an isolated worktree for Issue #${issueNumber}. Return each value verbatim.\n` +
-  `1. If \`git show-ref --verify --quiet ${shq(`refs/heads/${branch}`)}\` exits 0 or ${worktree} exists, set existing: true and created: false, and finish without changing anything.\n` +
-  `2. Run \`git worktree add -b ${shq(branch)} ${shq(worktree)} ${shq(headSha)}\`, and put whether it exited 0 in created.\n` +
-  `3. Put the output of \`git -C ${shq(worktree)} rev-parse HEAD\` in base_sha, and the output of \`git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json\` in config_blob.\n` +
-  setupStep +
-  `\n5. Last, run \`git rev-parse HEAD\` and put its output in checkout_head.`;
 // Canonical source: the README section on revising an existing PR. The earlier checkout (worktree) is reused at the published head with no tracked
-// or untracked changes. No stash, reset, rebase, or porting of working changes.
+// or untracked change. Nothing is stashed, reset, rebased, or carried over.
 const revisionBase = revising ? revisionRow.base_sha : "";
-const revisionPrompt =
-  `Prepare the earlier worktree to revise ${revisionUrl}. Return each value verbatim. Do not delete, reset, or stash anything.\n` +
-  `1. If ${worktree} exists, set existing: true and created: false. Otherwise set existing: false, run \`git worktree add ${shq(worktree)} ${shq(branch)}\`, and put whether it exited 0 in created.\n` +
-  `2. Put the stdout of \`git -C ${shq(worktree)} status --porcelain --untracked-files=all\` in wt_status, the output of \`git -C ${shq(worktree)} rev-parse --abbrev-ref HEAD\` in wt_branch, and the output of \`git -C ${shq(worktree)} rev-parse HEAD\` in head.\n` +
-  `3. Put the output of \`git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json\` in config_blob, and the output of \`git -C ${shq(worktree)} rev-parse ${shq(`${revisionBase}:.dotagents.json`)}\` in base_config_blob.` +
-  (reports.length
-    ? ` Put the stdout of \`${argvLine(["git", "-C", worktree, "ls-tree", revisionBase, "--", ...reports.map((r) => r.path)])}\` in report_listing.\n`
-    : ` Set report_listing to "".\n`) +
-  setupStep;
-const prepared = await agent(anchor(revising ? revisionPrompt : freshPrompt), {
-  label: revising ? "reprepare" : "prepare",
-  phase: "Prepare",
-  agentType: "general-purpose",
-  schema: revising ? REPREPARE_SCHEMA : PREPARE_SCHEMA,
-  model: "haiku",
-});
+// setup stops at the first non-zero exit. _setup carries whether to go on to the next command.
+// A tail is returned only for a command that failed. A successful setup printed a download's progress bar, and
+// the agent changed the count of its repeated character while returning it.
+const setupSteps = (ready) =>
+  config.setup.map((argv) => ({
+    sh: argvLine(argv),
+    cwd: worktree,
+    timeout_ms: 590000,
+    when: { ...ready, _setup: true },
+    set: { _setup: "ok", setup_tail: "fail_tail:40" },
+    append: { setup_exits: "exit" },
+  }));
+const freshSpec = {
+  defaults: {
+    existing: false,
+    created: false,
+    base_sha: "",
+    config_blob: "",
+    checkout_head: "",
+    setup_exits: [],
+    setup_tail: "",
+    _setup: true,
+  },
+  steps: [
+    {
+      sh: `git show-ref --verify --quiet ${shq(`refs/heads/${branch}`)} || test -e ${shq(worktree)}`,
+      cwd: repo,
+      set: { existing: "ok" },
+    },
+    {
+      sh: `git worktree add -b ${shq(branch)} ${shq(worktree)} ${shq(headSha)}`,
+      cwd: repo,
+      when: { existing: false },
+      set: { created: "ok" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse HEAD`,
+      cwd: repo,
+      when: { created: true },
+      set: { base_sha: "out" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json`,
+      cwd: repo,
+      when: { created: true },
+      set: { config_blob: "out" },
+    },
+    ...setupSteps({ created: true }),
+    { sh: "git rev-parse HEAD", cwd: repo, when: { created: true }, set: { checkout_head: "out" } },
+  ],
+};
+const revisionSpec = {
+  defaults: {
+    existing: false,
+    created: false,
+    wt_status: "",
+    wt_branch: "",
+    head: "",
+    config_blob: "",
+    base_config_blob: "",
+    report_listing: "",
+    setup_exits: [],
+    setup_tail: "",
+    _setup: true,
+  },
+  steps: [
+    { sh: `test -e ${shq(worktree)}`, cwd: repo, set: { existing: "ok" } },
+    {
+      sh: `git worktree add ${shq(worktree)} ${shq(branch)}`,
+      cwd: repo,
+      when: { existing: false },
+      set: { created: "ok" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} status --porcelain --untracked-files=all`,
+      cwd: repo,
+      set: { wt_status: "out" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse --abbrev-ref HEAD`,
+      cwd: repo,
+      set: { wt_branch: "out" },
+    },
+    { sh: `git -C ${shq(worktree)} rev-parse HEAD`, cwd: repo, set: { head: "out" } },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json`,
+      cwd: repo,
+      set: { config_blob: "out" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse ${shq(`${revisionBase}:.dotagents.json`)}`,
+      cwd: repo,
+      set: { base_config_blob: "out" },
+    },
+    ...(reports.length
+      ? [
+          {
+            sh: argvLine(["git", "-C", worktree, "ls-tree", revisionBase, "--", ...reports.map((r) => r.path)]),
+            cwd: repo,
+            set: { report_listing: "out" },
+          },
+        ]
+      : []),
+    ...setupSteps({}),
+  ],
+};
+const prepared = await relay(
+  revising ? "reprepare" : "prepare",
+  "Prepare",
+  revising ? revisionSpec : freshSpec,
+);
 if (!prepared) {
   return await stop(
     "prepare-unavailable",
@@ -831,26 +984,30 @@ if (implementProblem) {
 phase("Verify");
 const TREE_SHAPE = /^[0-9a-f]{40}$/;
 const stageTree = `git -C ${shq(worktree)} add -A && git -C ${shq(worktree)} write-tree`;
-const SNAPSHOT_SCHEMA = closed({ issue_digest: str, tree: str, config_blob: str });
 // The worktree's .dotagents.json at the start. Canonical source: unchangedTarget in orchestrator.ts, which catches an agent editing the config.
 const baseConfigBlob = String(prepared.config_blob || "").trim();
 // Observes the requirements (the Issue's digest), the deliverable (the worktree's tree id), and the config (the staged .dotagents.json blob) at once.
 const snapshot = async (label, stage = "Verify", mark = "") => {
-  const snap = await agent(
-    anchor(
-      `Run these commands and return each output verbatim. Do not summarize or judge.\n` +
-        `1. \`${issueDigestCommand(` --repo ${shq(repository)}`)}\`: put the printed 64-digit hex in issue_digest (an empty string when it fails).\n` +
-        `2. \`${stageTree}\`: put the printed tree id in tree (an empty string when it fails).\n` +
-        `3. \`git -C ${shq(worktree)} rev-parse :.dotagents.json\`: put the printed blob id in config_blob (an empty string when it fails).` +
-        mark,
-    ),
+  const snap = await relay(
+    label,
+    stage,
     {
-      label,
-      phase: stage,
-      agentType: "general-purpose",
-      schema: SNAPSHOT_SCHEMA,
-      model: "haiku",
+      defaults: { issue_digest: "", tree: "", config_blob: "" },
+      steps: [
+        {
+          sh: issueDigestCommand(` --repo ${shq(repository)}`),
+          cwd: repo,
+          set: { issue_digest: "out" },
+        },
+        { sh: stageTree, cwd: repo, set: { tree: "out" } },
+        {
+          sh: `git -C ${shq(worktree)} rev-parse :.dotagents.json`,
+          cwd: repo,
+          set: { config_blob: "out" },
+        },
+      ],
     },
+    { extra: mark },
   );
   return snap && { ...snap, configHeld: String(snap.config_blob).trim() === baseConfigBlob };
 };
@@ -910,15 +1067,17 @@ const onlyNonRendering = (raw, allowRecords) => {
     })
   );
 };
-const DIFF_SCHEMA = closed({ exit_code: int, raw: str });
 const treeDiff = (from, to, label) =>
-  agent(
-    anchor(
-      `Run this command and return its output verbatim. Do not summarize or judge.\n` +
-        `\`git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}\`: put its exit code in exit_code and its stdout in raw.`,
-    ),
-    { label, phase: "Verify", agentType: "general-purpose", schema: DIFF_SCHEMA, model: "haiku" },
-  );
+  relay(label, "Verify", {
+    defaults: { exit_code: -1, raw: "" },
+    steps: [
+      {
+        sh: `git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}`,
+        cwd: repo,
+        set: { exit_code: "exit", raw: "out" },
+      },
+    ],
+  });
 let lastCaptureTree = "";
 let lastCapture = null;
 // Decides whether to capture: reuse on the same tree; with required: false, a documentation-only change needs no capture or reuses one; anything else captures.
@@ -931,48 +1090,42 @@ const captureDecision = async (tree) => {
     return "execute";
   return lastCaptureTree ? "reused" : "not_required";
 };
-const CAPTURE_SCHEMA = closed({
-  started: bool,
-  timed_out: bool,
-  exit_code: int,
-  log_tail: str,
-  tree: str,
-});
 // Moves aside what an earlier capture left: the output directory and the three paths the harness creates
 // next to it. With them in place mkdir fails, and both a resume of the stopped run and a fresh launch after
 // the earlier branch was cleared stop at the capture. Nothing is deleted.
 const staleAside = (output) =>
   `for p in ${["", ".artifacts", ".config.mjs", ".report.json"].map((ext) => shq(`${output}${ext}`)).join(" ")}; do [ ! -e "$p" ] || mv "$p" "$p.stale-$(date +%s)-$$"; done`;
+const HARNESS = `H=${bundled("workflows/implement/harness")}`;
 const runCapture = (output, label) =>
-  agent(
-    `Run the capture once and return the result verbatim. Do not fix anything.\n` +
-      `1. Run \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && ${staleAside(output)} && mkdir ${shq(output)}\`. If it exits non-zero, set started: false, timed_out: false, and exit_code: -1, put its output in log_tail, and go to step 3.\n` +
-      `2. Run \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` with the Bash tool's timeout parameter set to 600000, and set started: true. On a timeout set timed_out: true and exit_code: -1; otherwise set timed_out: false and put its exit code in exit_code. Put the last 80 lines of its combined output in log_tail.\n` +
-      `3. Run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).`,
-    {
-      label,
-      phase: "Verify",
-      agentType: "general-purpose",
-      schema: CAPTURE_SCHEMA,
-      model: "haiku",
-    },
-  );
-const INSTALL_SCHEMA = closed({ stdout: str, tree: str });
+  relay(label, "Verify", {
+    defaults: { started: false, timed_out: false, exit_code: -1, log_tail: "", tree: "" },
+    steps: [
+      {
+        sh: `${HARNESS} && test -d "$H/scripts" && ${staleAside(output)} && mkdir ${shq(output)}`,
+        set: { started: "ok", log_tail: "fail_tail:80" },
+      },
+      {
+        sh: `${HARNESS} && ${captureLine([...capture.command, output])}`,
+        cwd: worktree,
+        timeout_ms: 590000,
+        when: { started: true },
+        set: { exit_code: "exit", timed_out: "timed_out", log_tail: "fail_tail:80" },
+      },
+      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+    ],
+  });
 const installMedia = (output, label) =>
-  agent(
-    anchor(
-      `Install the captured media and return the result verbatim. Do not summarize or judge.\n` +
-        `1. \`node ${bundled("workflows/implement/install-media.ts")} ${shq(output)} ${shq(worktree)} ${shq(capture.destination)}\`: put its stdout verbatim in stdout.\n` +
-        `2. \`${stageTree}\`: put the printed tree id in tree (an empty string when it fails).`,
-    ),
-    {
-      label,
-      phase: "Verify",
-      agentType: "general-purpose",
-      schema: INSTALL_SCHEMA,
-      model: "haiku",
-    },
-  );
+  relay(label, "Verify", {
+    defaults: { stdout: "", tree: "" },
+    steps: [
+      {
+        sh: `${RUNTIME} ${bundled("workflows/implement/install-media.ts")} ${shq(output)} ${shq(worktree)} ${shq(capture.destination)}`,
+        cwd: repo,
+        set: { stdout: "out" },
+      },
+      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+    ],
+  });
 // Decides a stop from a capture run. Exit code 78 is the value the Codex capture adapter uses for "cannot start".
 const shotStop = (shot, tree) => {
   if (!shot)
@@ -1030,14 +1183,19 @@ const captureStep = async (tree) => {
   return {};
 };
 
-const CHECK_SCHEMA = closed({ exit_code: int, log_tail: str, tree: str });
 const runCheck = (label) =>
-  agent(
-    `Run the target check once and return the result verbatim. Do not fix anything.\n` +
-      `1. Run \`cd ${shq(worktree)} && ${argvLine(config.check)}\` with the Bash tool's timeout parameter set to 600000 (macOS ships no timeout binary). Put its exit code in exit_code (-1 when it could not start or timed out), and the last 80 lines of its combined output in log_tail.\n` +
-      `2. Then run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).`,
-    { label, phase: "Verify", agentType: "general-purpose", schema: CHECK_SCHEMA, model: "haiku" },
-  );
+  relay(label, "Verify", {
+    defaults: { exit_code: -1, log_tail: "", tree: "" },
+    steps: [
+      {
+        sh: argvLine(config.check),
+        cwd: worktree,
+        timeout_ms: 590000,
+        set: { exit_code: "exit", log_tail: "fail_tail:80" },
+      },
+      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+    ],
+  });
 
 // Canonical source: reviewSchema in ~/.agents/scripts/implement/review.ts. The host assigns the ID, the first target, and the disposition.
 const REVIEW_SCHEMA = closed({
@@ -1199,26 +1357,22 @@ const CONFIG_CHANGED = {
   stop: "config-changed",
   why: "The worktree's .dotagents.json changed from its start version. An agent in the run does not change the target's setup, check, or capture contract.",
 };
-const DOCUMENTS_SCHEMA = closed({ exit_code: int, listing: str });
 const TREE_ENTRY = /^(\d{6}) (\w+) [0-9a-f]+\s+(.+)$/;
 // Canonical source: the document reference check in correction.ts. A document a review names must be a
 // regular file in the reviewed tree; the PR body links to it, so a missing document is never published.
 const missingDocuments = async (review, tree, attempt) => {
   const paths = review.documents.map((doc) => doc.path);
   if (!paths.length) return [];
-  const listed = await agent(
-    anchor(
-      `Run this command and return its output verbatim. Do not summarize or judge.\n` +
-        `1. \`${argvLine(["git", "-C", worktree, "ls-tree", tree, "--", ...paths])}\`: put its exit code in exit_code and its stdout in listing.`,
-    ),
-    {
-      label: `documents:${attempt}`,
-      phase: "Verify",
-      agentType: "general-purpose",
-      schema: DOCUMENTS_SCHEMA,
-      model: "haiku",
-    },
-  );
+  const listed = await relay(`documents:${attempt}`, "Verify", {
+    defaults: { exit_code: -1, listing: "" },
+    steps: [
+      {
+        sh: argvLine(["git", "-C", worktree, "ls-tree", tree, "--", ...paths]),
+        cwd: repo,
+        set: { exit_code: "exit", listing: "out" },
+      },
+    ],
+  });
   if (!listed || listed.exit_code !== 0) return paths;
   const files = new Set(
     String(listed.listing)
@@ -1454,15 +1608,6 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // An agent rewrites characters over a transcription of a few KB, turning half-width kana into full-width, for example.
 // Trailing whitespace carries no meaning and is not compared, since GitHub's storage can shift the final newline.
 // The function's source is also embedded in node -e, so it uses no template literal.
-const digest = (text) => {
-  const t = String(text).trimEnd();
-  let h = 0x811c9dc5;
-  for (let i = 0; i < t.length; i += 1) {
-    h ^= t.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return h.toString(16).padStart(8, "0") + ":" + t.length;
-};
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
 const gate = await snapshot("ship", "Ship", retryMark("ship"));
@@ -1483,22 +1628,18 @@ if (gate.tree !== accepted.tree) {
   );
 }
 
-const PULLS_SCHEMA = closed({ actor: str, pulls_exit: int, pulls_json: str });
 const owner = repository.split("/")[0];
-const pulls = await agent(
-  anchor(
-    `Run these commands and return each output verbatim. Do not summarize or judge.\n` +
-      `1. \`gh api user --jq .login\`: put its stdout in actor (an empty string when it fails).\n` +
-      `2. \`gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp\`: put its exit code in pulls_exit and its stdout in pulls_json.`,
-  ),
-  {
-    label: "pulls",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: PULLS_SCHEMA,
-    model: "haiku",
-  },
-);
+const pulls = await relay("pulls", "Ship", {
+  defaults: { actor: "", pulls_exit: -1, pulls_json: "" },
+  steps: [
+    { sh: "gh api user --jq .login", cwd: repo, set: { actor: "out" } },
+    {
+      sh: `gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp`,
+      cwd: repo,
+      set: { pulls_exit: "exit", pulls_json: "out" },
+    },
+  ],
+});
 if (!pulls || String(pulls.actor || "").trim() !== actor) {
   return await shipStop(
     "actor-changed",
@@ -1529,20 +1670,13 @@ if (clash) {
 // Canonical source: checkRevision in revision.ts. In a revision, before any write, the PR must be unchanged since the
 // start; a ready PR is returned to draft and read back. Ready is never restored.
 if (revising) {
-  const current = await agent(
-    anchor(
-      `Run these commands and return each output verbatim. Do not summarize or judge.\n` +
-        `1. \`${prFieldsCommand}\`: put its stdout in pr_fields.\n` +
-        `2. \`${prBodyShaCommand}\`: put the printed 64-digit hex in body_sha.`,
-    ),
-    {
-      label: "revision-pr",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ pr_fields: str, body_sha: str }),
-      model: "haiku",
-    },
-  );
+  const current = await relay("revision-pr", "Ship", {
+    defaults: { pr_fields: "", body_sha: "" },
+    steps: [
+      { sh: prFieldsCommand, cwd: repo, set: { pr_fields: "out" } },
+      { sh: prBodyShaCommand, cwd: repo, set: { body_sha: "out" } },
+    ],
+  });
   const fields = current ? parseJsonText(current.pr_fields) : null;
   if (!current || !prHeld(fields) || String(current.body_sha).trim() !== startBodySha) {
     return await shipStop(
@@ -1551,20 +1685,21 @@ if (revising) {
     );
   }
   if (fields.draft !== true) {
-    const undone = await agent(
-      anchor(
-        `Return the PR to draft and return the result verbatim. Do not retry on failure. Do not summarize or judge.\n` +
-          `1. \`${argvLine(["gh", "pr", "ready", revisionUrl, "--undo", "--repo", repository])}\`: put its exit code in undo_exit.\n` +
-          `2. \`${argvLine(["gh", "api", prApiPath, "--jq", ".draft"])}\`: set is_draft to true when it prints true, otherwise false.`,
-      ),
-      {
-        label: "undo-ready",
-        phase: "Ship",
-        agentType: "general-purpose",
-        schema: closed({ undo_exit: int, is_draft: bool }),
-        model: "haiku",
-      },
-    );
+    const undone = await relay("undo-ready", "Ship", {
+      defaults: { undo_exit: -1, is_draft: false },
+      steps: [
+        {
+          sh: argvLine(["gh", "pr", "ready", revisionUrl, "--undo", "--repo", repository]),
+          cwd: repo,
+          set: { undo_exit: "exit" },
+        },
+        {
+          sh: `test "$(${argvLine(["gh", "api", prApiPath, "--jq", ".draft"])})" = true`,
+          cwd: repo,
+          set: { is_draft: "ok" },
+        },
+      ],
+    });
     if (!undone || undone.undo_exit !== 0 || undone.is_draft !== true) {
       return await shipStop(
         "publication-unconfirmed",
@@ -1574,7 +1709,6 @@ if (revising) {
   }
 }
 
-const COMMIT_SCHEMA = closed({ commit_exit: int, commit: str, parent: str, tree: str, files: str });
 const inWorktree = (...argv) => argvLine(["git", "-C", worktree, ...argv]);
 // A resume of Ship runs this step once more. When the accepted change is already one commit on its parent,
 // it does not commit again.
@@ -1584,19 +1718,16 @@ const commitOnce = inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`
 // the earlier run stopped, so it checks the branch on the remote. A resume after a stop that followed the
 // push would retry a write.
 if (retryCount("ship")) {
-  const remoteHead = await agent(
-    anchor(
-      `Run the following command and return its output verbatim. Do not summarize or judge.\n` +
-        `1. \`${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}\`: put its exit code in ls_exit and its stdout in remote_head.`,
-    ),
-    {
-      label: "pushed",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ ls_exit: int, remote_head: str }),
-      model: "haiku",
-    },
-  );
+  const remoteHead = await relay("pushed", "Ship", {
+    defaults: { ls_exit: -1, remote_head: "" },
+    steps: [
+      {
+        sh: inWorktree("ls-remote", remote, `refs/heads/${branch}`),
+        cwd: repo,
+        set: { ls_exit: "exit", remote_head: "out" },
+      },
+    ],
+  });
   const pushedSha = String((remoteHead && remoteHead.remote_head) || "").trim().split(/\s+/)[0];
   if (!remoteHead || remoteHead.ls_exit !== 0 || pushedSha !== (revising ? revisionRow.commit : "")) {
     return await shipStop(
@@ -1608,23 +1739,24 @@ if (retryCount("ship")) {
 const commitCommand = retryCount("ship")
   ? `{ ${inWorktree("diff", "--cached", "--quiet")} && [ "$(${inWorktree("rev-parse", "HEAD^")})" = ${shq(commitParent)} ] || ${commitOnce}; }`
   : commitOnce;
-const committed = await agent(
-  anchor(
-    `Commit the accepted worktree once and return each output verbatim. Do not summarize, fix, or judge.\n` +
-      `1. \`${inWorktree("add", "-A")} && ${commitCommand}\`: put its exit code in commit_exit.\n` +
-      `2. \`${inWorktree("rev-parse", "HEAD")}\`: put the printed sha in commit.\n` +
-      `3. \`${inWorktree("rev-parse", "HEAD^")}\`: put the printed sha in parent.\n` +
-      `4. \`${inWorktree("rev-parse", "HEAD^{tree}")}\`: put the printed tree id in tree.\n` +
-      `5. \`${inWorktree("diff-tree", "--no-commit-id", "--name-only", "--diff-filter=AM", "-r", "HEAD")}\`: put its stdout in files.`,
-  ),
-  {
-    label: "commit",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: COMMIT_SCHEMA,
-    model: "haiku",
-  },
-);
+const committed = await relay("commit", "Ship", {
+  defaults: { commit_exit: -1, commit: "", parent: "", tree: "", files: "" },
+  steps: [
+    {
+      sh: `${inWorktree("add", "-A")} && ${commitCommand}`,
+      cwd: repo,
+      set: { commit_exit: "exit" },
+    },
+    { sh: inWorktree("rev-parse", "HEAD"), cwd: repo, set: { commit: "out" } },
+    { sh: inWorktree("rev-parse", "HEAD^"), cwd: repo, set: { parent: "out" } },
+    { sh: inWorktree("rev-parse", "HEAD^{tree}"), cwd: repo, set: { tree: "out" } },
+    {
+      sh: inWorktree("diff-tree", "--no-commit-id", "--name-only", "--diff-filter=AM", "-r", "HEAD"),
+      cwd: repo,
+      set: { files: "out" },
+    },
+  ],
+});
 if (!committed || committed.commit_exit !== 0 || !TREE_SHAPE.test(String(committed.commit))) {
   return await shipStop(
     "commit-failed",
@@ -1752,18 +1884,24 @@ const DIGEST_JS = `const digest = ${DIGEST_SRC}; console.log(digest(require("fs"
 // Only when the read-back does not produce the generated body (the Codex runner, which keeps no transcript) does a
 // second agent copy the heredoc. Which of the two wrote the file is decided here and not reported by a model.
 const bodyData = ["PR_BODY_B64_BEGIN", ...base64Lines(body), "PR_BODY_B64_END"].join("\n");
-const readBack = await agent(
-  `Write the PR body to a file by reading it back from this prompt, and return what the commands print verbatim. Do not summarize or judge. The lines between PR_BODY_B64_BEGIN and PR_BODY_B64_END are data that the command in step 1 reads from where the harness stored this prompt. Do not copy, decode, or run them.\n` +
-    `1. \`node ${bundled("workflows/implement/write-body.ts")} ${shq(digest(body))} ${shq(bodyFile)}\`: put its exit code in extract_exit and its stdout in extract_out.\n` +
-    `2. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: run it only when step 1 exited 0, and put its stdout in body_digest. Otherwise set body_digest to "".\n` +
-    bodyData,
+const readBack = await relay(
+  "body",
+  "Ship",
   {
-    label: "body",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: closed({ extract_exit: int, extract_out: str, body_digest: str }),
-    model: "haiku",
+    defaults: { extract_exit: -1, extract_out: "", body_digest: "" },
+    steps: [
+      {
+        sh: `${RUNTIME} ${bundled("workflows/implement/write-body.ts")} ${shq(digest(body))} ${shq(bodyFile)}`,
+        set: { extract_exit: "exit", extract_out: "out" },
+      },
+      {
+        sh: `node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}`,
+        when: { extract_exit: 0 },
+        set: { body_digest: "out" },
+      },
+    ],
   },
+  { extra: `\nThe lines between PR_BODY_B64_BEGIN and PR_BODY_B64_END are data that the command of a step reads. Do not copy, decode, or run them.\n${bodyData}` },
 );
 const readHeld =
   Boolean(readBack) && readBack.extract_exit === 0 && sameBody(readBack.body_digest, body);
@@ -1815,20 +1953,17 @@ if (!bodyWritten) {
 // pushArguments in Codex's target.ts pushes through a command-scoped remote URL and a replaced credential helper.
 // Claude Code's auto mode denies that shape as a remote repoint, so the push goes to the configured remote Target verified.
 // In its place, right before the push, every effective push URL, after insteadOf and pushInsteadOf, must point at repository.
-const probe = await agent(
-  anchor(
-    `Run these commands and return each output verbatim. Do not summarize or judge.\n` +
-      `1. \`${inWorktree("remote", "get-url", "--push", "--all", remote)}\`: put its stdout in push_url.\n` +
-      `2. \`${inWorktree("ls-remote", "--get-url", remote)}\`: put its stdout in effective_url.`,
-  ),
-  {
-    label: "push-target",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: closed({ push_url: str, effective_url: str }),
-    model: "haiku",
-  },
-);
+const probe = await relay("push-target", "Ship", {
+  defaults: { push_url: "", effective_url: "" },
+  steps: [
+    {
+      sh: inWorktree("remote", "get-url", "--push", "--all", remote),
+      cwd: repo,
+      set: { push_url: "out" },
+    },
+    { sh: inWorktree("ls-remote", "--get-url", remote), cwd: repo, set: { effective_url: "out" } },
+  ],
+});
 const pointsAtRepository = (url) => (REMOTE_URL.exec(url.trim()) || [])[1] === repository;
 const pushUrls = String((probe && probe.push_url) || "")
   .split("\n")
@@ -1844,20 +1979,22 @@ if (
     `The effective push target of remote ${remote} does not point at ${repository}. Check git's insteadOf settings. Nothing has been pushed.`,
   );
 }
-const pushed = await agent(
-  anchor(
-    `Push once and return each output verbatim. Do not retry on failure. Do not summarize or judge.\n` +
-      `1. \`${inWorktree("push", "--no-follow-tags", remote, `${branch}:refs/heads/${branch}`)}\`: put its exit code in push_exit and the last 20 lines of its output in push_tail.\n` +
-      `2. \`${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}\`: put its stdout in remote_sha.`,
-  ),
-  {
-    label: "push",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: closed({ push_exit: int, push_tail: str, remote_sha: str }),
-    model: "haiku",
-  },
-);
+const pushed = await relay("push", "Ship", {
+  defaults: { push_exit: -1, push_tail: "", remote_sha: "" },
+  steps: [
+    {
+      sh: inWorktree("push", "--no-follow-tags", remote, `${branch}:refs/heads/${branch}`),
+      cwd: repo,
+      timeout_ms: 300000,
+      set: { push_exit: "exit", push_tail: "fail_tail:20" },
+    },
+    {
+      sh: inWorktree("ls-remote", remote, `refs/heads/${branch}`),
+      cwd: repo,
+      set: { remote_sha: "out" },
+    },
+  ],
+});
 const remoteSha = String((pushed && pushed.remote_sha) || "")
   .trim()
   .split(/\s/)[0];
@@ -1873,19 +2010,16 @@ const PR_URL_SHAPE = new RegExp(
 );
 // A fresh run opens the draft PR once. A revision opens none; per the revision path in publish.ts, it only rewrites the body.
 const openPr = async () => {
-  const created = await agent(
-    anchor(
-      `Open the draft PR once and return its output verbatim. Do not retry on failure. Do not summarize or judge.\n` +
-        `1. \`${argvLine(["gh", "pr", "create", "--draft", "--repo", repository, "--base", baseBranch, "--head", branch, "--title", issue.title, "--body-file", bodyFile])}\`: put its exit code in create_exit, the last line of its stdout in url, and the last 20 lines of its output in create_tail.`,
-    ),
-    {
-      label: "create",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ create_exit: int, url: str, create_tail: str }),
-      model: "haiku",
-    },
-  );
+  const created = await relay("create", "Ship", {
+    defaults: { create_exit: -1, url: "", create_tail: "" },
+    steps: [
+      {
+        sh: argvLine(["gh", "pr", "create", "--draft", "--repo", repository, "--base", baseBranch, "--head", branch, "--title", issue.title, "--body-file", bodyFile]),
+        cwd: repo,
+        set: { create_exit: "exit", url: "last", create_tail: "fail_tail:20" },
+      },
+    ],
+  });
   const url = String((created && created.url) || "").trim();
   return created && created.create_exit === 0 && PR_URL_SHAPE.test(url)
     ? { url }
@@ -1896,19 +2030,16 @@ const openPr = async () => {
       };
 };
 const rewriteBody = async () => {
-  const edited = await agent(
-    anchor(
-      `Rewrite the PR body once and return the output verbatim. Do not retry on failure. Do not summarize or judge.\n` +
-        `1. \`${argvLine(["gh", "pr", "edit", revisionUrl, "--repo", repository, "--body-file", bodyFile])}\`: put its exit code in edit_exit and the last 20 lines of its output in edit_tail.`,
-    ),
-    {
-      label: "edit-body",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ edit_exit: int, edit_tail: str }),
-      model: "haiku",
-    },
-  );
+  const edited = await relay("edit-body", "Ship", {
+    defaults: { edit_exit: -1, edit_tail: "" },
+    steps: [
+      {
+        sh: argvLine(["gh", "pr", "edit", revisionUrl, "--repo", repository, "--body-file", bodyFile]),
+        cwd: repo,
+        set: { edit_exit: "exit", edit_tail: "fail_tail:20" },
+      },
+    ],
+  });
   return edited && edited.edit_exit === 0
     ? { url: revisionUrl }
     : {
@@ -1929,19 +2060,16 @@ const PROJECT_JS =
   `head: { sha: at(p.head, "sha"), ref: at(p.head, "ref"), repo: { full_name: at(at(p.head, "repo"), "full_name") } }, ` +
   `base: { ref: at(p.base, "ref"), repo: { full_name: at(at(p.base, "repo"), "full_name") } }, ` +
   `body: typeof p.body === "string" ? digest(p.body) : null }))`;
-const readback = await agent(
-  anchor(
-    `Run this command exactly as written and return its output verbatim. Do not summarize or judge.\n` +
-      `1. \`gh api ${shq(`repos/${repository}/pulls/${published.url.split("/").at(-1)}`)} | node -e ${shq(PROJECT_JS)}\`: put its exit code in readback_exit and its stdout in pr_json.`,
-  ),
-  {
-    label: "readback",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: closed({ readback_exit: int, pr_json: str }),
-    model: "haiku",
-  },
-);
+const readback = await relay("readback", "Ship", {
+  defaults: { readback_exit: -1, pr_json: "" },
+  steps: [
+    {
+      sh: `gh api ${shq(`repos/${repository}/pulls/${published.url.split("/").at(-1)}`)} | node -e ${shq(PROJECT_JS)}`,
+      cwd: repo,
+      set: { readback_exit: "exit", pr_json: "out" },
+    },
+  ],
+});
 const pr = readback && readback.readback_exit === 0 ? parseJsonText(readback.pr_json) : null;
 const pick = (value, ...keys) =>
   keys.reduce((v, key) => (v && typeof v === "object" ? v[key] : undefined), value);
@@ -1971,19 +2099,17 @@ if (differing.length) {
 }
 
 if (media.length) {
-  const attached = await agent(
-    anchor(
-      `Attach the media once and return the output verbatim. Do not retry on failure. Do not summarize or judge.\n` +
-        `1. \`${argvLine(["gh", "pr", "edit", published.url, "--repo", repository, ...media.flatMap((file) => ["--attach", `${worktree}/${file}`])])}\`: put its exit code in attach_exit and the last 20 lines of its output in attach_tail.`,
-    ),
-    {
-      label: "attach",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ attach_exit: int, attach_tail: str }),
-      model: "haiku",
-    },
-  );
+  const attached = await relay("attach", "Ship", {
+    defaults: { attach_exit: -1, attach_tail: "" },
+    steps: [
+      {
+        sh: argvLine(["gh", "pr", "edit", published.url, "--repo", repository, ...media.flatMap((item) => ["--attach", `${worktree}/${item}`])]),
+        cwd: repo,
+        timeout_ms: 300000,
+        set: { attach_exit: "exit", attach_tail: "fail_tail:20" },
+      },
+    ],
+  });
   if (!attached || attached.attach_exit !== 0) {
     return await shipStop(
       "attach-failed",
@@ -2073,20 +2199,22 @@ const CI_STOPS = {
 let ci = null;
 while (counts.ci_rounds < CI_WAIT_ROUNDS) {
   counts.ci_rounds += 1;
-  const viewed = await agent(
-    anchor(
-      `Wait for the draft PR's CI once and return the PR's state verbatim. Do not summarize, fix, or judge.\n` +
-        `1. Run \`${argvLine(["gh", "pr", "checks", published.url, "--repo", repository, "--watch", "--interval", "10"])}\` with the Bash tool's timeout parameter set to 540000. It runs only to wait, so do not return its exit code or output.\n` +
-        `2. \`${argvLine(["gh", "pr", "view", published.url, "--repo", repository, "--json", CI_FIELDS, "--jq", `.body |= test("Closes #${issueNumber}([^0-9]|$)")`])}\`: put its exit code in view_exit and its stdout in view_json.`,
-    ),
-    {
-      label: `ci:${counts.ci_rounds}`,
-      phase: "CI",
-      agentType: "general-purpose",
-      schema: closed({ view_exit: int, view_json: str }),
-      model: "haiku",
-    },
-  );
+  const viewed = await relay(`ci:${counts.ci_rounds}`, "CI", {
+    defaults: { view_exit: -1, view_json: "" },
+    steps: [
+    // The first step runs only to wait, and its result is not used.
+      {
+        sh: argvLine(["gh", "pr", "checks", published.url, "--repo", repository, "--watch", "--interval", "10"]),
+        cwd: repo,
+        timeout_ms: 530000,
+      },
+      {
+        sh: argvLine(["gh", "pr", "view", published.url, "--repo", repository, "--json", CI_FIELDS, "--jq", `.body |= test("Closes #${issueNumber}([^0-9]|$)")`]),
+        cwd: repo,
+        set: { view_exit: "exit", view_json: "out" },
+      },
+    ],
+  });
   ci = observeCi(viewed);
   if (CI_STOPS[ci.status]) {
     const [reason, why] = CI_STOPS[ci.status];

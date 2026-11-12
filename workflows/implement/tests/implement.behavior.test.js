@@ -118,7 +118,7 @@ const FILLED = {
   snapshot: { config_blob: CONFIG_BLOB },
 };
 const KIND_BY_PROPERTY = [
-  ["run_id", "record"],
+  ["record_out", "record"],
   ["listing", "documents"],
   ["wt_status", "reprepare"],
   ["pr_fields", "revision"],
@@ -145,6 +145,37 @@ const KIND_BY_PROPERTY = [
   ["newItems", "review"],
   ["description", "name"],
 ];
+// A relay's prompt carries its commands as a spec between RELAY_SPEC and RELAY_SPEC_END. The tests read
+// the commands from the spec, the way workflows/_lib/relay.ts does.
+const specOf = (prompt) => {
+  const found = /RELAY_SPEC [0-9a-f]{8}:\d+\n(.*)\nRELAY_SPEC_END/.exec(String(prompt));
+  return found ? JSON.parse(found[1]) : null;
+};
+// The prompt as a test reads it: one numbered line per step with its shell command, then whatever
+// follows the spec. A prompt with no spec is left as it is.
+const readable = (prompt) => {
+  const spec = specOf(prompt);
+  if (!spec) return prompt;
+  const after = String(prompt).slice(String(prompt).indexOf("RELAY_SPEC_END") + "RELAY_SPEC_END".length);
+  const steps = spec.steps.map((step, i) => `${i + 1}. \`${step.sh}\`: ${JSON.stringify(step.set ?? {})}`);
+  return `${steps.join("\n")}${after}`;
+};
+// The digest relay.ts prints with the fields. A stub that names its own relay_check keeps it, which
+// is how a test hands back fields that changed on the way.
+const canonical = (fields) =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.keys(fields)
+        .sort()
+        .map((key) => [key, fields[key]]),
+    ),
+  );
+const withCheck = (value, opts) => {
+  const relayed = "relay_check" in ((opts.schema && opts.schema.properties) || {});
+  return relayed && value && typeof value === "object" && !("relay_check" in value)
+    ? { ...value, relay_check: digestOf(canonical(value)) }
+    : value;
+};
 const kindOf = (opts) => {
   const p = (opts.schema && opts.schema.properties) || {};
   const found = KIND_BY_PROPERTY.find(([property]) => property in p);
@@ -164,9 +195,10 @@ const makeStubs = (overrides = {}) => {
   // The body the script asked the body agent to write, echoed back by the readback and CI views.
   const published = { body: "" };
   const defaults = {
-    record: (prompt) => {
-      rows.push(JSON.parse(prompt.slice(prompt.lastIndexOf("\n") + 1)));
-      return { path: "/h/implement-runs.jsonl", run_id: RUN_ID };
+    // record.ts reads the row from its stdin and prints where it wrote it.
+    record: (_, { spec }) => {
+      rows.push(JSON.parse(spec.steps[0].stdin));
+      return { record_out: JSON.stringify({ path: "/h/implement-runs.jsonl", run_id: RUN_ID }) };
     },
     target: makeStubsTarget,
     prepare: () => ({
@@ -259,19 +291,35 @@ const makeStubs = (overrides = {}) => {
       : (queued ?? defaults[kind]);
     const value =
       typeof answer === "function"
-        ? answer(prompt, { tree, label: opts.label, body: published.body })
+        ? answer(readable(prompt), {
+            tree,
+            label: opts.label,
+            body: published.body,
+            spec: specOf(prompt),
+          })
         : answer;
     // Fields a test rarely varies default here, so an override names only what it changes.
-    return value && typeof value === "object" && FILLED[kind]
-      ? { ...FILLED[kind], ...value }
-      : value;
+    const filled =
+      value && typeof value === "object" && FILLED[kind] ? { ...FILLED[kind], ...value } : value;
+    return withCheck(filled, opts);
   };
   return { stubs: { agent }, rows, currentTree: () => tree, published };
 };
 
 const run = async (overrides, runArgs = args) => {
   const stub = makeStubs(overrides);
-  const { result, calls } = await runWorkflow(implementJs, { args: runArgs, stubs: stub.stubs });
+  const ran = await runWorkflow(implementJs, { args: runArgs, stubs: stub.stubs });
+  const { result } = ran;
+  // Tests read a relay's commands, so each recorded prompt is shown the way readable gives it.
+  const calls = {
+    ...ran.calls,
+    agent: ran.calls.agent.map((c) => ({
+      ...c,
+      prompt: readable(c.prompt),
+      raw: c.prompt,
+      spec: specOf(c.prompt),
+    })),
+  };
   const kinds = calls.agent.map((c) => kindOf(c.opts));
   return { result, calls, kinds, rows: stub.rows, published: stub.published };
 };
@@ -391,7 +439,7 @@ test("a worktree that changes during review stops as source-changed", async () =
   let snapshots = 0;
   const agent = async (prompt, opts) => {
     if (kindOf(opts) === "snapshot" && ++snapshots === 2) {
-      return { issue_digest: DIGEST, tree: treeOf(77), config_blob: CONFIG_BLOB };
+      return withCheck({ issue_digest: DIGEST, tree: treeOf(77), config_blob: CONFIG_BLOB }, opts);
     }
     return stub.stubs.agent(prompt, opts);
   };
@@ -1938,6 +1986,88 @@ test("a retry that is not the value a stop returned stops as invalid-retry befor
 
 // The body agent's first command writes the PR body from its last argument, an ASCII-only JSON
 // string in shell single quotes. Decoding it recovers the body the script generated.
+// ---- relays: the commands the script wants run ----
+// An agent that read commands as prose copied them into its shell and copied their output back, and
+// changed characters both ways. A relay's prompt names the digest of a spec, and relay.ts reads the
+// spec from the agent's transcript.
+const LLM_ROLES = ["implement", "repair", "review", "name"];
+
+test("every agent except the implementing, repairing, reviewing, and naming ones is handed a spec whose digest the prompt names", async () => {
+  // One finding, repaired and then marked fixed, so the run passes through every kind of relay.
+  const repaired = {
+    review: [
+      (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
+      (_, { tree }) =>
+        reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "fixed" }] }),
+    ],
+  };
+  const { result, calls } = await withCapture(CAPTURE, repaired, publishArgs);
+  assert.equal(result.status, "published_draft", `${result.stopped}: ${result.why}`);
+  const relays = calls.agent.filter((c) => !LLM_ROLES.includes(kindOf(c.opts)));
+  assert.ok(relays.length >= 20, `${relays.length} relays in a run with a capture, a repair, and a publication`);
+  for (const call of relays) {
+    const label = call.opts.label;
+    const named = /RELAY_SPEC ([0-9a-f]{8}:\d+)\n(.*)\nRELAY_SPEC_END/.exec(call.raw);
+    assert.ok(named, `${label} carries no spec`);
+    assert.equal(named[1], digestOf(named[2]), `${label}: the digest names another spec`);
+    assert.ok(call.raw.includes(`relay.ts`) && call.raw.includes(`'${named[1]}'`), `${label}: the command does not pass the digest`);
+    // The fields the agent must return are the spec's defaults without the internal ones, plus the check.
+    const fields = Object.keys(call.spec.defaults).filter((key) => !key.startsWith("_"));
+    assert.deepEqual(Object.keys(call.opts.schema.properties).sort(), [...fields, "relay_check"].sort(), label);
+    for (const step of call.spec.steps) {
+      assert.equal(typeof step.sh, "string", label);
+      // The spec carries the place a prose prompt used to get from anchor(): a step that runs git or gh names it.
+      if (/(^|[\s;&|(])(git|gh) /.test(step.sh)) assert.ok(step.cwd, `${label}: "${step.sh.slice(0, 40)}" names no cwd`);
+      // relay.ts has to print its line before the Bash tool's 600 s ceiling kills the call.
+      assert.ok((step.timeout_ms ?? 0) < 600000, `${label}: a step can outlast the Bash tool`);
+    }
+  }
+});
+
+// relay.ts prints the digest of the fields with them. A reply whose fields do not carry that digest
+// had a character changed on the way back. The commands are not run again: a second agent returns the
+// line relay.ts kept. Only when that reply is wrong too is the relay used as no result.
+test("fields that do not match the relay's digest are asked for once more, and a second mismatch reads as no result", async () => {
+  const changed = "00000000:0";
+  const miscopied = (_, { tree }) => ({ exit_code: 0, log_tail: "", tree, relay_check: changed });
+  const once = await run({ check: [miscopied] });
+  assert.equal(once.result.status, "verified_local");
+  const asked = once.calls.agent.filter((c) => kindOf(c.opts) === "check");
+  assert.deepEqual(
+    asked.map((c) => c.opts.label),
+    ["check:1", "check:1:replay"],
+  );
+  assert.ok(asked[1].raw.includes("--replay") && !asked[1].raw.includes("RELAY_SPEC"), "the second call carries no command to run");
+  assert.equal(once.result.check_runs, 1, "the check is counted once");
+
+  const cases = [
+    ["target-unavailable", null, { target: Array.from({ length: 2 }, () => () => ({ ...makeStubsTarget(), relay_check: changed })) }],
+    ["check-unavailable", { "round:1": 1 }, { check: [miscopied, miscopied] }],
+    [
+      "check-unavailable",
+      { "round:1": 1 },
+      { snapshot: Array.from({ length: 2 }, () => (_, { tree }) => ({ issue_digest: DIGEST, tree, relay_check: changed })) },
+    ],
+  ];
+  for (const [reason, next, overrides] of cases) {
+    const { result, kinds } = await run(overrides);
+    assert.equal(result.stopped, reason);
+    assert.deepEqual(result.retry_next, next, reason);
+    assert.ok(!kinds.includes("review"), `${reason}: no review runs on a result that was not confirmed`);
+  }
+});
+
+// A successful command's output is not returned. A setup that succeeded printed a download's progress
+// bar, and the agent changed the count of its repeated character, which stopped the run at prepare.
+test("the tail of a command's output is asked for only when the command failed", async () => {
+  const { calls } = await withCapture(CAPTURE, {}, publishArgs);
+  const sources = calls.agent
+    .filter((c) => c.spec)
+    .flatMap((c) => c.spec.steps.flatMap((step) => Object.values(step.set ?? {})));
+  assert.ok(sources.some((source) => source.startsWith("fail_tail:")));
+  assert.deepEqual(sources.filter((source) => source.startsWith("tail:")), []);
+});
+
 // The body in the read-back prompt: the base64 lines between the two data markers.
 function dataIn(prompt) {
   const start = prompt.indexOf("PR_BODY_B64_BEGIN\n");

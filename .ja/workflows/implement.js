@@ -57,14 +57,92 @@ const shq = (value) => `'${String(value).replaceAll("'", `'"'"'`)}'`;
 const argvLine = (argv) => argv.map(shq).join(" ");
 const bundled = (rel) =>
   `"$(P="$HOME/.claude/${rel}"; [ -e "$P" ] || P="$(find "$HOME/.claude/plugins" -path "*/${rel}" -not -path "*/.ja/*" 2>/dev/null | sort -V | tail -1)"; printf %s "$P")"`;
-const anchor = (p) =>
-  `すべての git・gh・ファイル操作は ${repo} のリポジトリで行う (各 shell コマンドは \`cd ${repo} && \` で始める)。\n\n${p}`;
 const parseJsonText = (value) => {
   try {
     return JSON.parse(String(value));
   } catch {
     return null;
   }
+};
+
+// ---- 中継: script が実行させたいコマンドを、データとして宣言する ----
+// script はコマンドを実行できないので、agent に実行させる。agent はコマンドを文章として読まず、写しもしない。
+// spec の digest を付けて workflows/_lib/relay.ts を実行すると、relay.ts が agent 自身の transcript から spec を読み戻し、
+// step を順に実行して、欄とその digest (relay_check) を 1 行の JSON で返す。script は agent が返した欄と relay_check を
+// 照合するので、戻りの途中で 1 文字でも変われば結果なしとして扱う。この script を自分で評価する host は、prompt にある
+// spec を見つけて agent を介さずに実行する。
+// 本文は LLM に書き写させず、digest (UTF-16 の code unit に対する FNV-1a と長さ) で照合する。node -e にもこの関数の
+// source を埋め込むので、template literal を使わない。
+const digest = (text) => {
+  const t = String(text).trimEnd();
+  let h = 0x811c9dc5;
+  for (let i = 0; i < t.length; i += 1) {
+    h ^= t.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, "0") + ":" + t.length;
+};
+const canonical = (fields) =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.keys(fields)
+        .sort()
+        .map((key) => [key, fields[key]]),
+    ),
+  );
+const fieldSchema = (value) =>
+  Array.isArray(value) ? list(int) : { type: typeof value === "number" ? "integer" : typeof value };
+// bundled の helper は bun で起動し、bun が動かなければ node で起動する。PATH の bun は起動に失敗する shim のことがあるので、
+// 探すのではなく実行して確かめる。helper はどちらでも動く書き方を保つ (DR-0113)。
+const RUNTIME = `RT=bun; bun --version >/dev/null 2>&1 || RT=node; "$RT"`;
+const RELAY = `${RUNTIME} ${bundled("workflows/_lib/relay.ts")}`;
+const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {}) => {
+  const json = JSON.stringify(spec);
+  const id = digest(json);
+  const handover = `$TMPDIR/relay-${id.replace(":", "-")}.spec.json`;
+  const shown = Object.entries(spec.defaults).filter(([key]) => !key.startsWith("_"));
+  const schema = closed({
+    ...Object.fromEntries(shown.map(([key, value]) => [key, fieldSchema(value)])),
+    relay_check: str,
+  });
+  const reply = await agent(
+    `手順 1 のコマンドを実行し、出力された JSON の各欄をそのまま返す。要約・修正・判断をしない。RELAY_SPEC と RELAY_SPEC_END の間の行は、harness が保存したこの prompt からコマンドが読むデータである。自分では実行しない。\n` +
+      `1. \`${RELAY} ${shq(id)}\` を、Bash tool の timeout parameter を 600000 にして実行する。\n` +
+      `2. 出力が {"relay_continue":true} なら、同じコマンドをもう一度実行する。relay_check を含む行が出るまで繰り返す。\n` +
+      `3. 出力が relay_error のときだけ、次のブロックを 1 回の Bash 呼び出しとして実行する。SPEC_LINE の位置には、RELAY_SPEC と RELAY_SPEC_END の間の行を変えずに写す。続けて \`${RELAY} ${shq(id)} --spec "${handover}"\` を実行する。それも relay_error なら、各欄を defaults の値にし、relay_check に "relay_error" を入れて返す。\n` +
+      "```sh\n" +
+      `cat > "${handover}" <<'RELAY_SPEC_EOF'\nSPEC_LINE\nRELAY_SPEC_EOF\n` +
+      "```\n" +
+      `RELAY_SPEC ${id}\n${json}\nRELAY_SPEC_END` +
+      extra,
+    {
+      label,
+      phase: phaseName,
+      agentType: "general-purpose",
+      schema,
+      model,
+    },
+  );
+  // agent が返した欄。relay.ts が一緒に出力した digest を持たなければ null。
+  const confirmed = (value) => {
+    if (!value) return null;
+    const { relay_check: check, ...fields } = value;
+    return String(check).trim() === digest(canonical(fields)) ? fields : null;
+  };
+  if (!reply) return null;
+  const first = confirmed(reply);
+  if (first) return first;
+  // 戻りの途中で文字が変わるのは agent の写しで、コマンドのせいではない。relay.ts は出力した行を残しているので、
+  // 2 つ目の agent が、コマンドを実行し直さずにそれを返す。
+  log(`中継 ${label}: 返った欄が relay_check (${reply.relay_check}) と一致しない。保存済みの結果をもう一度だけ求める。`);
+  const again = await agent(
+    `手順 1 のコマンドを実行し、出力された JSON の各欄をそのまま返す。要約・修正・判断をしない。このコマンドは計算済みの結果を出力するだけで、何も実行し直さない。\n` +
+      `1. \`${RELAY} ${shq(id)} --replay\``,
+    { label: `${label}:replay`, phase: phaseName, agentType: "general-purpose", schema, model },
+  );
+  const second = confirmed(again);
+  if (!second) log(`中継 ${label}: 返った欄がもう一度 relay_check と一致しなかった。結果を使わない。`);
+  return second;
 };
 
 // ---- 実行記録: 開始行と終端行を run_id で結ぶ ----
@@ -82,7 +160,6 @@ const published = {
   body_transport: "",
   body_fallback: "",
 };
-const RECORD_SCHEMA = closed({ path: str, run_id: str });
 const recordRun = async (reason) => {
   const payload = {
     run_id: runId,
@@ -97,20 +174,19 @@ const recordRun = async (reason) => {
     reason,
     ...counts,
   };
-  const written = await agent(
-    anchor(
-      `implement の 1 実行を記録する。値を判断・要約・編集しない。手順は、(1) この JSON をそのまま一時ファイルへ書く。` +
-        `(2) \`node ${bundled("workflows/implement/record.ts")} < <tempfile>\` を実行する。` +
-        `(3) script の stdout の path と run_id をそのまま返す。\n入力 JSON は次のとおり。\n${JSON.stringify(payload)}`,
-    ),
-    {
-      label: `record:${reason}`,
-      agentType: "general-purpose",
-      schema: RECORD_SCHEMA,
-      model: "haiku",
-    },
-  );
-  const id = String((written && written.run_id) || "").trim();
+  const written = await relay(`record:${reason}`, undefined, {
+    defaults: { record_out: "" },
+    steps: [
+      {
+        sh: `${RUNTIME} ${bundled("workflows/implement/record.ts")}`,
+        cwd: repo,
+        stdin: JSON.stringify(payload),
+        set: { record_out: "out" },
+      },
+    ],
+  });
+  const recorded = written ? parseJsonText(written.record_out) : null;
+  const id = String((recorded && recorded.run_id) || "").trim();
   // 記録は実行を止めない。書けなかった行は log に残して先へ進む。
   if (!id) {
     log(
@@ -277,64 +353,79 @@ const configErrors = (c) =>
 
 // Issue の同一性は、本文の転記でなく gh の出力の sha256 で比べる。転記の 1 文字の揺れを要求の変更と読まないため。
 // 正本は orchestrator.ts の Issue 取得。state と updatedAt も含めるので、途中で閉じられた Issue も変更として検出する。
+// gh が失敗したときに空の入力の digest を返さないよう、取得できたときだけ shasum へ渡す。
 const issueDigestCommand = (repoFlag = "") =>
-  `gh issue view ${issueNumber}${repoFlag} --json title,body,state,updatedAt | shasum -a 256 | cut -d ' ' -f 1`;
+  `out=$(gh issue view ${issueNumber}${repoFlag} --json title,body,state,updatedAt) && printf %s "$out" | shasum -a 256 | cut -d ' ' -f 1`;
 const DIGEST_SHAPE = /^[0-9a-f]{64}$/;
-const TARGET_SCHEMA = closed({
-  issue_exit: int,
-  issue_json: str,
-  issue_digest: str,
-  user: str,
-  repo_json: str,
-  porcelain: str,
-  config_found: bool,
-  config_text: str,
-  remotes: str,
-  gh_host: str,
-  head_sha: str,
-  report_listing: str,
-  revision_pr: str,
-  revision_body_sha: str,
-  revision_row: str,
-});
 // 修正する PR の照合項目と本文の sha256。本文は agent に書き写させず、gh の出力を shasum に通す。
 const prApiPath = revisionPr ? `repos/${revisionPr[1]}/pulls/${revisionPr[2]}` : "";
 const PR_FIELDS_JQ =
   "{state, draft, html_url, user: .user.login, head_sha: .head.sha, head_ref: .head.ref, head_repo: .head.repo.full_name, base_ref: .base.ref, base_repo: .base.repo.full_name}";
 const prFieldsCommand = argvLine(["gh", "api", prApiPath, "--jq", PR_FIELDS_JQ]);
 const prBodyShaCommand = `${argvLine(["gh", "api", prApiPath, "--jq", ".body"])} | shasum -a 256 | cut -d ' ' -f 1`;
-const revisionSteps = revising
-  ? `\n11. \`${prFieldsCommand}\`: stdout を revision_pr に入れる。\n` +
-    `12. \`${prBodyShaCommand}\`: 出力された 64 桁の hex を revision_body_sha に入れる。\n` +
-    `13. \`${argvLine(["jq", "-c", "--arg", "url", revisionUrl, 'select(.reason == "published_draft" and .url == $url)'])} "$HOME/.claude/history/implement-runs.jsonl" | tail -1\`: stdout を revision_row に入れる (無ければ空文字)。`
-  : `\n11. 既存 PR の修正ではない。revision_pr・revision_body_sha・revision_row は "" にする。`;
 // 正本は orchestrator.ts。worktree は checkout のローカル HEAD から切り、設定はその commit の版を読む。
 // 検証した設定と実行する版が食い違わないようにするため。
-const target = await agent(
-  anchor(
-    `次のコマンドを実行し、各出力をそのまま返す。要約・整形・判断をしない。\n` +
-      `1. \`gh issue view ${issueNumber} --json number,title,body,state,url\`: 終了コードを issue_exit、stdout を issue_json に入れる。\n` +
-      `2. \`gh api user --jq .login\`: stdout を user に入れる (失敗したら空文字)。\n` +
-      `3. \`gh repo view --json nameWithOwner,defaultBranchRef,viewerPermission\`: stdout を repo_json に入れる (失敗したら空文字)。\n` +
-      `4. \`git status --porcelain --untracked-files=all\`: stdout を porcelain に入れる。\n` +
-      `5. \`git show HEAD:.dotagents.json\`: 0 で終わったかを config_found に、stdout をそのまま config_text に入れる (失敗したら空文字)。\n` +
-      `6. \`${issueDigestCommand()}\`: 出力された 64 桁の hex を issue_digest に入れる (失敗したら空文字)。\n` +
-      `7. \`git remote -v\`: stdout を remotes に入れる。\n` +
-      `8. \`printenv GH_HOST\`: stdout を gh_host に入れる (未設定なら空文字)。\n` +
-      `9. \`git rev-parse HEAD\`: 出力された sha を head_sha に入れる。\n` +
-      (reports.length && !revising
-        ? `10. \`${argvLine(["git", "ls-tree", "HEAD", "--", ...reports.map((r) => r.path)])}\`: stdout を report_listing に入れる。`
-        : `10. ここでは参照を照合しない。report_listing は "" にする。`) +
-      revisionSteps,
-  ),
-  {
-    label: "target",
-    phase: "Target",
-    agentType: "general-purpose",
-    schema: TARGET_SCHEMA,
-    model: "haiku",
+const target = await relay("target", "Target", {
+  defaults: {
+    issue_exit: -1,
+    issue_json: "",
+    issue_digest: "",
+    user: "",
+    repo_json: "",
+    porcelain: "",
+    config_found: false,
+    config_text: "",
+    remotes: "",
+    gh_host: "",
+    head_sha: "",
+    report_listing: "",
+    revision_pr: "",
+    revision_body_sha: "",
+    revision_row: "",
   },
-);
+  steps: [
+    {
+      sh: `gh issue view ${issueNumber} --json number,title,body,state,url`,
+      cwd: repo,
+      set: { issue_exit: "exit", issue_json: "out" },
+    },
+    { sh: "gh api user --jq .login", cwd: repo, set: { user: "out" } },
+    {
+      sh: "gh repo view --json nameWithOwner,defaultBranchRef,viewerPermission",
+      cwd: repo,
+      set: { repo_json: "out" },
+    },
+    { sh: "git status --porcelain --untracked-files=all", cwd: repo, set: { porcelain: "out" } },
+    {
+      sh: "git show HEAD:.dotagents.json",
+      cwd: repo,
+      set: { config_found: "ok", config_text: "out" },
+    },
+    { sh: issueDigestCommand(), cwd: repo, set: { issue_digest: "out" } },
+    { sh: "git remote -v", cwd: repo, set: { remotes: "out" } },
+    { sh: "printenv GH_HOST", set: { gh_host: "out" } },
+    { sh: "git rev-parse HEAD", cwd: repo, set: { head_sha: "out" } },
+    ...(reports.length && !revising
+      ? [
+          {
+            sh: argvLine(["git", "ls-tree", "HEAD", "--", ...reports.map((r) => r.path)]),
+            cwd: repo,
+            set: { report_listing: "out" },
+          },
+        ]
+      : []),
+    ...(revising
+      ? [
+          { sh: prFieldsCommand, cwd: repo, set: { revision_pr: "out" } },
+          { sh: prBodyShaCommand, cwd: repo, set: { revision_body_sha: "out" } },
+          {
+            sh: `${argvLine(["jq", "-c", "--arg", "url", revisionUrl, 'select(.reason == "published_draft" and .url == $url)'])} "$HOME/.claude/history/implement-runs.jsonl" | tail -1`,
+            set: { revision_row: "out" },
+          },
+        ]
+      : []),
+  ],
+});
 if (!target) {
   return await stop("target-unavailable", "対象を照合する agent が結果を返さなかった。");
 }
@@ -592,59 +683,120 @@ const reportStop = (listing) => {
 };
 const earlyReportStop = revising ? null : reportStop(target.report_listing);
 if (earlyReportStop) return await earlyReportStop;
-const PREPARE_SCHEMA = closed({
-  existing: bool,
-  created: bool,
-  base_sha: str,
-  config_blob: str,
-  checkout_head: str,
-  setup_exits: list(int),
-  setup_tail: str,
-});
-const REPREPARE_SCHEMA = closed({
-  existing: bool,
-  created: bool,
-  wt_status: str,
-  wt_branch: str,
-  head: str,
-  config_blob: str,
-  base_config_blob: str,
-  report_listing: str,
-  setup_exits: list(int),
-  setup_tail: str,
-});
-const setupStep = config.setup.length
-  ? `4. 次の setup コマンドを順に実行し、最初の非 0 終了で止める。Bash tool の timeout parameter は 600000 にする。実行したコマンドの終了コードを setup_exits に、最後に実行したコマンドの出力末尾 40 行を setup_tail に入れる。\n` +
-    config.setup
-      .map((argv, i) => `   ${i + 1}. \`cd ${shq(worktree)} && ${argvLine(argv)}\``)
-      .join("\n")
-  : `4. setup コマンドは無い。setup_exits は []、setup_tail は "" にする。`;
-const freshPrompt =
-  `Issue #${issueNumber} 用の隔離 worktree を用意する。各値をそのまま返す。\n` +
-  `1. \`git show-ref --verify --quiet ${shq(`refs/heads/${branch}`)}\` が 0 で終わるか、${worktree} が存在するなら、existing: true・created: false にして何も変えずに終える。\n` +
-  `2. \`git worktree add -b ${shq(branch)} ${shq(worktree)} ${shq(headSha)}\` を実行し、0 で終わったかを created に入れる。\n` +
-  `3. \`git -C ${shq(worktree)} rev-parse HEAD\` の出力を base_sha に、\`git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json\` の出力を config_blob に入れる。\n` +
-  setupStep +
-  `\n5. 最後に \`git rev-parse HEAD\` を実行し、出力を checkout_head に入れる。`;
 // 正本は README の既存PRの修正。前回の checkout (worktree) を、公開した head で追跡・未追跡の差分が無い状態で再利用する。
 // stash・reset・rebase・作業差分の移植はしない。
 const revisionBase = revising ? revisionRow.base_sha : "";
-const revisionPrompt =
-  `既存 PR ${revisionUrl} を直すため、前回の worktree を用意する。各値をそのまま返す。何も削除・reset・stash しない。\n` +
-  `1. ${worktree} が存在すれば existing: true・created: false にする。無ければ existing: false にし、\`git worktree add ${shq(worktree)} ${shq(branch)}\` を実行して 0 で終わったかを created に入れる。\n` +
-  `2. \`git -C ${shq(worktree)} status --porcelain --untracked-files=all\` の stdout を wt_status に、\`git -C ${shq(worktree)} rev-parse --abbrev-ref HEAD\` の出力を wt_branch に、\`git -C ${shq(worktree)} rev-parse HEAD\` の出力を head に入れる。\n` +
-  `3. \`git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json\` の出力を config_blob に、\`git -C ${shq(worktree)} rev-parse ${shq(`${revisionBase}:.dotagents.json`)}\` の出力を base_config_blob に入れる。` +
-  (reports.length
-    ? `\`${argvLine(["git", "-C", worktree, "ls-tree", revisionBase, "--", ...reports.map((r) => r.path)])}\` の stdout を report_listing に入れる。\n`
-    : ` report_listing は "" にする。\n`) +
-  setupStep;
-const prepared = await agent(anchor(revising ? revisionPrompt : freshPrompt), {
-  label: revising ? "reprepare" : "prepare",
-  phase: "Prepare",
-  agentType: "general-purpose",
-  schema: revising ? REPREPARE_SCHEMA : PREPARE_SCHEMA,
-  model: "haiku",
-});
+// setup は最初の非 0 終了で止める。_setup が、次のコマンドへ進むかを運ぶ。
+// 末尾の出力は、失敗したコマンドのものだけを返す。成功した setup がダウンロードの進捗バーを出力し、agent はそれを返すときに
+// 繰り返される文字の個数を変えた。
+const setupSteps = (ready) =>
+  config.setup.map((argv) => ({
+    sh: argvLine(argv),
+    cwd: worktree,
+    timeout_ms: 590000,
+    when: { ...ready, _setup: true },
+    set: { _setup: "ok", setup_tail: "fail_tail:40" },
+    append: { setup_exits: "exit" },
+  }));
+const freshSpec = {
+  defaults: {
+    existing: false,
+    created: false,
+    base_sha: "",
+    config_blob: "",
+    checkout_head: "",
+    setup_exits: [],
+    setup_tail: "",
+    _setup: true,
+  },
+  steps: [
+    {
+      sh: `git show-ref --verify --quiet ${shq(`refs/heads/${branch}`)} || test -e ${shq(worktree)}`,
+      cwd: repo,
+      set: { existing: "ok" },
+    },
+    {
+      sh: `git worktree add -b ${shq(branch)} ${shq(worktree)} ${shq(headSha)}`,
+      cwd: repo,
+      when: { existing: false },
+      set: { created: "ok" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse HEAD`,
+      cwd: repo,
+      when: { created: true },
+      set: { base_sha: "out" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json`,
+      cwd: repo,
+      when: { created: true },
+      set: { config_blob: "out" },
+    },
+    ...setupSteps({ created: true }),
+    { sh: "git rev-parse HEAD", cwd: repo, when: { created: true }, set: { checkout_head: "out" } },
+  ],
+};
+const revisionSpec = {
+  defaults: {
+    existing: false,
+    created: false,
+    wt_status: "",
+    wt_branch: "",
+    head: "",
+    config_blob: "",
+    base_config_blob: "",
+    report_listing: "",
+    setup_exits: [],
+    setup_tail: "",
+    _setup: true,
+  },
+  steps: [
+    { sh: `test -e ${shq(worktree)}`, cwd: repo, set: { existing: "ok" } },
+    {
+      sh: `git worktree add ${shq(worktree)} ${shq(branch)}`,
+      cwd: repo,
+      when: { existing: false },
+      set: { created: "ok" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} status --porcelain --untracked-files=all`,
+      cwd: repo,
+      set: { wt_status: "out" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse --abbrev-ref HEAD`,
+      cwd: repo,
+      set: { wt_branch: "out" },
+    },
+    { sh: `git -C ${shq(worktree)} rev-parse HEAD`, cwd: repo, set: { head: "out" } },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse HEAD:.dotagents.json`,
+      cwd: repo,
+      set: { config_blob: "out" },
+    },
+    {
+      sh: `git -C ${shq(worktree)} rev-parse ${shq(`${revisionBase}:.dotagents.json`)}`,
+      cwd: repo,
+      set: { base_config_blob: "out" },
+    },
+    ...(reports.length
+      ? [
+          {
+            sh: argvLine(["git", "-C", worktree, "ls-tree", revisionBase, "--", ...reports.map((r) => r.path)]),
+            cwd: repo,
+            set: { report_listing: "out" },
+          },
+        ]
+      : []),
+    ...setupSteps({}),
+  ],
+};
+const prepared = await relay(
+  revising ? "reprepare" : "prepare",
+  "Prepare",
+  revising ? revisionSpec : freshSpec,
+);
 if (!prepared) {
   return await stop(
     "prepare-unavailable",
@@ -805,26 +957,30 @@ if (implementProblem) {
 phase("Verify");
 const TREE_SHAPE = /^[0-9a-f]{40}$/;
 const stageTree = `git -C ${shq(worktree)} add -A && git -C ${shq(worktree)} write-tree`;
-const SNAPSHOT_SCHEMA = closed({ issue_digest: str, tree: str, config_blob: str });
 // 開始時の worktree の .dotagents.json。正本は orchestrator.ts の unchangedTarget で、agent が設定を書き換えても検出する。
 const baseConfigBlob = String(prepared.config_blob || "").trim();
 // 要求 (Issue の digest)、成果物 (worktree の tree id)、設定 (stage 済みの .dotagents.json の blob) を 1 度に観測する。
 const snapshot = async (label, stage = "Verify", mark = "") => {
-  const snap = await agent(
-    anchor(
-      `次のコマンドを実行し、各出力をそのまま返す。要約・判断をしない。\n` +
-        `1. \`${issueDigestCommand(` --repo ${shq(repository)}`)}\`: 出力された 64 桁の hex を issue_digest に入れる (失敗したら空文字)。\n` +
-        `2. \`${stageTree}\`: 出力された tree id を tree に入れる (失敗したら空文字)。\n` +
-        `3. \`git -C ${shq(worktree)} rev-parse :.dotagents.json\`: 出力された blob id を config_blob に入れる (失敗したら空文字)。` +
-        mark,
-    ),
+  const snap = await relay(
+    label,
+    stage,
     {
-      label,
-      phase: stage,
-      agentType: "general-purpose",
-      schema: SNAPSHOT_SCHEMA,
-      model: "haiku",
+      defaults: { issue_digest: "", tree: "", config_blob: "" },
+      steps: [
+        {
+          sh: issueDigestCommand(` --repo ${shq(repository)}`),
+          cwd: repo,
+          set: { issue_digest: "out" },
+        },
+        { sh: stageTree, cwd: repo, set: { tree: "out" } },
+        {
+          sh: `git -C ${shq(worktree)} rev-parse :.dotagents.json`,
+          cwd: repo,
+          set: { config_blob: "out" },
+        },
+      ],
     },
+    { extra: mark },
   );
   return snap && { ...snap, configHeld: String(snap.config_blob).trim() === baseConfigBlob };
 };
@@ -883,15 +1039,17 @@ const onlyNonRendering = (raw, allowRecords) => {
     })
   );
 };
-const DIFF_SCHEMA = closed({ exit_code: int, raw: str });
 const treeDiff = (from, to, label) =>
-  agent(
-    anchor(
-      `次のコマンドを実行し、出力をそのまま返す。要約・判断をしない。\n` +
-        `\`git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}\`: 終了コードを exit_code、stdout を raw に入れる。`,
-    ),
-    { label, phase: "Verify", agentType: "general-purpose", schema: DIFF_SCHEMA, model: "haiku" },
-  );
+  relay(label, "Verify", {
+    defaults: { exit_code: -1, raw: "" },
+    steps: [
+      {
+        sh: `git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}`,
+        cwd: repo,
+        set: { exit_code: "exit", raw: "out" },
+      },
+    ],
+  });
 let lastCaptureTree = "";
 let lastCapture = null;
 // 撮影の要否を決める。同じ tree なら再利用、required: false で文書だけの変更なら不要か再利用、他は実行。
@@ -904,47 +1062,41 @@ const captureDecision = async (tree) => {
     return "execute";
   return lastCaptureTree ? "reused" : "not_required";
 };
-const CAPTURE_SCHEMA = closed({
-  started: bool,
-  timed_out: bool,
-  exit_code: int,
-  log_tail: str,
-  tree: str,
-});
 // 以前の撮影が残した出力 (ディレクトリと、harness がその隣に作る 3 つ) を脇へ移す。残っていると mkdir が失敗し、
 // 止まった実行の再開も、以前の branch を片付けた後の新しい起動も撮影で止まる。削除はしない。
 const staleAside = (output) =>
   `for p in ${["", ".artifacts", ".config.mjs", ".report.json"].map((ext) => shq(`${output}${ext}`)).join(" ")}; do [ ! -e "$p" ] || mv "$p" "$p.stale-$(date +%s)-$$"; done`;
+const HARNESS = `H=${bundled("workflows/implement/harness")}`;
 const runCapture = (output, label) =>
-  agent(
-    `撮影を 1 回実行し、結果をそのまま返す。何も直さない。\n` +
-      `1. \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && ${staleAside(output)} && mkdir ${shq(output)}\` を実行する。0 以外で終わったら started: false・timed_out: false・exit_code: -1 にし、その出力を log_tail に入れて手順 3 へ進む。\n` +
-      `2. \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` を、Bash tool の timeout parameter を 600000 にして実行し、started: true にする。時間切れなら timed_out: true・exit_code: -1 に、そうでなければ timed_out: false にして終了コードを exit_code に入れる。結合出力の末尾 80 行を log_tail に入れる。\n` +
-      `3. \`${stageTree}\` を実行し、tree id を tree に入れる (失敗したら空文字)。`,
-    {
-      label,
-      phase: "Verify",
-      agentType: "general-purpose",
-      schema: CAPTURE_SCHEMA,
-      model: "haiku",
-    },
-  );
-const INSTALL_SCHEMA = closed({ stdout: str, tree: str });
+  relay(label, "Verify", {
+    defaults: { started: false, timed_out: false, exit_code: -1, log_tail: "", tree: "" },
+    steps: [
+      {
+        sh: `${HARNESS} && test -d "$H/scripts" && ${staleAside(output)} && mkdir ${shq(output)}`,
+        set: { started: "ok", log_tail: "fail_tail:80" },
+      },
+      {
+        sh: `${HARNESS} && ${captureLine([...capture.command, output])}`,
+        cwd: worktree,
+        timeout_ms: 590000,
+        when: { started: true },
+        set: { exit_code: "exit", timed_out: "timed_out", log_tail: "fail_tail:80" },
+      },
+      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+    ],
+  });
 const installMedia = (output, label) =>
-  agent(
-    anchor(
-      `撮影した媒体を取り込み、結果をそのまま返す。要約・判断をしない。\n` +
-        `1. \`node ${bundled("workflows/implement/install-media.ts")} ${shq(output)} ${shq(worktree)} ${shq(capture.destination)}\`: stdout をそのまま stdout に入れる。\n` +
-        `2. \`${stageTree}\`: 出力された tree id を tree に入れる (失敗したら空文字)。`,
-    ),
-    {
-      label,
-      phase: "Verify",
-      agentType: "general-purpose",
-      schema: INSTALL_SCHEMA,
-      model: "haiku",
-    },
-  );
+  relay(label, "Verify", {
+    defaults: { stdout: "", tree: "" },
+    steps: [
+      {
+        sh: `${RUNTIME} ${bundled("workflows/implement/install-media.ts")} ${shq(output)} ${shq(worktree)} ${shq(capture.destination)}`,
+        cwd: repo,
+        set: { stdout: "out" },
+      },
+      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+    ],
+  });
 // 撮影の実行結果から停止理由を決める。終了コード 78 は Codex の撮影アダプターが起動不能を示す値。
 const shotStop = (shot, tree) => {
   if (!shot)
@@ -998,14 +1150,19 @@ const captureStep = async (tree) => {
   return {};
 };
 
-const CHECK_SCHEMA = closed({ exit_code: int, log_tail: str, tree: str });
 const runCheck = (label) =>
-  agent(
-    `対象の check を 1 回実行し、結果をそのまま返す。何も直さない。\n` +
-      `1. \`cd ${shq(worktree)} && ${argvLine(config.check)}\` を、Bash tool の timeout parameter を 600000 にして実行する (macOS には timeout binary が無い)。終了コードを exit_code に入れる (起動できないか時間切れなら -1)。結合出力の末尾 80 行を log_tail に入れる。\n` +
-      `2. 続けて \`${stageTree}\` を実行し、tree id を tree に入れる (失敗したら空文字)。`,
-    { label, phase: "Verify", agentType: "general-purpose", schema: CHECK_SCHEMA, model: "haiku" },
-  );
+  relay(label, "Verify", {
+    defaults: { exit_code: -1, log_tail: "", tree: "" },
+    steps: [
+      {
+        sh: argvLine(config.check),
+        cwd: worktree,
+        timeout_ms: 590000,
+        set: { exit_code: "exit", log_tail: "fail_tail:80" },
+      },
+      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+    ],
+  });
 
 // 正本は ~/.agents/scripts/implement/review.ts の reviewSchema。host が ID・初出・disposition を割り当てる。
 const REVIEW_SCHEMA = closed({
@@ -1164,26 +1321,22 @@ const CONFIG_CHANGED = {
   stop: "config-changed",
   why: "worktree の .dotagents.json が開始時の版から変わった。実行中の agent は対象の setup・check・capture の契約を変えない。",
 };
-const DOCUMENTS_SCHEMA = closed({ exit_code: int, listing: str });
 const TREE_ENTRY = /^(\d{6}) (\w+) [0-9a-f]+\s+(.+)$/;
 // 正本は correction.ts の文書参照の照合。レビューが挙げた文書は、レビューした tree にある通常のファイルに限る。
 // PR 本文はこの参照へ link を張るので、存在しない文書を公開しない。
 const missingDocuments = async (review, tree, attempt) => {
   const paths = review.documents.map((doc) => doc.path);
   if (!paths.length) return [];
-  const listed = await agent(
-    anchor(
-      `次のコマンドを実行し、出力をそのまま返す。要約・判断をしない。\n` +
-        `1. \`${argvLine(["git", "-C", worktree, "ls-tree", tree, "--", ...paths])}\`: 終了コードを exit_code、stdout を listing に入れる。`,
-    ),
-    {
-      label: `documents:${attempt}`,
-      phase: "Verify",
-      agentType: "general-purpose",
-      schema: DOCUMENTS_SCHEMA,
-      model: "haiku",
-    },
-  );
+  const listed = await relay(`documents:${attempt}`, "Verify", {
+    defaults: { exit_code: -1, listing: "" },
+    steps: [
+      {
+        sh: argvLine(["git", "-C", worktree, "ls-tree", tree, "--", ...paths]),
+        cwd: repo,
+        set: { exit_code: "exit", listing: "out" },
+      },
+    ],
+  });
   if (!listed || listed.exit_code !== 0) return paths;
   const files = new Set(
     String(listed.listing)
@@ -1418,15 +1571,6 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // agent は半角カナを全角にするなど、数 KB の転記で文字を書き換えるため。
 // 末尾の空白は意味を持たないので比べない。GitHub の保存で末尾の改行が揺れるため。
 // node -e にもこの関数の source を埋め込むので、template literal を使わない。
-const digest = (text) => {
-  const t = String(text).trimEnd();
-  let h = 0x811c9dc5;
-  for (let i = 0; i < t.length; i += 1) {
-    h ^= t.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return h.toString(16).padStart(8, "0") + ":" + t.length;
-};
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
 const gate = await snapshot("ship", "Ship", retryMark("ship"));
@@ -1447,22 +1591,18 @@ if (gate.tree !== accepted.tree) {
   );
 }
 
-const PULLS_SCHEMA = closed({ actor: str, pulls_exit: int, pulls_json: str });
 const owner = repository.split("/")[0];
-const pulls = await agent(
-  anchor(
-    `次のコマンドを実行し、各出力をそのまま返す。要約・判断をしない。\n` +
-      `1. \`gh api user --jq .login\`: stdout を actor に入れる (失敗したら空文字)。\n` +
-      `2. \`gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp\`: 終了コードを pulls_exit、stdout を pulls_json に入れる。`,
-  ),
-  {
-    label: "pulls",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: PULLS_SCHEMA,
-    model: "haiku",
-  },
-);
+const pulls = await relay("pulls", "Ship", {
+  defaults: { actor: "", pulls_exit: -1, pulls_json: "" },
+  steps: [
+    { sh: "gh api user --jq .login", cwd: repo, set: { actor: "out" } },
+    {
+      sh: `gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp`,
+      cwd: repo,
+      set: { pulls_exit: "exit", pulls_json: "out" },
+    },
+  ],
+});
 if (!pulls || String(pulls.actor || "").trim() !== actor) {
   return await shipStop(
     "actor-changed",
@@ -1493,20 +1633,13 @@ if (clash) {
 // 正本は revision.ts の checkRevision。修正では、書き込みの前に PR が開始時から変わっていないことを確かめ、
 // ready なら draft に戻して読み戻す。ready を元に戻すことはしない。
 if (revising) {
-  const current = await agent(
-    anchor(
-      `次のコマンドを実行し、各出力をそのまま返す。要約・判断をしない。\n` +
-        `1. \`${prFieldsCommand}\`: stdout を pr_fields に入れる。\n` +
-        `2. \`${prBodyShaCommand}\`: 出力された 64 桁の hex を body_sha に入れる。`,
-    ),
-    {
-      label: "revision-pr",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ pr_fields: str, body_sha: str }),
-      model: "haiku",
-    },
-  );
+  const current = await relay("revision-pr", "Ship", {
+    defaults: { pr_fields: "", body_sha: "" },
+    steps: [
+      { sh: prFieldsCommand, cwd: repo, set: { pr_fields: "out" } },
+      { sh: prBodyShaCommand, cwd: repo, set: { body_sha: "out" } },
+    ],
+  });
   const fields = current ? parseJsonText(current.pr_fields) : null;
   if (!current || !prHeld(fields) || String(current.body_sha).trim() !== startBodySha) {
     return await shipStop(
@@ -1515,20 +1648,21 @@ if (revising) {
     );
   }
   if (fields.draft !== true) {
-    const undone = await agent(
-      anchor(
-        `PR を draft に戻し、結果をそのまま返す。失敗しても再試行しない。要約・判断をしない。\n` +
-          `1. \`${argvLine(["gh", "pr", "ready", revisionUrl, "--undo", "--repo", repository])}\`: 終了コードを undo_exit に入れる。\n` +
-          `2. \`${argvLine(["gh", "api", prApiPath, "--jq", ".draft"])}\`: 出力が true なら is_draft を true に、それ以外なら false にする。`,
-      ),
-      {
-        label: "undo-ready",
-        phase: "Ship",
-        agentType: "general-purpose",
-        schema: closed({ undo_exit: int, is_draft: bool }),
-        model: "haiku",
-      },
-    );
+    const undone = await relay("undo-ready", "Ship", {
+      defaults: { undo_exit: -1, is_draft: false },
+      steps: [
+        {
+          sh: argvLine(["gh", "pr", "ready", revisionUrl, "--undo", "--repo", repository]),
+          cwd: repo,
+          set: { undo_exit: "exit" },
+        },
+        {
+          sh: `test "$(${argvLine(["gh", "api", prApiPath, "--jq", ".draft"])})" = true`,
+          cwd: repo,
+          set: { is_draft: "ok" },
+        },
+      ],
+    });
     if (!undone || undone.undo_exit !== 0 || undone.is_draft !== true) {
       return await shipStop(
         "publication-unconfirmed",
@@ -1538,7 +1672,6 @@ if (revising) {
   }
 }
 
-const COMMIT_SCHEMA = closed({ commit_exit: int, commit: str, parent: str, tree: str, files: str });
 const inWorktree = (...argv) => argvLine(["git", "-C", worktree, ...argv]);
 // Ship の再開はこの段をもう 1 度実行する。accepted の変更が既に親の上の 1 つの commit になっていれば、commit を重ねない。
 const commitParent = revising ? revisionRow.commit : baseSha;
@@ -1546,19 +1679,16 @@ const commitOnce = inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`
 // Ship の再開は、止まった実行がまだ何も push していないときだけ進む。script は前の実行がどこで止まったかを知らないので、
 // remote の branch で確かめる。push の後の停止からの再開は、書き込みのやり直しになる。
 if (retryCount("ship")) {
-  const remoteHead = await agent(
-    anchor(
-      `次のコマンドを実行し、出力をそのまま返す。要約・判断をしない。\n` +
-        `1. \`${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}\`: 終了コードを ls_exit、stdout を remote_head に入れる。`,
-    ),
-    {
-      label: "pushed",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ ls_exit: int, remote_head: str }),
-      model: "haiku",
-    },
-  );
+  const remoteHead = await relay("pushed", "Ship", {
+    defaults: { ls_exit: -1, remote_head: "" },
+    steps: [
+      {
+        sh: inWorktree("ls-remote", remote, `refs/heads/${branch}`),
+        cwd: repo,
+        set: { ls_exit: "exit", remote_head: "out" },
+      },
+    ],
+  });
   const pushedSha = String((remoteHead && remoteHead.remote_head) || "").trim().split(/\s+/)[0];
   if (!remoteHead || remoteHead.ls_exit !== 0 || pushedSha !== (revising ? revisionRow.commit : "")) {
     return await shipStop(
@@ -1570,23 +1700,24 @@ if (retryCount("ship")) {
 const commitCommand = retryCount("ship")
   ? `{ ${inWorktree("diff", "--cached", "--quiet")} && [ "$(${inWorktree("rev-parse", "HEAD^")})" = ${shq(commitParent)} ] || ${commitOnce}; }`
   : commitOnce;
-const committed = await agent(
-  anchor(
-    `accepted の worktree を 1 つの commit にまとめ、各出力をそのまま返す。要約・修正・判断をしない。\n` +
-      `1. \`${inWorktree("add", "-A")} && ${commitCommand}\`: 終了コードを commit_exit に入れる。\n` +
-      `2. \`${inWorktree("rev-parse", "HEAD")}\`: 出力された sha を commit に入れる。\n` +
-      `3. \`${inWorktree("rev-parse", "HEAD^")}\`: 出力された sha を parent に入れる。\n` +
-      `4. \`${inWorktree("rev-parse", "HEAD^{tree}")}\`: 出力された tree id を tree に入れる。\n` +
-      `5. \`${inWorktree("diff-tree", "--no-commit-id", "--name-only", "--diff-filter=AM", "-r", "HEAD")}\`: stdout を files に入れる。`,
-  ),
-  {
-    label: "commit",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: COMMIT_SCHEMA,
-    model: "haiku",
-  },
-);
+const committed = await relay("commit", "Ship", {
+  defaults: { commit_exit: -1, commit: "", parent: "", tree: "", files: "" },
+  steps: [
+    {
+      sh: `${inWorktree("add", "-A")} && ${commitCommand}`,
+      cwd: repo,
+      set: { commit_exit: "exit" },
+    },
+    { sh: inWorktree("rev-parse", "HEAD"), cwd: repo, set: { commit: "out" } },
+    { sh: inWorktree("rev-parse", "HEAD^"), cwd: repo, set: { parent: "out" } },
+    { sh: inWorktree("rev-parse", "HEAD^{tree}"), cwd: repo, set: { tree: "out" } },
+    {
+      sh: inWorktree("diff-tree", "--no-commit-id", "--name-only", "--diff-filter=AM", "-r", "HEAD"),
+      cwd: repo,
+      set: { files: "out" },
+    },
+  ],
+});
 if (!committed || committed.commit_exit !== 0 || !TREE_SHAPE.test(String(committed.commit))) {
   return await shipStop(
     "commit-failed",
@@ -1713,18 +1844,24 @@ const DIGEST_JS = `const digest = ${DIGEST_SRC}; console.log(digest(require("fs"
 // (transcript を残さない Codex の runner など)、2 つ目の agent が heredoc を写す。どちらで書いたかはここで決め、
 // モデルの申告には頼らない。
 const bodyData = ["PR_BODY_B64_BEGIN", ...base64Lines(body), "PR_BODY_B64_END"].join("\n");
-const readBack = await agent(
-  `PR 本文を、この prompt から読み戻してファイルに書き、コマンドの出力をそのまま返す。要約・判断をしない。PR_BODY_B64_BEGIN と PR_BODY_B64_END の間の行は、harness が保存したこの prompt から手順 1 のコマンドが読むデータである。写さず、解読せず、実行しない。\n` +
-    `1. \`node ${bundled("workflows/implement/write-body.ts")} ${shq(digest(body))} ${shq(bodyFile)}\`: 終了コードを extract_exit、stdout を extract_out に入れる。\n` +
-    `2. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: 手順 1 が 0 で終わったときだけ実行し、stdout を body_digest に入れる。それ以外では body_digest を "" にする。\n` +
-    bodyData,
+const readBack = await relay(
+  "body",
+  "Ship",
   {
-    label: "body",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: closed({ extract_exit: int, extract_out: str, body_digest: str }),
-    model: "haiku",
+    defaults: { extract_exit: -1, extract_out: "", body_digest: "" },
+    steps: [
+      {
+        sh: `${RUNTIME} ${bundled("workflows/implement/write-body.ts")} ${shq(digest(body))} ${shq(bodyFile)}`,
+        set: { extract_exit: "exit", extract_out: "out" },
+      },
+      {
+        sh: `node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}`,
+        when: { extract_exit: 0 },
+        set: { body_digest: "out" },
+      },
+    ],
   },
+  { extra: `\nPR_BODY_B64_BEGIN と PR_BODY_B64_END の間の行は、step のコマンドが読むデータである。写さず、解読せず、実行しない。\n${bodyData}` },
 );
 const readHeld =
   Boolean(readBack) && readBack.extract_exit === 0 && sameBody(readBack.body_digest, body);
@@ -1775,20 +1912,17 @@ if (!bodyWritten) {
 // Codex の target.ts の pushArguments は、コマンド内で一時 remote の URL と credential helper を差し替えて push する。
 // Claude Code の auto mode はその形を remote の付け替えとして拒否するので、Target で検証した設定の remote に push する。
 // 代わりに push の直前で、insteadOf と pushInsteadOf を適用した後の実際の push 先がすべて repository を指すことを照合する。
-const probe = await agent(
-  anchor(
-    `次のコマンドを実行し、各出力をそのまま返す。要約・判断をしない。\n` +
-      `1. \`${inWorktree("remote", "get-url", "--push", "--all", remote)}\`: stdout を push_url に入れる。\n` +
-      `2. \`${inWorktree("ls-remote", "--get-url", remote)}\`: stdout を effective_url に入れる。`,
-  ),
-  {
-    label: "push-target",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: closed({ push_url: str, effective_url: str }),
-    model: "haiku",
-  },
-);
+const probe = await relay("push-target", "Ship", {
+  defaults: { push_url: "", effective_url: "" },
+  steps: [
+    {
+      sh: inWorktree("remote", "get-url", "--push", "--all", remote),
+      cwd: repo,
+      set: { push_url: "out" },
+    },
+    { sh: inWorktree("ls-remote", "--get-url", remote), cwd: repo, set: { effective_url: "out" } },
+  ],
+});
 const pointsAtRepository = (url) => (REMOTE_URL.exec(url.trim()) || [])[1] === repository;
 const pushUrls = String((probe && probe.push_url) || "")
   .split("\n")
@@ -1804,20 +1938,22 @@ if (
     `remote ${remote} の実際の push 先が ${repository} を指していない。git の insteadOf 系の設定を確かめる。何も push していない。`,
   );
 }
-const pushed = await agent(
-  anchor(
-    `1 回だけ push し、各出力をそのまま返す。失敗しても再試行しない。要約・判断をしない。\n` +
-      `1. \`${inWorktree("push", "--no-follow-tags", remote, `${branch}:refs/heads/${branch}`)}\`: 終了コードを push_exit、出力の末尾 20 行を push_tail に入れる。\n` +
-      `2. \`${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}\`: stdout を remote_sha に入れる。`,
-  ),
-  {
-    label: "push",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: closed({ push_exit: int, push_tail: str, remote_sha: str }),
-    model: "haiku",
-  },
-);
+const pushed = await relay("push", "Ship", {
+  defaults: { push_exit: -1, push_tail: "", remote_sha: "" },
+  steps: [
+    {
+      sh: inWorktree("push", "--no-follow-tags", remote, `${branch}:refs/heads/${branch}`),
+      cwd: repo,
+      timeout_ms: 300000,
+      set: { push_exit: "exit", push_tail: "fail_tail:20" },
+    },
+    {
+      sh: inWorktree("ls-remote", remote, `refs/heads/${branch}`),
+      cwd: repo,
+      set: { remote_sha: "out" },
+    },
+  ],
+});
 const remoteSha = String((pushed && pushed.remote_sha) || "")
   .trim()
   .split(/\s/)[0];
@@ -1834,19 +1970,16 @@ const PR_URL_SHAPE = new RegExp(
 );
 // 新規の実行は draft PR を 1 回だけ作る。修正は PR を作らず、正本は publish.ts の revision 経路で、本文だけを書き換える。
 const openPr = async () => {
-  const created = await agent(
-    anchor(
-      `draft PR を 1 回だけ作り、出力をそのまま返す。失敗しても再試行しない。要約・判断をしない。\n` +
-        `1. \`${argvLine(["gh", "pr", "create", "--draft", "--repo", repository, "--base", baseBranch, "--head", branch, "--title", issue.title, "--body-file", bodyFile])}\`: 終了コードを create_exit、stdout の最後の行を url、出力の末尾 20 行を create_tail に入れる。`,
-    ),
-    {
-      label: "create",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ create_exit: int, url: str, create_tail: str }),
-      model: "haiku",
-    },
-  );
+  const created = await relay("create", "Ship", {
+    defaults: { create_exit: -1, url: "", create_tail: "" },
+    steps: [
+      {
+        sh: argvLine(["gh", "pr", "create", "--draft", "--repo", repository, "--base", baseBranch, "--head", branch, "--title", issue.title, "--body-file", bodyFile]),
+        cwd: repo,
+        set: { create_exit: "exit", url: "last", create_tail: "fail_tail:20" },
+      },
+    ],
+  });
   const url = String((created && created.url) || "").trim();
   return created && created.create_exit === 0 && PR_URL_SHAPE.test(url)
     ? { url }
@@ -1857,19 +1990,16 @@ const openPr = async () => {
       };
 };
 const rewriteBody = async () => {
-  const edited = await agent(
-    anchor(
-      `PR 本文を 1 回だけ書き換え、出力をそのまま返す。失敗しても再試行しない。要約・判断をしない。\n` +
-        `1. \`${argvLine(["gh", "pr", "edit", revisionUrl, "--repo", repository, "--body-file", bodyFile])}\`: 終了コードを edit_exit、出力の末尾 20 行を edit_tail に入れる。`,
-    ),
-    {
-      label: "edit-body",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ edit_exit: int, edit_tail: str }),
-      model: "haiku",
-    },
-  );
+  const edited = await relay("edit-body", "Ship", {
+    defaults: { edit_exit: -1, edit_tail: "" },
+    steps: [
+      {
+        sh: argvLine(["gh", "pr", "edit", revisionUrl, "--repo", repository, "--body-file", bodyFile]),
+        cwd: repo,
+        set: { edit_exit: "exit", edit_tail: "fail_tail:20" },
+      },
+    ],
+  });
   return edited && edited.edit_exit === 0
     ? { url: revisionUrl }
     : {
@@ -1891,19 +2021,16 @@ const PROJECT_JS =
   `head: { sha: at(p.head, "sha"), ref: at(p.head, "ref"), repo: { full_name: at(at(p.head, "repo"), "full_name") } }, ` +
   `base: { ref: at(p.base, "ref"), repo: { full_name: at(at(p.base, "repo"), "full_name") } }, ` +
   `body: typeof p.body === "string" ? digest(p.body) : null }))`;
-const readback = await agent(
-  anchor(
-    `次のコマンドを一字一句そのまま実行し、出力をそのまま返す。要約・判断をしない。\n` +
-      `1. \`gh api ${shq(`repos/${repository}/pulls/${published.url.split("/").at(-1)}`)} | node -e ${shq(PROJECT_JS)}\`: 終了コードを readback_exit、stdout を pr_json に入れる。`,
-  ),
-  {
-    label: "readback",
-    phase: "Ship",
-    agentType: "general-purpose",
-    schema: closed({ readback_exit: int, pr_json: str }),
-    model: "haiku",
-  },
-);
+const readback = await relay("readback", "Ship", {
+  defaults: { readback_exit: -1, pr_json: "" },
+  steps: [
+    {
+      sh: `gh api ${shq(`repos/${repository}/pulls/${published.url.split("/").at(-1)}`)} | node -e ${shq(PROJECT_JS)}`,
+      cwd: repo,
+      set: { readback_exit: "exit", pr_json: "out" },
+    },
+  ],
+});
 const pr = readback && readback.readback_exit === 0 ? parseJsonText(readback.pr_json) : null;
 const pick = (value, ...keys) =>
   keys.reduce((v, key) => (v && typeof v === "object" ? v[key] : undefined), value);
@@ -1933,19 +2060,17 @@ if (differing.length) {
 }
 
 if (media.length) {
-  const attached = await agent(
-    anchor(
-      `媒体を 1 回だけ添付し、出力をそのまま返す。失敗しても再試行しない。要約・判断をしない。\n` +
-        `1. \`${argvLine(["gh", "pr", "edit", published.url, "--repo", repository, ...media.flatMap((file) => ["--attach", `${worktree}/${file}`])])}\`: 終了コードを attach_exit、出力の末尾 20 行を attach_tail に入れる。`,
-    ),
-    {
-      label: "attach",
-      phase: "Ship",
-      agentType: "general-purpose",
-      schema: closed({ attach_exit: int, attach_tail: str }),
-      model: "haiku",
-    },
-  );
+  const attached = await relay("attach", "Ship", {
+    defaults: { attach_exit: -1, attach_tail: "" },
+    steps: [
+      {
+        sh: argvLine(["gh", "pr", "edit", published.url, "--repo", repository, ...media.flatMap((item) => ["--attach", `${worktree}/${item}`])]),
+        cwd: repo,
+        timeout_ms: 300000,
+        set: { attach_exit: "exit", attach_tail: "fail_tail:20" },
+      },
+    ],
+  });
   if (!attached || attached.attach_exit !== 0) {
     return await shipStop(
       "attach-failed",
@@ -2036,20 +2161,22 @@ const CI_STOPS = {
 let ci = null;
 while (counts.ci_rounds < CI_WAIT_ROUNDS) {
   counts.ci_rounds += 1;
-  const viewed = await agent(
-    anchor(
-      `draft PR の CI を 1 回待ち、PR の状態をそのまま返す。要約・修正・判断をしない。\n` +
-        `1. \`${argvLine(["gh", "pr", "checks", published.url, "--repo", repository, "--watch", "--interval", "10"])}\` を Bash tool の timeout parameter を 540000 にして実行する。待つためだけに実行するので、終了コードと出力は返さない。\n` +
-        `2. \`${argvLine(["gh", "pr", "view", published.url, "--repo", repository, "--json", CI_FIELDS, "--jq", `.body |= test("Closes #${issueNumber}([^0-9]|$)")`])}\`: 終了コードを view_exit、stdout を view_json に入れる。`,
-    ),
-    {
-      label: `ci:${counts.ci_rounds}`,
-      phase: "CI",
-      agentType: "general-purpose",
-      schema: closed({ view_exit: int, view_json: str }),
-      model: "haiku",
-    },
-  );
+  const viewed = await relay(`ci:${counts.ci_rounds}`, "CI", {
+    defaults: { view_exit: -1, view_json: "" },
+    steps: [
+    // 1 つ目の step は待つためだけに実行し、その結果は使わない。
+      {
+        sh: argvLine(["gh", "pr", "checks", published.url, "--repo", repository, "--watch", "--interval", "10"]),
+        cwd: repo,
+        timeout_ms: 530000,
+      },
+      {
+        sh: argvLine(["gh", "pr", "view", published.url, "--repo", repository, "--json", CI_FIELDS, "--jq", `.body |= test("Closes #${issueNumber}([^0-9]|$)")`]),
+        cwd: repo,
+        set: { view_exit: "exit", view_json: "out" },
+      },
+    ],
+  });
   ci = observeCi(viewed);
   if (CI_STOPS[ci.status]) {
     const [reason, why] = CI_STOPS[ci.status];
