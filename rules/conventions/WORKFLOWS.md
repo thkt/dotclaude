@@ -53,6 +53,7 @@ A script cannot run a command, so an agent runs it. Given the commands as prose,
 | Checking a reply  | Compare the `relay_check` relay.ts prints with the digest of the fields the agent returned. On a mismatch, ask once more for the kept result with `--replay`, and treat a second mismatch as no result |
 | Output tails      | Return a tail only for a command that failed (`fail_tail:N`). Successful output carries lines an agent miscopies, such as a progress bar                                          |
 | A step's time     | Keep one step's `timeout_ms` under 600000. Past the Bash tool's ceiling, relay.ts is killed before it prints its line                                                             |
+| A line's length   | Keep the line one relay returns within what a Bash call returns (about 30,000 characters). Bound output that grows with a count in its command, to what the script reads           |
 | Runtime           | A bundled helper starts on bun, or on node when bun does not run. The helpers stay runnable on both (DR-0113)                                                                     |
 | What stays prose  | Content only an agent can copy stays a prose prompt checked by digest. The PR body on a host that cannot read it back is one                                                      |
 

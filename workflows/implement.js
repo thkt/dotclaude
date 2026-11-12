@@ -104,7 +104,7 @@ const RELAY = `${RUNTIME} ${bundled("workflows/_lib/relay.ts")}`;
 const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {}) => {
   const json = JSON.stringify(spec);
   const id = digest(json);
-  const handover = `$TMPDIR/relay-${id.replace(":", "-")}.spec.json`;
+  const handover = `\${TMPDIR:-/tmp}/relay-${id.replace(":", "-")}.spec.json`;
   const shown = Object.entries(spec.defaults).filter(([key]) => !key.startsWith("_"));
   const schema = closed({
     ...Object.fromEntries(shown.map(([key, value]) => [key, fieldSchema(value)])),
@@ -389,6 +389,9 @@ const prFieldsCommand = argvLine(["gh", "api", prApiPath, "--jq", PR_FIELDS_JQ])
 const prBodyShaCommand = `${argvLine(["gh", "api", prApiPath, "--jq", ".body"])} | shasum -a 256 | cut -d ' ' -f 1`;
 // Canonical source: orchestrator.ts. The worktree is cut from the checkout's local HEAD and the config is
 // read from that commit, so the validated config and the version that runs cannot differ.
+// The start inputs. The status below is limited to them, so a checkout with many untracked files cannot make the
+// relay's line longer than a Bash call returns.
+const START_INPUTS = [".dotagents.json", ...reports.map((r) => r.path)];
 const target = await relay("target", "Target", {
   defaults: {
     issue_exit: -1,
@@ -419,7 +422,11 @@ const target = await relay("target", "Target", {
       cwd: repo,
       set: { repo_json: "out" },
     },
-    { sh: "git status --porcelain --untracked-files=all", cwd: repo, set: { porcelain: "out" } },
+    {
+      sh: argvLine(["git", "status", "--porcelain", "--untracked-files=all", "--", ...START_INPUTS]),
+      cwd: repo,
+      set: { porcelain: "out" },
+    },
     {
       sh: "git show HEAD:.dotagents.json",
       cwd: repo,
@@ -486,7 +493,6 @@ if (!repoInfo || !repoInfo.nameWithOwner) {
 // The work happens in an isolated worktree, so only the start input (.dotagents.json) must be committed.
 // Unrelated work in the original checkout (such as a /scoping Issue draft) is preserved and does not stop the run.
 // Canonical source: the start-input check in orchestrator.ts ("Required start inputs have uncommitted changes").
-const START_INPUTS = [".dotagents.json", ...reports.map((r) => r.path)];
 const uncommittedInputs = String(target.porcelain || "")
   .split("\n")
   .filter((line) => START_INPUTS.includes(line.slice(3).trim()));
@@ -720,7 +726,7 @@ const setupSteps = (ready) =>
   config.setup.map((argv) => ({
     sh: argvLine(argv),
     cwd: worktree,
-    timeout_ms: 590000,
+    timeout_ms: 570000,
     when: { ...ready, _setup: true },
     set: { _setup: "ok", setup_tail: "fail_tail:40" },
     append: { setup_exits: "exit" },
@@ -999,7 +1005,7 @@ const snapshot = async (label, stage = "Verify", mark = "") => {
           cwd: repo,
           set: { issue_digest: "out" },
         },
-        { sh: stageTree, cwd: repo, set: { tree: "out" } },
+        { sh: stageTree, cwd: repo, timeout_ms: 60000, set: { tree: "out" } },
         {
           sh: `git -C ${shq(worktree)} rev-parse :.dotagents.json`,
           cwd: repo,
@@ -1107,11 +1113,11 @@ const runCapture = (output, label) =>
       {
         sh: `${HARNESS} && ${captureLine([...capture.command, output])}`,
         cwd: worktree,
-        timeout_ms: 590000,
+        timeout_ms: 570000,
         when: { started: true },
         set: { exit_code: "exit", timed_out: "timed_out", log_tail: "fail_tail:80" },
       },
-      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+      { sh: stageTree, cwd: repo, timeout_ms: 60000, set: { tree: "out" } },
     ],
   });
 const installMedia = (output, label) =>
@@ -1123,7 +1129,7 @@ const installMedia = (output, label) =>
         cwd: repo,
         set: { stdout: "out" },
       },
-      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+      { sh: stageTree, cwd: repo, timeout_ms: 60000, set: { tree: "out" } },
     ],
   });
 // Decides a stop from a capture run. Exit code 78 is the value the Codex capture adapter uses for "cannot start".
@@ -1190,10 +1196,10 @@ const runCheck = (label) =>
       {
         sh: argvLine(config.check),
         cwd: worktree,
-        timeout_ms: 590000,
+        timeout_ms: 570000,
         set: { exit_code: "exit", log_tail: "fail_tail:80" },
       },
-      { sh: stageTree, cwd: repo, set: { tree: "out" } },
+      { sh: stageTree, cwd: repo, timeout_ms: 60000, set: { tree: "out" } },
     ],
   });
 
@@ -1629,12 +1635,19 @@ if (gate.tree !== accepted.tree) {
 }
 
 const owner = repository.split("/")[0];
+// Only the fields the clash check reads are returned. A whole PR object is tens of KB, more than a Bash call returns
+// with the rest of the relay's line.
+const PULLS_JS =
+  `const pages = JSON.parse(require("fs").readFileSync(0, "utf8")); ` +
+  `const at = (o, k) => (o && typeof o === "object" ? o[k] : undefined); ` +
+  `console.log(JSON.stringify(pages.map((page) => page.map((pr) => ({ html_url: at(pr, "html_url"), ` +
+  `head: { ref: at(at(pr, "head"), "ref"), repo: { full_name: at(at(at(pr, "head"), "repo"), "full_name") } } })))))`;
 const pulls = await relay("pulls", "Ship", {
   defaults: { actor: "", pulls_exit: -1, pulls_json: "" },
   steps: [
     { sh: "gh api user --jq .login", cwd: repo, set: { actor: "out" } },
     {
-      sh: `gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp`,
+      sh: `gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp | node -e ${shq(PULLS_JS)}`,
       cwd: repo,
       set: { pulls_exit: "exit", pulls_json: "out" },
     },
@@ -2206,11 +2219,12 @@ while (counts.ci_rounds < CI_WAIT_ROUNDS) {
       {
         sh: argvLine(["gh", "pr", "checks", published.url, "--repo", repository, "--watch", "--interval", "10"]),
         cwd: repo,
-        timeout_ms: 530000,
+        timeout_ms: 520000,
       },
       {
         sh: argvLine(["gh", "pr", "view", published.url, "--repo", repository, "--json", CI_FIELDS, "--jq", `.body |= test("Closes #${issueNumber}([^0-9]|$)")`]),
         cwd: repo,
+        timeout_ms: 60000,
         set: { view_exit: "exit", view_json: "out" },
       },
     ],

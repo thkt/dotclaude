@@ -2017,7 +2017,8 @@ test("every agent except the implementing, repairing, reviewing, and naming ones
     for (const step of call.spec.steps) {
       assert.equal(typeof step.sh, "string", label);
       // The spec carries the place a prose prompt used to get from anchor(): a step that runs git or gh names it.
-      if (/(^|[\s;&|(])(git|gh) /.test(step.sh)) assert.ok(step.cwd, `${label}: "${step.sh.slice(0, 40)}" names no cwd`);
+      // argvLine quotes each word, so the command reads 'git' '-C' … as often as git -C ….
+      if (/(^|[\s;&|($])'?(git|gh)'? /.test(step.sh)) assert.ok(step.cwd, `${label}: "${step.sh.slice(0, 40)}" names no cwd`);
       // relay.ts has to print its line before the Bash tool's 600 s ceiling kills the call.
       assert.ok((step.timeout_ms ?? 0) < 600000, `${label}: a step can outlast the Bash tool`);
     }

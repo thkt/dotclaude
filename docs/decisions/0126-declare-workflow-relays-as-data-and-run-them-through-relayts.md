@@ -30,11 +30,14 @@ Chosen option: "Declare each relay's commands as a spec", because the script sta
 
 A relay is `relay(label, phase, spec)`. The spec is `{defaults, steps}`, and a step is one `/bin/sh -c` line with its `cwd`, an optional `stdin`, `timeout_ms` and `when`, and the fields its exit code and output go into. The prompt carries the spec as one line of JSON between `RELAY_SPEC <digest>` and `RELAY_SPEC_END`. The agent runs `workflows/_lib/relay.ts <digest>`, which reads the spec back from the agent's own transcript (the mechanism DR-0125 uses for the PR body), runs the steps, and prints the fields with `relay_check`, the digest of those fields. The script compares the fields the agent returned with `relay_check`. On a mismatch it asks a second agent for the line `relay.ts` kept (`--replay`), which runs no step again, and treats a second mismatch as no result, which each call site already handles as its `*-unavailable` stop. A step returns the tail of its output only when its command failed.
 
+A call belongs to the agent whose transcript carried the spec. Every snapshot and every check of a run carries the same spec, so progress is kept per agent and not per spec. The same agent running the command again goes on from its last step, or gets its finished line with no step run twice. Another agent with the same spec starts from the first step. A call removes the kept line when it starts, so `--replay` cannot answer with the result of an earlier call. A step runs in its own process group, and a timeout ends the whole group.
+
 Three details follow from limits outside the script.
 
 | Limit | What the relay does |
 | --- | --- |
 | The Bash tool ends a call at 600 seconds | A step's `timeout_ms` stays under 600000. A call that may not fit its next step prints `relay_continue`, and the agent runs the same command again |
+| A Bash call returns about 30,000 characters | `relay.ts` refuses to print a longer line. A relay whose output grows with the checkout or with a PR returns only what the script reads: the status is limited to the start inputs, and the open PRs to three fields |
 | A host with no transcript | The prompt has the agent write the spec line to a file and pass `--spec`, and `relay.ts` refuses a file whose digest differs |
 | bun may be absent or a shim that fails | The launcher runs `bun --version` and starts the helper on node when that fails. The helpers stay runnable on both (DR-0113) |
 
@@ -54,7 +57,7 @@ Three details follow from limits outside the script.
 
 ### Confirmation
 
-`workflows/_lib/tests/relay.test.ts` runs specs for real: each source, `when`, `append`, internal fields, a timeout, `stdin` and `cwd`, a spec read from a transcript built in a temp directory, a refused digest, a spec handed over in a file, and a call that stops for its budget and goes on in the next call. `workflows/implement/tests/implement.behavior.test.js` checks that every agent other than the implementing, repairing, reviewing and naming ones carries a spec whose digest the prompt names, that the schema is the spec's fields plus `relay_check`, that no step can outlast the Bash tool, that a step with git or gh names its `cwd`, that no step returns a tail for a command that succeeded, and that fields not matching `relay_check` are asked for once more and read as no result the second time. The prompt `implement.js` builds for its first relay was given to a live haiku agent on 2026-11-12: one Bash call with the timeout as told, and the 7 KB reply matched `relay_check`.
+`workflows/_lib/tests/relay.test.ts` runs specs for real: each source, `when`, `append`, internal fields, a timeout, `stdin` and `cwd`, a spec read from a transcript built in a temp directory, a refused digest, a spec handed over in a file, a call that stops for its budget and goes on in the next call, a second agent that does not pick up another agent's unfinished call, a finished call its agent does not run again, `--replay` refused after an unfinished call, a timeout that leaves no child running, a tail in arrival order, and a line too long to return. `workflows/implement/tests/implement.behavior.test.js` checks that every agent other than the implementing, repairing, reviewing and naming ones carries a spec whose digest the prompt names, that the schema is the spec's fields plus `relay_check`, that no step can outlast the Bash tool, that a step with git or gh names its `cwd`, that no step returns a tail for a command that succeeded, and that fields not matching `relay_check` are asked for once more and read as no result the second time. The prompt `implement.js` builds for its first relay was given to a live haiku agent on 2026-11-12: one Bash call with the timeout as told, and the 7 KB reply matched `relay_check`.
 
 ## Pros and Cons of the Options
 
@@ -78,6 +81,8 @@ DR-0105 (`docs/decisions/0105-*.md`) made `repo` a required argument and had eve
 DR-0125 (`docs/decisions/0125-read-the-pr-body-back-from-the-agent-transcript.md`) introduced the read-back for the PR body. `workflows/_lib/transcript.ts` now holds the scan both use.
 
 The first whole run with the converted relays (Issue #171) stopped at prepare. A setup that succeeded returned the last 40 lines of its output, among them the progress bar of a download, and the agent changed the count of its repeated character. `relay_check` caught it, and the run stopped as `prepare-unavailable` with the worktree already built. Two changes followed in the same change: a tail is returned only for a command that failed, and a mismatch is answered by `--replay` before it becomes no result. The run after that reached draft PR #172 with all five acceptance items met and no mismatch.
+
+A review of that version reproduced two faults in how a call was identified. The file that lets a call go on was named by the spec's digest alone, so a later check with the same spec skipped its command and returned the earlier exit code. `--replay` returned the line of whichever call of that spec finished last, so a gate before a write could pass on a snapshot taken before it. Both came from treating a spec as the identity of a call, and the per-agent state above replaced it.
 
 ### Reassessment Triggers
 

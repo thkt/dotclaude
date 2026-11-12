@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,52 +12,59 @@ import type { Spec } from "../relay.ts";
 import { digest } from "../transcript.ts";
 
 const script = join(dirname(fileURLToPath(import.meta.url)), "..", "relay.ts");
-const fieldsOf = (spec: Spec) => runSpec(spec).fields;
+const fieldsOf = async (spec: Spec) => (await runSpec(spec)).fields;
 
-test("each source reads its part of a command's result", () => {
-  const fields = fieldsOf({
-    defaults: { code: 0, held: true, text: "", line: "", late: true, both: "", quiet: "x" },
+test("each source reads its part of a command's result", async () => {
+  const fields = await fieldsOf({
+    defaults: { code: 0, held: true, text: "", line: "", late: true, quiet: "x" },
     steps: [
       {
-        sh: "printf 'a\\nb\\n\\n'; printf 'err\\n' >&2; exit 3",
-        set: { code: "exit", held: "ok", text: "out", line: "last", late: "timed_out", both: "tail:2" },
+        sh: "printf 'a\\nb\\n\\n'; exit 3",
+        set: { code: "exit", held: "ok", text: "out", line: "last", late: "timed_out" },
       },
       { sh: "printf 'fine\\n'", set: { quiet: "fail_tail:5" } },
     ],
   });
-  assert.deepEqual(fields, {
-    code: 3,
-    held: false,
-    text: "a\nb\n",
-    line: "b",
-    late: false,
-    // stdout ends in a blank line, and the tail counts it.
-    both: "\nerr",
-    quiet: "",
-  });
+  assert.deepEqual(fields, { code: 3, held: false, text: "a\nb\n", line: "b", late: false, quiet: "" });
 });
 
-test("a failing command's tail is kept by fail_tail, and a command that cannot start reads as exit -1", () => {
-  const fields = fieldsOf({
-    defaults: { tail: "", code: 0 },
+// A failing check prints its failure on stdout and warnings on stderr. The tail has to show them in
+// the order they were printed, or the failure falls out of the last lines.
+test("a tail holds stdout and stderr in the order they arrived, and fail_tail keeps it only for a failed command", async () => {
+  const fields = await fieldsOf({
+    defaults: { both: "", failed: "", code: 0 },
     steps: [
-      { sh: "echo one; echo two; exit 1", set: { tail: "fail_tail:1" } },
+      { sh: "echo out1; sleep 0.2; echo err1 >&2; sleep 0.2; echo out2", set: { both: "tail:3" } },
+      { sh: "echo one; echo two; exit 1", set: { failed: "fail_tail:1" } },
       { sh: "exit 0", cwd: "/nonexistent-directory", set: { code: "exit" } },
     ],
   });
-  assert.deepEqual(fields, { tail: "two", code: -1 });
+  assert.deepEqual(fields, { both: "out1\nerr1\nout2", failed: "two", code: -1 });
 });
 
-test("a command that runs past its timeout reads as timed out with exit -1", () => {
-  const fields = fieldsOf({
+// A compound command has children. Ending only the shell left them writing into the worktree after
+// the step was reported as timed out.
+test("a command that runs past its timeout reads as timed out with exit -1, and none of its children is left running", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "relay-"));
+  const pidFile = join(dir, "child.pid");
+  const fields = await fieldsOf({
     defaults: { code: 0, late: false },
-    steps: [{ sh: "sleep 5", timeout_ms: 200, set: { code: "exit", late: "timed_out" } }],
+    steps: [
+      {
+        sh: `sleep 30 & echo $! > '${pidFile}'; wait`,
+        timeout_ms: 300,
+        set: { code: "exit", late: "timed_out" },
+      },
+    ],
   });
   assert.deepEqual(fields, { code: -1, late: true });
+  const child = readFileSync(pidFile, "utf8").trim();
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.notEqual(spawnSync("kill", ["-0", child]).status, 0, "the background sleep is gone");
 });
 
-test("a step runs only when every field named in when holds its value, and an unset field keeps its default", () => {
-  const fields = fieldsOf({
+test("a step runs only when every field named in when holds its value, and an unset field keeps its default", async () => {
+  const fields = await fieldsOf({
     defaults: { existing: false, created: false, head: "", skipped: "default" },
     steps: [
       { sh: "exit 1", set: { existing: "ok" } },
@@ -70,8 +77,8 @@ test("a step runs only when every field named in when holds its value, and an un
 });
 
 // The setup commands stop at the first failure: an internal field carries whether to go on.
-test("append collects one value per step, and a field named with a leading underscore steers later steps", () => {
-  const { fields } = runSpec({
+test("append collects one value per step, and a field named with a leading underscore steers later steps", async () => {
+  const { fields } = await runSpec({
     defaults: { exits: [], _ok: true },
     steps: ["exit 0", "exit 2", "exit 0"].map((sh) => ({
       sh,
@@ -83,9 +90,9 @@ test("append collects one value per step, and a field named with a leading under
   assert.deepEqual(fields.exits, [0, 2]);
 });
 
-test("a step receives its stdin and runs in its cwd", () => {
+test("a step receives its stdin and runs in its cwd", async () => {
   const dir = mkdtempSync(join(tmpdir(), "relay-"));
-  const fields = fieldsOf({
+  const fields = await fieldsOf({
     defaults: { echoed: "", where: "" },
     steps: [
       { sh: "cat", stdin: '{"quote":"\'","dollar":"$HOME"}', set: { echoed: "out" } },
@@ -96,8 +103,8 @@ test("a step receives its stdin and runs in its cwd", () => {
   assert.ok(String(fields.where).endsWith(dir.split("/").at(-1) ?? ""));
 });
 
-test("an unknown source fails the run instead of leaving a field at its default", () => {
-  assert.throws(() => fieldsOf({ defaults: { a: "" }, steps: [{ sh: "true", set: { a: "stderr" } }] }));
+test("an unknown source fails the run instead of leaving a field at its default", async () => {
+  await assert.rejects(fieldsOf({ defaults: { a: "" }, steps: [{ sh: "true", set: { a: "stderr" } }] }));
 });
 
 // ---- the command an agent runs ----
@@ -121,7 +128,7 @@ const project = () => {
   const tmp = join(root, "tmp");
   mkdirSync(agents, { recursive: true });
   mkdirSync(tmp);
-  return { root, projects, agents, tmp };
+  return { root, projects, agents, tmp, log: join(root, "ran.log") };
 };
 const store = (agents: string, id: string, prompt: string) =>
   writeFileSync(
@@ -135,6 +142,16 @@ const cli = (args: string[], tmp: string, env: Record<string, string> = {}) => {
   });
   return { code: r.status, out: JSON.parse(r.stdout) };
 };
+const ranLines = (log: string) => (existsSync(log) ? readFileSync(log, "utf8") : "");
+// A spec whose every step writes its name to the log, so a test can see which steps ran.
+const logging = (log: string, names: string[], timeout_ms?: number): Spec => ({
+  defaults: Object.fromEntries(names.map((name) => [name, ""])),
+  steps: names.map((name) => ({
+    sh: `echo ${name} >> '${log}'; echo ${name}`,
+    ...(timeout_ms ? { timeout_ms } : {}),
+    set: { [name]: "out" },
+  })),
+});
 
 test("the command runs the spec stored in a transcript and prints the fields with their digest, leaving internal fields out", () => {
   const { projects, agents, tmp } = project();
@@ -145,7 +162,6 @@ test("the command runs the spec stored in a transcript and prints the fields wit
   const { relay_check, ...fields } = out;
   assert.deepEqual(fields, { text: 'ﾉｰﾄ "q" `c` $HOME', code: 4 });
   assert.equal(relay_check, digest(canonical(fields)));
-  assert.deepEqual(readdirSync(tmp), [`relay-${wanted.replace(":", "-")}.out.json`], "only the printed line is kept");
 });
 
 test("the digest of the fields does not depend on the order they come back in", () => {
@@ -154,17 +170,15 @@ test("the digest of the fields does not depend on the order they come back in", 
 });
 
 test("a digest no transcript carries, or a transcript whose spec was altered, prints relay_error and runs nothing", () => {
-  const { root, projects, agents, tmp } = project();
-  const marker = join(root, "ran");
-  const spec: Spec = { defaults: { a: "" }, steps: [{ sh: `touch '${marker}'`, set: { a: "out" } }] };
-  const { wanted, prompt } = promptWith(spec);
-  store(agents, "a1", prompt.replace("touch", "touch -c"));
+  const { projects, agents, tmp, log } = project();
+  const { wanted, prompt } = promptWith(logging(log, ["only"]));
+  store(agents, "a1", prompt.replace("echo only >>", "echo other >>"));
   for (const args of [[wanted, "--projects", projects], ["00000000:1", "--projects", projects], ["not-a-digest"]]) {
     const { code, out } = cli(args, tmp);
     assert.equal(code, 1, args.join(" "));
     assert.equal(typeof out.relay_error, "string");
   }
-  assert.ok(!existsSync(marker));
+  assert.equal(ranLines(log), "");
 });
 
 test("a spec handed over in a file runs when its digest matches, and is refused when it does not", () => {
@@ -182,17 +196,8 @@ test("a spec handed over in a file runs when its digest matches, and is refused 
 // The agent's Bash call is capped at 600 s. A call stops before a step that could run past the
 // budget and asks to be run again, so its line is always printed before the tool kills it.
 test("a call that cannot fit the next step asks to be run again, and the next call goes on from that step", () => {
-  const { root, projects, agents, tmp } = project();
-  const log = join(root, "ran.log");
-  const spec: Spec = {
-    defaults: { first: "", second: "", third: "" },
-    steps: ["first", "second", "third"].map((name) => ({
-      sh: `echo ${name} >> '${log}'; echo ${name}`,
-      timeout_ms: 400,
-      set: { [name]: "out" },
-    })),
-  };
-  const { wanted, prompt } = promptWith(spec);
+  const { projects, agents, tmp, log } = project();
+  const { wanted, prompt } = promptWith(logging(log, ["first", "second", "third"], 400));
   store(agents, "a1", prompt);
   const args = [wanted, "--projects", projects];
   // The first step of a call always runs. A second 400 ms step does not fit in a 300 ms budget.
@@ -202,20 +207,91 @@ test("a call that cannot fit the next step asks to be run again, and the next ca
   const { relay_check, ...fields } = cli(args, tmp, env).out;
   assert.deepEqual(fields, { first: "first", second: "second", third: "third" });
   assert.equal(relay_check, digest(canonical(fields)));
-  assert.equal(spawnSync("cat", [log], { encoding: "utf8" }).stdout, "first\nsecond\nthird\n");
+  assert.equal(ranLines(log), "first\nsecond\nthird\n");
+});
+
+// Every snapshot and every check of a run carries the same spec. A later agent that picked up the
+// state of an earlier agent's call that never finished skipped the check and returned its old result.
+test("an agent whose transcript carries the same spec as an unfinished call of another agent starts from the first step", () => {
+  const { projects, agents, tmp, log } = project();
+  const { wanted, prompt } = promptWith(logging(log, ["first", "second"], 400));
+  const args = [wanted, "--projects", projects];
+  store(agents, "a1", prompt);
+  assert.deepEqual(cli(args, tmp, { RELAY_CALL_BUDGET_MS: "300" }).out, { relay_continue: true });
+  // The first agent never runs the command again. A second agent gets the same spec.
+  store(agents, "a2", prompt);
+  const { relay_check, ...fields } = cli(args, tmp).out;
+  assert.deepEqual(fields, { first: "first", second: "second" });
+  assert.equal(relay_check, digest(canonical(fields)));
+  assert.equal(ranLines(log), "first\nfirst\nsecond\n");
+});
+
+// The prompt tells the agent to run the command again until a line with relay_check appears. A step
+// that writes, such as opening the PR, must not run a second time for an agent whose call finished.
+test("the agent that ran every step gets the same line when it runs the command again, and no step runs twice", () => {
+  const { projects, agents, tmp, log } = project();
+  const { wanted, prompt } = promptWith(logging(log, ["write"]));
+  store(agents, "a1", prompt);
+  const args = [wanted, "--projects", projects];
+  const first = cli(args, tmp);
+  assert.deepEqual(cli(args, tmp), first);
+  assert.equal(ranLines(log), "write\n");
 });
 
 // An agent that miscopies a long field returns fields without their digest. The script then asks a
 // second agent for the same line, and the commands must not run a second time.
-test("--replay prints the line the complete run printed and runs no step, and prints relay_error when nothing is kept", () => {
-  const { root, projects, agents, tmp } = project();
-  const log = join(root, "ran.log");
-  const spec: Spec = { defaults: { text: "" }, steps: [{ sh: `echo once >> '${log}'; echo ■■■■■■■■■■`, set: { text: "out" } }] };
-  const { wanted, prompt } = promptWith(spec);
+test("--replay prints the line the complete call printed and runs no step", () => {
+  const { projects, agents, tmp, log } = project();
+  const { wanted, prompt } = promptWith({
+    defaults: { text: "" },
+    steps: [{ sh: `echo once >> '${log}'; echo ■■■■■■■■■■`, set: { text: "out" } }],
+  });
   store(agents, "a1", prompt);
-  assert.equal(cli([wanted, "--replay"], tmp).code, 1, "nothing is kept before the run");
+  assert.equal(cli([wanted, "--replay"], tmp).code, 1, "nothing is kept before the call");
   const ran = cli([wanted, "--projects", projects], tmp);
+  assert.deepEqual(cli([wanted, "--replay"], tmp), ran);
+  assert.equal(ranLines(log), "once\n");
+});
+
+// Every snapshot shares one spec. When the call before a write did not finish, --replay must not
+// answer with the snapshot taken before it: the Issue and the tree would go unobserved.
+test("--replay after a call that did not finish prints relay_error, not the line of the call before it", () => {
+  const { projects, agents, tmp, log } = project();
+  const { wanted, prompt } = promptWith(logging(log, ["first", "second"], 400));
+  const args = [wanted, "--projects", projects];
+  store(agents, "a1", prompt);
+  assert.equal(cli(args, tmp).code, 0);
+  assert.equal(cli([wanted, "--replay"], tmp).code, 0);
+  store(agents, "a2", prompt);
+  assert.deepEqual(cli(args, tmp, { RELAY_CALL_BUDGET_MS: "300" }).out, { relay_continue: true });
   const replayed = cli([wanted, "--replay"], tmp);
-  assert.deepEqual(replayed, ran);
-  assert.equal(spawnSync("cat", [log], { encoding: "utf8" }).stdout, "once\n");
+  assert.equal(replayed.code, 1);
+  assert.match(replayed.out.relay_error, /no result/);
+});
+
+// A Bash call returns about 30,000 characters. A longer line reaches the agent cut short, and no
+// reply can match its digest.
+test("a result longer than a Bash call returns prints relay_error naming the length", () => {
+  const { projects, agents, tmp } = project();
+  const { wanted, prompt } = promptWith({
+    defaults: { big: "" },
+    steps: [{ sh: "head -c 40000 /dev/zero | tr '\\0' 'x'", set: { big: "out" } }],
+  });
+  store(agents, "a1", prompt);
+  const { code, out } = cli([wanted, "--projects", projects], tmp);
+  assert.equal(code, 1);
+  assert.match(out.relay_error, /4\d{4} characters/);
+  assert.equal(cli([wanted, "--replay"], tmp).code, 1);
+});
+
+test("a state file is kept per agent, and the line for --replay per spec", () => {
+  const { projects, agents, tmp } = project();
+  const { wanted, prompt } = promptWith(SPEC);
+  store(agents, "a1", prompt);
+  cli([wanted, "--projects", projects], tmp);
+  const name = wanted.replace(":", "-");
+  const files = readdirSync(tmp).sort();
+  assert.equal(files.length, 2);
+  assert.ok(files.includes(`relay-${name}.out.json`));
+  assert.ok(files.some((file) => new RegExp(`^relay-${name}-[0-9a-f]{8}-\\d+\\.json$`).test(file)));
 });
