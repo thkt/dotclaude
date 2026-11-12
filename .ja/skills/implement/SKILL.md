@@ -17,7 +17,7 @@ argument-hint: "[issue number or URL] [--no-publish]"
 
 ## Phase 1: 起動前の照合
 
-1. `gh issue view <ref> --json number,title,body,state,url,comments` で Issue を取る。state が OPEN で title と body が空でないことを確認する。本文の全節とコメントから合意の記録を読む。未合意の点が残っていれば起動せず、`/scoping` へ戻す。未合意の点とは、未合意と書かれた項目、未解決の問い、実装者に委ねた判断、「実装時に確認する」のように先送りした判断を指す。未決事項の節が「なし」でも、他の節にある先送りを数える。workflow は走り出すと人に問えず、未決の判断に当たると `human-decision-required` で止まる。決定がコメントにだけあるときも `/scoping` へ戻し、本文へ反映する。workflow が実装とレビューに渡すのは title と本文だけ。
+1. `gh issue view <ref> --json number,title,body,state,url,comments` で Issue を取る。state が OPEN で title と body が空でないことを確認する。本文の全節とコメントから合意の記録を読む。未合意の点が残っていれば起動せず、`/scoping` へ戻す。未合意の点とは、未合意と書かれた項目、未解決の問い、実装者に委ねた判断、「実装時に確認する」のように先送りした判断を指す。未決事項の節が「なし」でも、他の節にある先送りを数える。workflow は走り出すと人に問えず、未決の判断に当たると `human-decision-required` で止まる。決定がコメントにだけあるときも `/scoping` へ戻し、本文へ反映する。対象 repo の方針が今回の変更に課す手順の判定が本文に無いときも、`/scoping` へ戻す。workflow が実行できないと判定された手順の扱いが本文に無いときも同じ。判定の基準は ${CLAUDE_SKILL_DIR}/../scoping/references/sufficiency.md § 対象 repo の方針が課す手順にあり、ここでは判定し直さない。workflow が実装とレビューに渡すのは title と本文だけ。
 2. `git rev-parse --show-toplevel` で対象 repo の絶対パスを決める。
 3. `.dotagents.json` が commit 済みであることを確認する。workflow は repository・remote・baseBranch・setup・check・ciChecks・capture を持つ Codex の対象契約で検査する。無ければ package.json の scripts や CI 定義から内容を仮説付きで AskUserQuestion に出し、合意した内容をユーザーの判断で commit してから進める。未 commit の差分があれば stash や移植をせず、扱いを尋ねる。Issue の必要媒体を `${CLAUDE_SKILL_DIR}/references/capture.md` の表で `capture` の設定と照合し、食い違えば起動せず `/scoping` へ戻す。
 4. sandbox を観測する。${CLAUDE_SKILL_DIR}/scripts/sandbox_probe.ts を実行し、出力の `sandboxed`・`local_binding`・`platform` を § sandbox の観測の表で扱う。設定ファイルからは推測しない。起動時の flag や管理設定で変わった sandbox は、設定ファイルに現れない。
@@ -70,7 +70,7 @@ macOS の sandbox の中では Chromium が起動せず、撮影は実装とレ�
 
 この workflow が公開した PR を直すときも、同じ workflow を使う。人が採用したレビュー指摘・期待する結果・許可範囲を、ユーザーが 1 つの文章にまとめて渡す。PR コメントを自動収集・自動採用しない。
 
-1. 現在の Issue が人の合意済みで、今回の修正依頼と許可範囲が合意と整合することを確かめる。本文の差分や OPEN の状態だけで合意を判定しない。未合意の要求変更は `/scoping` へ戻す。
+1. 現在の Issue が人の合意済みで、今回の修正依頼と許可範囲が合意と整合することを確かめる。本文の差分や OPEN の状態だけで合意を判定しない。未合意の要求変更は `/scoping` へ戻す。修正依頼が Issue に無い文書や公開の手順に触れるなら、その手順の判定と扱いが Issue か修正依頼にあることも確かめ、無ければ `/scoping` へ戻す。
 2. Phase 1 の手順 2〜5 を行う。参照を固定するときの開始 commit は、PR 全体の基点 (最初に公開した実行の開始 commit) にする。
 3. `Workflow({name: "implement", args: {issue: "<番号>", repo: "<絶対パス>", revision: {pr: "<PR の URL>", request: "<採用した指摘・期待する結果・許可範囲>"}}})` で起動する。workflow は前回の worktree を公開した head で再利用し、PR 全体を Issue と修正依頼の両方に対して評価する。公開した head の上に commit して push し、本文を作り直して CI を待つ。新しい PR は作らない。
 4. 結果は Phase 3 と同じ表で扱う。

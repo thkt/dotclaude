@@ -27,6 +27,22 @@ Check the implementation version, scope of application, and usage policy of the 
 
 Do not make the existence of Storybook a requirement or evidence of agreement. When existing material leaves the interaction spec unclear and it drives the decision, close that gap before agreeing on a UI proposal.
 
+## Steps the target repo's policy imposes
+
+For requirements handed over to implementation, list the steps the target repo's README and development policy impose on this change. Count the steps for the Issue body, and also the checks and approvals for the documents the implementation changes, the PR body, publication, and capture. Once running, the `/implement` workflow cannot ask a human, and its independent review raises a step not carried out as the policy says as a required finding. A step whose handling is undecided stops the run as `human-decision-required` after the implementation is done.
+
+Show the listed steps and their verdicts to the human as a list, in the same round as the questions, and write them into the Issue or the draft. An installed CLI is not grounds for judging that a step can be carried out. Without the record, `/implement` cannot tell whether the listing has been done.
+
+Give each step a verdict from the table. For a step the workflow cannot carry out, agree on the handling with the human through AskUserQuestion, in the same round as the other questions.
+
+| Verdict                           | Condition                                                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| The workflow cannot carry it out  | The procedure the step points to does not exist. Open the document and section the policy names to check                       |
+| The workflow cannot carry it out  | A CLI it needs is missing (check with `command -v <name>`), or a permission it needs is missing                                |
+| The workflow cannot carry it out  | It takes a human's action                                                                                                      |
+| The workflow cannot carry it out  | It takes an operation the workflow forbids: starting a browser or a server, changing `.dotagents.json`, editing outside the worktree |
+| The workflow can carry it out     | None of the above applies                                                                                                      |
+
 ## Questions and re-evaluation
 
 Do not read an unanswered, withdrawn, or partial answer as agreement. Once an answer arrives, record its scope and re-evaluate whether the evidence and agreement suffice for the next decision.
