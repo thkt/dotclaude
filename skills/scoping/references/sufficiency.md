@@ -31,6 +31,8 @@ Do not make the existence of Storybook a requirement or evidence of agreement. W
 
 For requirements handed over to implementation, list the steps the target repo's README and development policy impose on this change. Count the steps for the Issue body, and also the checks and approvals for the documents the implementation changes, the PR body, publication, and capture. Once running, the `/implement` workflow cannot ask a human, and its independent review raises a step not carried out as the policy says as a required finding. A step whose handling is undecided stops the run as `human-decision-required` after the implementation is done.
 
+Show the listed steps and their verdicts to the human as a list, in the same round as the questions, and write them into the Issue or the draft. An installed CLI is not grounds for judging that a step can be carried out. Without the record, `/implement` cannot tell whether the listing has been done.
+
 Give each step a verdict from the table. For a step the workflow cannot carry out, agree on the handling with the human through AskUserQuestion, in the same round as the other questions.
 
 | Verdict                           | Condition                                                                                                                      |
@@ -40,8 +42,6 @@ Give each step a verdict from the table. For a step the workflow cannot carry ou
 | The workflow cannot carry it out  | It takes a human's action                                                                                                      |
 | The workflow cannot carry it out  | It takes an operation the workflow forbids: starting a browser or a server, changing `.dotagents.json`, editing outside the worktree |
 | The workflow can carry it out     | None of the above applies                                                                                                      |
-
-Show the listed steps and their verdicts to the human as a list, in the same round as the questions, and write them into the Issue or the draft. An installed CLI is not grounds for judging that a step can be carried out. Without the record, `/implement` cannot tell whether the listing has been done.
 
 ## Questions and re-evaluation
 
