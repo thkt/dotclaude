@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Implements an agreed Issue in an isolated worktree with one implementation pass, runs a capture, check, independent review, and repair loop until the review is accepted, then commits once, pushes, opens a draft PR, and waits for CI on the same head, following the same flow as Codex's orchestrator.ts. The check and the capture pass on their exit codes, media is installed only after its format is validated, and the script decides acceptance by validating one update per finding ID, so a self-reported pass or a dropped prior finding cannot get through. Before the first write the script re-confirms the Issue, the accepted tree, the actor, and the push target, and it reads back the result of every write. It never retries a write and never switches the PR to ready. The repair loop has no round cap; it stops on changed requirements, a changed target, an invalid reply, or a pending human decision. With publishing turned off it ends at verified_local.",
   whenToUse:
-    "Implementing, headlessly, an Issue agreed through /scoping up to a draft PR. It also revises a PR it published, from a revision request a human adopted: pass the PR URL and the request, and it rewrites the body instead of opening a new PR. A review of an existing diff without implementation goes to polish or audit. Pass the Issue number and the target repository's absolute path. The target repository's root needs a .dotagents.json carrying repository, remote, baseBranch, setup, check, ciChecks, and capture, as the Codex target contract defines them, and {harness} in capture expands to the Codex harness at ~/.agents. The check or the capture may open a local server socket, so a session with the sandbox on sets sandbox.network.allowLocalBinding to true before launching. Publishing up to a draft PR is the default. With publishing turned off, the run ends by leaving the verified branch and worktree to a human. The switch to ready, the published-body check, and human review stay with the /implement skill and the human.",
+    "Implementing, headlessly, an Issue agreed through /scoping up to a draft PR. It also revises a PR it published, from a revision request a human adopted: pass the PR URL and the request, and it rewrites the body instead of opening a new PR. A review of an existing diff without implementation goes to polish or audit. Pass the Issue number and the target repository's absolute path. The target repository's root needs a .dotagents.json carrying repository, remote, baseBranch, setup, check, ciChecks, and capture, as the Codex target contract defines them, and {harness} in capture expands to the Codex harness at ~/.agents. The check or the capture may open a local server socket, so a session with the sandbox on sets sandbox.network.allowLocalBinding to true before launching. Publishing up to a draft PR is the default. With publishing turned off, the run ends by leaving the verified branch and worktree to a human. A run that the environment stopped at the capture, the check, the review, or the writing of the PR body resumes from that step once the cause is fixed. The switch to ready, the published-body check, and human review stay with the /implement skill and the human.",
   phases: [
     { title: "Target" },
     { title: "Prepare" },
@@ -128,6 +128,8 @@ const stop = async (reason, why, fields = {}) => {
     ...counts,
     run_id: runId,
     remaining: ["local_verification", "publication", ...REMAINING_AFTER_PR],
+    // A stop that fixing the cause clears overrides this in fields with the label of its step.
+    retry_from: "",
     ...fields,
   };
 };
@@ -186,6 +188,32 @@ const revisionIssue = revisionProblem();
 if (revisionIssue) {
   return await stop("invalid-revision", revisionIssue);
 }
+// Resuming from the step that stopped. Workflow's resumeFromRunId answers an agent() call whose prompt is
+// unchanged from cache, and runs the first call whose prompt changed and everything after it. Marking the
+// prompt of the step that stopped resumes the run from that step. A step can be resumed only when running
+// it again writes nothing to GitHub, does not rebuild the worktree, and does not implement again.
+const RETRYABLE = /^(?:(?:capture|check|review):[1-9]\d*|body)$/;
+const retrying = input.retry !== undefined;
+const retryFrom = retrying && input.retry ? String(input.retry.from || "").trim() : "";
+const retryAttempt = retrying && input.retry ? input.retry.attempt : 0;
+const retryProblem = () => {
+  if (!retrying) return "";
+  if (!RETRYABLE.test(retryFrom))
+    return "Only the steps capture:N, check:N, review:N, and body can be resumed";
+  return Number.isInteger(retryAttempt) && retryAttempt >= 1
+    ? ""
+    : "Pass attempt as how many times this step has been run again, an integer of 1 or more";
+};
+const retryIssue = retryProblem();
+if (retryIssue) {
+  return await stop("invalid-retry", retryIssue);
+}
+// The mark added to the prompt of the resumed step. It carries the attempt, so running the same step once
+// more changes the prompt again.
+const retryMark = (label) =>
+  label === retryFrom
+    ? `\n\nThis step resumes a run that stopped, and this is run-again number ${retryAttempt} of it. Run it from the start without changing the procedure.`
+    : "";
 await recordRun("started");
 
 // ---- Target: check the Issue, the effective user, the repo, uncommitted changes, and .dotagents.json ----
@@ -888,7 +916,8 @@ const runCapture = (output, label) =>
     `Run the capture once and return the result verbatim. Do not fix anything.\n` +
       `1. Run \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && mkdir ${shq(output)}\`. If it exits non-zero, set started: false, timed_out: false, and exit_code: -1, put its output in log_tail, and go to step 3.\n` +
       `2. Run \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` with the Bash tool's timeout parameter set to 600000, and set started: true. On a timeout set timed_out: true and exit_code: -1; otherwise set timed_out: false and put its exit code in exit_code. Put the last 80 lines of its combined output in log_tail.\n` +
-      `3. Run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).`,
+      `3. Run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).` +
+      retryMark(label),
     {
       label,
       phase: "Verify",
@@ -942,10 +971,15 @@ const captureStep = async (tree) => {
   }
   lastCaptureTree = "";
   counts.captures += 1;
-  const output = `${worktree}-capture-${counts.captures}`;
-  const shot = await runCapture(output, `capture:${counts.captures}`);
+  const label = `capture:${counts.captures}`;
+  // A capture that stopped leaves its output directory, and mkdir on the same path fails. A retry captures
+  // into a directory of its own.
+  const output = `${worktree}-capture-${counts.captures}${label === retryFrom ? `-retry-${retryAttempt}` : ""}`;
+  const shot = await runCapture(output, label);
   const stopped = shotStop(shot, tree);
-  if (stopped) return stopped;
+  // A stop for a worktree that changed during the capture cannot be resumed: fixing the environment does
+  // not bring the same tree back.
+  if (stopped) return { ...stopped, retry: stopped.stop === "source-changed" ? "" : label };
   if (shot.exit_code !== 0)
     return {
       evidence: hostFailure(
@@ -973,7 +1007,8 @@ const runCheck = (label) =>
   agent(
     `Run the target check once and return the result verbatim. Do not fix anything.\n` +
       `1. Run \`cd ${shq(worktree)} && ${argvLine(config.check)}\` with the Bash tool's timeout parameter set to 600000 (macOS ships no timeout binary). Put its exit code in exit_code (-1 when it could not start or timed out), and the last 80 lines of its combined output in log_tail.\n` +
-      `2. Then run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).`,
+      `2. Then run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).` +
+      retryMark(label),
     { label, phase: "Verify", agentType: "general-purpose", schema: CHECK_SCHEMA, model: "haiku" },
   );
 
@@ -1192,7 +1227,7 @@ const reviewRound = async (checked) => {
         revisionContext,
         referenceContext,
       ].join("\n"),
-    ),
+    ) + retryMark(`review:${attempt}`),
     {
       label: `review:${attempt}`,
       phase: "Verify",
@@ -1215,12 +1250,14 @@ const reviewRound = async (checked) => {
       why: "The worktree changed during the review. The reviewer does not edit files.",
     };
   const merged = mergeReview(response, checked.tree, attempt, previous);
-  if (merged.error) return { stop: "invalid-review", why: merged.error };
+  if (merged.error)
+    return { stop: "invalid-review", why: merged.error, retry: `review:${attempt}` };
   const missing = await missingDocuments(merged.review, checked.tree, attempt);
   if (missing.length)
     return {
       stop: "invalid-review",
       why: `The review names documents missing from the reviewed tree: ${missing.join(", ")}`,
+      retry: `review:${attempt}`,
     };
   // The completed review has read the repair explanations so far. A failed check has not.
   repairsSinceReview = [];
@@ -1234,6 +1271,7 @@ const checkAndReview = async () => {
     return {
       stop: "check-unavailable",
       why: "Could not get the check result or the tree id. Check the execution environment.",
+      retry: `check:${counts.check_runs}`,
     };
   }
   if (checked.exit_code !== 0) {
@@ -1277,7 +1315,11 @@ while (!accepted) {
   const shot = await captureStep(before.tree);
   const step = shot.stop || shot.evidence ? shot : await checkAndReview();
   if (step.stop) {
-    return await stop(step.stop, step.why, { ...where, review: history.at(-1) || null });
+    return await stop(step.stop, step.why, {
+      ...where,
+      review: history.at(-1) || null,
+      retry_from: step.retry || "",
+    });
   }
   if (step.accepted) {
     accepted = step.accepted;
@@ -1625,7 +1667,8 @@ const written = await agent(
     "```sh\n" +
     writeBlock +
     "\n```\n" +
-    `2. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: put its stdout in body_digest.`,
+    `2. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: put its stdout in body_digest.` +
+    retryMark("body"),
   {
     label: "body",
     phase: "Ship",
@@ -1639,6 +1682,7 @@ if (!written || written.write_exit !== 0 || !sameBody(written.body_digest, body)
   return await shipStop(
     "pr-body-mismatch",
     `The written PR body differs from the generated body (${bodyFile}). Nothing has been published.`,
+    { retry_from: "body" },
   );
 }
 

@@ -1600,6 +1600,98 @@ test("CI that never registers its required checks stops ci-timed-out after the r
 
 // The body agent's first command writes the PR body from its last argument, an ASCII-only JSON
 // string in shell single quotes. Decoding it recovers the body the script generated.
+// ---- resuming a stopped run from its step ----
+// Workflow's resumeFromRunId answers every agent call whose prompt is unchanged from cache and runs
+// the first changed call and everything after it, so the tests compare prompts by label.
+const promptsByLabel = (calls) =>
+  Object.fromEntries(calls.agent.map((c) => [c.opts.label, c.prompt]));
+const shotReply = (patch) => [
+  (_, { tree }) => ({ started: true, timed_out: false, exit_code: 0, log_tail: "", tree, ...patch }),
+];
+
+test("a stop that fixing the environment clears names the step to resume from, and any other stop names none", async () => {
+  const cases = [
+    ["capture-unavailable", "capture:1", () => withCapture(CAPTURE, { capture: shotReply({ exit_code: 78 }) })],
+    ["capture-timeout", "capture:1", () => withCapture(CAPTURE, { capture: shotReply({ timed_out: true, exit_code: -1 }) })],
+    ["check-unavailable", "check:1", () => run({ check: [{ exit_code: 0, log_tail: "", tree: "" }] })],
+    ["invalid-review", "review:1", () => run({ review: [() => reviewReply(treeOf(999))] })],
+    [
+      "pr-body-mismatch",
+      "body",
+      () => run({ body: [{ write_exit: 0, body_digest: digestOf("rewritten") }] }, publishArgs),
+    ],
+    [
+      "human-decision-required",
+      "",
+      () => run({ implement: [{ status: "needs_human", findings: "Which API?" }] }),
+    ],
+    ["source-changed", "", () => withCapture(CAPTURE, { capture: shotReply({ tree: treeOf(999) }) })],
+    [
+      "push-unconfirmed",
+      "",
+      () => run({ push: [{ push_exit: 1, push_tail: "rejected", remote_sha: "" }] }, publishArgs),
+    ],
+  ];
+  for (const [reason, step, launch] of cases) {
+    const { result } = await launch();
+    assert.equal(result.stopped, reason, reason);
+    assert.equal(result.retry_from, step, reason);
+  }
+});
+
+test("a retry changes the prompt of the named step alone, and a second retry of that step changes it again", async () => {
+  const cases = [
+    ["check:1", (runArgs) => run({}, runArgs), args],
+    ["review:1", (runArgs) => run({}, runArgs), args],
+    ["capture:1", (runArgs) => withCapture(CAPTURE, {}, runArgs), args],
+    ["body", (runArgs) => run({}, runArgs), publishArgs],
+  ];
+  for (const [from, launch, base] of cases) {
+    const plain = promptsByLabel((await launch(base)).calls);
+    const first = promptsByLabel((await launch({ ...base, retry: { from, attempt: 1 } })).calls);
+    const second = promptsByLabel((await launch({ ...base, retry: { from, attempt: 2 } })).calls);
+    // The media install and the review name the retried capture's own directory, and both run after it.
+    const expected = from === "capture:1" ? ["capture:1", "install:1", "review:1"] : [from];
+    assert.deepEqual(
+      Object.keys(plain).filter((label) => plain[label] !== first[label]),
+      expected,
+      from,
+    );
+    assert.notEqual(second[from], first[from], `${from}: attempt 2 differs from attempt 1`);
+  }
+});
+
+test("a retried capture writes to a directory of its own, since the stopped attempt left its directory behind", async () => {
+  const retry = { from: "capture:1", attempt: 2 };
+  const { result, calls } = await withCapture(CAPTURE, {}, { ...args, retry });
+  const prompts = promptsByLabel(calls);
+  const output = `${repo}/.claude/worktrees/implement-12-capture-1-retry-2`;
+  assert.equal(result.status, "verified_local");
+  assert.ok(prompts["capture:1"].includes(`mkdir '${output}'`));
+  assert.ok(prompts["install:1"].includes(`'${output}'`));
+  assert.equal(result.capture.output, output);
+});
+
+test("a retry naming a step that writes to GitHub, prepares the worktree, or implements stops as invalid-retry before anything runs", async () => {
+  const bad = [
+    { from: "push", attempt: 1 },
+    { from: "create", attempt: 1 },
+    { from: "prepare", attempt: 1 },
+    { from: "implement", attempt: 1 },
+    { from: "repair:1", attempt: 1 },
+    { from: "check:0", attempt: 1 },
+    { from: "check:1", attempt: 0 },
+    { from: "check:1" },
+    null,
+    "check:1",
+  ];
+  for (const retry of bad) {
+    const { result, kinds } = await run({}, { ...args, retry });
+    assert.equal(result.stopped, "invalid-retry", JSON.stringify(retry));
+    assert.deepEqual(kinds, ["record"], JSON.stringify(retry));
+  }
+});
+
 function bodyIn(prompt) {
   const block = bodyBlock(prompt);
   const lines = block.split("\n").slice(1, -1);

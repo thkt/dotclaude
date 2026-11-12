@@ -2,7 +2,7 @@
 name: implement
 description: 合意済み GitHub Issue を implement workflow で実装・検証・draft PR 公開・CI 確認まで進め、公開本文の照合と ready 切替を行う。要求整理には使わない (/scoping)。レビューのみの依頼には使わない。
 when_to_use: 合意済みIssueを実装, Issueから実装, PR作成まで進める, 既存PRの修正, implement issue
-allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[issue number or URL] [--no-publish]"
 ---
@@ -17,10 +17,10 @@ argument-hint: "[issue number or URL] [--no-publish]"
 
 ## Phase 1: 起動前の照合
 
-1. `gh issue view <ref> --json number,title,body,state,url` で Issue を取る。state が OPEN で title と body が空でないことを確認する。
+1. `gh issue view <ref> --json number,title,body,state,url,comments` で Issue を取る。state が OPEN で title と body が空でないことを確認する。本文の全節とコメントから合意の記録を読む。未合意の点が残っていれば起動せず、`/scoping` へ戻す。未合意の点とは、未合意と書かれた項目、未解決の問い、実装者に委ねた判断、「実装時に確認する」のように先送りした判断を指す。未決事項の節が「なし」でも、他の節にある先送りを数える。workflow は走り出すと人に問えず、未決の判断に当たると `human-decision-required` で止まる。決定がコメントにだけあるときも `/scoping` へ戻し、本文へ反映する。workflow が実装とレビューに渡すのは title と本文だけ。
 2. `git rev-parse --show-toplevel` で対象 repo の絶対パスを決める。
 3. `.dotagents.json` が commit 済みであることを確認する。workflow は repository・remote・baseBranch・setup・check・ciChecks・capture を持つ Codex の対象契約で検査する。無ければ package.json の scripts や CI 定義から内容を仮説付きで AskUserQuestion に出し、合意した内容をユーザーの判断で commit してから進める。未 commit の差分があれば stash や移植をせず、扱いを尋ねる。Issue の必要媒体を `${CLAUDE_SKILL_DIR}/references/capture.md` の表で `capture` の設定と照合し、食い違えば起動せず `/scoping` へ戻す。
-4. sandbox の設定を確認する。check や撮影はローカルの web server の socket を開くことがあり、sandbox がその bind を拒むと check は毎回失敗し、回数上限の無い修正ループが止まらない。存在する設定ファイルを `~/.claude/settings.json`、対象 repo の `.claude/settings.json`、`.claude/settings.local.json` の順に並べる。それらを `jq -s 'reduce .[] as $s ({}; . * $s) | .sandbox | {enabled, allowLocalBinding: .network.allowLocalBinding}'` に渡す。`enabled` が true で `allowLocalBinding` が true でなければ起動せず、`sandbox.network.allowLocalBinding: true` を設定するよう伝えて止める。この設定は再起動なしで効く。
+4. sandbox を観測する。${CLAUDE_SKILL_DIR}/scripts/sandbox_probe.ts を実行し、出力の `sandboxed`・`local_binding`・`platform` を § sandbox の観測の表で扱う。設定ファイルからは推測しない。起動時の flag や管理設定で変わった sandbox は、設定ファイルに現れない。
 5. 固定する参照を選ぶ。`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain に従い、関連する wiki と判断記録を選ぶ。wiki は `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <Issue の語> <触れそうなパス> --scene implement` の `matched` と `scenes` のページを読む。選んだページと判断記録を、Issue と現行コードに照合する。`${CLAUDE_SKILL_DIR}/../scoping/references/session.md` § 調査成果の引き継ぎに従い、Issue が参照する調査報告も加える。参照に使えるのは `docs/research/`・`docs/wiki/`・`docs/decisions/` 配下の Markdown だけ。各参照の blob を `git rev-parse HEAD:<path>` で、開始 commit を `git rev-parse HEAD` で記録する。必要な報告が HEAD に commit されていなければ、引き継ぎ未完了として止める。
 6. 既存 PR を直す依頼なら、この Phase を離れて § 既存 PR の修正へ回す。
 
@@ -38,7 +38,33 @@ workflow は background で走り、完了は通知で届く。完了まで状�
 | ------------------------- | ---------------------------------------------------------------------------------------- |
 | `status: verified_local`  | 公開を切った実行。検証済みの branch と worktree を示し、commit・公開は人の判断に残す     |
 | `status: published_draft` | `${CLAUDE_SKILL_DIR}/references/publish.md` の手順で公開本文を照合し、ready に切り替える |
-| `stopped` (停止理由あり)  | § 停止条件の表で扱いを決める。停止条件や上限を変えて続行しない。自動で再起動しない       |
+| `stopped` (停止理由あり)  | § 停止条件の表で扱いを決める。停止条件や上限を変えて続行しない。自動で再起動しない。戻り値の `retry_from` が空でなければ、§ 停止した段からの再開を人に示す |
+
+## sandbox の観測
+
+macOS の sandbox の中では Chromium が起動せず、撮影は実装とレビューを終えた後に `capture-unavailable` で止まる。sandbox がローカルの bind を拒むと、web server の socket を開く check は毎回失敗し、回数上限の無い修正ループが止まらない。どちらも起動の前に止める。
+
+| 観測                                                                            | 扱い                                                                                                   |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `sandboxed` が false                                                            | 次の手順へ進む                                                                                         |
+| `sandboxed` が true。`.dotagents.json` に `capture` があり、`platform` が darwin | 起動しない。sandbox を外したセッションで実行し直すよう伝える                                           |
+| `sandboxed` が true。`local_binding` が false                                   | 起動しない。`sandbox.network.allowLocalBinding: true` を設定するよう伝える。この設定は再起動なしで効く |
+| `sandboxed` が true。上の 2 行のどちらにもあたらない                            | 次の手順へ進む                                                                                         |
+
+## 停止した段からの再開
+
+戻り値の `retry_from` が空でない停止は、原因を直した後に、止まった段から再開できる。完了した実装・check・レビューの結果は cache から戻り、止まった段から後ろだけが走る。再開するかは人が決める。
+
+1. § 停止条件の表に従って原因を直す。Issue と worktree には触れない。
+2. 起動したのと同じセッションで Workflow を呼び直す。`scriptPath` に起動時の結果が示した script の path を、`resumeFromRunId` に起動時の結果の runId を渡す。args は起動時と同じものに `retry: {from: "<retry_from>", attempt: <回数>}` を足す。attempt はこの段をやり直す回数で、初回は 1 にする。
+3. 結果を Phase 3 の表で扱う。
+
+| 状況                               | 扱い                                                                                         |
+| ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| `retry_from` が空                  | 再開できない。§ 停止条件の表に従う                                                           |
+| 起動したセッションが終わっている   | 再開できない。cache はセッションをまたがない。新しく起動する                                 |
+| Issue を変えた (コメントの追加でも) | 再開できない。再開した実行は `requirements-changed` で止まる。新しく起動する                 |
+| worktree を変えた                  | 再開できない。cache にある check とレビューの結果が、今の worktree のものでない。新しく起動する |
 
 ## 既存 PR の修正
 
@@ -62,7 +88,8 @@ workflow が止まったら、`why` と判明している URL・commit・残る�
 | `uncommitted-start-inputs` `no-config` `invalid-config` `remote-mismatch` `repository-mismatch` `repo-unreadable` `no-ci-checks`   | Phase 1 の手順 3 に戻り、`.dotagents.json` か remote を直してから起動し直す                                                                                                                 |
 | `invalid-reports` `start-commit-mismatch` `report-mismatch`                                                                        | Phase 1 の手順 5 に戻り、参照を commit して開始 commit と blob を記録し直してから起動し直す                                                                                                 |
 | `branch-exists` `branch-pr-exists`                                                                                                 | 以前の実行の branch・worktree・PR を示す。消すか再利用するかは人の判断                                                                                                                      |
-| `human-decision-required`                                                                                                          | 戻り値の findings と review を示し、要求・範囲・権限についての人の判断を仰ぐ                                                                                                                |
+| `human-decision-required`                                                                                                          | 戻り値の findings と review を示し、要求・範囲・権限についての人の判断を仰ぐ。判断は `/scoping` の手順で Issue の本文へ書く。コメントに書いた判断は実装にもレビューにも届かない。本文を変えた後は新しく起動する |
+| `invalid-retry`                                                                                                                    | 再開の指定が受け付けられなかった。戻り値の `retry_from` と § 停止した段からの再開の手順を照合する                                                                                           |
 | `invalid-repair` `invalid-review`                                                                                                  | agent の応答が契約を満たさなかった。`why` を示し、起動し直すかを人に尋ねる                                                                                                                  |
 | `source-changed` `config-changed` `start-head-changed`                                                                             | worktree・その `.dotagents.json`・checkout の HEAD が途中で変わった。誰が変えたかを確かめてから起動し直す                                                                                   |
 | `target-unavailable` `prepare-unavailable` `worktree-failed` `setup-failed` `check-unavailable` `pulls-unreadable` `commit-failed` | 実行環境の問題。戻り値のログ末尾から原因を直し、起動し直す                                                                                                                                  |

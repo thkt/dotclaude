@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { probe } from "../scripts/sandbox_probe.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const skill = readFileSync(join(root, "skills", "implement", "SKILL.md"), "utf8");
@@ -52,15 +53,36 @@ test("the skill launches the implement workflow by name and maps --no-publish to
   assert.match(script, /const publishing = input\.publish !== false;/);
 });
 
-// With the sandbox on and local binding denied, a check that opens a local server socket fails on
-// every round, and the uncapped repair loop never ends. Both the skill's pre-launch check and the
-// workflow's own whenToUse carry the requirement.
-test("the skill refuses to launch under a sandbox without allowLocalBinding, and the workflow states the requirement", () => {
+// The skill observes the sandbox by running its probe. Inferring it from settings files stopped a
+// session whose sandbox a launch flag had turned off, since no file showed the flag.
+test("the skill observes the sandbox with its probe before launch, and its table routes every field the probe prints", async () => {
   const phase1 = skill.slice(skill.indexOf("## Phase 1"), skill.indexOf("## Phase 2"));
-  assert.match(phase1, /`sandbox\.network\.allowLocalBinding: true`/);
-  assert.match(phase1, /reduce \.\[\] as \$s \(\{\}; \. \* \$s\)/);
+  assert.match(phase1, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/sandbox_probe\.ts/);
+  assert.ok(!phase1.includes("jq -s"), "Phase 1 still merges settings files");
+  assert.match(skill, /^allowed-tools: .*Bash\(\$\{CLAUDE_SKILL_DIR\}\/scripts\/\*\)/m);
+  const table = skill.slice(
+    skill.indexOf("## Observing the sandbox"),
+    skill.indexOf("## Resuming from the step that stopped"),
+  );
+  const fields = Object.keys(await probe());
+  assert.deepEqual(fields, ["sandboxed", "local_binding", "platform"]);
+  for (const field of fields) assert.ok(table.includes(`\`${field}\``), `the table omits ${field}`);
+  assert.match(table, /`sandbox\.network\.allowLocalBinding: true`/);
   const whenToUse = /whenToUse:\s*"([^"]*)"/.exec(script);
   assert.ok(whenToUse && whenToUse[1].includes("sandbox.network.allowLocalBinding"));
+});
+
+// A stop the environment caused resumes from its step. The skill passes back the label the stop
+// returned, and the workflow reads it from the retry input.
+test("the skill resumes a stopped run through the workflow's retry input, with the step the stop returned", () => {
+  const section = skill.slice(
+    skill.indexOf("## Resuming from the step that stopped"),
+    skill.indexOf("## Revising an existing PR"),
+  );
+  assert.match(section, /`scriptPath`[^\n]*`resumeFromRunId`/);
+  assert.match(section, /retry: \{from: "<retry_from>", attempt: [^}]+\}/);
+  assert.match(script, /const retrying = input\.retry !== undefined;/);
+  assert.match(script, /retry_from: "",/);
 });
 
 // Codex's implement takes any agreed Issue. Routing by a `## Plan` section came from this harness's

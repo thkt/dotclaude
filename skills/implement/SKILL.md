@@ -2,7 +2,7 @@
 name: implement
 description: Carry an agreed GitHub Issue through the implement workflow to implementation, verification, a draft PR, and CI confirmation, then check the published body and switch the PR to ready. Do NOT use to settle requirements (use /scoping) or for a review-only request.
 when_to_use: 合意済みIssueを実装, Issueから実装, PR作成まで進める, 既存PRの修正, implement issue
-allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[issue number or URL] [--no-publish]"
 ---
@@ -17,10 +17,10 @@ Investigate the facts you can confirm, and ask early about facts only the user k
 
 ## Phase 1: Check before launch
 
-1. Fetch the Issue with `gh issue view <ref> --json number,title,body,state,url`. Confirm that state is OPEN and that title and body are not empty. Read the Issue body and comments for recorded agreement. When they list an unagreed point (未合意, open question, or a decision left to the implementer), do not launch, and return to `/scoping`.
+1. Fetch the Issue with `gh issue view <ref> --json number,title,body,state,url,comments`. Confirm that state is OPEN and that title and body are not empty. Read every section of the body and the comments for recorded agreement. When an unagreed point remains, do not launch, and return to `/scoping`. An unagreed point is an item marked unagreed (未合意), an open question, a decision left to the implementer, or a decision deferred with wording such as "confirm during implementation". Count a deferral in any section, even when the open-items section says "none". Once running, the workflow cannot ask a human, and it stops as `human-decision-required` when it meets an undecided point. When a decision is recorded only in a comment, also return to `/scoping` and put it into the body. The workflow passes only the title and the body to implementation and review.
 2. Decide the target repo's absolute path with `git rev-parse --show-toplevel`.
 3. Confirm that `.dotagents.json` is committed. The workflow checks it against the Codex target contract: repository, remote, baseBranch, setup, check, ciChecks, and capture. When it is absent, propose its content from package.json scripts or the CI definition through AskUserQuestion, hypothesis first, and proceed once the user has committed the agreed content by their own decision. When it has uncommitted changes, do not stash or port them; ask the user how to handle them. Check the Issue's required media against the `capture` setting with the table in `${CLAUDE_SKILL_DIR}/references/capture.md`; when they disagree, do not launch, and return to `/scoping`.
-4. Check the sandbox settings. The check or the capture may open a local web server socket; when the sandbox denies that bind, the check fails on every round and the uncapped repair loop never ends. Order the settings files that exist as `~/.claude/settings.json`, then the target repo's `.claude/settings.json` and `.claude/settings.local.json`. Pass them to `jq -s 'reduce .[] as $s ({}; . * $s) | .sandbox | {enabled, allowLocalBinding: .network.allowLocalBinding}'`. When `enabled` is true and `allowLocalBinding` is not true, do not launch; tell the user to set `sandbox.network.allowLocalBinding: true` and stop. The setting applies without a restart.
+4. Observe the sandbox. Run ${CLAUDE_SKILL_DIR}/scripts/sandbox_probe.ts and handle `sandboxed`, `local_binding`, and `platform` from its output with the table in § Observing the sandbox. Do not infer the sandbox from settings files. A sandbox changed by a launch flag or a managed setting does not show up in them.
 5. Select the references to pin. Per `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain, select the related wiki pages and decision records. For the wiki, read the `matched` and `scenes` pages from `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <Issue terms> <paths likely touched> --scene implement`. Check the selected pages and records against the Issue and current code. Add the research reports the Issue references, per `${CLAUDE_SKILL_DIR}/../scoping/references/session.md` § Hand over research results. Only Markdown under `docs/research/`, `docs/wiki/`, and `docs/decisions/` can be a reference. Record each reference's blob with `git rev-parse HEAD:<path>` and the start commit with `git rev-parse HEAD`. When a needed report is not committed at HEAD, stop as an incomplete handover.
 6. When the request is to revise an existing PR, leave this Phase for § Revising an existing PR.
 
@@ -38,7 +38,33 @@ Branch on the return value's `status` or `stopped`. In every case, return the br
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `status: verified_local`  | A run with publishing off. Show the verified branch and worktree, and leave commit and publication to the human                                   |
 | `status: published_draft` | Check the published body and switch to ready per `${CLAUDE_SKILL_DIR}/references/publish.md`                                                      |
-| `stopped` (a stop reason) | Decide the handling from the table in § Stop conditions. Do not continue by changing stop conditions or limits, and do not relaunch automatically |
+| `stopped` (a stop reason) | Decide the handling from the table in § Stop conditions. Do not continue by changing stop conditions or limits, and do not relaunch automatically. When the returned `retry_from` is not empty, show the human § Resuming from the step that stopped |
+
+## Observing the sandbox
+
+Inside the macOS sandbox Chromium cannot start, and the capture stops as `capture-unavailable` after implementation and review have finished. When the sandbox denies a local bind, a check that opens a web server socket fails on every round, and the uncapped repair loop never ends. Stop both before launch.
+
+| Observation                                                                               | Handling                                                                                                             |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `sandboxed` is false                                                                      | Go on to the next step                                                                                               |
+| `sandboxed` is true. `.dotagents.json` has a `capture`, and `platform` is darwin          | Do not launch. Tell the user to run it again in a session with the sandbox off                                       |
+| `sandboxed` is true. `local_binding` is false                                             | Do not launch. Tell the user to set `sandbox.network.allowLocalBinding: true`. The setting applies without a restart |
+| `sandboxed` is true. Neither of the two rows above applies                                | Go on to the next step                                                                                               |
+
+## Resuming from the step that stopped
+
+A stop whose returned `retry_from` is not empty can resume from the step that stopped, once its cause is fixed. The finished implementation, check, and review results come back from cache, and only the step that stopped and the steps after it run. Whether to resume is the human's call.
+
+1. Fix the cause per the table in § Stop conditions. Do not touch the Issue or the worktree.
+2. In the same session that launched the run, call Workflow again. Pass the script path the launch result showed as `scriptPath`, and the runId in the launch result as `resumeFromRunId`. For args, add `retry: {from: "<retry_from>", attempt: <count>}` to the same args as the launch. attempt is how many times this step has been run again, 1 the first time.
+3. Handle the result with the table in Phase 3.
+
+| Situation                                     | Handling                                                                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `retry_from` is empty                         | Cannot resume. Follow the table in § Stop conditions                                                                      |
+| The session that launched the run has ended   | Cannot resume. The cache does not cross sessions. Launch anew                                                             |
+| The Issue changed (a new comment also counts) | Cannot resume. The resumed run stops as `requirements-changed`. Launch anew                                               |
+| The worktree changed                          | Cannot resume. The check and review results in the cache are not those of the current worktree. Launch anew              |
 
 ## Revising an existing PR
 
@@ -62,7 +88,8 @@ When the workflow stops, return `why` and the known URL, commit, and remaining c
 | `uncommitted-start-inputs` `no-config` `invalid-config` `remote-mismatch` `repository-mismatch` `repo-unreadable` `no-ci-checks`   | Go back to step 3 of Phase 1, fix `.dotagents.json` or the remote, then relaunch                                                                                                                                                                |
 | `invalid-reports` `start-commit-mismatch` `report-mismatch`                                                                        | Go back to step 5 of Phase 1, commit the references, record the start commit and blobs again, then relaunch                                                                                                                                     |
 | `branch-exists` `branch-pr-exists`                                                                                                 | Show the earlier run's branch, worktree, and PR. Deleting or reusing them is the human's call                                                                                                                                                   |
-| `human-decision-required`                                                                                                          | Show the returned findings and review, and ask for the human's decision on requirements, scope, or permission                                                                                                                                   |
+| `human-decision-required`                                                                                                          | Show the returned findings and review, and ask for the human's decision on requirements, scope, or permission. Write the decision into the Issue body through `/scoping`. A decision written in a comment reaches neither implementation nor review. After the body changes, launch anew |
+| `invalid-retry`                                                                                                                    | The resume request was not accepted. Check it against the returned `retry_from` and the steps in § Resuming from the step that stopped                                                                                                           |
 | `invalid-repair` `invalid-review`                                                                                                  | An agent's reply broke the contract. Show `why` and ask the human whether to relaunch                                                                                                                                                           |
 | `source-changed` `config-changed` `start-head-changed`                                                                             | The worktree, its `.dotagents.json`, or the checkout's HEAD changed mid-run. Find out who changed it before relaunching                                                                                                                         |
 | `target-unavailable` `prepare-unavailable` `worktree-failed` `setup-failed` `check-unavailable` `pulls-unreadable` `commit-failed` | An environment problem. Fix the cause from the returned log tail, then relaunch                                                                                                                                                                 |
