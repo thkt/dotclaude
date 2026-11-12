@@ -1,6 +1,6 @@
 # Tool Preferences
 
-CLI tool > built-in equivalent. WebFetch and WebSearch are hook-routed to the CLI its URL pattern matches.
+CLI tool > built-in equivalent. For web fetch and search, reach for the `use-cli-scout` skill first.
 
 ## Code search
 

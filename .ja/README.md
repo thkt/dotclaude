@@ -97,7 +97,7 @@ Claude Code の sandbox 機能は、自動的なパーミッション処理を�
 - macOS または Linux (Windows は未対応)
 - npm/npx 付きの Node.js
 - ripgrep (通常はプリインストール済み)
-- jq (現行フックで必須): `brew install jq`
+- jq (ステータスラインのスクリプトが使う): `brew install jq`
 
 #### セットアップ
 
@@ -143,7 +143,7 @@ build workflow は `gh` を sandbox 内で実行する。macOS で sandbox を�
 
 ### Hook ツール (推奨)
 
-このファミリーのバイナリは 1 つも `settings.json` に配線されておらず、自動実行されない (DR-0121, DR-0122)。品質保証は `hooks/` 配下の TypeScript hook と CI が持つ。インストールは任意で、下表はどのバイナリが何を担っていたかの記録である。
+このファミリーのバイナリは 1 つも `settings.json` に配線されておらず、自動実行されない (DR-0121, DR-0122)。`hooks/` 配下の TypeScript hook も配線していない (DR-0123)。品質保証は CI と workflow が持つ。インストールは任意で、下表はどのバイナリが何を担っていたかの記録である。
 
 ```bash
 brew tap thkt/tap

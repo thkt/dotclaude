@@ -25,7 +25,7 @@ Scope is judged by the path without the `.ja/` prefix.
 
 ## Symbols
 
-In `.ja` the textlint hook collapses the spaces around `/`. List a Latin-letter enumeration with commas when the collapsed form reads as a path, keep `CI/CD` and `try/catch` as they are, and wrap slash commands like `/fix` in inline code.
+In `.ja` textlint collapses the spaces around `/`. List a Latin-letter enumeration with commas when the collapsed form reads as a path, keep `CI/CD` and `try/catch` as they are, and wrap slash commands like `/fix` in inline code.
 
 | Symbol | Use                                           | Example                             |
 | ------ | --------------------------------------------- | ----------------------------------- |

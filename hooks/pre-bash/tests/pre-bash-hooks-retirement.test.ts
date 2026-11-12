@@ -1,10 +1,10 @@
 /// <reference types="node" />
 // hooks/pre-bash/body_proofread.py, client_identifier_gate.py and package_manager_rewrite.py
-// retire once settings.json's PreToolUse Bash hooks run their TypeScript replacements, the .ts
-// files the preceding units built (hooks/pre-bash/body_proofread.ts, client_identifier_gate.ts,
-// package_manager_rewrite.ts). This file guards the retirement itself, the same shape as
-// hooks/_lib/tests/security-hooks-retirement.test.ts: no tracked file still names the 3 retired
-// scripts, and settings.json's PreToolUse Bash commands name the .ts replacements. The walk and
+// are retired in favor of their TypeScript replacements (hooks/pre-bash/body_proofread.ts,
+// client_identifier_gate.ts, package_manager_rewrite.ts). This file guards the retirement
+// itself, the same shape as hooks/_lib/tests/security-hooks-retirement.test.ts: no tracked file
+// still names the 3 retired scripts, and the .ts replacements stay runnable. settings.json
+// registers no hook (DR-0123), so the replacements are named by their tracked path. The walk and
 // its historical-directory exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts),
 // reused here rather than re-derived; the exec-bit / shebang read reuses hooks/_lib/shebang_scope.ts
 // rather than a second copy of that check.
@@ -14,7 +14,6 @@ import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { SHEBANG, trackedEntries } from "../../_lib/shebang_scope.ts";
-import { hookCommands } from "../../_lib/tests/_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -27,9 +26,8 @@ const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
 const EXEC_MODE = "100755";
 
-// The 3 retired hooks/pre-bash/*.py scripts, matched by name alone: settings.json's own
-// PreToolUse Bash matcher check (below) is what verifies the replacement is wired in, this
-// predicate only asks whether the retired filename still shows up anywhere.
+// The 3 retired hooks/pre-bash/*.py scripts, matched by name alone: this predicate only asks
+// whether the retired filename still shows up anywhere.
 const RETIRED_NAMES = [
   "body_proofread.py",
   "client_identifier_gate.py",
@@ -71,34 +69,14 @@ test("T-310 no tracked file outside the historical directories names body_proofr
   );
 });
 
-/** The whitespace-delimited token inside `command` that names `stem`, or undefined when no
- * PreToolUse Bash command registers that stem at all. */
-function commandNaming(commands: string[], stem: string): string | undefined {
-  const pattern = new RegExp(`(^|[/\\s])${stem}\\.\\w+($|\\s)`);
-  return commands.find((command) => pattern.test(command));
-}
+const REPLACEMENTS = [
+  "hooks/pre-bash/body_proofread.ts",
+  "hooks/pre-bash/client_identifier_gate.ts",
+  "hooks/pre-bash/package_manager_rewrite.ts",
+];
 
-test("T-311 the three PreToolUse Bash commands this slice moves end in .ts, carry the exec bit and open with the bun shebang, read from settings.json rather than a copied literal", () => {
-  const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
-  const commands = hookCommands(settings, "PreToolUse", "Bash");
-
-  for (const stem of ["body_proofread", "client_identifier_gate", "package_manager_rewrite"]) {
-    const command = commandNaming(commands, stem);
-    assert.ok(
-      command,
-      `settings.json's PreToolUse Bash hooks carry no command naming ${stem}: ${commands.join(", ")}`,
-    );
-
-    const token = (command as string).split(/\s+/).find((piece) => piece.includes(stem));
-    assert.ok(token, `no whitespace-delimited token in the ${stem} command names it: ${command}`);
-    assert.ok(
-      (token as string).endsWith(".ts"),
-      `settings.json's ${stem} command does not end in .ts: ${token}`,
-    );
-
-    const relPath = (token as string).startsWith("~/.claude/")
-      ? (token as string).slice("~/.claude/".length)
-      : (token as string);
+test("T-311 the three pre-bash hook replacements are tracked .ts files that carry the exec bit and open with the bun shebang", () => {
+  for (const relPath of REPLACEMENTS) {
     const [entry] = trackedEntries(relPath);
     assert.ok(entry, `${relPath} is not a tracked file`);
     const [mode] = entry as [string, string];

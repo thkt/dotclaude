@@ -1,20 +1,19 @@
 /// <reference types="node" />
-// hooks/security/git_sandbox_guard.py, npm_install_guard.py and rm_to_trash.py retire once
-// settings.json's PreToolUse Bash hooks run their TypeScript replacements, the .ts files the
-// preceding units built (hooks/security/git_sandbox_guard.ts, npm_install_guard.ts,
-// rm_to_trash.ts). This file guards the retirement itself, the same shape as
-// hooks/_lib/tests/recall-index-retirement.test.ts: no tracked file still names the 3 retired
-// scripts, and settings.json's PreToolUse Bash commands name the .ts replacements. The walk and
-// its historical-directory exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts),
-// reused here rather than re-derived; the exec-bit / shebang read reuses hooks/_lib/shebang_scope.ts
-// rather than a second copy of that check.
+// hooks/security/git_sandbox_guard.py, npm_install_guard.py and rm_to_trash.py are retired in
+// favor of their TypeScript replacements (hooks/security/git_sandbox_guard.ts,
+// npm_install_guard.ts, rm_to_trash.ts). This file guards the retirement itself, the same shape
+// as hooks/_lib/tests/recall-index-retirement.test.ts: no tracked file still names the 3 retired
+// scripts, and the .ts replacements stay runnable. settings.json registers no hook (DR-0123), so
+// the replacements are named by their tracked path. The walk and its historical-directory
+// exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts), reused here rather than
+// re-derived; the exec-bit / shebang read reuses hooks/_lib/shebang_scope.ts rather than a
+// second copy of that check.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { SHEBANG, trackedEntries } from "../shebang_scope.ts";
-import { hookCommands } from "./_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -27,9 +26,8 @@ const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
 const EXEC_MODE = "100755";
 
-// The 3 retired hooks/security/*.py scripts, matched by name alone: settings.json's own
-// PreToolUse Bash matcher check (below) is what verifies the replacement is wired in, this
-// predicate only asks whether the retired filename still shows up anywhere.
+// The 3 retired hooks/security/*.py scripts, matched by name alone: this predicate only asks
+// whether the retired filename still shows up anywhere.
 const RETIRED_NAMES = ["git_sandbox_guard.py", "npm_install_guard.py", "rm_to_trash.py"];
 
 /** A retired name matched as a whole word: the character before it must not be a word / dot /
@@ -67,34 +65,14 @@ test("T-290 no tracked file outside the historical directories names git_sandbox
   );
 });
 
-/** The whitespace-delimited token inside `command` that names `stem`, or undefined when no
- * PreToolUse Bash command registers that stem at all. */
-function commandNaming(commands: string[], stem: string): string | undefined {
-  const pattern = new RegExp(`(^|[/\\s])${stem}\\.\\w+($|\\s)`);
-  return commands.find((command) => pattern.test(command));
-}
+const REPLACEMENTS = [
+  "hooks/security/git_sandbox_guard.ts",
+  "hooks/security/npm_install_guard.ts",
+  "hooks/security/rm_to_trash.ts",
+];
 
-test("T-291 the three PreToolUse Bash commands settings.json registers end in .ts, carry the exec bit and open with the bun shebang, read from settings.json rather than a copied literal", () => {
-  const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
-  const commands = hookCommands(settings, "PreToolUse", "Bash");
-
-  for (const stem of ["git_sandbox_guard", "npm_install_guard", "rm_to_trash"]) {
-    const command = commandNaming(commands, stem);
-    assert.ok(
-      command,
-      `settings.json's PreToolUse Bash hooks carry no command naming ${stem}: ${commands.join(", ")}`,
-    );
-
-    const token = (command as string).split(/\s+/).find((piece) => piece.includes(stem));
-    assert.ok(token, `no whitespace-delimited token in the ${stem} command names it: ${command}`);
-    assert.ok(
-      (token as string).endsWith(".ts"),
-      `settings.json's ${stem} command does not end in .ts: ${token}`,
-    );
-
-    const relPath = (token as string).startsWith("~/.claude/")
-      ? (token as string).slice("~/.claude/".length)
-      : (token as string);
+test("T-291 the three security hook replacements are tracked .ts files that carry the exec bit and open with the bun shebang", () => {
+  for (const relPath of REPLACEMENTS) {
     const [entry] = trackedEntries(relPath);
     assert.ok(entry, `${relPath} is not a tracked file`);
     const [mode] = entry as [string, string];

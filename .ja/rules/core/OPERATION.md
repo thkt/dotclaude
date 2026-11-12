@@ -47,6 +47,7 @@ Bash のエラー文言と出力は真の原因を隠すことがある。権限
 | macOS で `mktemp` が `$TMPDIR` を無視する                                                    | `mktemp -d "${TMPDIR:-/tmp}/name-XXXXXX"` とテンプレートを渡す                                                                    |
 | `git stash push <pathspec>` や `git log --since=<date>` が絞れているように見えて絞れていない | pathspec 外のステージ済み変更も stash され、時刻のない日付は実行時刻に落ちる。`--name-only` か時刻付きの `--since` で突き合わせる |
 | シェルの `timeout <cmd>` が `command not found` になる                                       | macOS の zsh に `timeout` はない。Bash ツール自身の `timeout` (ms) 引数を渡す                                                     |
+| `rm`, `rmdir`, `unlink`, `shred`, `find -delete` が権限ルールで拒否される                    | 削除はゴミ箱へ移す。`trash <path>` を使う                                                                                         |
 
 ## デバッグ調査プロトコル
 

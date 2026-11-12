@@ -29,7 +29,6 @@
 | `scout`, `recall`, `sae`, `xr`              | Rust CLI                                | `brew install thkt/tap/{tool}`  |
 | `ast-grep`                                  | Rust バイナリ                           | `brew install ast-grep`         |
 | `codegraph`                                 | mise shim 経由のバイナリ                | mise                            |
-| `hooks/herdr-agent-state.sh`                | herdr が生成したファイル                | herdr (再インストールで上書き) |
 | `textlint`, `oxlint`, `oxfmt`, `biome`      | devDependencies                         | `bun install`                   |
 | `ruff`, `rumdl`                             | Python 製 linter                        | pipx (CI は版固定)              |
 | Amphetamine                                 | macOS アプリ                            | 外部アプリ                      |
@@ -64,7 +63,7 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 
 ### 配線
 
-以下は `settings.json` の登録順である。同一 matcher 内は上から順に走り、`if` 条件を満たさない hook は起動しない。`if` 条件を持つ 4 スクリプトは `Write` 用と `Edit` 用に 2 回ずつ登録されており、表ではその対を 1 行に畳んでいる。`EnterPlanMode` と `WebFetch`/`WebSearch` はスクリプトを持たない。deny 封筒を直接 `echo` する登録であり、代替手段 (`/think` と `scout` CLI) を理由文で示す。
+`settings.json` は hook を 1 つも登録していない (DR-0123)。下表は各スクリプトが最後に持っていた登録の記録で、配線し直すときの出発点になる。並びは当時の登録順である。同一 matcher 内は上から順に走り、`if` 条件を満たさない hook は起動しない。`if` 条件を持つ 4 スクリプトは `Write` 用と `Edit` 用に 2 回ずつ登録され、表ではその対を 1 行に畳んでいる。
 
 | イベント          | matcher            | 実体                                            | if 条件            | timeout |
 | ----------------- | ------------------ | ----------------------------------------------- | ------------------ | ------- |
@@ -76,13 +75,10 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.ts`                   | なし               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | なし               | 30      |
 | PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.ts`                         | `**/*.rs`          | 60      |
-| PreToolUse        | `EnterPlanMode`    | インライン `echo` による deny                   | なし               | なし    |
-| PreToolUse        | `WebFetch\|WebSearch` | インライン `echo` による deny                | なし               | なし    |
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
 | PostToolUse       | `Write\|Edit`      | `edit/textlint_fix.ts`                          | `**/*.md`          | 60      |
 | PostToolUse       | `Write\|Edit`      | `edit/mirror_prose_guard.ts`                    | `**/.ja/**`        | 10      |
 | PostToolUse       | `*`                | `integrations/amphetamine_agent_session.ts background` | なし        | 15      |
-| SessionStart      | `^(startup\|resume\|clear\|compact\|fork)$` | `herdr-agent-state.sh session` | なし               | 10      |
 | UserPromptSubmit  | なし               | `integrations/amphetamine_agent_session.ts acquire` | なし           | 15      |
 | UserPromptSubmit  | なし               | `codegraph prompt-hook`                         | なし               | 10      |
 | Stop              | なし               | `lifecycle/failure-alert.sh stop`               | なし               | 60      |
@@ -110,7 +106,6 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `recall_index.ts`               | SessionStart            | recall の横断索引をバックグラウンドで追いつかせる。いまは SessionStart に配線していない | fail-open |
 | `failure-alert.sh`              | Stop / StopFailure      | `end_turn` 以外の終了で音を鳴らす。サブエージェントは対象外       | fail-open |
 | `statusline.sh`                 | `statusLine` キー       | モデル名と使用率を描画する。部分表示を許容。`hooks` マップではなく最上位の `statusLine` に登録する | fail-open |
-| `herdr-agent-state.sh`          | SessionStart            | herdr の環境変数が揃うときだけ状態を送る                          | fail-open |
 
 `hooks/_lib/` の共有モジュールは、複数の hook が同じ知識を持たないための置き場である。
 

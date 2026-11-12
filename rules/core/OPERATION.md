@@ -47,6 +47,7 @@ A Bash error's wording and the shape of its output can hide the real cause. A pe
 | macOS `mktemp` ignores `$TMPDIR`                                               | Pass a template: `mktemp -d "${TMPDIR:-/tmp}/name-XXXXXX"`                                                                                                   |
 | `git stash push <pathspec>` or `git log --since=<date>` looks scoped but isn't | A pathspec also stashes staged changes outside it, and a missing timestamp falls back to run time. Cross-check with `--name-only` or a timestamped `--since` |
 | Shell `timeout <cmd>` errors `command not found`                               | macOS zsh has no `timeout` binary. Pass the Bash tool's own `timeout` (ms) parameter instead                                                                 |
+| A permission rule denies `rm`, `rmdir`, `unlink`, `shred`, or `find -delete`   | Deletion goes to the Trash. Run `trash <path>`                                                                                                               |
 
 ## Debug Investigation Protocol
 

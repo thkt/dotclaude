@@ -113,7 +113,7 @@ permission handling, reducing approval fatigue while maintaining safety.
 - macOS or Linux (Windows not yet supported)
 - Node.js with npm/npx
 - ripgrep (typically pre-installed)
-- jq (required by the current hooks): `brew install jq`
+- jq (used by the status line script): `brew install jq`
 
 #### Setup
 
@@ -160,8 +160,9 @@ The build workflow runs `gh` inside the sandbox. On macOS with the sandbox enabl
 ### Hook Tools (Recommended)
 
 `settings.json` wires not one binary in this family, so none of them runs
-automatically (DR-0121, DR-0122). The TypeScript hooks under `hooks/` and CI
-carry the quality enforcement. Installing them is optional, and the table below
+automatically (DR-0121, DR-0122). The TypeScript hooks under `hooks/` are not
+wired either (DR-0123). CI and the workflows carry the quality enforcement.
+Installing them is optional, and the table below
 records what each one carried.
 
 ```bash

@@ -5,22 +5,21 @@
 // prompting case, test_prompting_decided_puts_scribe_in_additional_context), T-391 (the two "no
 // output" cases, test_not_prompting_decided_stdout_is_empty and
 // test_failed_tool_response_does_not_prompt), and T-392 (the executable-bit check,
-// test_the_hook_file_is_executable, plus the settings.json registration check,
-// test_settings_json_registers_hook_under_posttooluse_bash). The hook runs as a real subprocess
+// test_the_hook_file_is_executable). settings.json registers no hook (DR-0123), so the
+// registration check is not carried over. The hook runs as a real subprocess
 // against the real scribe_trigger.ts module; only gh, the external system should_prompt calls
 // out to, is stubbed -- the same shape scribe_prompt_test.py and
 // hooks/lifecycle/tests/recall-index.test.ts both use.
 import assert from "node:assert/strict";
-import { accessSync, chmodSync, constants, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { accessSync, chmodSync, constants, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, join } from "node:path";
+import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { run } from "../../_lib/tests/_hook-harness.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const HOOK = join(HERE, "..", "scribe_prompt.ts");
-const SETTINGS = join(HERE, "..", "..", "..", "settings.json");
 
 // should_prompt's three gh calls in the order hooks/_lib/scribe_trigger.ts makes them: the
 // unmerged-PR check, the last-scribe-merge cursor, then the new-input count. Values match
@@ -147,32 +146,8 @@ test("T-391 a non-triggering command produces no output", () => {
   );
 });
 
-test("T-392 settings.json registers this hook under the PostToolUse Bash matcher, read from settings.json rather than restated", (t) => {
-  // settings.json runs the path directly, so a hook without the exec bit never starts and the
-  // miss shows up as nothing happening rather than as an error -- scribe_prompt_test.py folds
-  // this same check alongside the registration one.
+test("T-392 the hook file carries the exec bit", () => {
+  // A registration runs the path directly, so a hook without the exec bit never starts and the
+  // miss shows up as nothing happening rather than as an error.
   accessSync(HOOK, constants.X_OK);
-
-  let settingsText: string;
-  try {
-    settingsText = readFileSync(SETTINGS, "utf8");
-  } catch {
-    // .gitignore has settings.json untracked, so a checkout without one (CI) has nothing to
-    // check -- scribe_prompt_test.py's registration test skips the same way for the same reason.
-    t.skip("settings.json は追跡外で、このチェックアウトには無い");
-    return;
-  }
-  const settings = JSON.parse(settingsText) as {
-    hooks: { PostToolUse: { matcher?: string; hooks: { command?: string }[] }[] };
-  };
-  const commands = settings.hooks.PostToolUse.filter((entry) => entry.matcher === "Bash")
-    .flatMap((entry) => entry.hooks)
-    .map((hook) => hook.command ?? "");
-  // Read off HOOK itself rather than restating the filename as its own literal, so a rename
-  // cannot leave this assertion stale against the file it is meant to track.
-  const hookName = basename(HOOK);
-  assert.ok(
-    commands.some((command) => command.includes(hookName)),
-    `post-bash/${hookName} が settings.json の PostToolUse/Bash に無い: ${commands.join(", ")}`,
-  );
 });

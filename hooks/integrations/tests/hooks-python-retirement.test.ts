@@ -1,20 +1,18 @@
 /// <reference types="node" />
 // hooks/_lib/scribe_trigger.py, hooks/_lib/command_scan.py, hooks/_lib/hook_harness.py,
-// hooks/post-bash/scribe_prompt.py and hooks/integrations/amphetamine_agent_session.py retire
-// once settings.json fires only their TypeScript replacements: scribe_trigger.ts / scribe_prompt.ts
-// (units U-001/U-002, already wired for scribe_prompt.ts) and amphetamine_agent_session.ts
-// (units U-003/U-004, not yet wired). This file guards the retirement itself, the same shape as
-// hooks/_lib/tests/recall-index-retirement.test.ts and hooks/_lib/tests/security-hooks-retirement.test.ts:
-// no tracked file still names the 5 retired scripts, and the events settings.json fires the
-// amphetamine hook from carry the .ts command with the argv each event's action expects. The walk
-// and its historical-directory exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts),
-// reused here rather than re-derived.
+// hooks/post-bash/scribe_prompt.py and hooks/integrations/amphetamine_agent_session.py are
+// retired in favor of their TypeScript replacements: scribe_trigger.ts / scribe_prompt.ts
+// (units U-001/U-002) and amphetamine_agent_session.ts (units U-003/U-004). This file guards the
+// retirement itself, the same shape as hooks/_lib/tests/recall-index-retirement.test.ts and
+// hooks/_lib/tests/security-hooks-retirement.test.ts: no tracked file still names the 5 retired
+// scripts. settings.json registers no hook (DR-0123), so no event wiring is checked here. The
+// walk and its historical-directory exclusions are offendersAmong
+// (workflows/_lib/tests/_retirement.ts), reused here rather than re-derived.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { hookCommands } from "../../_lib/tests/_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -25,9 +23,8 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
-// The 5 retired hooks/**/*.py scripts, matched by name alone: settings.json's own event/argv
-// check (below) is what verifies the .ts replacement is wired in, this predicate only asks
-// whether the retired filename still shows up anywhere.
+// The 5 retired hooks/**/*.py scripts, matched by name alone: this predicate only asks whether
+// the retired filename still shows up anywhere.
 const RETIRED_NAMES = [
   "scribe_trigger.py",
   "command_scan.py",
@@ -69,44 +66,4 @@ test("T-401 no tracked file outside the historical directories names the five re
     `files still naming a retired .py (${RETIRED_NAMES.join(", ")}) ` +
       `(docs/decisions/ and docs/research/ are kept as history, not counted)\n${offenders.join(", ")}`,
   );
-});
-
-/** The command among `commands` whose executable token names `stem`, regardless of extension. */
-function commandNaming(commands: string[], stem: string): string | undefined {
-  const pattern = new RegExp(`(^|[/\\s])${stem}\\.\\w+($|\\s)`);
-  return commands.find((command) => pattern.test(command));
-}
-
-// The event each of settings.json's 3 amphetamine_agent_session registrations fires from, paired
-// with the argv (action) that event's own contract expects: PostToolUse's "*" matcher calls
-// `background`, Stop calls `release`, UserPromptSubmit calls `acquire`
-// (hooks/integrations/amphetamine_agent_session.py's module docstring).
-const EVENT_ACTIONS: Array<[event: string, action: string]> = [
-  ["PostToolUse", "background"],
-  ["Stop", "release"],
-  ["UserPromptSubmit", "acquire"],
-];
-
-test("T-400 the three events settings.json registers for the amphetamine hook pass the argv each event's action expects, read from settings.json", () => {
-  const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
-
-  for (const [event, action] of EVENT_ACTIONS) {
-    const commands = hookCommands(settings, event);
-    const command = commandNaming(commands, "amphetamine_agent_session");
-    assert.ok(
-      command,
-      `settings.json's ${event} hooks carry no command naming amphetamine_agent_session: ${commands.join(", ")}`,
-    );
-
-    const [token, argv] = (command as string).trim().split(/\s+/);
-    assert.ok(
-      token.endsWith(".ts"),
-      `settings.json's ${event} amphetamine command does not end in .ts: ${token}`,
-    );
-    assert.equal(
-      argv,
-      action,
-      `settings.json's ${event} amphetamine command must pass argv "${action}", got "${argv}"`,
-    );
-  }
 });
