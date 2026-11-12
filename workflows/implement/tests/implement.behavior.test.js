@@ -4,7 +4,7 @@
 // CI classification, and the run rows.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { runWorkflow } from "../../_lib/run-workflow.ts";
 
 const implementJs = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "implement.js");
+const writeBodyTs = join(dirname(fileURLToPath(import.meta.url)), "..", "write-body.ts");
 const repo = "/abs/target-repo";
 // The verification-loop tests stop at verified_local; publishArgs takes the default publish path.
 const args = { issue: "12", repo, publish: false };
@@ -106,6 +107,8 @@ const FILLED = {
   },
   prepare: { config_blob: CONFIG_BLOB, checkout_head: BASE_SHA },
   snapshot: { config_blob: CONFIG_BLOB },
+  // write-body.ts read the body back from the transcript, so the agent copied nothing.
+  body: { extract_exit: 0 },
 };
 const KIND_BY_PROPERTY = [
   ["run_id", "record"],
@@ -1255,35 +1258,29 @@ const stepCommand = (prompt, step) => {
   return line.slice(line.indexOf("`") + 1, line.lastIndexOf("`:"));
 };
 
-test("the body commands write a body carrying half-width kana, quotes, and backticks byte for byte, and the readback projection digests the published body the same way", async () => {
+// The body step's commands run for real against one accepted review. `write` decides how the file
+// gets written: by write-body.ts from a transcript, or by the block the agent would copy.
+const runBodyStep = async (write) => {
   const dir = mkdtempSync(join(tmpdir(), "implement-body-"));
   const localFile = join(dir, "pr.md");
   const tricky = 'のーと and ﾉｰﾄ give 0; `　pen　` trims; it\'s "quoted" $HOME \\ back';
+  const swap = (cmd) =>
+    cmd.replace(`'${repo}/.claude/worktrees/implement-12-pr.md'`, `'${localFile}'`);
   let wrote = "";
   let reportedDigest = "";
-  const { result } = await run(
+  const { result, rows } = await run(
     {
       review: [
         (_, { tree }) => ({ ...reviewReply(tree), assessments: { ...assessments, tests: tricky } }),
       ],
       body: [
         (prompt) => {
-          const swap = (cmd) =>
-            cmd.replace(`'${repo}/.claude/worktrees/implement-12-pr.md'`, `'${localFile}'`);
-          // The agent copies only ASCII, which it cannot rewrite the way it rewrote ﾉｰﾄ into ノート.
-          assert.match(bodyBlock(prompt), /^[\x20-\x7e\n]+$/);
-          assert.ok(
-            !bodyBlock(prompt)
-              .split("\n")
-              .some((l) => l.length > 120),
-            "short lines",
-          );
-          execSync(swap(bodyBlock(prompt)), { shell: "/bin/bash" });
+          const exits = write({ prompt, dir, localFile, swap });
           wrote = readFileSync(localFile, "utf8");
-          reportedDigest = execSync(swap(stepCommand(prompt, 2)), { shell: "/bin/bash" })
+          reportedDigest = execSync(swap(stepCommand(prompt, 3)), { shell: "/bin/bash" })
             .toString()
             .trim();
-          return { write_exit: 0, body_digest: reportedDigest };
+          return { ...exits, body_digest: reportedDigest };
         },
       ],
       readback: [
@@ -1301,6 +1298,64 @@ test("the body commands write a body carrying half-width kana, quotes, and backt
   assert.ok(wrote.includes(tricky), "the file carries the assessment exactly");
   assert.equal(reportedDigest, digestOf(wrote));
   assert.equal(result.status, "published_draft", `${result.stopped}: ${result.why}`);
+  return { result, rows };
+};
+
+// The agent that copied about 10 KB of base64 changed one or two characters, and the digest check
+// stopped the run before publication. The first command reads the body out of the agent's own prompt,
+// which Claude Code keeps in the agent's transcript, so no character passes through the model.
+test("the body step's first command writes the body from a transcript holding the agent's own prompt, and the run records that nothing was copied", async () => {
+  const { result, rows } = await runBodyStep(({ prompt, dir, localFile }) => {
+    // The transcript as the harness stores it: a frame line, then the computed text indented.
+    const agents = join(dir, "projects", "-abs-target-repo", "session-1", "subagents", "workflows", "wf_1");
+    mkdirSync(agents, { recursive: true });
+    const stored = `[Workflow harness — computed task]\n${prompt.replace(/^/gm, "  ")}`;
+    writeFileSync(
+      join(agents, "agent-a1.jsonl"),
+      `${JSON.stringify({ type: "user", message: { role: "user", content: stored } })}\n`,
+    );
+    // The command names the bundled script, the body's digest, and the file. Run this tree's script.
+    const [, wanted, target] = / '([0-9a-f]{8}:\d+)' '([^']+)'$/.exec(stepCommand(prompt, 1));
+    assert.equal(target, `${repo}/.claude/worktrees/implement-12-pr.md`);
+    assert.match(stepCommand(prompt, 1), /workflows\/implement\/write-body\.ts/);
+    execFileSync("node", [writeBodyTs, wanted, localFile, join(dir, "projects")]);
+    return { extract_exit: 0, write_exit: 0 };
+  });
+  assert.equal(result.body_transport, "transcript");
+  assert.equal(rows.at(-1).body_transport, "transcript");
+});
+
+test("when the body cannot be read back, the block the agent copies writes a body carrying half-width kana, quotes, and backticks byte for byte, and the run records the copy", async () => {
+  const { result, rows } = await runBodyStep(({ prompt, swap }) => {
+    // The agent copies only ASCII, which it cannot rewrite the way it rewrote ﾉｰﾄ into ノート.
+    assert.match(bodyBlock(prompt), /^[\x20-\x7e\n]+$/);
+    assert.ok(
+      !bodyBlock(prompt)
+        .split("\n")
+        .some((l) => l.length > 120),
+      "short lines",
+    );
+    execSync(swap(bodyBlock(prompt)), { shell: "/bin/bash" });
+    return { extract_exit: 1, write_exit: 0 };
+  });
+  assert.equal(result.body_transport, "copied");
+  assert.equal(rows.at(-1).body_transport, "copied");
+});
+
+test("a body that differs from the generated one stops as pr-body-mismatch whichever way it was written, and the stop says which", async () => {
+  for (const [extract_exit, transport] of [
+    [0, "transcript"],
+    [1, "copied"],
+  ]) {
+    const { result, rows, kinds } = await run(
+      { body: [{ extract_exit, write_exit: 0, body_digest: digestOf("rewritten") }] },
+      publishArgs,
+    );
+    assert.equal(result.stopped, "pr-body-mismatch", transport);
+    assert.equal(result.body_transport, transport);
+    assert.equal(rows.at(-1).body_transport, transport);
+    assert.ok(!kinds.some((k) => WRITES.includes(k)), transport);
+  }
 });
 
 // ---- Ship and CI ----

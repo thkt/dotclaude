@@ -71,9 +71,10 @@ const parseJsonText = (value) => {
 const counts = { check_runs: 0, review_rounds: 0, repairs: 0, captures: 0, ci_rounds: 0 };
 let runId = "";
 let recordedBranch = "";
-// 公開で分かった commit・PR URL・PR 全体の基点・本文の digest。停止した行にも載せ、人が実際の状態を照合する手掛かりにする。
+// 公開で分かった commit・PR URL・PR 全体の基点・本文の digest と、本文をファイルへ渡した方法。停止した行にも載せ、人が実際の状態を照合する手掛かりにする。
+// body_transport は transcript (write-body.ts が読み出した) か copied (agent が写した)。
 // 後の修正は published_draft 行の commit と base_sha から、公開した head と PR 全体の基点を取る。
-const published = { commit: "", url: "", base_sha: "", body_digest: "" };
+const published = { commit: "", url: "", base_sha: "", body_digest: "", body_transport: "" };
 const RECORD_SCHEMA = closed({ path: str, run_id: str });
 const recordRun = async (reason) => {
   const payload = {
@@ -1696,27 +1697,37 @@ const base64Lines = (text) => {
 // agent に渡すコマンドを 1 行に保つため、関数の source の改行をつぶして埋め込む。
 const DIGEST_SRC = String(digest).replace(/\s*\n\s*/g, " ");
 const DIGEST_JS = `const digest = ${DIGEST_SRC}; console.log(digest(require("fs").readFileSync(process.argv[1], "utf8")))`;
+// 本文は、agent の transcript に残るこの prompt から write-body.ts が読み出して書く。agent が数 KB の base64 を写すと
+// 1〜2 文字を取り違え、digest の照合で止まった。下のブロックは write-body.ts が読む原本で、読み出せない host
+// (transcript を残さない Codex の runner) では agent が写す。
 const writeBlock = [
   `base64 -d > ${shq(bodyFile)} <<'PR_BODY_B64'`,
   ...base64Lines(body),
   "PR_BODY_B64",
 ].join("\n");
 const written = await agent(
-  `PR 本文をファイルに書き、その digest を返す。base64 の行は解読・折り返し・編集をせず、そのまま写す。要約・判断をしない。\n` +
-    `1. 次のブロックを 1 回の Bash 呼び出しとしてそのまま実行し、終了コードを write_exit に入れる。\n` +
+  `PR 本文をファイルに書き、その digest を返す。要約・判断をしない。\n` +
+    `1. \`node ${bundled("workflows/implement/write-body.ts")} ${shq(digest(body))} ${shq(bodyFile)}\`: 終了コードを extract_exit に入れる。このコマンドは、harness が保存したこの prompt から本文を読み出してファイルに書くので、手で写す文字は無い。0 で終わったら write_exit を 0 にして手順 3 へ進む。\n` +
+    `2. 手順 1 が 0 以外で終わったときだけ、次のブロックを 1 回の Bash 呼び出しとしてそのまま実行し、終了コードを write_exit に入れる。base64 の行は解読・折り返し・編集をせず、そのまま写す。\n` +
     "```sh\n" +
     writeBlock +
     "\n```\n" +
-    `2. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: stdout を body_digest に入れる。`,
+    `3. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: stdout を body_digest に入れる。`,
   {
     label: "body",
     phase: "Ship",
     agentType: "general-purpose",
-    schema: closed({ write_exit: int, body_digest: str }),
-    // 数 KB の base64 を一字も落とさずに写す役なので、haiku でなく sonnet に任せる。
+    schema: closed({ extract_exit: int, write_exit: int, body_digest: str }),
+    // 本文を読み出せなかったときは、数 KB の base64 を一字も落とさずに写す役になるので、haiku でなく sonnet に任せる。
     model: "sonnet",
   },
 );
+// agent が写した本文は文字を取り違えることがあるので、どちらで書いたかを戻り値と実行記録に残す。
+if (written) {
+  published.body_transport = written.extract_exit === 0 ? "transcript" : "copied";
+  if (written.extract_exit !== 0)
+    log(`PR 本文を transcript から読み出せず (write-body.ts の終了コード ${written.extract_exit})、agent が base64 を写した。`);
+}
 if (!written || written.write_exit !== 0 || !sameBody(written.body_digest, body)) {
   return await shipStop(
     "pr-body-mismatch",

@@ -75,10 +75,11 @@ const parseJsonText = (value) => {
 const counts = { check_runs: 0, review_rounds: 0, repairs: 0, captures: 0, ci_rounds: 0 };
 let runId = "";
 let recordedBranch = "";
-// The commit, PR URL, PR-wide base, and body digest publication has learned. Stopped rows carry them too, so a human
+// The commit, PR URL, PR-wide base, and body digest publication has learned, and how the body reached its file:
+// body_transport is transcript (write-body.ts read it back) or copied (the agent copied it). Stopped rows carry them too, so a human
 // can reconcile the actual state from the row. A later revision takes the published head and the PR-wide base from
 // the commit and base_sha of a published_draft row.
-const published = { commit: "", url: "", base_sha: "", body_digest: "" };
+const published = { commit: "", url: "", base_sha: "", body_digest: "", body_transport: "" };
 const RECORD_SCHEMA = closed({ path: str, run_id: str });
 const recordRun = async (reason) => {
   const payload = {
@@ -1733,27 +1734,39 @@ const base64Lines = (text) => {
 // The function's source is embedded with its line breaks collapsed, so the agent's command stays on one line.
 const DIGEST_SRC = String(digest).replace(/\s*\n\s*/g, " ");
 const DIGEST_JS = `const digest = ${DIGEST_SRC}; console.log(digest(require("fs").readFileSync(process.argv[1], "utf8")))`;
+// write-body.ts reads the body back from this prompt, which stays in the agent's transcript, and writes it. An
+// agent copying a few KB of base64 changed one or two characters, and the digest check stopped the run. The block
+// below is what write-body.ts reads, and on a host where it cannot (the Codex runner, which keeps no transcript)
+// the agent copies it.
 const writeBlock = [
   `base64 -d > ${shq(bodyFile)} <<'PR_BODY_B64'`,
   ...base64Lines(body),
   "PR_BODY_B64",
 ].join("\n");
 const written = await agent(
-  `Write the PR body to a file and return its digest. Copy the base64 lines unchanged; do not decode, re-wrap, or edit them. Do not summarize or judge.\n` +
-    `1. Run the block below as one Bash call, exactly as written, and put its exit code in write_exit.\n` +
+  `Write the PR body to a file and return its digest. Do not summarize or judge.\n` +
+    `1. \`node ${bundled("workflows/implement/write-body.ts")} ${shq(digest(body))} ${shq(bodyFile)}\`: put its exit code in extract_exit. This command reads the body out of this prompt as the harness stored it and writes the file, so nothing is copied by hand. When it exits 0, set write_exit to 0 and go to step 3.\n` +
+    `2. Only when step 1 exited non-zero, run the block below as one Bash call, exactly as written, and put its exit code in write_exit. Copy the base64 lines unchanged; do not decode, re-wrap, or edit them.\n` +
     "```sh\n" +
     writeBlock +
     "\n```\n" +
-    `2. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: put its stdout in body_digest.`,
+    `3. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: put its stdout in body_digest.`,
   {
     label: "body",
     phase: "Ship",
     agentType: "general-purpose",
-    schema: closed({ write_exit: int, body_digest: str }),
-    // This role copies a few KB of base64 without dropping a character, so sonnet takes it rather than haiku.
+    schema: closed({ extract_exit: int, write_exit: int, body_digest: str }),
+    // When the body cannot be read back, this role copies a few KB of base64 without dropping a character, so
+    // sonnet takes it rather than haiku.
     model: "sonnet",
   },
 );
+// A body the agent copied can carry a changed character, so the return value and the run row say which way it was written.
+if (written) {
+  published.body_transport = written.extract_exit === 0 ? "transcript" : "copied";
+  if (written.extract_exit !== 0)
+    log(`The PR body could not be read back from the transcript (write-body.ts exited ${written.extract_exit}), and the agent copied the base64.`);
+}
 if (!written || written.write_exit !== 0 || !sameBody(written.body_digest, body)) {
   return await shipStop(
     "pr-body-mismatch",
