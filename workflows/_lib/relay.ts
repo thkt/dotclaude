@@ -27,9 +27,11 @@
 //   {...fields, relay_check}    every step ran. relay_check is the digest of the fields, so the
 //                               script can tell when the agent changed a character returning them
 //   {"relay_continue": true}    the next step may not fit in this call. Run the same command again
-//   {"relay_error": "..."}      no spec with that digest was found, the file's digest differs, the
-//                               line is longer than a Bash call returns, or the run itself failed
-// exit 0, or 1 on relay_error.
+//   {"relay_missing": "..."}    no spec with that digest was found, or the file's digest differs. No
+//                               step ran, and the agent hands the spec over in a file
+//   {"relay_error": "..."}      the line is longer than a Bash call returns, or the run itself failed.
+//                               Steps may have run, so the agent does not run the spec again
+// exit 0, or 1 on relay_missing and relay_error.
 //
 // A call belongs to the agent whose transcript carried the spec. That agent running the command
 // again goes on from where its last call stopped, or gets the same line once every step has run,
@@ -86,6 +88,10 @@ const publicFields = (fields: Fields): Fields =>
 
 const lastLines = (text: string, count: number): string =>
   text.replace(/\n+$/, "").split("\n").slice(-count).join("\n");
+// A tail is cut by characters too. Eighty lines of a minified error or a progress bar drawn with carriage returns
+// are longer than a Bash call returns, and a failing check has to reach the repair with its tail.
+const TAIL_MAX_CHARS = 6000;
+const tailOf = (text: string, count: number): string => lastLines(text, count).slice(-TAIL_MAX_CHARS);
 
 interface Ran {
   exit: number;
@@ -97,9 +103,29 @@ interface Ran {
 
 // The command runs in its own process group. A timeout ends the whole group, so a compound
 // command leaves no child writing into the worktree after the step is reported.
+// A step runs in its own process group, so a signal sent to this process does not reach it. The group of the
+// running step is ended first, and nothing keeps writing into the worktree after this process is gone.
+let runningGroup = 0;
+const endRunningGroup = () => {
+  try {
+    if (runningGroup) process.kill(-runningGroup, "SIGTERM");
+  } catch {
+    // already gone
+  }
+};
+const endGroupOnSignal = () => {
+  for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) {
+    process.on(name, () => {
+      endRunningGroup();
+      process.exit(143);
+    });
+  }
+};
+
 const runStep = (step: Step): Promise<Ran> =>
   new Promise((resolve) => {
     const child = spawn("/bin/sh", ["-c", step.sh], { cwd: step.cwd, detached: true });
+    runningGroup = child.pid ?? 0;
     const ran: Ran = { exit: -1, timedOut: false, stdout: "", combined: "" };
     const signal = (name: NodeJS.Signals) => {
       try {
@@ -124,10 +150,12 @@ const runStep = (step: Step): Promise<Ran> =>
     child.stdin.end(step.stdin ?? "");
     child.on("error", () => {
       clearTimeout(timer);
+      runningGroup = 0;
       resolve(ran);
     });
     child.on("close", (code) => {
       clearTimeout(timer);
+      runningGroup = 0;
       resolve({ ...ran, exit: ran.timedOut || code === null ? -1 : code });
     });
   });
@@ -140,7 +168,7 @@ const pick = (ran: Ran, source: string): Value => {
   if (source === "last") return lastLines(ran.stdout, 1);
   const tail = /^(fail_)?tail:(\d+)$/.exec(source);
   if (!tail) throw new Error(`unknown source "${source}"`);
-  return tail[1] && ran.exit === 0 ? "" : lastLines(ran.combined, Number(tail[2]));
+  return tail[1] && ran.exit === 0 ? "" : tailOf(ran.combined, Number(tail[2]));
 };
 
 const holds = (when: Fields | undefined, fields: Fields): boolean =>
@@ -190,7 +218,7 @@ const flag = (argv: string[], name: string): string | undefined => {
   return at < 0 ? undefined : argv[at + 1];
 };
 
-type State = { next: number; fields: Fields } | { done: string };
+type State = { next: number; fields: Fields } | { done: string; code?: number };
 const fresh = (path: string): boolean =>
   existsSync(path) && Date.now() - statSync(path).mtimeMs <= STATE_MAX_AGE_MS;
 // The step ran, so a file that cannot be written must not cost its result.
@@ -228,7 +256,7 @@ const runCall = async (
   const state: State = fresh(statePath)
     ? (JSON.parse(readFileSync(statePath, "utf8")) as State)
     : { next: 0, fields: { ...spec.defaults } };
-  if ("done" in state) return { line: state.done, code: 0 };
+  if ("done" in state) return { line: state.done, code: state.code ?? 0 };
   if (state.next === 0) rmSync(keptPath, { force: true });
 
   const started = Date.now();
@@ -254,7 +282,10 @@ const runCall = async (
   const line = `${JSON.stringify({ ...shown, relay_check: digest(canonical(shown)) })}\n`;
   if (line.length > MAX_LINE) {
     const relay_error = `the result is ${line.length} characters, more than a Bash call returns. A field has to be bounded by its command`;
-    return { line: `${JSON.stringify({ relay_error })}\n`, code: 1 };
+    const refused = `${JSON.stringify({ relay_error })}\n`;
+  // The steps ran. The same caller running the command again gets this line and runs nothing a second time.
+    keep(statePath, JSON.stringify({ done: refused, code: 1 }));
+    return { line: refused, code: 1 };
   }
   keep(statePath, JSON.stringify({ done: line }));
   keep(keptPath, line);
@@ -278,7 +309,10 @@ async function main(argv: string[]): Promise<number> {
     return 0;
   }
   const found = findSpec(argv, wanted);
-  if (typeof found === "string") return fail(found);
+  if (typeof found === "string") {
+    process.stdout.write(`${JSON.stringify({ relay_missing: found })}\n`);
+    return 1;
+  }
   const statePath = join(tmpdir(), `relay-${name}-${digest(found.caller).replace(":", "-")}.json`);
   const { line, code } = await runCall(found.spec, statePath, keptPath);
   process.stdout.write(line);
@@ -286,6 +320,7 @@ async function main(argv: string[]): Promise<number> {
 }
 
 if (isMainModule(import.meta.url)) {
+  endGroupOnSignal();
   main(process.argv.slice(2)).then(
     (code) => process.exit(code),
     (error) => {

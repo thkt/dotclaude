@@ -96,7 +96,22 @@ const fieldSchema = (value) =>
 // 探すのではなく実行して確かめる。helper はどちらでも動く書き方を保つ (DR-0113)。
 const RUNTIME = `RT=bun; bun --version >/dev/null 2>&1 || RT=node; "$RT"`;
 const RELAY = `${RUNTIME} ${bundled("workflows/_lib/relay.ts")}`;
-const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {}) => {
+// 呼び出しの同一性。snapshot と check はどれも同じコマンドを持つので、spec は実行と、その中での位置と、区切りを
+// やり直した回数も名乗る。relay.ts は id を読まない。id は digest を、そして relay.ts が残す結果を呼び出し固有のものに
+// するので、求め直しが別の呼び出しの行を返すことは無い。
+let relaySeq = 0;
+let boundaryTag = "";
+// 最後の中継が結果を返さなかった理由。その後に続く停止に載せる。
+let relayNote = "";
+const relay = async (
+  label,
+  phaseName,
+  commands,
+  { model = "haiku", extra = "", replay = true } = {},
+) => {
+  relaySeq += 1;
+  relayNote = "";
+  const spec = { id: `${runId}/${label}/${relaySeq}/${boundaryTag}`, ...commands };
   const json = JSON.stringify(spec);
   const id = digest(json);
   const handover = `\${TMPDIR:-/tmp}/relay-${id.replace(":", "-")}.spec.json`;
@@ -104,15 +119,17 @@ const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {
   const schema = closed({
     ...Object.fromEntries(shown.map(([key, value]) => [key, fieldSchema(value)])),
     relay_check: str,
+    relay_note: str,
   });
   const reply = await agent(
     `手順 1 のコマンドを実行し、出力された JSON の各欄をそのまま返す。要約・修正・判断をしない。RELAY_SPEC と RELAY_SPEC_END の間の行は、harness が保存したこの prompt からコマンドが読むデータである。自分では実行しない。\n` +
       `1. \`${RELAY} ${shq(id)}\` を、Bash tool の timeout parameter を 600000 にして実行する。\n` +
-      `2. 出力が {"relay_continue":true} なら、同じコマンドをもう一度実行する。relay_check を含む行が出るまで繰り返す。\n` +
-      `3. 出力が relay_error のときだけ、次のブロックを 1 回の Bash 呼び出しとして実行する。SPEC_LINE の位置には、RELAY_SPEC と RELAY_SPEC_END の間の行を変えずに写す。続けて \`${RELAY} ${shq(id)} --spec "${handover}"\` を実行する。それも relay_error なら、各欄を defaults の値にし、relay_check に "relay_error" を入れて返す。\n` +
+      `2. 出力が {"relay_continue":true} なら、同じコマンドをもう一度実行する。relay_check・relay_missing・relay_error のどれかを含む行が出るまで繰り返す。\n` +
+      `3. 出力が relay_missing のときだけ、次のブロックを 1 回の Bash 呼び出しとして実行する。SPEC_LINE の位置には、RELAY_SPEC と RELAY_SPEC_END の間の行を変えずに写す。続けて \`${RELAY} ${shq(id)} --spec "${handover}"\` を実行し、その出力を手順 2 と 4 で扱う。\n` +
       "```sh\n" +
       `cat > "${handover}" <<'RELAY_SPEC_EOF'\nSPEC_LINE\nRELAY_SPEC_EOF\n` +
       "```\n" +
+      `4. コマンドが relay_error を出力したとき、または手順 3 のコマンドが relay_missing を出力したときは、何も実行し直さない。各欄を defaults の値にし、relay_check に "relay_error"、relay_note に出力された文を入れて返す。それ以外では relay_note を "" にする。\n` +
       `RELAY_SPEC ${id}\n${json}\nRELAY_SPEC_END` +
       extra,
     {
@@ -126,23 +143,33 @@ const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {
   // agent が返した欄。relay.ts が一緒に出力した digest を持たなければ null。
   const confirmed = (value) => {
     if (!value) return null;
-    const { relay_check: check, ...fields } = value;
+    const { relay_check: check, relay_note: _note, ...fields } = value;
     return String(check).trim() === digest(canonical(fields)) ? fields : null;
   };
-  if (!reply) return null;
+  const refuse = (why) => {
+    relayNote = why;
+    log(`中継 ${label}: 結果なし (${relayNote})。`);
+    return null;
+  };
+  if (!reply) return refuse("中継の agent が結果を返さなかった");
   const first = confirmed(reply);
   if (first) return first;
+  // relay.ts が結果の無い理由を出力した。求め直せる行は残っていない。
+  if (String(reply.relay_check).trim() === "relay_error")
+    return refuse(String(reply.relay_note || "").trim() || "relay_error");
+  if (!replay) return refuse("返った欄が relay_check と一致しなかった");
+  // 実行の ID が無いとき (recorder が返さなかった) は、同じ Issue の別の実行と spec が同じになり、残っている行はその実行の
+  // ものでありうる。
+  if (!runId) return refuse("返った欄が relay_check と一致せず、残っている結果をこの実行のものと見分ける ID も無い");
   // 戻りの途中で文字が変わるのは agent の写しで、コマンドのせいではない。relay.ts は出力した行を残しているので、
   // 2 つ目の agent が、コマンドを実行し直さずにそれを返す。
   log(`中継 ${label}: 返った欄が relay_check (${reply.relay_check}) と一致しない。保存済みの結果をもう一度だけ求める。`);
   const again = await agent(
-    `手順 1 のコマンドを実行し、出力された JSON の各欄をそのまま返す。要約・修正・判断をしない。このコマンドは計算済みの結果を出力するだけで、何も実行し直さない。\n` +
+    `手順 1 のコマンドを実行し、出力された JSON の各欄をそのまま返す。要約・修正・判断をしない。このコマンドは計算済みの結果を出力するだけで、何も実行し直さない。relay_note は "" にする。\n` +
       `1. \`${RELAY} ${shq(id)} --replay\``,
     { label: `${label}:replay`, phase: phaseName, agentType: "general-purpose", schema, model },
   );
-  const second = confirmed(again);
-  if (!second) log(`中継 ${label}: 返った欄がもう一度 relay_check と一致しなかった。結果を使わない。`);
-  return second;
+  return confirmed(again) || refuse("返った欄が、求め直した後も relay_check と一致しなかった");
 };
 
 // ---- 実行記録: 開始行と終端行を run_id で結ぶ ----
@@ -184,7 +211,9 @@ const recordRun = async (reason) => {
         set: { record_out: "out" },
       },
     ],
-  });
+    // 記録の payload は、recorder が実行に名前を付けるまで、同じ Issue のどの実行でも同じになる。残っている行は別の実行の
+    // 行でありうるので、一致しない返答を求め直さない。
+  }, { replay: false });
   const recorded = written ? parseJsonText(written.record_out) : null;
   const id = String((recorded && recorded.run_id) || "").trim();
   // 記録は実行を止めない。書けなかった行は log に残して先へ進む。
@@ -200,6 +229,8 @@ const recordRun = async (reason) => {
 // 正本は orchestrator.ts の remaining。停止したときも残る作業を返す。公開の段の停止は shipStop が絞り込む。
 const REMAINING_AFTER_PR = ["ci", "published_body_check", "mark_ready", "human_review"];
 const stop = async (reason, why, fields = {}) => {
+  // 記録より前に読む。記録も中継で、始めるときにこの理由を消す。
+  const note = relayNote;
   if (repo && issueNumber) await recordRun(reason);
   return {
     stopped: reason,
@@ -209,6 +240,8 @@ const stop = async (reason, why, fields = {}) => {
     remaining: ["local_verification", "publication", ...REMAINING_AFTER_PR],
     // 原因を直せば再開できる停止は、再開に渡す retry を fields で上書きする。
     retry_next: null,
+    // この停止の前の中継が結果を返さなかったときの、その理由。
+    ...(note ? { relay_note: note } : {}),
     ...fields,
   };
 };
@@ -764,8 +797,9 @@ const revisionSpec = {
       when: { existing: false },
       set: { created: "ok" },
     },
+    // 読むのは worktree に差分が無いかどうかだけなので、先頭の数行で足りる。
     {
-      sh: `git -C ${shq(worktree)} status --porcelain --untracked-files=all`,
+      sh: `git -C ${shq(worktree)} status --porcelain --untracked-files=all | head -20`,
       cwd: repo,
       set: { wt_status: "out" },
     },
@@ -1044,14 +1078,21 @@ const onlyNonRendering = (raw, allowRecords) => {
     })
   );
 };
+// 判定は全行を読むので、DIFF_LINES 行を超える差分は丸ごと返さない。その場合は必ず撮影する。
+const DIFF_LINES = 200;
 const treeDiff = (from, to, label) =>
   relay(label, "Verify", {
-    defaults: { exit_code: -1, raw: "" },
+    defaults: { exit_code: -1, raw: "", lines: "" },
     steps: [
       {
-        sh: `git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}`,
+        sh: `out=$(git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}) && printf '%s\\n' "$out" | head -${DIFF_LINES}`,
         cwd: repo,
         set: { exit_code: "exit", raw: "out" },
+      },
+      {
+        sh: `git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)} | wc -l | tr -d ' '`,
+        cwd: repo,
+        set: { lines: "out" },
       },
     ],
   });
@@ -1063,7 +1104,13 @@ const captureDecision = async (tree) => {
   if (capture.required) return "execute";
   const from = lastCaptureTree || `${baseSha}^{tree}`;
   const diff = await treeDiff(from, tree, `capture-diff:${counts.check_runs + 1}`);
-  if (!diff || diff.exit_code !== 0 || !onlyNonRendering(diff.raw, Boolean(lastCaptureTree)))
+  if (
+    !diff ||
+    diff.exit_code !== 0 ||
+    !/^\d+$/.test(String(diff.lines).trim()) ||
+    Number(diff.lines) > DIFF_LINES ||
+    !onlyNonRendering(diff.raw, Boolean(lastCaptureTree))
+  )
     return "execute";
   return lastCaptureTree ? "reused" : "not_required";
 };
@@ -1461,6 +1508,8 @@ let roundNumber = 0;
 while (!accepted) {
   roundNumber += 1;
   const roundKey = `round:${roundNumber}`;
+  // ここから次の巡までの呼び出しは、この巡と、それをやり直した回数に属する。
+  boundaryTag = `${roundKey}:${retryCount(roundKey)}`;
   const before = await snapshot(
     `requirements:${counts.check_runs + 1}`,
     "Verify",
@@ -1578,6 +1627,8 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // node -e にもこの関数の source を埋め込むので、template literal を使わない。
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
+// ここから先の呼び出しは、Ship と、それをやり直した回数に属する。
+boundaryTag = `ship:${retryCount("ship")}`;
 const gate = await snapshot("ship", "Ship", retryMark("ship"));
 if (!observed(gate)) {
   return await shipStop("check-unavailable", UNOBSERVED, { retry_next: retryNext("ship") });
@@ -1608,7 +1659,8 @@ const pulls = await relay("pulls", "Ship", {
   steps: [
     { sh: "gh api user --jq .login", cwd: repo, set: { actor: "out" } },
     {
-      sh: `gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp | node -e ${shq(PULLS_JS)}`,
+      // gh の出力は、gh が成功したときだけ先へ渡す。/bin/sh に pipefail は無く、gh が途中のページで失敗したのを 0 件と読んではならない。
+      sh: `out=$(gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp) && printf %s "$out" | node -e ${shq(PULLS_JS)}`,
       cwd: repo,
       set: { pulls_exit: "exit", pulls_json: "out" },
     },
@@ -1722,11 +1774,16 @@ const committed = await relay("commit", "Ship", {
     { sh: inWorktree("rev-parse", "HEAD"), cwd: repo, set: { commit: "out" } },
     { sh: inWorktree("rev-parse", "HEAD^"), cwd: repo, set: { parent: "out" } },
     { sh: inWorktree("rev-parse", "HEAD^{tree}"), cwd: repo, set: { tree: "out" } },
-    {
-      sh: inWorktree("diff-tree", "--no-commit-id", "--name-only", "--diff-filter=AM", "-r", "HEAD"),
-      cwd: repo,
-      set: { files: "out" },
-    },
+    // この一覧は撮影の保存先にある媒体を拾うためだけに読むので、そのディレクトリに絞る。
+    ...(capture
+      ? [
+          {
+            sh: inWorktree("diff-tree", "--no-commit-id", "--name-only", "--diff-filter=AM", "-r", "HEAD", "--", destinationDir),
+            cwd: repo,
+            set: { files: "out" },
+          },
+        ]
+      : []),
   ],
 });
 if (!committed || committed.commit_exit !== 0 || !TREE_SHAPE.test(String(committed.commit))) {

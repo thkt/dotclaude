@@ -18,7 +18,7 @@ paths:
 | スクリプトのファイル名 | `workflows/<name>.js`。`<name>` がそのまま `Workflow({name})` で解決される名前                                                                                                                                                                   |
 | name の形              | 英単語 1 語で、workflow が行う操作を表す。helper, utils, tools のような汎用名は操作名へ置き換える                                                                                                                                                |
 | 補助スクリプト         | `workflows/<name>/` へ置く。直下へ `.js` を置くと、補助のつもりでも workflow として登録される                                                                                                                                                    |
-| 共有ハーネス           | `workflows/_lib/` へ置く。テストが import するものと、別ホストで script を評価する runner に限る。`workflows/_lib/codex-run.ts` がその runner で、`agent()` を `codex exec` 子プロセスへ置き換えて Claude Code の外で workflow script を走らせる |
+| 共有ハーネス           | `workflows/_lib/` へ置く。テストが import するもの、別ホストで script を評価する runner、どの workflow の中継も実行する helper に限る。`workflows/_lib/codex-run.ts` がその runner で、`agent()` を `codex exec` 子プロセスへ置き換えて Claude Code の外で workflow script を走らせる。`relay.ts` と `transcript.ts` が中継の helper である (§ 中継) |
 
 ## 参照記法
 
@@ -47,9 +47,10 @@ paths:
 | 対象           | 規約                                                                                                                                                                 |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | spec の形      | `{defaults, steps}`。step と source の語彙は `workflows/_lib/relay.ts` の冒頭が正本                                                                                  |
-| 渡し方         | プロンプトの `RELAY_SPEC <digest>` と `RELAY_SPEC_END` の間に、1 行の JSON で置く。エージェントは digest を付けて relay.ts を実行し、relay.ts が transcript から spec を読む |
+| 渡し方         | プロンプトの `RELAY_SPEC <digest>` と `RELAY_SPEC_END` の間に、1 行の JSON で置く。エージェントは digest を付けて relay.ts を実行し、relay.ts が transcript から spec を読む。spec には実行と呼び出しを名乗る `id` を入れ、同じコマンドの呼び出しどうしが同じ digest にならないようにする |
 | 返り値の照合   | relay.ts が出す `relay_check` と、エージェントが返した欄の digest を比べる。合わなければ `--replay` で保存済みの結果をもう一度だけ求め、それも合わなければ結果なしとして扱う |
-| 出力の末尾     | コマンドが失敗したときだけ返す (`fail_tail:N`)。成功した出力には進捗バーのような写し間違えやすい行が入る                                                             |
+| 結果が無いとき | relay.ts が `relay_missing` を出したら、step は 1 つも実行されていない。エージェントは spec をファイルで渡して実行し直す。`relay_error` を出したら step が実行済みのことがあるので、実行し直さず、求め直しもしない。その文は `relay_note` として停止の戻り値まで運ぶ |
+| 出力の末尾     | コマンドが失敗したときだけ返す (`fail_tail:N`)。成功した出力には進捗バーのような写し間違えやすい行が入る。relay.ts は末尾を 6,000 文字で切る                                                             |
 | step の時間    | 1 つの step の `timeout_ms` は 600000 未満にする。Bash tool の上限を超えると、relay.ts は自分の行を出す前に止められる                                                |
 | 行の長さ       | 1 つの中継が返す行は、Bash 呼び出しの返せる長さ (約 30,000 文字) に収める。件数で伸びる出力は、コマンドの側でスクリプトが読む分だけに絞る                            |
 | 起動する実行系 | bundled の helper は bun で起動し、bun が動かなければ node で起動する。helper はどちらでも動く書き方を保つ (DR-0113)                                                 |

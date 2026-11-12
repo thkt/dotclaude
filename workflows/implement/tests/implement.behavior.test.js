@@ -116,6 +116,8 @@ const FILLED = {
   },
   prepare: { config_blob: CONFIG_BLOB, checkout_head: BASE_SHA },
   snapshot: { config_blob: CONFIG_BLOB },
+  // The count of the diff's lines, which the capture decision reads beside the lines themselves.
+  diff: { lines: "1" },
 };
 const KIND_BY_PROPERTY = [
   ["record_out", "record"],
@@ -170,11 +172,14 @@ const canonical = (fields) =>
         .map((key) => [key, fields[key]]),
     ),
   );
+// relay_note is the agent's own field: relay.ts prints no such field, and the digest does not cover it.
 const withCheck = (value, opts) => {
   const relayed = "relay_check" in ((opts.schema && opts.schema.properties) || {});
-  return relayed && value && typeof value === "object" && !("relay_check" in value)
-    ? { ...value, relay_check: digestOf(canonical(value)) }
-    : value;
+  if (!relayed || !value || typeof value !== "object") return value;
+  const { relay_note: note = "", ...fields } = value;
+  return "relay_check" in fields
+    ? { ...fields, relay_note: note }
+    : { ...fields, relay_check: digestOf(canonical(fields)), relay_note: note };
 };
 const kindOf = (opts) => {
   const p = (opts.schema && opts.schema.properties) || {};
@@ -2013,7 +2018,11 @@ test("every agent except the implementing, repairing, reviewing, and naming ones
     assert.ok(call.raw.includes(`relay.ts`) && call.raw.includes(`'${named[1]}'`), `${label}: the command does not pass the digest`);
     // The fields the agent must return are the spec's defaults without the internal ones, plus the check.
     const fields = Object.keys(call.spec.defaults).filter((key) => !key.startsWith("_"));
-    assert.deepEqual(Object.keys(call.opts.schema.properties).sort(), [...fields, "relay_check"].sort(), label);
+    assert.deepEqual(
+      Object.keys(call.opts.schema.properties).sort(),
+      [...fields, "relay_check", "relay_note"].sort(),
+      label,
+    );
     for (const step of call.spec.steps) {
       assert.equal(typeof step.sh, "string", label);
       // The spec carries the place a prose prompt used to get from anchor(): a step that runs git or gh names it.
@@ -2056,6 +2065,112 @@ test("fields that do not match the relay's digest are asked for once more, and a
     assert.deepEqual(result.retry_next, next, reason);
     assert.ok(!kinds.includes("review"), `${reason}: no review runs on a result that was not confirmed`);
   }
+});
+
+// Every snapshot and every check of a run carries the same commands. relay.ts keeps the line it printed under
+// the spec's digest, so two calls sharing a digest could be answered with each other's line.
+test("every relay of a run carries a spec with a digest of its own, and a round run again differs from the stopped one", async () => {
+  const repaired = {
+    review: [
+      (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
+      (_, { tree }) =>
+        reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "fixed" }] }),
+    ],
+  };
+  const digestsOf = ({ calls }) =>
+    calls.agent
+      .map((c) => /RELAY_SPEC ([0-9a-f]{8}:\d+)\n/.exec(c.raw))
+      .filter(Boolean)
+      .map((found) => found[1]);
+  const plain = await withCapture(CAPTURE, repaired, publishArgs);
+  const digests = digestsOf(plain);
+  assert.ok(digests.length >= 20);
+  assert.equal(new Set(digests).size, digests.length, "two calls share a spec digest");
+
+  const stopped = await run({}, args);
+  const again = await run({}, { ...args, retry: { "round:1": 1 } });
+  const label = (found, name) => found.calls.agent.find((c) => c.opts.label === name).spec;
+  assert.notEqual(label(stopped, "check:1").id, label(again, "check:1").id);
+  assert.deepEqual(label(stopped, "check:1").steps, label(again, "check:1").steps, "the commands are the same");
+});
+
+// relay_error is relay.ts saying it has no result: the spec was unreadable, or its line was too long to
+// return. Nothing is kept to ask for, so no second agent is started, and the stop says why.
+test("a relay that reports relay_error is not asked again, and the stop carries what relay.ts printed", async () => {
+  const refused = () => ({
+    exit_code: -1,
+    log_tail: "",
+    tree: "",
+    relay_check: "relay_error",
+    relay_note: "the result is 31000 characters long",
+  });
+  const { result, calls } = await run({ check: [refused] });
+  assert.equal(result.stopped, "check-unavailable");
+  assert.equal(result.relay_note, "the result is 31000 characters long");
+  assert.deepEqual(
+    calls.agent.filter((c) => kindOf(c.opts) === "check").map((c) => c.opts.label),
+    ["check:1"],
+  );
+
+  const clean = await run({ check: [{ exit_code: 1, log_tail: "boom" }, { exit_code: 1, log_tail: "boom" }] });
+  assert.ok(clean.result.stopped, "the run stops on a failing check");
+  assert.ok(!("relay_note" in clean.result), "a stop that follows a returned result carries no note");
+});
+
+// The recorder's row is the same for every run of an Issue until record.ts names the run, so a kept line
+// can be another run's row. A row that came back changed is not asked for again, and the run goes on.
+test("a record whose reply does not match is not asked for again", async () => {
+  const { result, calls } = await run({
+    record: [() => ({ record_out: "changed on the way", relay_check: "00000000:0" })],
+  });
+  assert.equal(result.status, "verified_local");
+  assert.ok(!calls.agent.some((c) => c.opts.label.endsWith(":replay")));
+
+  // With no run id the spec names no run, so the line relay.ts kept can be another run's.
+  const changed = (_, { tree }) => ({ exit_code: 0, log_tail: "", tree, relay_check: "00000000:0" });
+  const unnamed = await run({ record: () => null, check: [changed] });
+  assert.equal(unnamed.result.stopped, "check-unavailable");
+  assert.ok(!unnamed.calls.agent.some((c) => c.opts.label.endsWith(":replay")));
+  assert.match(unnamed.result.relay_note, /no id/);
+});
+
+// A relay's line has to fit in what one Bash call returns. A field that grows with the change is limited to
+// what the script reads from it.
+test("a field that grows with the size of the change is bounded where its command runs", async () => {
+  const { calls } = await withCapture(CAPTURE, {}, publishArgs);
+  const stepSetting = (kind, field) =>
+    calls.agent
+      .filter((c) => kindOf(c.opts) === kind)
+      .flatMap((c) => c.spec.steps)
+      .find((step) => Object.keys(step.set ?? {}).includes(field));
+  assert.match(stepSetting("diff", "raw").sh, / \| head -200$/);
+  assert.match(stepSetting("commit", "files").sh, / '--' 'trial\/evidence\/generated'$/);
+  // gh's exit code is the step's: a page that failed must not read as no open PR.
+  assert.match(stepSetting("pulls", "pulls_json").sh, /^out=\$\(gh api .*\) && printf %s "\$out" \| node -e /);
+
+  const long = await withCapture(CAPTURE, {
+    diff: [
+      { exit_code: 0, raw: ":100644 100644 aaa bbb M\tsrc/app.js\n" },
+      { ...mdOnly, lines: "201" },
+    ],
+    review: [
+      (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
+      (_, { tree }) =>
+        reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "ok" }] }),
+    ],
+  });
+  assert.equal(long.result.captures, 2, "a diff longer than the lines returned captures again");
+  const unread = await withCapture(CAPTURE, { diff: [{ ...mdOnly, lines: "" }] });
+  assert.equal(unread.result.captures, 1, "a diff whose length was not read captures");
+
+  const withoutCapture = await run({}, publishArgs);
+  assert.ok(
+    !withoutCapture.calls.agent
+      .filter((c) => kindOf(c.opts) === "commit")
+      .flatMap((c) => c.spec.steps)
+      .some((step) => "files" in (step.set ?? {})),
+    "a run with no capture lists no files",
+  );
 });
 
 // A successful command's output is not returned. A setup that succeeded printed a download's progress

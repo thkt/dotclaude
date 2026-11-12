@@ -2,7 +2,7 @@
 // results with a digest, reading the spec from the transcript of the agent that runs it.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -169,15 +169,17 @@ test("the digest of the fields does not depend on the order they come back in", 
   assert.notEqual(digest(canonical({ a: "x", b: 1 })), digest(canonical({ a: "y", b: 1 })));
 });
 
-test("a digest no transcript carries, or a transcript whose spec was altered, prints relay_error and runs nothing", () => {
+// No step ran, so the agent may hand the spec over in a file. relay_missing says so, apart from relay_error.
+test("a digest no transcript carries, or a transcript whose spec was altered, prints relay_missing and runs nothing", () => {
   const { projects, agents, tmp, log } = project();
   const { wanted, prompt } = promptWith(logging(log, ["only"]));
   store(agents, "a1", prompt.replace("echo only >>", "echo other >>"));
-  for (const args of [[wanted, "--projects", projects], ["00000000:1", "--projects", projects], ["not-a-digest"]]) {
+  for (const args of [[wanted, "--projects", projects], ["00000000:1", "--projects", projects]]) {
     const { code, out } = cli(args, tmp);
     assert.equal(code, 1, args.join(" "));
-    assert.equal(typeof out.relay_error, "string");
+    assert.equal(typeof out.relay_missing, "string");
   }
+  assert.equal(typeof cli(["not-a-digest"], tmp).out.relay_error, "string");
   assert.equal(ranLines(log), "");
 });
 
@@ -190,7 +192,7 @@ test("a spec handed over in a file runs when its digest matches, and is refused 
   writeFileSync(file, json.replace("exit 4", "exit 5"));
   const refused = cli([digest(json), "--spec", file], tmp);
   assert.equal(refused.code, 1);
-  assert.match(refused.out.relay_error, /does not have the digest/);
+  assert.match(refused.out.relay_missing, /does not have the digest/);
 });
 
 // The agent's Bash call is capped at 600 s. A call stops before a step that could run past the
@@ -271,17 +273,89 @@ test("--replay after a call that did not finish prints relay_error, not the line
 
 // A Bash call returns about 30,000 characters. A longer line reaches the agent cut short, and no
 // reply can match its digest.
-test("a result longer than a Bash call returns prints relay_error naming the length", () => {
-  const { projects, agents, tmp } = project();
+test("a result longer than a Bash call returns prints relay_error naming the length, and the caller running the command again runs no step", () => {
+  const { projects, agents, tmp, log } = project();
   const { wanted, prompt } = promptWith({
     defaults: { big: "" },
-    steps: [{ sh: "head -c 40000 /dev/zero | tr '\\0' 'x'", set: { big: "out" } }],
+    steps: [{ sh: `echo ran >> '${log}'; head -c 40000 /dev/zero | tr '\\0' 'x'`, set: { big: "out" } }],
   });
   store(agents, "a1", prompt);
-  const { code, out } = cli([wanted, "--projects", projects], tmp);
-  assert.equal(code, 1);
-  assert.match(out.relay_error, /4\d{4} characters/);
+  const args = [wanted, "--projects", projects];
+  const first = cli(args, tmp);
+  assert.equal(first.code, 1);
+  assert.match(first.out.relay_error, /4\d{4} characters/);
+  // The step may have written something. Running the command again must not run it a second time.
+  assert.deepEqual(cli(args, tmp), first);
+  assert.equal(ranLines(log), "ran\n");
   assert.equal(cli([wanted, "--replay"], tmp).code, 1);
+});
+
+// A failing check's last 80 lines can be a minified error or a progress bar drawn with carriage returns.
+// Returning them whole made the relay an error, and the failure never reached the repair.
+test("a tail is cut to its last characters, so a failing command with wide lines still returns its exit code and the end of its output", async () => {
+  const fields = await fieldsOf({
+    defaults: { code: 0, tail: "" },
+    steps: [
+      {
+        sh: "head -c 20000 /dev/zero | tr '\\0' 'x'; echo; echo the failure is here; exit 1",
+        set: { code: "exit", tail: "fail_tail:80" },
+      },
+    ],
+  });
+  assert.equal(fields.code, 1);
+  assert.ok(String(fields.tail).length <= 6000);
+  assert.ok(String(fields.tail).endsWith("the failure is here"));
+});
+
+// A step runs in its own process group, so a signal sent to relay.ts does not reach it by itself.
+test("ending the command while a step runs ends that step too", async () => {
+  const { projects, agents, tmp, root } = project();
+  const pidFile = join(root, "step.pid");
+  const { wanted, prompt } = promptWith({
+    defaults: { a: "" },
+    steps: [{ sh: `sleep 30 & echo $! > '${pidFile}'; wait`, timeout_ms: 20000, set: { a: "out" } }],
+  });
+  store(agents, "a1", prompt);
+  const child = spawn("node", [script, wanted, "--projects", projects], { env: { ...process.env, TMPDIR: tmp } });
+  while (!existsSync(pidFile) || !readFileSync(pidFile, "utf8").trim()) await new Promise((r) => setTimeout(r, 50));
+  const step = readFileSync(pidFile, "utf8").trim();
+  child.kill("SIGTERM");
+  await new Promise((resolve) => child.on("close", resolve));
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  assert.notEqual(spawnSync("kill", ["-0", step]).status, 0, "the step's sleep is gone");
+});
+
+// The scan opens only the current session's transcripts when the session is known, and still finds a
+// spec when the variable names a session that holds none.
+test("the spec is found through the session CLAUDE_CODE_SESSION_ID names, and through every session when that one holds none", () => {
+  const { projects, agents, tmp } = project();
+  const { wanted, prompt } = promptWith(SPEC);
+  store(agents, "a1", prompt);
+  const args = [wanted, "--projects", projects];
+  assert.equal(cli(args, tmp, { CLAUDE_CODE_SESSION_ID: "session-1" }).code, 0);
+  store(agents, "a2", prompt);
+  assert.equal(cli(args, tmp, { CLAUDE_CODE_SESSION_ID: "another-session" }).code, 0);
+});
+
+// The workflow starts the helper on bun when bun runs, and the rest of this file starts it on node.
+test("the command prints the same line on bun as on node", { skip: spawnSync("bun", ["--version"]).status !== 0 }, () => {
+  const { projects, agents, tmp } = project();
+  const { wanted, prompt } = promptWith({
+    defaults: { text: "", code: 0, late: false },
+    steps: [
+      { sh: "printf 'ﾉｰﾄ\\n'; echo warn >&2", set: { text: "tail:2" } },
+      { sh: "sleep 5", timeout_ms: 300, set: { code: "exit", late: "timed_out" } },
+    ],
+  });
+  store(agents, "a1", prompt);
+  const onNode = cli([wanted, "--projects", projects], tmp);
+  store(agents, "a2", prompt);
+  const bun = spawnSync("bun", [script, wanted, "--projects", projects], {
+    encoding: "utf8",
+    env: { ...process.env, TMPDIR: tmp },
+  });
+  assert.deepEqual({ code: bun.status, out: JSON.parse(bun.stdout) }, onNode);
+  assert.deepEqual(onNode.out.late, true);
 });
 
 test("a state file is kept per agent, and the line for --replay per spec", () => {

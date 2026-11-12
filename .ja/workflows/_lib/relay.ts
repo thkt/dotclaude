@@ -26,9 +26,11 @@
 //   {...fields, relay_check}    すべての step を実行した。relay_check は欄の digest で、agent が欄を返すときに
 //                               1 文字でも変えたら script が気づける
 //   {"relay_continue": true}    次の step がこの呼び出しに収まらないかもしれない。同じコマンドをもう一度実行する
-//   {"relay_error": "..."}      その digest の spec が見つからない、ファイルの digest が違う、行が Bash 呼び出しの
-//                               返せる長さを超える、または実行そのものが失敗した
-// exit 0。relay_error のときは 1。
+//   {"relay_missing": "..."}    その digest の spec が見つからない、またはファイルの digest が違う。step は 1 つも
+//                               実行していないので、agent は spec をファイルで渡す
+//   {"relay_error": "..."}      行が Bash 呼び出しの返せる長さを超える、または実行そのものが失敗した。step は実行済みの
+//                               ことがあるので、agent は spec を実行し直さない
+// exit 0。relay_missing と relay_error のときは 1。
 //
 // 呼び出しは、spec を運んだ transcript の agent のものである。その agent がコマンドをもう一度実行すると、前の呼び出しが
 // 止まった所から続きを実行する。すべての step を実行した後なら同じ行を返す。1 つの agent に対して、step は 2 度実行
@@ -84,6 +86,10 @@ const publicFields = (fields: Fields): Fields =>
 
 const lastLines = (text: string, count: number): string =>
   text.replace(/\n+$/, "").split("\n").slice(-count).join("\n");
+// 末尾は文字数でも切る。minify されたエラーの 80 行や、復帰文字で描いた進捗バーは Bash 呼び出しの返せる長さを超える。
+// 失敗した check は、末尾を持って修正へ届かなければならない。
+const TAIL_MAX_CHARS = 6000;
+const tailOf = (text: string, count: number): string => lastLines(text, count).slice(-TAIL_MAX_CHARS);
 
 interface Ran {
   exit: number;
@@ -95,9 +101,29 @@ interface Ran {
 
 // コマンドは自分の process group で走る。時間切れは group 全体を終わらせるので、複合コマンドの子が、step を報告した後に
 // worktree へ書き込み続けることは無い。
+// step は自分の process group で走るので、この process に送られた signal は届かない。実行中の step の group を先に終わらせ、
+// この process が消えた後に worktree へ書き込み続けるものを残さない。
+let runningGroup = 0;
+const endRunningGroup = () => {
+  try {
+    if (runningGroup) process.kill(-runningGroup, "SIGTERM");
+  } catch {
+    // もう無い
+  }
+};
+const endGroupOnSignal = () => {
+  for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) {
+    process.on(name, () => {
+      endRunningGroup();
+      process.exit(143);
+    });
+  }
+};
+
 const runStep = (step: Step): Promise<Ran> =>
   new Promise((resolve) => {
     const child = spawn("/bin/sh", ["-c", step.sh], { cwd: step.cwd, detached: true });
+    runningGroup = child.pid ?? 0;
     const ran: Ran = { exit: -1, timedOut: false, stdout: "", combined: "" };
     const signal = (name: NodeJS.Signals) => {
       try {
@@ -122,10 +148,12 @@ const runStep = (step: Step): Promise<Ran> =>
     child.stdin.end(step.stdin ?? "");
     child.on("error", () => {
       clearTimeout(timer);
+      runningGroup = 0;
       resolve(ran);
     });
     child.on("close", (code) => {
       clearTimeout(timer);
+      runningGroup = 0;
       resolve({ ...ran, exit: ran.timedOut || code === null ? -1 : code });
     });
   });
@@ -138,7 +166,7 @@ const pick = (ran: Ran, source: string): Value => {
   if (source === "last") return lastLines(ran.stdout, 1);
   const tail = /^(fail_)?tail:(\d+)$/.exec(source);
   if (!tail) throw new Error(`unknown source "${source}"`);
-  return tail[1] && ran.exit === 0 ? "" : lastLines(ran.combined, Number(tail[2]));
+  return tail[1] && ran.exit === 0 ? "" : tailOf(ran.combined, Number(tail[2]));
 };
 
 const holds = (when: Fields | undefined, fields: Fields): boolean =>
@@ -188,7 +216,7 @@ const flag = (argv: string[], name: string): string | undefined => {
   return at < 0 ? undefined : argv[at + 1];
 };
 
-type State = { next: number; fields: Fields } | { done: string };
+type State = { next: number; fields: Fields } | { done: string; code?: number };
 const fresh = (path: string): boolean =>
   existsSync(path) && Date.now() - statSync(path).mtimeMs <= STATE_MAX_AGE_MS;
 // step は実行済みなので、ファイルを書けないことで結果を失ってはならない。
@@ -225,7 +253,7 @@ const runCall = async (
   const state: State = fresh(statePath)
     ? (JSON.parse(readFileSync(statePath, "utf8")) as State)
     : { next: 0, fields: { ...spec.defaults } };
-  if ("done" in state) return { line: state.done, code: 0 };
+  if ("done" in state) return { line: state.done, code: state.code ?? 0 };
   if (state.next === 0) rmSync(keptPath, { force: true });
 
   const started = Date.now();
@@ -251,7 +279,10 @@ const runCall = async (
   const line = `${JSON.stringify({ ...shown, relay_check: digest(canonical(shown)) })}\n`;
   if (line.length > MAX_LINE) {
     const relay_error = `the result is ${line.length} characters, more than a Bash call returns. A field has to be bounded by its command`;
-    return { line: `${JSON.stringify({ relay_error })}\n`, code: 1 };
+    const refused = `${JSON.stringify({ relay_error })}\n`;
+  // step は実行済み。同じ呼び出し元がコマンドをもう一度実行しても、この行を返すだけで何も実行し直さない。
+    keep(statePath, JSON.stringify({ done: refused, code: 1 }));
+    return { line: refused, code: 1 };
   }
   keep(statePath, JSON.stringify({ done: line }));
   keep(keptPath, line);
@@ -275,7 +306,10 @@ async function main(argv: string[]): Promise<number> {
     return 0;
   }
   const found = findSpec(argv, wanted);
-  if (typeof found === "string") return fail(found);
+  if (typeof found === "string") {
+    process.stdout.write(`${JSON.stringify({ relay_missing: found })}\n`);
+    return 1;
+  }
   const statePath = join(tmpdir(), `relay-${name}-${digest(found.caller).replace(":", "-")}.json`);
   const { line, code } = await runCall(found.spec, statePath, keptPath);
   process.stdout.write(line);
@@ -283,6 +317,7 @@ async function main(argv: string[]): Promise<number> {
 }
 
 if (isMainModule(import.meta.url)) {
+  endGroupOnSignal();
   main(process.argv.slice(2)).then(
     (code) => process.exit(code),
     (error) => {

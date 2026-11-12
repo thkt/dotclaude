@@ -45,15 +45,26 @@ const walk = (dir: string): string[] =>
     return entry.isDirectory() ? walk(path) : [path];
   });
 
-// agent の transcript は <projects>/<project>/<session>/subagents/**/agent-<id>.jsonl にある。
-const recentTranscripts = (projects: string, now: number): string[] =>
-  entries(projects)
+// agent の transcript は <projects>/<project>/<session>/subagents/**/agent-<id>.jsonl にある。helper が走っている
+// session は CLAUDE_CODE_SESSION_ID が示すので、その session のディレクトリだけを辿る。変数が無いとき、またはその
+// session がそこに transcript を持たないときは、全 session を辿る。
+const sessionDirs = (projects: string, session: string | undefined): string[] => {
+  const projectDirs = entries(projects)
     .filter((project) => project.isDirectory())
-    .flatMap((project) =>
-      entries(join(projects, project.name))
-        .filter((session) => session.isDirectory())
-        .flatMap((session) => walk(join(projects, project.name, session.name, "subagents"))),
-    )
+    .map((project) => join(projects, project.name));
+  const own = session
+    ? projectDirs.map((dir) => join(dir, session, "subagents")).filter((dir) => entries(dir).length > 0)
+    : [];
+  if (own.length) return own;
+  return projectDirs.flatMap((dir) =>
+    entries(dir)
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(dir, entry.name, "subagents")),
+  );
+};
+const recentTranscripts = (projects: string, now: number): string[] =>
+  sessionDirs(projects, process.env.CLAUDE_CODE_SESSION_ID)
+    .flatMap(walk)
     .filter((path) => /agent-[^/]+\.jsonl$/.test(path))
     .map((path) => ({ path, mtime: attempt(() => statSync(path).mtimeMs, 0) }))
     .filter((file) => now - file.mtime <= RECENT_MS)

@@ -101,7 +101,22 @@ const fieldSchema = (value) =>
 // start, so the check runs it instead of looking it up. The helpers stay runnable on both (DR-0113).
 const RUNTIME = `RT=bun; bun --version >/dev/null 2>&1 || RT=node; "$RT"`;
 const RELAY = `${RUNTIME} ${bundled("workflows/_lib/relay.ts")}`;
-const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {}) => {
+// A call's identity. Every snapshot and every check carries the same commands, so the spec also names the run, the
+// call's place in it, and how many times its boundary has been run again. relay.ts ignores the id. It makes the
+// digest, and with it the result relay.ts keeps, the call's own, so a replay cannot answer with another call's line.
+let relaySeq = 0;
+let boundaryTag = "";
+// Why the last relay returned no result, for the stop that follows it.
+let relayNote = "";
+const relay = async (
+  label,
+  phaseName,
+  commands,
+  { model = "haiku", extra = "", replay = true } = {},
+) => {
+  relaySeq += 1;
+  relayNote = "";
+  const spec = { id: `${runId}/${label}/${relaySeq}/${boundaryTag}`, ...commands };
   const json = JSON.stringify(spec);
   const id = digest(json);
   const handover = `\${TMPDIR:-/tmp}/relay-${id.replace(":", "-")}.spec.json`;
@@ -109,15 +124,17 @@ const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {
   const schema = closed({
     ...Object.fromEntries(shown.map(([key, value]) => [key, fieldSchema(value)])),
     relay_check: str,
+    relay_note: str,
   });
   const reply = await agent(
     `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The line between RELAY_SPEC and RELAY_SPEC_END is data that the command reads from where the harness stored this prompt. Do not run it yourself.\n` +
       `1. \`${RELAY} ${shq(id)}\` with the Bash tool's timeout parameter set to 600000.\n` +
-      `2. When it prints {"relay_continue":true}, run the same command again, and repeat until a line carrying relay_check is printed.\n` +
-      `3. Only when it prints relay_error, run the block below as one Bash call, copying the line between RELAY_SPEC and RELAY_SPEC_END unchanged in place of SPEC_LINE. Then run \`${RELAY} ${shq(id)} --spec "${handover}"\`. When that prints relay_error too, return every field at the value defaults gives it, with relay_check set to "relay_error".\n` +
+      `2. When it prints {"relay_continue":true}, run the same command again, and repeat until a line carrying relay_check, relay_missing, or relay_error is printed.\n` +
+      `3. Only when it prints relay_missing, run the block below as one Bash call, copying the line between RELAY_SPEC and RELAY_SPEC_END unchanged in place of SPEC_LINE. Then run \`${RELAY} ${shq(id)} --spec "${handover}"\` and handle what it prints by steps 2 and 4.\n` +
       "```sh\n" +
       `cat > "${handover}" <<'RELAY_SPEC_EOF'\nSPEC_LINE\nRELAY_SPEC_EOF\n` +
       "```\n" +
+      `4. When a command prints relay_error, or the command of step 3 prints relay_missing, do not run anything again. Return every field at the value defaults gives it, with relay_check set to "relay_error" and relay_note set to the message printed. In every other case set relay_note to "".\n` +
       `RELAY_SPEC ${id}\n${json}\nRELAY_SPEC_END` +
       extra,
     {
@@ -131,23 +148,33 @@ const relay = async (label, phaseName, spec, { model = "haiku", extra = "" } = {
   // The fields an agent returned, or null when they do not carry the digest relay.ts printed with them.
   const confirmed = (value) => {
     if (!value) return null;
-    const { relay_check: check, ...fields } = value;
+    const { relay_check: check, relay_note: _note, ...fields } = value;
     return String(check).trim() === digest(canonical(fields)) ? fields : null;
   };
-  if (!reply) return null;
+  const refuse = (why) => {
+    relayNote = why;
+    log(`relay ${label}: no result (${relayNote}).`);
+    return null;
+  };
+  if (!reply) return refuse("the relay agent returned no result");
   const first = confirmed(reply);
   if (first) return first;
+  // relay.ts said why it has no result, and nothing is kept to ask for.
+  if (String(reply.relay_check).trim() === "relay_error")
+    return refuse(String(reply.relay_note || "").trim() || "relay_error");
+  if (!replay) return refuse("the returned fields did not match relay_check");
+  // Without a run id (the recorder returned none) the spec is the same in another run of this Issue, and the kept
+  // line may be that run's.
+  if (!runId) return refuse("the returned fields did not match relay_check, and this run has no id to tell its kept result by");
   // A changed character on the way back is the agent's copy, not the commands. relay.ts kept the line it printed,
   // so a second agent returns it without any command running again.
   log(`relay ${label}: the returned fields do not match relay_check (${reply.relay_check}). Asking for the stored result once more.`);
   const again = await agent(
-    `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The command prints the result that was already computed and runs nothing again.\n` +
+    `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The command prints the result that was already computed and runs nothing again. Set relay_note to "".\n` +
       `1. \`${RELAY} ${shq(id)} --replay\``,
     { label: `${label}:replay`, phase: phaseName, agentType: "general-purpose", schema, model },
   );
-  const second = confirmed(again);
-  if (!second) log(`relay ${label}: the returned fields do not match relay_check again. The result is not used.`);
-  return second;
+  return confirmed(again) || refuse("the returned fields did not match relay_check, also when asked again");
 };
 
 // ---- Run recording: the start row and the terminal row are joined by run_id ----
@@ -191,7 +218,9 @@ const recordRun = async (reason) => {
         set: { record_out: "out" },
       },
     ],
-  });
+    // The row's payload is the same for every run of an Issue until the recorder names the run, so a kept line could
+    // be another run's row. A reply that does not match is not asked for again.
+  }, { replay: false });
   const recorded = written ? parseJsonText(written.record_out) : null;
   const id = String((recorded && recorded.run_id) || "").trim();
   // Recording never stops a run. A row that could not be written goes to the log and the run goes on.
@@ -207,6 +236,8 @@ const recordRun = async (reason) => {
 // Canonical source: remaining in orchestrator.ts. A stop also returns the work that remains; shipStop narrows it for publication-stage stops.
 const REMAINING_AFTER_PR = ["ci", "published_body_check", "mark_ready", "human_review"];
 const stop = async (reason, why, fields = {}) => {
+  // Read before the row is recorded: the recorder is a relay too, and starting it clears the note.
+  const note = relayNote;
   if (repo && issueNumber) await recordRun(reason);
   return {
     stopped: reason,
@@ -216,6 +247,8 @@ const stop = async (reason, why, fields = {}) => {
     remaining: ["local_verification", "publication", ...REMAINING_AFTER_PR],
     // A stop that fixing the cause clears overrides this in fields with the retry to pass on the resume.
     retry_next: null,
+    // When the relay before this stop returned no result, why it did not.
+    ...(note ? { relay_note: note } : {}),
     ...fields,
   };
 };
@@ -792,8 +825,9 @@ const revisionSpec = {
       when: { existing: false },
       set: { created: "ok" },
     },
+    // Only whether the worktree is clean is read, so the first lines are enough.
     {
-      sh: `git -C ${shq(worktree)} status --porcelain --untracked-files=all`,
+      sh: `git -C ${shq(worktree)} status --porcelain --untracked-files=all | head -20`,
       cwd: repo,
       set: { wt_status: "out" },
     },
@@ -1073,14 +1107,21 @@ const onlyNonRendering = (raw, allowRecords) => {
     })
   );
 };
+// The decision reads every line, so a diff of more than DIFF_LINES lines is not returned whole. It always captures.
+const DIFF_LINES = 200;
 const treeDiff = (from, to, label) =>
   relay(label, "Verify", {
-    defaults: { exit_code: -1, raw: "" },
+    defaults: { exit_code: -1, raw: "", lines: "" },
     steps: [
       {
-        sh: `git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}`,
+        sh: `out=$(git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}) && printf '%s\\n' "$out" | head -${DIFF_LINES}`,
         cwd: repo,
         set: { exit_code: "exit", raw: "out" },
+      },
+      {
+        sh: `git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)} | wc -l | tr -d ' '`,
+        cwd: repo,
+        set: { lines: "out" },
       },
     ],
   });
@@ -1092,7 +1133,13 @@ const captureDecision = async (tree) => {
   if (capture.required) return "execute";
   const from = lastCaptureTree || `${baseSha}^{tree}`;
   const diff = await treeDiff(from, tree, `capture-diff:${counts.check_runs + 1}`);
-  if (!diff || diff.exit_code !== 0 || !onlyNonRendering(diff.raw, Boolean(lastCaptureTree)))
+  if (
+    !diff ||
+    diff.exit_code !== 0 ||
+    !/^\d+$/.test(String(diff.lines).trim()) ||
+    Number(diff.lines) > DIFF_LINES ||
+    !onlyNonRendering(diff.raw, Boolean(lastCaptureTree))
+  )
     return "execute";
   return lastCaptureTree ? "reused" : "not_required";
 };
@@ -1499,6 +1546,8 @@ let roundNumber = 0;
 while (!accepted) {
   roundNumber += 1;
   const roundKey = `round:${roundNumber}`;
+  // Calls from here to the next round belong to this round and to this count of running it again.
+  boundaryTag = `${roundKey}:${retryCount(roundKey)}`;
   const before = await snapshot(
     `requirements:${counts.check_runs + 1}`,
     "Verify",
@@ -1616,6 +1665,8 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // The function's source is also embedded in node -e, so it uses no template literal.
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
+// Calls from here on belong to Ship and to this count of running it again.
+boundaryTag = `ship:${retryCount("ship")}`;
 const gate = await snapshot("ship", "Ship", retryMark("ship"));
 if (!observed(gate)) {
   return await shipStop("check-unavailable", UNOBSERVED, { retry_next: retryNext("ship") });
@@ -1647,7 +1698,8 @@ const pulls = await relay("pulls", "Ship", {
   steps: [
     { sh: "gh api user --jq .login", cwd: repo, set: { actor: "out" } },
     {
-      sh: `gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp | node -e ${shq(PULLS_JS)}`,
+      // gh's output goes on only when gh succeeded. /bin/sh has no pipefail, and a failed gh page must not read as none.
+      sh: `out=$(gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp) && printf %s "$out" | node -e ${shq(PULLS_JS)}`,
       cwd: repo,
       set: { pulls_exit: "exit", pulls_json: "out" },
     },
@@ -1763,11 +1815,16 @@ const committed = await relay("commit", "Ship", {
     { sh: inWorktree("rev-parse", "HEAD"), cwd: repo, set: { commit: "out" } },
     { sh: inWorktree("rev-parse", "HEAD^"), cwd: repo, set: { parent: "out" } },
     { sh: inWorktree("rev-parse", "HEAD^{tree}"), cwd: repo, set: { tree: "out" } },
-    {
-      sh: inWorktree("diff-tree", "--no-commit-id", "--name-only", "--diff-filter=AM", "-r", "HEAD"),
-      cwd: repo,
-      set: { files: "out" },
-    },
+    // The listing is read only for the media under the capture destination, so it is limited to that directory.
+    ...(capture
+      ? [
+          {
+            sh: inWorktree("diff-tree", "--no-commit-id", "--name-only", "--diff-filter=AM", "-r", "HEAD", "--", destinationDir),
+            cwd: repo,
+            set: { files: "out" },
+          },
+        ]
+      : []),
   ],
 });
 if (!committed || committed.commit_exit !== 0 || !TREE_SHAPE.test(String(committed.commit))) {

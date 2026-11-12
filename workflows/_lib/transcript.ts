@@ -47,15 +47,26 @@ const walk = (dir: string): string[] =>
     return entry.isDirectory() ? walk(path) : [path];
   });
 
-// Agent transcripts live at <projects>/<project>/<session>/subagents/**/agent-<id>.jsonl.
-const recentTranscripts = (projects: string, now: number): string[] =>
-  entries(projects)
+// Agent transcripts live at <projects>/<project>/<session>/subagents/**/agent-<id>.jsonl. The session the
+// helper runs in is named by CLAUDE_CODE_SESSION_ID, and only that session's directories are walked. Without
+// the variable, or when that session keeps no transcript there, every session is walked.
+const sessionDirs = (projects: string, session: string | undefined): string[] => {
+  const projectDirs = entries(projects)
     .filter((project) => project.isDirectory())
-    .flatMap((project) =>
-      entries(join(projects, project.name))
-        .filter((session) => session.isDirectory())
-        .flatMap((session) => walk(join(projects, project.name, session.name, "subagents"))),
-    )
+    .map((project) => join(projects, project.name));
+  const own = session
+    ? projectDirs.map((dir) => join(dir, session, "subagents")).filter((dir) => entries(dir).length > 0)
+    : [];
+  if (own.length) return own;
+  return projectDirs.flatMap((dir) =>
+    entries(dir)
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(dir, entry.name, "subagents")),
+  );
+};
+const recentTranscripts = (projects: string, now: number): string[] =>
+  sessionDirs(projects, process.env.CLAUDE_CODE_SESSION_ID)
+    .flatMap(walk)
     .filter((path) => /agent-[^/]+\.jsonl$/.test(path))
     .map((path) => ({ path, mtime: attempt(() => statSync(path).mtimeMs, 0) }))
     .filter((file) => now - file.mtime <= RECENT_MS)
