@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -118,6 +118,7 @@ const KIND_BY_PROPERTY = [
   ["parent", "commit"],
   ["body_digest", "body"],
   ["effective_url", "probe"],
+  ["remote_head", "pushed"],
   ["remote_sha", "push"],
   ["create_exit", "create"],
   ["pr_json", "readback"],
@@ -223,6 +224,8 @@ const makeStubs = (overrides = {}) => {
       return { write_exit: 0, body_digest: digestOf(published.body) };
     },
     probe: () => ({ push_url: PUSH_URL, effective_url: PUSH_URL }),
+    // git ls-remote for the run's branch, asked only on a resumed Ship: nothing is on the remote yet.
+    pushed: () => ({ ls_exit: 0, remote_head: "" }),
     push: () => ({ push_exit: 0, push_tail: "", remote_sha: COMMIT }),
     create: () => ({ create_exit: 0, url: PR_URL, create_tail: "" }),
     readback: () => ({ readback_exit: 0, pr_json: JSON.stringify(restPr(published.body)) }),
@@ -1596,6 +1599,252 @@ test("CI that never registers its required checks stops ci-timed-out after the r
   assert.equal(kinds.filter((k) => k === "ci").length, result.ci_rounds);
   assert.ok(result.ci_rounds > 1);
   assert.deepEqual(result.ci.missing, ["tests"]);
+});
+
+// ---- resuming a stopped run ----
+// Workflow's resumeFromRunId answers every agent call whose prompt is unchanged from cache and runs
+// the first changed call and everything after it. The tests find that first changed call.
+const firstChange = (a, b) =>
+  a.calls.agent.findIndex((c, i) => c.prompt !== (b.calls.agent[i] || {}).prompt);
+const labelAt = (r, index) => (index < 0 ? "(none)" : r.calls.agent[index].opts.label);
+const shotReply = (patch) => [
+  (_, { tree }) => ({ started: true, timed_out: false, exit_code: 0, log_tail: "", tree, ...patch }),
+];
+const failedCheck = (_, { tree }) => ({ exit_code: 1, log_tail: "boom", tree });
+const noTree = { exit_code: 0, log_tail: "", tree: "" };
+const mangledBody = { body: [{ write_exit: 0, body_digest: digestOf("rewritten") }] };
+const badMedia = {
+  install: [
+    { stdout: JSON.stringify({ ok: false, reason: "Invalid capture media: a.png" }), tree: treeOf(2) },
+  ],
+};
+
+test("a stop that fixing the environment clears returns the retry to pass next, and any other stop returns none", async () => {
+  const cases = [
+    ["capture-unavailable", { "round:1": 1 }, () => withCapture(CAPTURE, { capture: shotReply({ exit_code: 78 }) })],
+    ["capture-timeout", { "round:1": 1 }, () => withCapture(CAPTURE, { capture: shotReply({ timed_out: true, exit_code: -1 }) })],
+    ["check-unavailable", { "round:1": 1 }, () => run({ check: [noTree] })],
+    ["invalid-review", { "round:1": 1 }, () => run({ review: [() => reviewReply(treeOf(999))] })],
+    // The second round opens after a repair, and its stop names the second round.
+    ["check-unavailable", { "round:2": 1 }, () => run({ check: [failedCheck, noTree] })],
+    ["pr-body-mismatch", { ship: 1 }, () => run(mangledBody, publishArgs)],
+    ["human-decision-required", null, () => run({ implement: [{ status: "needs_human", findings: "Which API?" }] })],
+    ["source-changed", null, () => withCapture(CAPTURE, { capture: shotReply({ tree: treeOf(999) }) })],
+    ["invalid-capture", null, () => withCapture(CAPTURE, badMedia)],
+    ["push-unconfirmed", null, () => run({ push: [{ push_exit: 1, push_tail: "rejected", remote_sha: "" }] }, publishArgs)],
+  ];
+  for (const [reason, next, launch] of cases) {
+    const { result } = await launch();
+    assert.equal(result.stopped, reason, reason);
+    assert.deepEqual(result.retry_next, next, reason);
+  }
+});
+
+test("a stop of a resumed run keeps the earlier boundaries in the retry it returns and counts the stopped one up", async () => {
+  const again = await run({ check: [noTree] }, { ...args, retry: { "round:1": 1 } });
+  assert.deepEqual(again.result.retry_next, { "round:1": 2 });
+  const later = await run(mangledBody, { ...publishArgs, retry: { "round:1": 2 } });
+  assert.deepEqual(later.result.retry_next, { "round:1": 2, ship: 1 });
+});
+
+test("a retry runs from the observation that opens the named boundary, and every call before it keeps its prompt", async () => {
+  const needsRepair = { review: [(_, { tree }) => reviewReply(tree, { newItems: [finding()] })] };
+  const cases = [
+    ["round:1", "requirements:1", (runArgs) => run({}, runArgs), args],
+    ["round:1", "requirements:1", (runArgs) => withCapture(CAPTURE, {}, runArgs), args],
+    ["round:2", "requirements:2", (runArgs) => run(needsRepair, runArgs), args],
+    ["ship", "ship", (runArgs) => run({}, runArgs), publishArgs],
+  ];
+  for (const [key, opener, launch, base] of cases) {
+    const plain = await launch(base);
+    const first = await launch({ ...base, retry: { [key]: 1 } });
+    const second = await launch({ ...base, retry: { [key]: 2 } });
+    assert.equal(labelAt(plain, firstChange(plain, first)), opener, key);
+    assert.equal(labelAt(first, firstChange(first, second)), opener, `${key}: a second run-again`);
+  }
+  // Resuming the second round replays the first round's repair from cache.
+  const plain = await run(needsRepair, args);
+  const resumed = await run(needsRepair, { ...args, retry: { "round:2": 1 } });
+  assert.ok(plain.kinds.slice(0, firstChange(plain, resumed)).includes("repair"));
+});
+
+// A run resumed at round 1 and then stopped at the body is resumed with both boundaries. Dropping the
+// first one would put the round's prompt back, and the run would start again from the round.
+test("a second resume that keeps the first boundary's count runs from the second boundary", async () => {
+  const afterRound = await run({}, { ...publishArgs, retry: { "round:1": 1 } });
+  const afterShip = await run({}, { ...publishArgs, retry: { "round:1": 1, ship: 1 } });
+  assert.equal(labelAt(afterRound, firstChange(afterRound, afterShip)), "ship");
+});
+
+// A capture that stopped leaves its output directory and the three paths the harness writes next to
+// it. A resume of that round, and a fresh launch after the earlier branch was cleared, capture into
+// the same path.
+test("the capture command moves what an earlier capture left aside before it creates its directory, and deletes nothing", async () => {
+  const { calls } = await withCapture(CAPTURE);
+  const prompt = calls.agent.find((c) => c.opts.label === "capture:1").prompt;
+  const output = `${repo}/.claude/worktrees/implement-12-capture-1`;
+  const aside = prompt.slice(prompt.indexOf("for p in "), prompt.indexOf("; done") + "; done".length);
+  assert.ok(prompt.includes(`${aside} && mkdir '${output}'`), "the move runs before mkdir");
+
+  const dir = mkdtempSync(join(tmpdir(), "implement-capture-"));
+  const local = join(dir, "implement-12-capture-1");
+  const here = aside.replaceAll(output, local);
+  const leftovers = ["", ".artifacts", ".config.mjs", ".report.json"];
+  mkdirSync(local);
+  writeFileSync(join(local, "old.png"), "old");
+  mkdirSync(`${local}.artifacts`);
+  writeFileSync(`${local}.config.mjs`, "old");
+  writeFileSync(`${local}.report.json`, "old");
+  execSync(`${here} && mkdir '${local}'`, { stdio: "pipe" });
+  const names = readdirSync(dir);
+  assert.deepEqual(readdirSync(local), [], "the new directory starts empty");
+  for (const ext of leftovers) {
+    const moved = names.filter((n) => n.startsWith(`implement-12-capture-1${ext}.stale-`));
+    assert.equal(moved.length, 1, `${ext || "the directory"} is kept under a stale name`);
+  }
+  // With nothing left behind, the same command creates the directory.
+  const fresh = mkdtempSync(join(tmpdir(), "implement-capture-"));
+  const clean = join(fresh, "implement-12-capture-1");
+  execSync(`${aside.replaceAll(output, clean)} && mkdir '${clean}'`, { stdio: "pipe" });
+  assert.deepEqual(readdirSync(fresh), ["implement-12-capture-1"]);
+});
+
+// A capture may not write into the checkout. When it stopped and its tree cannot be confirmed equal to
+// the tree before it, a resume would take whatever it wrote in as the deliverable.
+test("a capture stop whose tree changed, or whose agent returned nothing, cannot be resumed", async () => {
+  const cases = [
+    ["capture-timeout", shotReply({ timed_out: true, exit_code: -1, tree: treeOf(999) })],
+    ["capture-unavailable", shotReply({ exit_code: 78, tree: treeOf(999) })],
+    ["capture-unavailable", [null]],
+  ];
+  for (const [reason, capture] of cases) {
+    const { result } = await withCapture(CAPTURE, { capture });
+    assert.equal(result.stopped, reason);
+    assert.equal(result.retry_next, null, reason);
+  }
+});
+
+// An observation that fails is the first live call of every resume. Reporting it as a changed Issue
+// sent the run back to a fresh launch although nothing had changed.
+test("an observation that returns nothing or no digest stops as check-unavailable and can be resumed, apart from a changed Issue", async () => {
+  const nth = (n, reply) => {
+    let seen = 0;
+    return (_, ctx) => {
+      seen += 1;
+      return seen === n ? reply : { issue_digest: DIGEST, tree: ctx.tree };
+    };
+  };
+  const needsRepair = (_, { tree }) => reviewReply(tree, { newItems: [finding()] });
+  const cases = [
+    // The round's opening observation, the one after the review, and the one before the repair.
+    [{ snapshot: nth(1, null) }, args, { "round:1": 1 }],
+    [{ snapshot: nth(1, { issue_digest: "", tree: treeOf(1) }) }, args, { "round:1": 1 }],
+    [{ snapshot: nth(2, null) }, args, { "round:1": 1 }],
+    [{ snapshot: nth(3, null), review: [needsRepair] }, args, { "round:1": 1 }],
+    // The observation that opens Ship.
+    [{ snapshot: (_, ctx) => (ctx.label === "ship" ? null : { issue_digest: DIGEST, tree: ctx.tree }) }, publishArgs, { ship: 1 }],
+  ];
+  for (const [overrides, runArgs, next] of cases) {
+    const { result, kinds } = await run(overrides, runArgs);
+    assert.equal(result.stopped, "check-unavailable", JSON.stringify(next));
+    assert.deepEqual(result.retry_next, next);
+    assert.ok(!kinds.some((k) => WRITES.includes(k)));
+  }
+  const changed = await run({ snapshot: nth(1, { issue_digest: "b".repeat(64), tree: treeOf(1) }) });
+  assert.equal(changed.result.stopped, "requirements-changed");
+  assert.equal(changed.result.retry_next, null);
+});
+
+// The script cannot tell where the earlier run stopped, so a resumed Ship asks the remote. A branch
+// already there means the stopped run pushed, and going on would retry a write.
+test("a resumed Ship stops without writing when the branch is already on the remote, and a run that is not resumed does not ask", async () => {
+  const retry = { ship: 1 };
+  const clean = await run({}, { ...publishArgs, retry });
+  assert.equal(clean.result.status, "published_draft");
+  assert.ok(clean.kinds.indexOf("pushed") < clean.kinds.indexOf("commit"), "asked before the commit");
+  const cases = [
+    { ls_exit: 0, remote_head: `${COMMIT}\trefs/heads/${BRANCH}\n` },
+    { ls_exit: 128, remote_head: "" },
+    null,
+  ];
+  for (const reply of cases) {
+    const { result, kinds } = await run({ pushed: [reply] }, { ...publishArgs, retry });
+    assert.equal(result.stopped, "push-unconfirmed", JSON.stringify(reply));
+    assert.equal(result.retry_next, null);
+    assert.ok(!kinds.some((k) => ["commit", ...WRITES].includes(k)), JSON.stringify(reply));
+  }
+  const plain = await run({}, publishArgs);
+  assert.ok(!plain.kinds.includes("pushed"));
+});
+
+// A resume of Ship runs the commit step once more, on a worktree the stopped run already committed.
+test("the commit command of a resumed Ship commits once, leaves that commit alone on a second run, and still fails when there is nothing to commit", async () => {
+  const target = mkdtempSync(join(tmpdir(), "implement-commit-"));
+  const worktree = join(target, ".claude", "worktrees", "implement-12");
+  const env = {
+    ...process.env,
+    GIT_AUTHOR_NAME: "t",
+    GIT_AUTHOR_EMAIL: "t@example.com",
+    GIT_COMMITTER_NAME: "t",
+    GIT_COMMITTER_EMAIL: "t@example.com",
+  };
+  const sh = (command) => execSync(command, { cwd: worktree, env, stdio: "pipe" }).toString().trim();
+  const exitOf = (command) => {
+    try {
+      sh(command);
+      return 0;
+    } catch (error) {
+      return error.status;
+    }
+  };
+  mkdirSync(worktree, { recursive: true });
+  sh("git init -q && git commit -q --allow-empty -m base");
+  const base = sh("git rev-parse HEAD");
+  const commands = {};
+  const keep = (name) => (prompt, { tree }) => {
+    commands[name] = stepCommand(prompt, 1);
+    return { commit_exit: 0, commit: COMMIT, parent: base, tree, files: "" };
+  };
+  const real = {
+    target: [() => ({ ...makeStubsTarget(), head_sha: base })],
+    prepare: [
+      { existing: false, created: true, base_sha: base, checkout_head: base, setup_exits: [], setup_tail: "" },
+    ],
+  };
+  const realArgs = { issue: "12", repo: target };
+  await run({ ...real, commit: [keep("plain")] }, realArgs);
+  await run({ ...real, commit: [keep("resumed")] }, { ...realArgs, retry: { ship: 1 } });
+  assert.ok(!commands.plain.includes("--cached"), "a run that is not resumed keeps the plain commit");
+
+  assert.notEqual(exitOf(commands.resumed), 0, "nothing staged on the base: nothing to commit");
+  writeFileSync(join(worktree, "a.txt"), "a\n");
+  assert.equal(exitOf(commands.resumed), 0);
+  const head = sh("git rev-parse HEAD");
+  assert.equal(sh("git rev-parse HEAD^"), base);
+  assert.equal(exitOf(commands.resumed), 0);
+  assert.equal(sh("git rev-parse HEAD"), head, "the second run adds no commit");
+});
+
+test("a retry that is not the value a stop returned stops as invalid-retry before anything runs", async () => {
+  const bad = [
+    { from: "check:1", attempt: 1 },
+    { push: 1 },
+    { "capture:1": 1 },
+    { "repair:1": 1 },
+    { "round:0": 1 },
+    { "round:1": 0 },
+    { "round:1": "1" },
+    { ship: 1, implement: 1 },
+    {},
+    ["ship"],
+    null,
+    "ship",
+  ];
+  for (const retry of bad) {
+    const { result, kinds } = await run({}, { ...args, retry });
+    assert.equal(result.stopped, "invalid-retry", JSON.stringify(retry));
+    assert.deepEqual(kinds, ["record"], JSON.stringify(retry));
+  }
 });
 
 // The body agent's first command writes the PR body from its last argument, an ASCII-only JSON

@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Codex の orchestrator.ts と同じ流れで、合意済み Issue を隔離 worktree 上に 1 回の実装パスで実装し、撮影・check・独立レビュー・修正のループを accepted まで回したあと、1 つの commit にまとめて push し、draft PR を作って同じ head の CI を待つ。check と撮影の合否は終了コードで、媒体は形式を検査してから取り込み、レビューの受理は finding ID ごとの更新を script が検査して算出するので、自己申告の合格や過去指摘の取りこぼしは通らない。最初の書き込みの前に Issue・accepted の tree・実行ユーザー・push 先を script が照合し直し、書き込みのたびに結果を読み戻す。書き込みを再試行せず、PR を ready にもしない。修正ループに回数上限は無く、要求の変更・対象の変更・不正な応答・人の判断待ちで止まる。公開を切ったときは verified_local で終わる。",
   whenToUse:
-    "/scoping で合意した Issue を headless に実装し、draft PR まで進めたいとき。この workflow が公開した PR を、人が採用した修正依頼で直すときも使える。そのときは PR の URL と修正依頼を渡し、PR は新しく作らず本文を作り直す。実装を伴わない既存差分のレビューは polish か audit を使う。対象の Issue 番号と対象リポジトリの絶対パスを渡す。対象リポジトリのルートには Codex の対象契約どおり repository・remote・baseBranch・setup・check・ciChecks・capture を持つ .dotagents.json が要り、capture の {harness} は Codex のハーネス ~/.agents に展開する。check や撮影がローカルの server の socket を開くので、sandbox が有効なセッションでは sandbox.network.allowLocalBinding を true にしてから起動する。既定で draft PR まで公開する。公開を切ると、検証済みの branch と worktree を人に残して終わる。ready への切り替え・公開本文の照合・人のレビューは /implement スキルと人が持つ。",
+    "/scoping で合意した Issue を headless に実装し、draft PR まで進めたいとき。この workflow が公開した PR を、人が採用した修正依頼で直すときも使える。そのときは PR の URL と修正依頼を渡し、PR は新しく作らず本文を作り直す。実装を伴わない既存差分のレビューは polish か audit を使う。対象の Issue 番号と対象リポジトリの絶対パスを渡す。対象リポジトリのルートには Codex の対象契約どおり repository・remote・baseBranch・setup・check・ciChecks・capture を持つ .dotagents.json が要り、capture の {harness} は Codex のハーネス ~/.agents に展開する。check や撮影がローカルの server の socket を開くので、sandbox が有効なセッションでは sandbox.network.allowLocalBinding を true にしてから起動する。macOS では sandbox の中で撮影の browser が起動しないので、capture を設定した対象は sandbox を外したセッションで起動する。既定で draft PR まで公開する。公開を切ると、検証済みの branch と worktree を人に残して終わる。環境が原因で撮影・check・レビュー・PR 本文の書き出しが止まった実行は、原因を直した後に、止まった巡か公開の先頭から再開できる。ready への切り替え・公開本文の照合・人のレビューは /implement スキルと人が持つ。",
   phases: [
     { title: "Target" },
     { title: "Prepare" },
@@ -123,6 +123,8 @@ const stop = async (reason, why, fields = {}) => {
     ...counts,
     run_id: runId,
     remaining: ["local_verification", "publication", ...REMAINING_AFTER_PR],
+    // 原因を直せば再開できる停止は、再開に渡す retry を fields で上書きする。
+    retry_next: null,
     ...fields,
   };
 };
@@ -176,6 +178,41 @@ const revisionIssue = revisionProblem();
 if (revisionIssue) {
   return await stop("invalid-revision", revisionIssue);
 }
+// 停止した実行の再開。Workflow の resumeFromRunId は、prompt が変わらない agent() の結果を cache から返し、
+// prompt が変わった最初の呼び出しから後ろを実際に走らせる。再開する区切りの先頭の prompt に印を足すと、そこから再開する。
+// 区切りは 2 つ。round:N は Verify の N 巡目の先頭で、要求と tree を観測し直してから撮影・check・レビューを行う。
+// ship は Ship の先頭で、書き込みの前の照合をすべてやり直す。区切りの途中からは再開しない。cache にある前段の結果が、
+// 今の Issue・worktree・実行ユーザーのものとは限らないため。
+// retry は区切りごとのやり直し回数を持つ。前の再開の印を落とすと、その区切りの prompt が元に戻り、そこからやり直しになる。
+const RETRY_KEY = /^(?:round:[1-9]\d*|ship)$/;
+const retrying = input.retry !== undefined;
+const retryMap =
+  retrying && input.retry && typeof input.retry === "object" && !Array.isArray(input.retry)
+    ? input.retry
+    : null;
+const retryProblem = () => {
+  if (!retrying) return "";
+  if (!retryMap || !Object.keys(retryMap).length)
+    return "retry には、停止した実行が返した retry_next をそのまま渡す";
+  const bad = Object.entries(retryMap).find(
+    ([key, count]) => !RETRY_KEY.test(key) || !Number.isInteger(count) || count < 1,
+  );
+  return bad
+    ? `retry の区切りは round:N か ship、値は 1 以上の整数にする: ${JSON.stringify(bad)}`
+    : "";
+};
+const retryIssue = retryProblem();
+if (retryIssue) {
+  return await stop("invalid-retry", retryIssue);
+}
+const retryCount = (key) => (retryMap && retryMap[key]) || 0;
+// 再開する区切りの先頭の prompt に足す印。回数を含めるので、同じ区切りをもう 1 度やり直すときも prompt が変わる。
+const retryMark = (key) =>
+  retryCount(key)
+    ? `\n\nこの呼び出しは、停止した実行の再開で ${retryCount(key)} 回目のやり直しになる。手順を変えずに最初から実行する。`
+    : "";
+// 止まった区切りをもう 1 度やり直すための retry。呼び出し側はこの値をそのまま渡す。
+const retryNext = (key) => ({ ...retryMap, [key]: retryCount(key) + 1 });
 await recordRun("started");
 
 // ---- Target: Issue・実効ユーザー・repo・未コミット変更・.dotagents.json を照合する ----
@@ -764,13 +801,14 @@ const SNAPSHOT_SCHEMA = closed({ issue_digest: str, tree: str, config_blob: str 
 // 開始時の worktree の .dotagents.json。正本は orchestrator.ts の unchangedTarget で、agent が設定を書き換えても検出する。
 const baseConfigBlob = String(prepared.config_blob || "").trim();
 // 要求 (Issue の digest)、成果物 (worktree の tree id)、設定 (stage 済みの .dotagents.json の blob) を 1 度に観測する。
-const snapshot = async (label, stage = "Verify") => {
+const snapshot = async (label, stage = "Verify", mark = "") => {
   const snap = await agent(
     anchor(
       `次のコマンドを実行し、各出力をそのまま返す。要約・判断をしない。\n` +
         `1. \`${issueDigestCommand(` --repo ${shq(repository)}`)}\`: 出力された 64 桁の hex を issue_digest に入れる (失敗したら空文字)。\n` +
         `2. \`${stageTree}\`: 出力された tree id を tree に入れる (失敗したら空文字)。\n` +
-        `3. \`git -C ${shq(worktree)} rev-parse :.dotagents.json\`: 出力された blob id を config_blob に入れる (失敗したら空文字)。`,
+        `3. \`git -C ${shq(worktree)} rev-parse :.dotagents.json\`: 出力された blob id を config_blob に入れる (失敗したら空文字)。` +
+        mark,
     ),
     {
       label,
@@ -783,6 +821,9 @@ const snapshot = async (label, stage = "Verify") => {
   return snap && { ...snap, configHeld: String(snap.config_blob).trim() === baseConfigBlob };
 };
 const requirementsHeld = (snap) => Boolean(snap) && snap.issue_digest === issueDigest;
+// 観測そのものの失敗 (agent が結果を返さない、digest を読めない) は、要求の変更と分けて止める。
+const observed = (snap) => Boolean(snap) && DIGEST_SHAPE.test(String(snap.issue_digest).trim());
+const UNOBSERVED = "Issue と tree を観測できなかった。実行環境を確かめる。";
 const history = [];
 // host の check や撮影の失敗を修正担当へ渡す証拠にする。過去のレビューがあれば履歴として添える。
 const hostFailure = (message) =>
@@ -862,10 +903,14 @@ const CAPTURE_SCHEMA = closed({
   log_tail: str,
   tree: str,
 });
+// 以前の撮影が残した出力 (ディレクトリと、harness がその隣に作る 3 つ) を脇へ移す。残っていると mkdir が失敗し、
+// 止まった実行の再開も、以前の branch を片付けた後の新しい起動も撮影で止まる。削除はしない。
+const staleAside = (output) =>
+  `for p in ${["", ".artifacts", ".config.mjs", ".report.json"].map((ext) => shq(`${output}${ext}`)).join(" ")}; do [ ! -e "$p" ] || mv "$p" "$p.stale-$(date +%s)-$$"; done`;
 const runCapture = (output, label) =>
   agent(
     `撮影を 1 回実行し、結果をそのまま返す。何も直さない。\n` +
-      `1. \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && mkdir ${shq(output)}\` を実行する。0 以外で終わったら started: false・timed_out: false・exit_code: -1 にし、その出力を log_tail に入れて手順 3 へ進む。\n` +
+      `1. \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && ${staleAside(output)} && mkdir ${shq(output)}\` を実行する。0 以外で終わったら started: false・timed_out: false・exit_code: -1 にし、その出力を log_tail に入れて手順 3 へ進む。\n` +
       `2. \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` を、Bash tool の timeout parameter を 600000 にして実行し、started: true にする。時間切れなら timed_out: true・exit_code: -1 に、そうでなければ timed_out: false にして終了コードを exit_code に入れる。結合出力の末尾 80 行を log_tail に入れる。\n` +
       `3. \`${stageTree}\` を実行し、tree id を tree に入れる (失敗したら空文字)。`,
     {
@@ -921,7 +966,8 @@ const captureStep = async (tree) => {
   const output = `${worktree}-capture-${counts.captures}`;
   const shot = await runCapture(output, `capture:${counts.captures}`);
   const stopped = shotStop(shot, tree);
-  if (stopped) return stopped;
+  // 撮影の後の tree が撮影の前と同じだと確かめられた停止だけを再開できる。確かめられない tree は、次の観測が成果物として取り込む。
+  if (stopped) return { ...stopped, resumable: Boolean(shot) && shot.tree === tree };
   if (shot.exit_code !== 0)
     return {
       evidence: hostFailure(
@@ -1177,6 +1223,7 @@ const reviewRound = async (checked) => {
     },
   );
   const after = await snapshot(`source:${attempt}`);
+  if (!observed(after)) return { stop: "check-unavailable", why: UNOBSERVED };
   if (!requirementsHeld(after))
     return {
       stop: "requirements-changed",
@@ -1237,9 +1284,26 @@ const repairPrompt = (evidence) =>
     referenceContext,
   ].join("\n");
 
+// 原因を直せば、止まった巡の先頭から再開できる停止。巡の先頭の観測からやり直すので、撮影・check・レビューは
+// 今の tree に対して揃う。媒体や設定に原因がある停止と、要求・成果物が変わった停止は入れない。
+const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
 let accepted = null;
+let roundNumber = 0;
 while (!accepted) {
-  const before = await snapshot(`requirements:${counts.check_runs + 1}`);
+  roundNumber += 1;
+  const roundKey = `round:${roundNumber}`;
+  const before = await snapshot(
+    `requirements:${counts.check_runs + 1}`,
+    "Verify",
+    retryMark(roundKey),
+  );
+  if (!observed(before)) {
+    return await stop("check-unavailable", UNOBSERVED, {
+      ...where,
+      review: history.at(-1) || null,
+      retry_next: retryNext(roundKey),
+    });
+  }
   if (!requirementsHeld(before)) {
     return await stop(
       "requirements-changed",
@@ -1251,7 +1315,12 @@ while (!accepted) {
   const shot = await captureStep(before.tree);
   const step = shot.stop || shot.evidence ? shot : await checkAndReview();
   if (step.stop) {
-    return await stop(step.stop, step.why, { ...where, review: history.at(-1) || null });
+    return await stop(step.stop, step.why, {
+      ...where,
+      review: history.at(-1) || null,
+      retry_next:
+        ROUND_RETRY.includes(step.stop) && step.resumable !== false ? retryNext(roundKey) : null,
+    });
   }
   if (step.accepted) {
     accepted = step.accepted;
@@ -1259,6 +1328,13 @@ while (!accepted) {
   }
   // 正本は correction.ts の beforeRepair。check に数分かかる間に Issue が変わっていないかを、修正の直前にも確かめる。
   const beforeRepair = await snapshot(`before-repair:${counts.repairs + 1}`);
+  if (!observed(beforeRepair)) {
+    return await stop("check-unavailable", UNOBSERVED, {
+      ...where,
+      review: history.at(-1) || null,
+      retry_next: retryNext(roundKey),
+    });
+  }
   if (!requirementsHeld(beforeRepair)) {
     return await stop(
       "requirements-changed",
@@ -1342,7 +1418,10 @@ const digest = (text) => {
 };
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
-const gate = await snapshot("ship", "Ship");
+const gate = await snapshot("ship", "Ship", retryMark("ship"));
+if (!observed(gate)) {
+  return await shipStop("check-unavailable", UNOBSERVED, { retry_next: retryNext("ship") });
+}
 if (!requirementsHeld(gate)) {
   return await shipStop(
     "requirements-changed",
@@ -1450,10 +1529,40 @@ if (revising) {
 
 const COMMIT_SCHEMA = closed({ commit_exit: int, commit: str, parent: str, tree: str, files: str });
 const inWorktree = (...argv) => argvLine(["git", "-C", worktree, ...argv]);
+// Ship の再開はこの段をもう 1 度実行する。accepted の変更が既に親の上の 1 つの commit になっていれば、commit を重ねない。
+const commitParent = revising ? revisionRow.commit : baseSha;
+const commitOnce = inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`);
+// Ship の再開は、止まった実行がまだ何も push していないときだけ進む。script は前の実行がどこで止まったかを知らないので、
+// remote の branch で確かめる。push の後の停止からの再開は、書き込みのやり直しになる。
+if (retryCount("ship")) {
+  const remoteHead = await agent(
+    anchor(
+      `次のコマンドを実行し、出力をそのまま返す。要約・判断をしない。\n` +
+        `1. \`${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}\`: 終了コードを ls_exit、stdout を remote_head に入れる。`,
+    ),
+    {
+      label: "pushed",
+      phase: "Ship",
+      agentType: "general-purpose",
+      schema: closed({ ls_exit: int, remote_head: str }),
+      model: "haiku",
+    },
+  );
+  const pushedSha = String((remoteHead && remoteHead.remote_head) || "").trim().split(/\s+/)[0];
+  if (!remoteHead || remoteHead.ls_exit !== 0 || pushedSha !== (revising ? revisionRow.commit : "")) {
+    return await shipStop(
+      "push-unconfirmed",
+      `再開の前に、この branch が既に remote にある (${pushedSha || "読めなかった"})。止まった実行が push している。実状態を確かめるまで再試行しない。`,
+    );
+  }
+}
+const commitCommand = retryCount("ship")
+  ? `{ ${inWorktree("diff", "--cached", "--quiet")} && [ "$(${inWorktree("rev-parse", "HEAD^")})" = ${shq(commitParent)} ] || ${commitOnce}; }`
+  : commitOnce;
 const committed = await agent(
   anchor(
     `accepted の worktree を 1 つの commit にまとめ、各出力をそのまま返す。要約・修正・判断をしない。\n` +
-      `1. \`${inWorktree("add", "-A")} && ${inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`)}\`: 終了コードを commit_exit に入れる。\n` +
+      `1. \`${inWorktree("add", "-A")} && ${commitCommand}\`: 終了コードを commit_exit に入れる。\n` +
       `2. \`${inWorktree("rev-parse", "HEAD")}\`: 出力された sha を commit に入れる。\n` +
       `3. \`${inWorktree("rev-parse", "HEAD^")}\`: 出力された sha を parent に入れる。\n` +
       `4. \`${inWorktree("rev-parse", "HEAD^{tree}")}\`: 出力された tree id を tree に入れる。\n` +
@@ -1478,7 +1587,7 @@ published.commit = committed.commit;
 // 修正では、新しい commit の親は PR 全体の基点でなく公開した head になる。
 if (
   committed.tree !== accepted.tree ||
-  committed.parent !== (revising ? revisionRow.commit : baseSha)
+  committed.parent !== commitParent
 ) {
   return await shipStop(
     "commit-mismatch",
@@ -1612,6 +1721,7 @@ if (!written || written.write_exit !== 0 || !sameBody(written.body_digest, body)
   return await shipStop(
     "pr-body-mismatch",
     `書いた PR 本文が生成した本文と違う (${bodyFile})。何も公開していない。`,
+    { retry_next: retryNext("ship") },
   );
 }
 
