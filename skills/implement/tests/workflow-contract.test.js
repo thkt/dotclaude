@@ -62,27 +62,30 @@ test("the skill observes the sandbox with its probe before launch, and its table
   assert.match(skill, /^allowed-tools: .*Bash\(\$\{CLAUDE_SKILL_DIR\}\/scripts\/\*\)/m);
   const table = skill.slice(
     skill.indexOf("## Observing the sandbox"),
-    skill.indexOf("## Resuming from the step that stopped"),
+    skill.indexOf("## Resuming a run that stopped"),
   );
   const fields = Object.keys(await probe());
   assert.deepEqual(fields, ["sandboxed", "local_binding", "platform"]);
   for (const field of fields) assert.ok(table.includes(`\`${field}\``), `the table omits ${field}`);
   assert.match(table, /`sandbox\.network\.allowLocalBinding: true`/);
+  // The config contract requires the capture key in every file, with null when no media is needed.
+  assert.match(table, /`capture` in `\.dotagents\.json` is not null/);
   const whenToUse = /whenToUse:\s*"([^"]*)"/.exec(script);
   assert.ok(whenToUse && whenToUse[1].includes("sandbox.network.allowLocalBinding"));
 });
 
-// A stop the environment caused resumes from its step. The skill passes back the label the stop
+// A stop the environment caused can be resumed. The skill passes back, unchanged, the retry the stop
 // returned, and the workflow reads it from the retry input.
-test("the skill resumes a stopped run through the workflow's retry input, with the step the stop returned", () => {
+test("the skill resumes a stopped run by passing the stop's retry_next back as the workflow's retry input", () => {
   const section = skill.slice(
-    skill.indexOf("## Resuming from the step that stopped"),
+    skill.indexOf("## Resuming a run that stopped"),
     skill.indexOf("## Revising an existing PR"),
   );
   assert.match(section, /`scriptPath`[^\n]*`resumeFromRunId`/);
-  assert.match(section, /retry: \{from: "<retry_from>", attempt: [^}]+\}/);
+  assert.match(section, /`retry: <retry_next>`/);
+  assert.match(section, /`run_id`/);
   assert.match(script, /const retrying = input\.retry !== undefined;/);
-  assert.match(script, /retry_from: "",/);
+  assert.match(script, /retry_next: null,/);
 });
 
 // Codex's implement takes any agreed Issue. Routing by a `## Plan` section came from this harness's

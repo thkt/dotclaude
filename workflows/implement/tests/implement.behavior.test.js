@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -1598,73 +1598,84 @@ test("CI that never registers its required checks stops ci-timed-out after the r
   assert.deepEqual(result.ci.missing, ["tests"]);
 });
 
-// The body agent's first command writes the PR body from its last argument, an ASCII-only JSON
-// string in shell single quotes. Decoding it recovers the body the script generated.
-// ---- resuming a stopped run from its step ----
+// ---- resuming a stopped run ----
 // Workflow's resumeFromRunId answers every agent call whose prompt is unchanged from cache and runs
-// the first changed call and everything after it, so the tests compare prompts by label.
-const promptsByLabel = (calls) =>
-  Object.fromEntries(calls.agent.map((c) => [c.opts.label, c.prompt]));
+// the first changed call and everything after it. The tests find that first changed call.
+const firstChange = (a, b) =>
+  a.calls.agent.findIndex((c, i) => c.prompt !== (b.calls.agent[i] || {}).prompt);
+const labelAt = (r, index) => (index < 0 ? "(none)" : r.calls.agent[index].opts.label);
 const shotReply = (patch) => [
   (_, { tree }) => ({ started: true, timed_out: false, exit_code: 0, log_tail: "", tree, ...patch }),
 ];
+const failedCheck = (_, { tree }) => ({ exit_code: 1, log_tail: "boom", tree });
+const noTree = { exit_code: 0, log_tail: "", tree: "" };
+const mangledBody = { body: [{ write_exit: 0, body_digest: digestOf("rewritten") }] };
+const badMedia = {
+  install: [
+    { stdout: JSON.stringify({ ok: false, reason: "Invalid capture media: a.png" }), tree: treeOf(2) },
+  ],
+};
 
-test("a stop that fixing the environment clears names the step to resume from, and any other stop names none", async () => {
+test("a stop that fixing the environment clears returns the retry to pass next, and any other stop returns none", async () => {
   const cases = [
-    ["capture-unavailable", "capture:1", () => withCapture(CAPTURE, { capture: shotReply({ exit_code: 78 }) })],
-    ["capture-timeout", "capture:1", () => withCapture(CAPTURE, { capture: shotReply({ timed_out: true, exit_code: -1 }) })],
-    ["check-unavailable", "check:1", () => run({ check: [{ exit_code: 0, log_tail: "", tree: "" }] })],
-    ["invalid-review", "review:1", () => run({ review: [() => reviewReply(treeOf(999))] })],
-    [
-      "pr-body-mismatch",
-      "body",
-      () => run({ body: [{ write_exit: 0, body_digest: digestOf("rewritten") }] }, publishArgs),
-    ],
-    [
-      "human-decision-required",
-      "",
-      () => run({ implement: [{ status: "needs_human", findings: "Which API?" }] }),
-    ],
-    ["source-changed", "", () => withCapture(CAPTURE, { capture: shotReply({ tree: treeOf(999) }) })],
-    [
-      "push-unconfirmed",
-      "",
-      () => run({ push: [{ push_exit: 1, push_tail: "rejected", remote_sha: "" }] }, publishArgs),
-    ],
+    ["capture-unavailable", { "round:1": 1 }, () => withCapture(CAPTURE, { capture: shotReply({ exit_code: 78 }) })],
+    ["capture-timeout", { "round:1": 1 }, () => withCapture(CAPTURE, { capture: shotReply({ timed_out: true, exit_code: -1 }) })],
+    ["check-unavailable", { "round:1": 1 }, () => run({ check: [noTree] })],
+    ["invalid-review", { "round:1": 1 }, () => run({ review: [() => reviewReply(treeOf(999))] })],
+    // The second round opens after a repair, and its stop names the second round.
+    ["check-unavailable", { "round:2": 1 }, () => run({ check: [failedCheck, noTree] })],
+    ["pr-body-mismatch", { ship: 1 }, () => run(mangledBody, publishArgs)],
+    ["human-decision-required", null, () => run({ implement: [{ status: "needs_human", findings: "Which API?" }] })],
+    ["source-changed", null, () => withCapture(CAPTURE, { capture: shotReply({ tree: treeOf(999) }) })],
+    ["invalid-capture", null, () => withCapture(CAPTURE, badMedia)],
+    ["push-unconfirmed", null, () => run({ push: [{ push_exit: 1, push_tail: "rejected", remote_sha: "" }] }, publishArgs)],
   ];
-  for (const [reason, step, launch] of cases) {
+  for (const [reason, next, launch] of cases) {
     const { result } = await launch();
     assert.equal(result.stopped, reason, reason);
-    assert.equal(result.retry_from, step, reason);
+    assert.deepEqual(result.retry_next, next, reason);
   }
 });
 
-test("a retry changes the prompt of the named step alone, and a second retry of that step changes it again", async () => {
+test("a stop of a resumed run keeps the earlier boundaries in the retry it returns and counts the stopped one up", async () => {
+  const again = await run({ check: [noTree] }, { ...args, retry: { "round:1": 1 } });
+  assert.deepEqual(again.result.retry_next, { "round:1": 2 });
+  const later = await run(mangledBody, { ...publishArgs, retry: { "round:1": 2 } });
+  assert.deepEqual(later.result.retry_next, { "round:1": 2, ship: 1 });
+});
+
+test("a retry runs from the observation that opens the named boundary, and every call before it keeps its prompt", async () => {
+  const needsRepair = { review: [(_, { tree }) => reviewReply(tree, { newItems: [finding()] })] };
   const cases = [
-    ["check:1", (runArgs) => run({}, runArgs), args],
-    ["review:1", (runArgs) => run({}, runArgs), args],
-    ["capture:1", (runArgs) => withCapture(CAPTURE, {}, runArgs), args],
-    ["body", (runArgs) => run({}, runArgs), publishArgs],
+    ["round:1", "requirements:1", (runArgs) => run({}, runArgs), args],
+    ["round:1", "requirements:1", (runArgs) => withCapture(CAPTURE, {}, runArgs), args],
+    ["round:2", "requirements:2", (runArgs) => run(needsRepair, runArgs), args],
+    ["ship", "ship", (runArgs) => run({}, runArgs), publishArgs],
   ];
-  for (const [from, launch, base] of cases) {
-    const plain = promptsByLabel((await launch(base)).calls);
-    const first = promptsByLabel((await launch({ ...base, retry: { from, attempt: 1 } })).calls);
-    const second = promptsByLabel((await launch({ ...base, retry: { from, attempt: 2 } })).calls);
-    // The media install and the review name the retried capture's own directory, and both run after it.
-    const expected = from === "capture:1" ? ["capture:1", "install:1", "review:1"] : [from];
-    assert.deepEqual(
-      Object.keys(plain).filter((label) => plain[label] !== first[label]),
-      expected,
-      from,
-    );
-    assert.notEqual(second[from], first[from], `${from}: attempt 2 differs from attempt 1`);
+  for (const [key, opener, launch, base] of cases) {
+    const plain = await launch(base);
+    const first = await launch({ ...base, retry: { [key]: 1 } });
+    const second = await launch({ ...base, retry: { [key]: 2 } });
+    assert.equal(labelAt(plain, firstChange(plain, first)), opener, key);
+    assert.equal(labelAt(first, firstChange(first, second)), opener, `${key}: a second run-again`);
   }
+  // Resuming the second round replays the first round's repair from cache.
+  const plain = await run(needsRepair, args);
+  const resumed = await run(needsRepair, { ...args, retry: { "round:2": 1 } });
+  assert.ok(plain.kinds.slice(0, firstChange(plain, resumed)).includes("repair"));
 });
 
-test("a retried capture writes to a directory of its own, since the stopped attempt left its directory behind", async () => {
-  const retry = { from: "capture:1", attempt: 2 };
-  const { result, calls } = await withCapture(CAPTURE, {}, { ...args, retry });
-  const prompts = promptsByLabel(calls);
+// A run resumed at round 1 and then stopped at the body is resumed with both boundaries. Dropping the
+// first one would put the round's prompt back, and the run would start again from the round.
+test("a second resume that keeps the first boundary's count runs from the second boundary", async () => {
+  const afterRound = await run({}, { ...publishArgs, retry: { "round:1": 1 } });
+  const afterShip = await run({}, { ...publishArgs, retry: { "round:1": 1, ship: 1 } });
+  assert.equal(labelAt(afterRound, firstChange(afterRound, afterShip)), "ship");
+});
+
+test("a round that is run again captures into a directory of its own, since the stopped capture left its directory behind", async () => {
+  const { result, calls } = await withCapture(CAPTURE, {}, { ...args, retry: { "round:1": 2 } });
+  const prompts = Object.fromEntries(calls.agent.map((c) => [c.opts.label, c.prompt]));
   const output = `${repo}/.claude/worktrees/implement-12-capture-1-retry-2`;
   assert.equal(result.status, "verified_local");
   assert.ok(prompts["capture:1"].includes(`mkdir '${output}'`));
@@ -1672,18 +1683,68 @@ test("a retried capture writes to a directory of its own, since the stopped atte
   assert.equal(result.capture.output, output);
 });
 
-test("a retry naming a step that writes to GitHub, prepares the worktree, or implements stops as invalid-retry before anything runs", async () => {
+// A resume of Ship runs the commit step once more, on a worktree the stopped run already committed.
+test("the commit command of a resumed Ship commits once, leaves that commit alone on a second run, and still fails when there is nothing to commit", async () => {
+  const target = mkdtempSync(join(tmpdir(), "implement-commit-"));
+  const worktree = join(target, ".claude", "worktrees", "implement-12");
+  const env = {
+    ...process.env,
+    GIT_AUTHOR_NAME: "t",
+    GIT_AUTHOR_EMAIL: "t@example.com",
+    GIT_COMMITTER_NAME: "t",
+    GIT_COMMITTER_EMAIL: "t@example.com",
+  };
+  const sh = (command) => execSync(command, { cwd: worktree, env, stdio: "pipe" }).toString().trim();
+  const exitOf = (command) => {
+    try {
+      sh(command);
+      return 0;
+    } catch (error) {
+      return error.status;
+    }
+  };
+  mkdirSync(worktree, { recursive: true });
+  sh("git init -q && git commit -q --allow-empty -m base");
+  const base = sh("git rev-parse HEAD");
+  const commands = {};
+  const keep = (name) => (prompt, { tree }) => {
+    commands[name] = stepCommand(prompt, 1);
+    return { commit_exit: 0, commit: COMMIT, parent: base, tree, files: "" };
+  };
+  const real = {
+    target: [() => ({ ...makeStubsTarget(), head_sha: base })],
+    prepare: [
+      { existing: false, created: true, base_sha: base, checkout_head: base, setup_exits: [], setup_tail: "" },
+    ],
+  };
+  const realArgs = { issue: "12", repo: target };
+  await run({ ...real, commit: [keep("plain")] }, realArgs);
+  await run({ ...real, commit: [keep("resumed")] }, { ...realArgs, retry: { ship: 1 } });
+  assert.ok(!commands.plain.includes("--cached"), "a run that is not resumed keeps the plain commit");
+
+  assert.notEqual(exitOf(commands.resumed), 0, "nothing staged on the base: nothing to commit");
+  writeFileSync(join(worktree, "a.txt"), "a\n");
+  assert.equal(exitOf(commands.resumed), 0);
+  const head = sh("git rev-parse HEAD");
+  assert.equal(sh("git rev-parse HEAD^"), base);
+  assert.equal(exitOf(commands.resumed), 0);
+  assert.equal(sh("git rev-parse HEAD"), head, "the second run adds no commit");
+});
+
+test("a retry that is not the value a stop returned stops as invalid-retry before anything runs", async () => {
   const bad = [
-    { from: "push", attempt: 1 },
-    { from: "create", attempt: 1 },
-    { from: "prepare", attempt: 1 },
-    { from: "implement", attempt: 1 },
-    { from: "repair:1", attempt: 1 },
-    { from: "check:0", attempt: 1 },
-    { from: "check:1", attempt: 0 },
-    { from: "check:1" },
+    { from: "check:1", attempt: 1 },
+    { push: 1 },
+    { "capture:1": 1 },
+    { "repair:1": 1 },
+    { "round:0": 1 },
+    { "round:1": 0 },
+    { "round:1": "1" },
+    { ship: 1, implement: 1 },
+    {},
+    ["ship"],
     null,
-    "check:1",
+    "ship",
   ];
   for (const retry of bad) {
     const { result, kinds } = await run({}, { ...args, retry });
@@ -1692,6 +1753,8 @@ test("a retry naming a step that writes to GitHub, prepares the worktree, or imp
   }
 });
 
+// The body agent's first command writes the PR body from its last argument, an ASCII-only JSON
+// string in shell single quotes. Decoding it recovers the body the script generated.
 function bodyIn(prompt) {
   const block = bodyBlock(prompt);
   const lines = block.split("\n").slice(1, -1);

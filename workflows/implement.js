@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Implements an agreed Issue in an isolated worktree with one implementation pass, runs a capture, check, independent review, and repair loop until the review is accepted, then commits once, pushes, opens a draft PR, and waits for CI on the same head, following the same flow as Codex's orchestrator.ts. The check and the capture pass on their exit codes, media is installed only after its format is validated, and the script decides acceptance by validating one update per finding ID, so a self-reported pass or a dropped prior finding cannot get through. Before the first write the script re-confirms the Issue, the accepted tree, the actor, and the push target, and it reads back the result of every write. It never retries a write and never switches the PR to ready. The repair loop has no round cap; it stops on changed requirements, a changed target, an invalid reply, or a pending human decision. With publishing turned off it ends at verified_local.",
   whenToUse:
-    "Implementing, headlessly, an Issue agreed through /scoping up to a draft PR. It also revises a PR it published, from a revision request a human adopted: pass the PR URL and the request, and it rewrites the body instead of opening a new PR. A review of an existing diff without implementation goes to polish or audit. Pass the Issue number and the target repository's absolute path. The target repository's root needs a .dotagents.json carrying repository, remote, baseBranch, setup, check, ciChecks, and capture, as the Codex target contract defines them, and {harness} in capture expands to the Codex harness at ~/.agents. The check or the capture may open a local server socket, so a session with the sandbox on sets sandbox.network.allowLocalBinding to true before launching. Publishing up to a draft PR is the default. With publishing turned off, the run ends by leaving the verified branch and worktree to a human. A run that the environment stopped at the capture, the check, the review, or the writing of the PR body resumes from that step once the cause is fixed. The switch to ready, the published-body check, and human review stay with the /implement skill and the human.",
+    "Implementing, headlessly, an Issue agreed through /scoping up to a draft PR. It also revises a PR it published, from a revision request a human adopted: pass the PR URL and the request, and it rewrites the body instead of opening a new PR. A review of an existing diff without implementation goes to polish or audit. Pass the Issue number and the target repository's absolute path. The target repository's root needs a .dotagents.json carrying repository, remote, baseBranch, setup, check, ciChecks, and capture, as the Codex target contract defines them, and {harness} in capture expands to the Codex harness at ~/.agents. The check or the capture may open a local server socket, so a session with the sandbox on sets sandbox.network.allowLocalBinding to true before launching. On macOS the capture's browser cannot start inside the sandbox, so a target with a capture configured launches from a session with the sandbox off. Publishing up to a draft PR is the default. With publishing turned off, the run ends by leaving the verified branch and worktree to a human. A run that the environment stopped at the capture, the check, the review, or the writing of the PR body resumes from the start of that round, or of publication, once the cause is fixed. The switch to ready, the published-body check, and human review stay with the /implement skill and the human.",
   phases: [
     { title: "Target" },
     { title: "Prepare" },
@@ -128,8 +128,8 @@ const stop = async (reason, why, fields = {}) => {
     ...counts,
     run_id: runId,
     remaining: ["local_verification", "publication", ...REMAINING_AFTER_PR],
-    // A stop that fixing the cause clears overrides this in fields with the label of its step.
-    retry_from: "",
+    // A stop that fixing the cause clears overrides this in fields with the retry to pass on the resume.
+    retry_next: null,
     ...fields,
   };
 };
@@ -188,32 +188,45 @@ const revisionIssue = revisionProblem();
 if (revisionIssue) {
   return await stop("invalid-revision", revisionIssue);
 }
-// Resuming from the step that stopped. Workflow's resumeFromRunId answers an agent() call whose prompt is
-// unchanged from cache, and runs the first call whose prompt changed and everything after it. Marking the
-// prompt of the step that stopped resumes the run from that step. A step can be resumed only when running
-// it again writes nothing to GitHub, does not rebuild the worktree, and does not implement again.
-const RETRYABLE = /^(?:(?:capture|check|review):[1-9]\d*|body)$/;
+// Resuming a run that stopped. Workflow's resumeFromRunId answers an agent() call whose prompt is unchanged
+// from cache, and runs the first call whose prompt changed and everything after it. Marking the prompt that
+// opens a boundary resumes the run from there. There are two boundaries. round:N is the start of verify
+// round N, which observes the requirements and the tree again before the capture, the check, and the review.
+// ship is the start of Ship, which repeats every check that precedes a write. A run does not resume from
+// inside a boundary, because the cached results of the earlier steps may not be those of the current Issue,
+// worktree, or actor.
+// retry carries how many times each boundary has been run again. Dropping the mark of an earlier resume puts
+// that boundary's prompt back as it was, and the run starts again from there.
+const RETRY_KEY = /^(?:round:[1-9]\d*|ship)$/;
 const retrying = input.retry !== undefined;
-const retryFrom = retrying && input.retry ? String(input.retry.from || "").trim() : "";
-const retryAttempt = retrying && input.retry ? input.retry.attempt : 0;
+const retryMap =
+  retrying && input.retry && typeof input.retry === "object" && !Array.isArray(input.retry)
+    ? input.retry
+    : null;
 const retryProblem = () => {
   if (!retrying) return "";
-  if (!RETRYABLE.test(retryFrom))
-    return "Only the steps capture:N, check:N, review:N, and body can be resumed";
-  return Number.isInteger(retryAttempt) && retryAttempt >= 1
-    ? ""
-    : "Pass attempt as how many times this step has been run again, an integer of 1 or more";
+  if (!retryMap || !Object.keys(retryMap).length)
+    return "Pass the retry_next that the stopped run returned as retry, unchanged";
+  const bad = Object.entries(retryMap).find(
+    ([key, count]) => !RETRY_KEY.test(key) || !Number.isInteger(count) || count < 1,
+  );
+  return bad
+    ? `A retry boundary is round:N or ship, and its value is an integer of 1 or more: ${JSON.stringify(bad)}`
+    : "";
 };
 const retryIssue = retryProblem();
 if (retryIssue) {
   return await stop("invalid-retry", retryIssue);
 }
-// The mark added to the prompt of the resumed step. It carries the attempt, so running the same step once
-// more changes the prompt again.
-const retryMark = (label) =>
-  label === retryFrom
-    ? `\n\nThis step resumes a run that stopped, and this is run-again number ${retryAttempt} of it. Run it from the start without changing the procedure.`
+const retryCount = (key) => (retryMap && retryMap[key]) || 0;
+// The mark added to the prompt that opens a resumed boundary. It carries the count, so running the same
+// boundary once more changes the prompt again.
+const retryMark = (key) =>
+  retryCount(key)
+    ? `\n\nThis call resumes a run that stopped, and this is run-again number ${retryCount(key)} of it. Run it from the start without changing the procedure.`
     : "";
+// The retry that runs the stopped boundary once more. The caller passes this value unchanged.
+const retryNext = (key) => ({ ...retryMap, [key]: retryCount(key) + 1 });
 await recordRun("started");
 
 // ---- Target: check the Issue, the effective user, the repo, uncommitted changes, and .dotagents.json ----
@@ -813,13 +826,14 @@ const SNAPSHOT_SCHEMA = closed({ issue_digest: str, tree: str, config_blob: str 
 // The worktree's .dotagents.json at the start. Canonical source: unchangedTarget in orchestrator.ts, which catches an agent editing the config.
 const baseConfigBlob = String(prepared.config_blob || "").trim();
 // Observes the requirements (the Issue's digest), the deliverable (the worktree's tree id), and the config (the staged .dotagents.json blob) at once.
-const snapshot = async (label, stage = "Verify") => {
+const snapshot = async (label, stage = "Verify", mark = "") => {
   const snap = await agent(
     anchor(
       `Run these commands and return each output verbatim. Do not summarize or judge.\n` +
         `1. \`${issueDigestCommand(` --repo ${shq(repository)}`)}\`: put the printed 64-digit hex in issue_digest (an empty string when it fails).\n` +
         `2. \`${stageTree}\`: put the printed tree id in tree (an empty string when it fails).\n` +
-        `3. \`git -C ${shq(worktree)} rev-parse :.dotagents.json\`: put the printed blob id in config_blob (an empty string when it fails).`,
+        `3. \`git -C ${shq(worktree)} rev-parse :.dotagents.json\`: put the printed blob id in config_blob (an empty string when it fails).` +
+        mark,
     ),
     {
       label,
@@ -916,8 +930,7 @@ const runCapture = (output, label) =>
     `Run the capture once and return the result verbatim. Do not fix anything.\n` +
       `1. Run \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && mkdir ${shq(output)}\`. If it exits non-zero, set started: false, timed_out: false, and exit_code: -1, put its output in log_tail, and go to step 3.\n` +
       `2. Run \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` with the Bash tool's timeout parameter set to 600000, and set started: true. On a timeout set timed_out: true and exit_code: -1; otherwise set timed_out: false and put its exit code in exit_code. Put the last 80 lines of its combined output in log_tail.\n` +
-      `3. Run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).` +
-      retryMark(label),
+      `3. Run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).`,
     {
       label,
       phase: "Verify",
@@ -960,7 +973,7 @@ const shotStop = (shot, tree) => {
     };
   return null;
 };
-const captureStep = async (tree) => {
+const captureStep = async (tree, roundKey) => {
   if (!capture) return {};
   if (!TREE_SHAPE.test(String(tree)))
     return { stop: "check-unavailable", why: "Could not get the tree id." };
@@ -971,15 +984,13 @@ const captureStep = async (tree) => {
   }
   lastCaptureTree = "";
   counts.captures += 1;
-  const label = `capture:${counts.captures}`;
-  // A capture that stopped leaves its output directory, and mkdir on the same path fails. A retry captures
-  // into a directory of its own.
-  const output = `${worktree}-capture-${counts.captures}${label === retryFrom ? `-retry-${retryAttempt}` : ""}`;
-  const shot = await runCapture(output, label);
+  // A capture that stopped leaves its output directory, and mkdir on the same path fails. A round that
+  // is run again captures into a directory of its own.
+  const retried = retryCount(roundKey);
+  const output = `${worktree}-capture-${counts.captures}${retried ? `-retry-${retried}` : ""}`;
+  const shot = await runCapture(output, `capture:${counts.captures}`);
   const stopped = shotStop(shot, tree);
-  // A stop for a worktree that changed during the capture cannot be resumed: fixing the environment does
-  // not bring the same tree back.
-  if (stopped) return { ...stopped, retry: stopped.stop === "source-changed" ? "" : label };
+  if (stopped) return stopped;
   if (shot.exit_code !== 0)
     return {
       evidence: hostFailure(
@@ -1007,8 +1018,7 @@ const runCheck = (label) =>
   agent(
     `Run the target check once and return the result verbatim. Do not fix anything.\n` +
       `1. Run \`cd ${shq(worktree)} && ${argvLine(config.check)}\` with the Bash tool's timeout parameter set to 600000 (macOS ships no timeout binary). Put its exit code in exit_code (-1 when it could not start or timed out), and the last 80 lines of its combined output in log_tail.\n` +
-      `2. Then run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).` +
-      retryMark(label),
+      `2. Then run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).`,
     { label, phase: "Verify", agentType: "general-purpose", schema: CHECK_SCHEMA, model: "haiku" },
   );
 
@@ -1227,7 +1237,7 @@ const reviewRound = async (checked) => {
         revisionContext,
         referenceContext,
       ].join("\n"),
-    ) + retryMark(`review:${attempt}`),
+    ),
     {
       label: `review:${attempt}`,
       phase: "Verify",
@@ -1250,14 +1260,12 @@ const reviewRound = async (checked) => {
       why: "The worktree changed during the review. The reviewer does not edit files.",
     };
   const merged = mergeReview(response, checked.tree, attempt, previous);
-  if (merged.error)
-    return { stop: "invalid-review", why: merged.error, retry: `review:${attempt}` };
+  if (merged.error) return { stop: "invalid-review", why: merged.error };
   const missing = await missingDocuments(merged.review, checked.tree, attempt);
   if (missing.length)
     return {
       stop: "invalid-review",
       why: `The review names documents missing from the reviewed tree: ${missing.join(", ")}`,
-      retry: `review:${attempt}`,
     };
   // The completed review has read the repair explanations so far. A failed check has not.
   repairsSinceReview = [];
@@ -1271,7 +1279,6 @@ const checkAndReview = async () => {
     return {
       stop: "check-unavailable",
       why: "Could not get the check result or the tree id. Check the execution environment.",
-      retry: `check:${counts.check_runs}`,
     };
   }
   if (checked.exit_code !== 0) {
@@ -1301,9 +1308,20 @@ const repairPrompt = (evidence) =>
     referenceContext,
   ].join("\n");
 
+// The stops that resume from the start of the round once the cause is fixed. The round starts again from
+// its observation, so the capture, the check, and the review all run against the current tree. A stop caused
+// by the media or the config, and a stop for changed requirements or a changed tree, are left out.
+const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
 let accepted = null;
+let round = 0;
 while (!accepted) {
-  const before = await snapshot(`requirements:${counts.check_runs + 1}`);
+  round += 1;
+  const roundKey = `round:${round}`;
+  const before = await snapshot(
+    `requirements:${counts.check_runs + 1}`,
+    "Verify",
+    retryMark(roundKey),
+  );
   if (!requirementsHeld(before)) {
     return await stop(
       "requirements-changed",
@@ -1312,13 +1330,13 @@ while (!accepted) {
     );
   }
   if (!before.configHeld) return await stop(CONFIG_CHANGED.stop, CONFIG_CHANGED.why, where);
-  const shot = await captureStep(before.tree);
+  const shot = await captureStep(before.tree, roundKey);
   const step = shot.stop || shot.evidence ? shot : await checkAndReview();
   if (step.stop) {
     return await stop(step.stop, step.why, {
       ...where,
       review: history.at(-1) || null,
-      retry_from: step.retry || "",
+      retry_next: ROUND_RETRY.includes(step.stop) ? retryNext(roundKey) : null,
     });
   }
   if (step.accepted) {
@@ -1410,7 +1428,7 @@ const digest = (text) => {
 };
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
-const gate = await snapshot("ship", "Ship");
+const gate = await snapshot("ship", "Ship", retryMark("ship"));
 if (!requirementsHeld(gate)) {
   return await shipStop(
     "requirements-changed",
@@ -1518,10 +1536,17 @@ if (revising) {
 
 const COMMIT_SCHEMA = closed({ commit_exit: int, commit: str, parent: str, tree: str, files: str });
 const inWorktree = (...argv) => argvLine(["git", "-C", worktree, ...argv]);
+// A resume of Ship runs this step once more. When the accepted change is already one commit on its parent,
+// it does not commit again.
+const commitParent = revising ? revisionRow.commit : baseSha;
+const commitOnce = inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`);
+const commitCommand = retryCount("ship")
+  ? `{ ${inWorktree("diff", "--cached", "--quiet")} && [ "$(${inWorktree("rev-parse", "HEAD^")})" = ${shq(commitParent)} ] || ${commitOnce}; }`
+  : commitOnce;
 const committed = await agent(
   anchor(
     `Commit the accepted worktree once and return each output verbatim. Do not summarize, fix, or judge.\n` +
-      `1. \`${inWorktree("add", "-A")} && ${inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`)}\`: put its exit code in commit_exit.\n` +
+      `1. \`${inWorktree("add", "-A")} && ${commitCommand}\`: put its exit code in commit_exit.\n` +
       `2. \`${inWorktree("rev-parse", "HEAD")}\`: put the printed sha in commit.\n` +
       `3. \`${inWorktree("rev-parse", "HEAD^")}\`: put the printed sha in parent.\n` +
       `4. \`${inWorktree("rev-parse", "HEAD^{tree}")}\`: put the printed tree id in tree.\n` +
@@ -1667,8 +1692,7 @@ const written = await agent(
     "```sh\n" +
     writeBlock +
     "\n```\n" +
-    `2. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: put its stdout in body_digest.` +
-    retryMark("body"),
+    `2. \`node -e ${shq(DIGEST_JS)} ${shq(bodyFile)}\`: put its stdout in body_digest.`,
   {
     label: "body",
     phase: "Ship",
@@ -1682,7 +1706,7 @@ if (!written || written.write_exit !== 0 || !sameBody(written.body_digest, body)
   return await shipStop(
     "pr-body-mismatch",
     `The written PR body differs from the generated body (${bodyFile}). Nothing has been published.`,
-    { retry_from: "body" },
+    { retry_next: retryNext("ship") },
   );
 }
 

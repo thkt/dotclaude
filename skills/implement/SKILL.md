@@ -38,7 +38,7 @@ Branch on the return value's `status` or `stopped`. In every case, return the br
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `status: verified_local`  | A run with publishing off. Show the verified branch and worktree, and leave commit and publication to the human                                   |
 | `status: published_draft` | Check the published body and switch to ready per `${CLAUDE_SKILL_DIR}/references/publish.md`                                                      |
-| `stopped` (a stop reason) | Decide the handling from the table in § Stop conditions. Do not continue by changing stop conditions or limits, and do not relaunch automatically. When the returned `retry_from` is not empty, show the human § Resuming from the step that stopped |
+| `stopped` (a stop reason) | Decide the handling from the table in § Stop conditions. Do not continue by changing stop conditions or limits, and do not relaunch automatically. When the returned `retry_next` is not null, show the human § Resuming a run that stopped |
 
 ## Observing the sandbox
 
@@ -47,24 +47,25 @@ Inside the macOS sandbox Chromium cannot start, and the capture stops as `captur
 | Observation                                                                               | Handling                                                                                                             |
 | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `sandboxed` is false                                                                      | Go on to the next step                                                                                               |
-| `sandboxed` is true. `.dotagents.json` has a `capture`, and `platform` is darwin          | Do not launch. Tell the user to run it again in a session with the sandbox off                                       |
+| `sandboxed` is true. `capture` in `.dotagents.json` is not null, and `platform` is darwin          | Do not launch. Tell the user to run it again in a session with the sandbox off                                       |
 | `sandboxed` is true. `local_binding` is false                                             | Do not launch. Tell the user to set `sandbox.network.allowLocalBinding: true`. The setting applies without a restart |
 | `sandboxed` is true. Neither of the two rows above applies                                | Go on to the next step                                                                                               |
 
-## Resuming from the step that stopped
+## Resuming a run that stopped
 
-A stop whose returned `retry_from` is not empty can resume from the step that stopped, once its cause is fixed. The finished implementation, check, and review results come back from cache, and only the step that stopped and the steps after it run. Whether to resume is the human's call.
+A stop whose returned `retry_next` is not null can be resumed once its cause is fixed. The resume runs from the start of the round that stopped, or from the start of publication, and the implementation, repair, and review results before that come back from cache. Whether to resume is the human's call.
 
 1. Fix the cause per the table in § Stop conditions. Do not touch the Issue or the worktree.
-2. In the same session that launched the run, call Workflow again. Pass the script path the launch result showed as `scriptPath`, and the runId in the launch result as `resumeFromRunId`. For args, add `retry: {from: "<retry_from>", attempt: <count>}` to the same args as the launch. attempt is how many times this step has been run again, 1 the first time.
+2. In the same session that launched the run, call Workflow again. Pass the script path the launch result showed as `scriptPath`. Pass as `resumeFromRunId` the runId the Workflow tool returned when it started the launch that stopped. Do not use the returned `run_id`, which is the ID of the run record. For args, add `retry: <retry_next>` to the same args as the launch. Pass `retry_next` unchanged.
 3. Handle the result with the table in Phase 3.
 
-| Situation                                     | Handling                                                                                                                  |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `retry_from` is empty                         | Cannot resume. Follow the table in § Stop conditions                                                                      |
-| The session that launched the run has ended   | Cannot resume. The cache does not cross sessions. Launch anew                                                             |
-| The Issue changed (a new comment also counts) | Cannot resume. The resumed run stops as `requirements-changed`. Launch anew                                               |
-| The worktree changed                          | Cannot resume. The check and review results in the cache are not those of the current worktree. Launch anew              |
+| Situation                                     | Handling                                                                                                                   |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `retry_next` is null                          | Cannot resume. Follow the table in § Stop conditions                                                                       |
+| The session that launched the run has ended   | Cannot resume. The cache does not cross sessions. Launch anew                                                              |
+| The Issue changed (a new comment also counts) | Cannot resume. The resumed run stops as `requirements-changed`. Launch anew                                                |
+| The resumed run stopped once more             | Repeat the same steps with that stop's `retry_next` and that launch's runId                                                |
+| It stopped as `invalid-retry`                 | Do not use that launch's runId. Call again with the runId of the launch that stopped before it and that stop's `retry_next` |
 
 ## Revising an existing PR
 
@@ -89,7 +90,7 @@ When the workflow stops, return `why` and the known URL, commit, and remaining c
 | `invalid-reports` `start-commit-mismatch` `report-mismatch`                                                                        | Go back to step 5 of Phase 1, commit the references, record the start commit and blobs again, then relaunch                                                                                                                                     |
 | `branch-exists` `branch-pr-exists`                                                                                                 | Show the earlier run's branch, worktree, and PR. Deleting or reusing them is the human's call                                                                                                                                                   |
 | `human-decision-required`                                                                                                          | Show the returned findings and review, and ask for the human's decision on requirements, scope, or permission. Write the decision into the Issue body through `/scoping`. A decision written in a comment reaches neither implementation nor review. After the body changes, launch anew |
-| `invalid-retry`                                                                                                                    | The resume request was not accepted. Check it against the returned `retry_from` and the steps in § Resuming from the step that stopped                                                                                                           |
+| `invalid-retry`                                                                                                                    | The retry that was passed was not accepted. Follow the table in § Resuming a run that stopped                                                                                                           |
 | `invalid-repair` `invalid-review`                                                                                                  | An agent's reply broke the contract. Show `why` and ask the human whether to relaunch                                                                                                                                                           |
 | `source-changed` `config-changed` `start-head-changed`                                                                             | The worktree, its `.dotagents.json`, or the checkout's HEAD changed mid-run. Find out who changed it before relaunching                                                                                                                         |
 | `target-unavailable` `prepare-unavailable` `worktree-failed` `setup-failed` `check-unavailable` `pulls-unreadable` `commit-failed` | An environment problem. Fix the cause from the returned log tail, then relaunch                                                                                                                                                                 |

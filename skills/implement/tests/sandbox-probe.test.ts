@@ -21,10 +21,12 @@ test("a command the sandbox runtime wrapped reports sandboxed, and one it did no
   assert.equal(run({ SANDBOX_RUNTIME: undefined }).sandboxed, false);
 });
 
-test("the probe reports the platform and whether a local listen succeeded", () => {
+// Whether a local listen succeeds is a fact of the environment the suite runs in: a sandbox without
+// allowLocalBinding denies it. The probe has to report what a listen in this process finds.
+test("the probe reports the platform, and for local binding what a listen on 127.0.0.1 finds here", async () => {
   const out = run({});
   assert.equal(out.platform, process.platform);
-  assert.equal(out.local_binding, true);
+  assert.equal(out.local_binding, await canBind("127.0.0.1"));
 });
 
 test("a listen that the host refuses reads as no binding", async () => {

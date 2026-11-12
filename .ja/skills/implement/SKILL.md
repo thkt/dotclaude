@@ -38,7 +38,7 @@ workflow は background で走り、完了は通知で届く。完了まで状�
 | ------------------------- | ---------------------------------------------------------------------------------------- |
 | `status: verified_local`  | 公開を切った実行。検証済みの branch と worktree を示し、commit・公開は人の判断に残す     |
 | `status: published_draft` | `${CLAUDE_SKILL_DIR}/references/publish.md` の手順で公開本文を照合し、ready に切り替える |
-| `stopped` (停止理由あり)  | § 停止条件の表で扱いを決める。停止条件や上限を変えて続行しない。自動で再起動しない。戻り値の `retry_from` が空でなければ、§ 停止した段からの再開を人に示す |
+| `stopped` (停止理由あり)  | § 停止条件の表で扱いを決める。停止条件や上限を変えて続行しない。自動で再起動しない。戻り値の `retry_next` が null でなければ、§ 停止した実行の再開を人に示す |
 
 ## sandbox の観測
 
@@ -47,24 +47,25 @@ macOS の sandbox の中では Chromium が起動せず、撮影は実装とレ�
 | 観測                                                                            | 扱い                                                                                                   |
 | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `sandboxed` が false                                                            | 次の手順へ進む                                                                                         |
-| `sandboxed` が true。`.dotagents.json` に `capture` があり、`platform` が darwin | 起動しない。sandbox を外したセッションで実行し直すよう伝える                                           |
+| `sandboxed` が true。`.dotagents.json` の `capture` が null でなく、`platform` が darwin | 起動しない。sandbox を外したセッションで実行し直すよう伝える                                           |
 | `sandboxed` が true。`local_binding` が false                                   | 起動しない。`sandbox.network.allowLocalBinding: true` を設定するよう伝える。この設定は再起動なしで効く |
 | `sandboxed` が true。上の 2 行のどちらにもあたらない                            | 次の手順へ進む                                                                                         |
 
-## 停止した段からの再開
+## 停止した実行の再開
 
-戻り値の `retry_from` が空でない停止は、原因を直した後に、止まった段から再開できる。完了した実装・check・レビューの結果は cache から戻り、止まった段から後ろだけが走る。再開するかは人が決める。
+戻り値の `retry_next` が null でない停止は、原因を直した後に再開できる。再開は止まった巡の先頭か公開の先頭から走り、それより前の実装・修正・レビューの結果は cache から戻る。再開するかは人が決める。
 
 1. § 停止条件の表に従って原因を直す。Issue と worktree には触れない。
-2. 起動したのと同じセッションで Workflow を呼び直す。`scriptPath` に起動時の結果が示した script の path を、`resumeFromRunId` に起動時の結果の runId を渡す。args は起動時と同じものに `retry: {from: "<retry_from>", attempt: <回数>}` を足す。attempt はこの段をやり直す回数で、初回は 1 にする。
+2. 起動したのと同じセッションで Workflow を呼び直す。`scriptPath` に起動時の結果が示した script の path を渡す。`resumeFromRunId` には、止まった起動を Workflow tool が始めたときに返した runId を渡す。戻り値の `run_id` は実行記録の ID なので使わない。args は起動時と同じものに `retry: <retry_next>` を足す。`retry_next` は書き換えずにそのまま渡す。
 3. 結果を Phase 3 の表で扱う。
 
-| 状況                               | 扱い                                                                                         |
-| ---------------------------------- | -------------------------------------------------------------------------------------------- |
-| `retry_from` が空                  | 再開できない。§ 停止条件の表に従う                                                           |
-| 起動したセッションが終わっている   | 再開できない。cache はセッションをまたがない。新しく起動する                                 |
-| Issue を変えた (コメントの追加でも) | 再開できない。再開した実行は `requirements-changed` で止まる。新しく起動する                 |
-| worktree を変えた                  | 再開できない。cache にある check とレビューの結果が、今の worktree のものでない。新しく起動する |
+| 状況                                | 扱い                                                                                              |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `retry_next` が null                | 再開できない。§ 停止条件の表に従う                                                                |
+| 起動したセッションが終わっている    | 再開できない。cache はセッションをまたがない。新しく起動する                                      |
+| Issue を変えた (コメントの追加でも) | 再開できない。再開した実行は `requirements-changed` で止まる。新しく起動する                      |
+| 再開した実行がもう 1 度止まった     | その停止の `retry_next` と、その起動の runId で同じ手順を繰り返す                                 |
+| `invalid-retry` で止まった          | その起動の runId は使わない。1 つ前に止まった起動の runId と、その停止の `retry_next` で呼び直す |
 
 ## 既存 PR の修正
 
@@ -89,7 +90,7 @@ workflow が止まったら、`why` と判明している URL・commit・残る�
 | `invalid-reports` `start-commit-mismatch` `report-mismatch`                                                                        | Phase 1 の手順 5 に戻り、参照を commit して開始 commit と blob を記録し直してから起動し直す                                                                                                 |
 | `branch-exists` `branch-pr-exists`                                                                                                 | 以前の実行の branch・worktree・PR を示す。消すか再利用するかは人の判断                                                                                                                      |
 | `human-decision-required`                                                                                                          | 戻り値の findings と review を示し、要求・範囲・権限についての人の判断を仰ぐ。判断は `/scoping` の手順で Issue の本文へ書く。コメントに書いた判断は実装にもレビューにも届かない。本文を変えた後は新しく起動する |
-| `invalid-retry`                                                                                                                    | 再開の指定が受け付けられなかった。戻り値の `retry_from` と § 停止した段からの再開の手順を照合する                                                                                           |
+| `invalid-retry`                                                                                                                    | 渡した retry が受け付けられなかった。§ 停止した実行の再開の表に従う                                                                                           |
 | `invalid-repair` `invalid-review`                                                                                                  | agent の応答が契約を満たさなかった。`why` を示し、起動し直すかを人に尋ねる                                                                                                                  |
 | `source-changed` `config-changed` `start-head-changed`                                                                             | worktree・その `.dotagents.json`・checkout の HEAD が途中で変わった。誰が変えたかを確かめてから起動し直す                                                                                   |
 | `target-unavailable` `prepare-unavailable` `worktree-failed` `setup-failed` `check-unavailable` `pulls-unreadable` `commit-failed` | 実行環境の問題。戻り値のログ末尾から原因を直し、起動し直す                                                                                                                                  |
