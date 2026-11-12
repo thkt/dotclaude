@@ -32,7 +32,7 @@ The workflow runs in the background, and its completion arrives as a notificatio
 
 ## Phase 3: Handle the result
 
-Branch on the return value's `status` or `stopped`. In every case, return the branch, worktree, commit, URL, review summary, and remaining work (`remaining`) from the return value to the user.
+Branch on the return value's `status` or `stopped`. In every case, return the branch, worktree, commit, URL, review summary, and remaining work (`remaining`) from the return value to the user. When the returned `body_transport` is `copied`, also return that the PR body could not be read back from the transcript and an agent copied it, with the reason in `body_fallback`.
 
 | Return value              | Handling                                                                                                                                          |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
