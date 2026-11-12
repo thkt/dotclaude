@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -118,6 +118,7 @@ const KIND_BY_PROPERTY = [
   ["parent", "commit"],
   ["body_digest", "body"],
   ["effective_url", "probe"],
+  ["remote_head", "pushed"],
   ["remote_sha", "push"],
   ["create_exit", "create"],
   ["pr_json", "readback"],
@@ -223,6 +224,8 @@ const makeStubs = (overrides = {}) => {
       return { write_exit: 0, body_digest: digestOf(published.body) };
     },
     probe: () => ({ push_url: PUSH_URL, effective_url: PUSH_URL }),
+    // git ls-remote for the run's branch, asked only on a resumed Ship: nothing is on the remote yet.
+    pushed: () => ({ ls_exit: 0, remote_head: "" }),
     push: () => ({ push_exit: 0, push_tail: "", remote_sha: COMMIT }),
     create: () => ({ create_exit: 0, url: PR_URL, create_tail: "" }),
     readback: () => ({ readback_exit: 0, pr_json: JSON.stringify(restPr(published.body)) }),
@@ -1673,14 +1676,105 @@ test("a second resume that keeps the first boundary's count runs from the second
   assert.equal(labelAt(afterRound, firstChange(afterRound, afterShip)), "ship");
 });
 
-test("a round that is run again captures into a directory of its own, since the stopped capture left its directory behind", async () => {
-  const { result, calls } = await withCapture(CAPTURE, {}, { ...args, retry: { "round:1": 2 } });
-  const prompts = Object.fromEntries(calls.agent.map((c) => [c.opts.label, c.prompt]));
-  const output = `${repo}/.claude/worktrees/implement-12-capture-1-retry-2`;
-  assert.equal(result.status, "verified_local");
-  assert.ok(prompts["capture:1"].includes(`mkdir '${output}'`));
-  assert.ok(prompts["install:1"].includes(`'${output}'`));
-  assert.equal(result.capture.output, output);
+// A capture that stopped leaves its output directory and the three paths the harness writes next to
+// it. A resume of that round, and a fresh launch after the earlier branch was cleared, capture into
+// the same path.
+test("the capture command moves what an earlier capture left aside before it creates its directory, and deletes nothing", async () => {
+  const { calls } = await withCapture(CAPTURE);
+  const prompt = calls.agent.find((c) => c.opts.label === "capture:1").prompt;
+  const output = `${repo}/.claude/worktrees/implement-12-capture-1`;
+  const aside = prompt.slice(prompt.indexOf("for p in "), prompt.indexOf("; done") + "; done".length);
+  assert.ok(prompt.includes(`${aside} && mkdir '${output}'`), "the move runs before mkdir");
+
+  const dir = mkdtempSync(join(tmpdir(), "implement-capture-"));
+  const local = join(dir, "implement-12-capture-1");
+  const here = aside.replaceAll(output, local);
+  const leftovers = ["", ".artifacts", ".config.mjs", ".report.json"];
+  mkdirSync(local);
+  writeFileSync(join(local, "old.png"), "old");
+  mkdirSync(`${local}.artifacts`);
+  writeFileSync(`${local}.config.mjs`, "old");
+  writeFileSync(`${local}.report.json`, "old");
+  execSync(`${here} && mkdir '${local}'`, { stdio: "pipe" });
+  const names = readdirSync(dir);
+  assert.deepEqual(readdirSync(local), [], "the new directory starts empty");
+  for (const ext of leftovers) {
+    const moved = names.filter((n) => n.startsWith(`implement-12-capture-1${ext}.stale-`));
+    assert.equal(moved.length, 1, `${ext || "the directory"} is kept under a stale name`);
+  }
+  // With nothing left behind, the same command creates the directory.
+  const fresh = mkdtempSync(join(tmpdir(), "implement-capture-"));
+  const clean = join(fresh, "implement-12-capture-1");
+  execSync(`${aside.replaceAll(output, clean)} && mkdir '${clean}'`, { stdio: "pipe" });
+  assert.deepEqual(readdirSync(fresh), ["implement-12-capture-1"]);
+});
+
+// A capture may not write into the checkout. When it stopped and its tree cannot be confirmed equal to
+// the tree before it, a resume would take whatever it wrote in as the deliverable.
+test("a capture stop whose tree changed, or whose agent returned nothing, cannot be resumed", async () => {
+  const cases = [
+    ["capture-timeout", shotReply({ timed_out: true, exit_code: -1, tree: treeOf(999) })],
+    ["capture-unavailable", shotReply({ exit_code: 78, tree: treeOf(999) })],
+    ["capture-unavailable", [null]],
+  ];
+  for (const [reason, capture] of cases) {
+    const { result } = await withCapture(CAPTURE, { capture });
+    assert.equal(result.stopped, reason);
+    assert.equal(result.retry_next, null, reason);
+  }
+});
+
+// An observation that fails is the first live call of every resume. Reporting it as a changed Issue
+// sent the run back to a fresh launch although nothing had changed.
+test("an observation that returns nothing or no digest stops as check-unavailable and can be resumed, apart from a changed Issue", async () => {
+  const nth = (n, reply) => {
+    let seen = 0;
+    return (_, ctx) => {
+      seen += 1;
+      return seen === n ? reply : { issue_digest: DIGEST, tree: ctx.tree };
+    };
+  };
+  const needsRepair = (_, { tree }) => reviewReply(tree, { newItems: [finding()] });
+  const cases = [
+    // The round's opening observation, the one after the review, and the one before the repair.
+    [{ snapshot: nth(1, null) }, args, { "round:1": 1 }],
+    [{ snapshot: nth(1, { issue_digest: "", tree: treeOf(1) }) }, args, { "round:1": 1 }],
+    [{ snapshot: nth(2, null) }, args, { "round:1": 1 }],
+    [{ snapshot: nth(3, null), review: [needsRepair] }, args, { "round:1": 1 }],
+    // The observation that opens Ship.
+    [{ snapshot: (_, ctx) => (ctx.label === "ship" ? null : { issue_digest: DIGEST, tree: ctx.tree }) }, publishArgs, { ship: 1 }],
+  ];
+  for (const [overrides, runArgs, next] of cases) {
+    const { result, kinds } = await run(overrides, runArgs);
+    assert.equal(result.stopped, "check-unavailable", JSON.stringify(next));
+    assert.deepEqual(result.retry_next, next);
+    assert.ok(!kinds.some((k) => WRITES.includes(k)));
+  }
+  const changed = await run({ snapshot: nth(1, { issue_digest: "b".repeat(64), tree: treeOf(1) }) });
+  assert.equal(changed.result.stopped, "requirements-changed");
+  assert.equal(changed.result.retry_next, null);
+});
+
+// The script cannot tell where the earlier run stopped, so a resumed Ship asks the remote. A branch
+// already there means the stopped run pushed, and going on would retry a write.
+test("a resumed Ship stops without writing when the branch is already on the remote, and a run that is not resumed does not ask", async () => {
+  const retry = { ship: 1 };
+  const clean = await run({}, { ...publishArgs, retry });
+  assert.equal(clean.result.status, "published_draft");
+  assert.ok(clean.kinds.indexOf("pushed") < clean.kinds.indexOf("commit"), "asked before the commit");
+  const cases = [
+    { ls_exit: 0, remote_head: `${COMMIT}\trefs/heads/${BRANCH}\n` },
+    { ls_exit: 128, remote_head: "" },
+    null,
+  ];
+  for (const reply of cases) {
+    const { result, kinds } = await run({ pushed: [reply] }, { ...publishArgs, retry });
+    assert.equal(result.stopped, "push-unconfirmed", JSON.stringify(reply));
+    assert.equal(result.retry_next, null);
+    assert.ok(!kinds.some((k) => ["commit", ...WRITES].includes(k)), JSON.stringify(reply));
+  }
+  const plain = await run({}, publishArgs);
+  assert.ok(!plain.kinds.includes("pushed"));
 });
 
 // A resume of Ship runs the commit step once more, on a worktree the stopped run already committed.

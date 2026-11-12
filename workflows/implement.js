@@ -846,6 +846,10 @@ const snapshot = async (label, stage = "Verify", mark = "") => {
   return snap && { ...snap, configHeld: String(snap.config_blob).trim() === baseConfigBlob };
 };
 const requirementsHeld = (snap) => Boolean(snap) && snap.issue_digest === issueDigest;
+// A failed observation (the agent returned nothing, or the digest could not be read) stops apart from a
+// change in the requirements.
+const observed = (snap) => Boolean(snap) && DIGEST_SHAPE.test(String(snap.issue_digest).trim());
+const UNOBSERVED = "Could not observe the Issue and the tree. Check the execution environment.";
 const history = [];
 // Turns a host check or capture failure into evidence for the repair agent, with the previous review attached as history when one exists.
 const hostFailure = (message) =>
@@ -925,10 +929,15 @@ const CAPTURE_SCHEMA = closed({
   log_tail: str,
   tree: str,
 });
+// Moves aside what an earlier capture left: the output directory and the three paths the harness creates
+// next to it. With them in place mkdir fails, and both a resume of the stopped run and a fresh launch after
+// the earlier branch was cleared stop at the capture. Nothing is deleted.
+const staleAside = (output) =>
+  `for p in ${["", ".artifacts", ".config.mjs", ".report.json"].map((ext) => shq(`${output}${ext}`)).join(" ")}; do [ ! -e "$p" ] || mv "$p" "$p.stale-$(date +%s)-$$"; done`;
 const runCapture = (output, label) =>
   agent(
     `Run the capture once and return the result verbatim. Do not fix anything.\n` +
-      `1. Run \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && mkdir ${shq(output)}\`. If it exits non-zero, set started: false, timed_out: false, and exit_code: -1, put its output in log_tail, and go to step 3.\n` +
+      `1. Run \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && ${staleAside(output)} && mkdir ${shq(output)}\`. If it exits non-zero, set started: false, timed_out: false, and exit_code: -1, put its output in log_tail, and go to step 3.\n` +
       `2. Run \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` with the Bash tool's timeout parameter set to 600000, and set started: true. On a timeout set timed_out: true and exit_code: -1; otherwise set timed_out: false and put its exit code in exit_code. Put the last 80 lines of its combined output in log_tail.\n` +
       `3. Run \`${stageTree}\` and put the tree id in tree (an empty string when it fails).`,
     {
@@ -973,7 +982,7 @@ const shotStop = (shot, tree) => {
     };
   return null;
 };
-const captureStep = async (tree, roundKey) => {
+const captureStep = async (tree) => {
   if (!capture) return {};
   if (!TREE_SHAPE.test(String(tree)))
     return { stop: "check-unavailable", why: "Could not get the tree id." };
@@ -984,13 +993,12 @@ const captureStep = async (tree, roundKey) => {
   }
   lastCaptureTree = "";
   counts.captures += 1;
-  // A capture that stopped leaves its output directory, and mkdir on the same path fails. A round that
-  // is run again captures into a directory of its own.
-  const retried = retryCount(roundKey);
-  const output = `${worktree}-capture-${counts.captures}${retried ? `-retry-${retried}` : ""}`;
+  const output = `${worktree}-capture-${counts.captures}`;
   const shot = await runCapture(output, `capture:${counts.captures}`);
   const stopped = shotStop(shot, tree);
-  if (stopped) return stopped;
+  // Only a stop whose tree after the capture is confirmed equal to the tree before it can be resumed. A
+  // tree that cannot be confirmed would be taken in as the deliverable by the next observation.
+  if (stopped) return { ...stopped, resumable: Boolean(shot) && shot.tree === tree };
   if (shot.exit_code !== 0)
     return {
       evidence: hostFailure(
@@ -1248,6 +1256,7 @@ const reviewRound = async (checked) => {
     },
   );
   const after = await snapshot(`source:${attempt}`);
+  if (!observed(after)) return { stop: "check-unavailable", why: UNOBSERVED };
   if (!requirementsHeld(after))
     return {
       stop: "requirements-changed",
@@ -1313,15 +1322,22 @@ const repairPrompt = (evidence) =>
 // by the media or the config, and a stop for changed requirements or a changed tree, are left out.
 const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
 let accepted = null;
-let round = 0;
+let roundNumber = 0;
 while (!accepted) {
-  round += 1;
-  const roundKey = `round:${round}`;
+  roundNumber += 1;
+  const roundKey = `round:${roundNumber}`;
   const before = await snapshot(
     `requirements:${counts.check_runs + 1}`,
     "Verify",
     retryMark(roundKey),
   );
+  if (!observed(before)) {
+    return await stop("check-unavailable", UNOBSERVED, {
+      ...where,
+      review: history.at(-1) || null,
+      retry_next: retryNext(roundKey),
+    });
+  }
   if (!requirementsHeld(before)) {
     return await stop(
       "requirements-changed",
@@ -1330,13 +1346,14 @@ while (!accepted) {
     );
   }
   if (!before.configHeld) return await stop(CONFIG_CHANGED.stop, CONFIG_CHANGED.why, where);
-  const shot = await captureStep(before.tree, roundKey);
+  const shot = await captureStep(before.tree);
   const step = shot.stop || shot.evidence ? shot : await checkAndReview();
   if (step.stop) {
     return await stop(step.stop, step.why, {
       ...where,
       review: history.at(-1) || null,
-      retry_next: ROUND_RETRY.includes(step.stop) ? retryNext(roundKey) : null,
+      retry_next:
+        ROUND_RETRY.includes(step.stop) && step.resumable !== false ? retryNext(roundKey) : null,
     });
   }
   if (step.accepted) {
@@ -1345,6 +1362,13 @@ while (!accepted) {
   }
   // Canonical source: beforeRepair in correction.ts. A check can take minutes, so the Issue is checked again right before the repair.
   const beforeRepair = await snapshot(`before-repair:${counts.repairs + 1}`);
+  if (!observed(beforeRepair)) {
+    return await stop("check-unavailable", UNOBSERVED, {
+      ...where,
+      review: history.at(-1) || null,
+      retry_next: retryNext(roundKey),
+    });
+  }
   if (!requirementsHeld(beforeRepair)) {
     return await stop(
       "requirements-changed",
@@ -1429,6 +1453,9 @@ const digest = (text) => {
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
 const gate = await snapshot("ship", "Ship", retryMark("ship"));
+if (!observed(gate)) {
+  return await shipStop("check-unavailable", UNOBSERVED, { retry_next: retryNext("ship") });
+}
 if (!requirementsHeld(gate)) {
   return await shipStop(
     "requirements-changed",
@@ -1540,6 +1567,31 @@ const inWorktree = (...argv) => argvLine(["git", "-C", worktree, ...argv]);
 // it does not commit again.
 const commitParent = revising ? revisionRow.commit : baseSha;
 const commitOnce = inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`);
+// A resume of Ship goes on only while the stopped run has pushed nothing. The script does not know where
+// the earlier run stopped, so it checks the branch on the remote. A resume after a stop that followed the
+// push would retry a write.
+if (retryCount("ship")) {
+  const remoteHead = await agent(
+    anchor(
+      `Run the following command and return its output verbatim. Do not summarize or judge.\n` +
+        `1. \`${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}\`: put its exit code in ls_exit and its stdout in remote_head.`,
+    ),
+    {
+      label: "pushed",
+      phase: "Ship",
+      agentType: "general-purpose",
+      schema: closed({ ls_exit: int, remote_head: str }),
+      model: "haiku",
+    },
+  );
+  const pushedSha = String((remoteHead && remoteHead.remote_head) || "").trim().split(/\s+/)[0];
+  if (!remoteHead || remoteHead.ls_exit !== 0 || pushedSha !== (revising ? revisionRow.commit : "")) {
+    return await shipStop(
+      "push-unconfirmed",
+      `This branch is already on the remote before the resume (${pushedSha || "unreadable"}). The stopped run pushed. Do not retry until the actual state is confirmed.`,
+    );
+  }
+}
 const commitCommand = retryCount("ship")
   ? `{ ${inWorktree("diff", "--cached", "--quiet")} && [ "$(${inWorktree("rev-parse", "HEAD^")})" = ${shq(commitParent)} ] || ${commitOnce}; }`
   : commitOnce;
@@ -1571,7 +1623,7 @@ published.commit = committed.commit;
 // In a revision, the new commit's parent is the published head, not the PR-wide base.
 if (
   committed.tree !== accepted.tree ||
-  committed.parent !== (revising ? revisionRow.commit : baseSha)
+  committed.parent !== commitParent
 ) {
   return await shipStop(
     "commit-mismatch",

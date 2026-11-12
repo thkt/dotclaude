@@ -2,6 +2,7 @@
 status: "accepted"
 date: "2026-11-12"
 decision-makers: thkt
+scope: [meta, workflows]
 ---
 
 # Let a stopped implement run resume without implementing again
@@ -43,7 +44,9 @@ A stop returns `retry_next`. It is the object to pass as `retry` on the resume, 
 
 `retry` maps each boundary to how many times it has been run again, such as `{"round:1": 1, "ship": 2}`. The script appends one sentence carrying that count to the prompt of the observation that opens the boundary. That call and every call after it run, and the calls before it come back from cache. The count is in the sentence so that running the same boundary once more changes the prompt again. `retry_next` keeps the boundaries of earlier resumes: dropping one puts that boundary's prompt back as it was, and the run starts again from there. A key other than `round:N` or `ship`, or a count below 1, stops the run as `invalid-retry` before the start row is written.
 
-Two steps had to tolerate a second run. A round that is run again captures into `<worktree>-capture-N-retry-<count>`, because the stopped capture left its directory and `mkdir` on that path fails. On a resumed Ship, the commit step skips `git commit` when nothing is staged and `HEAD^` is already the expected parent, because the stopped run had committed.
+Two steps had to tolerate a second run. The capture step moves aside the output directory and the three paths the harness writes next to it before `mkdir`, because the stopped capture left them and `mkdir` on that path fails. Nothing is deleted. On a resumed Ship, the commit step skips `git commit` when nothing is staged and `HEAD^` is already the expected parent, because the stopped run had committed.
+
+Three checks keep a resume from carrying on past a state it cannot vouch for. A capture stop returns null when the tree after the capture is not confirmed equal to the tree before it, since the next observation would take what the capture wrote in as the deliverable. A resumed Ship asks the remote for the run's branch before the commit and stops as `push-unconfirmed` when it is there, since the stopped run then pushed and going on would retry a write. An observation that returns nothing or no digest stops as `check-unavailable`, which can be resumed, where it was reported as `requirements-changed` before.
 
 ### Consequences
 
@@ -58,7 +61,7 @@ Two steps had to tolerate a second run. A round that is run again captures into 
 
 ### Confirmation
 
-`workflows/implement/tests/implement.behavior.test.js` checks that each stop returns the `retry_next` above, that a later stop keeps the earlier boundaries and counts its own up, that a retry leaves every call before the boundary's observation unchanged, that a second resume carrying both boundaries runs from the second one, that a round run again captures into its own directory, and that anything other than a returned value stops as `invalid-retry`. The same file runs the resumed commit command against a real repository: it commits once, adds no commit on a second run, and fails when nothing is staged on the base. `skills/implement/tests/workflow-contract.test.js` checks that the skill passes `retry_next` back unchanged. A resume through a real `resumeFromRunId` had not been run when this record was written. The next bench run on `thkt/dotagents-workflow-trial` is where it gets exercised.
+`workflows/implement/tests/implement.behavior.test.js` checks that each stop returns the `retry_next` above, that a later stop keeps the earlier boundaries and counts its own up, that a retry leaves every call before the boundary's observation unchanged, that a second resume carrying both boundaries runs from the second one, that a capture stop with an unconfirmed tree and a resumed Ship whose branch is already on the remote do not go on, and that anything other than a returned value stops as `invalid-retry`. The same file runs two commands for real. The resumed commit command commits once, adds no commit on a second run, and fails when nothing is staged on the base. The capture command moves a leftover directory and its three neighbours to stale names and creates an empty directory. `skills/implement/tests/workflow-contract.test.js` checks that the skill passes `retry_next` back unchanged. A resume through a real `resumeFromRunId` had not been run when this record was written. The next bench run on `thkt/dotagents-workflow-trial` is where it gets exercised.
 
 ## Pros and Cons of the Options
 
@@ -102,9 +105,11 @@ The steps a person follows are in `skills/implement/SKILL.md` § Resuming a run 
 
 `invalid-capture` and `capture-media-ignored` return null. Their cause is in the capture definition or in `.gitignore`, both inside the worktree, and the skill tells the person not to edit the worktree of a run.
 
-The script cannot tell which boundary the earlier run stopped at, so it accepts any well-formed `retry`. A `round:N` earlier than the stop runs the later rounds again, repairs included, on the current tree. A boundary the run never reaches changes no prompt, and the run returns the same stop from cache. The skill passes `retry_next` unchanged to keep both from happening.
+The script cannot tell which boundary the earlier run stopped at, so it accepts any well-formed `retry`. A `round:N` earlier than the stop runs the later rounds again, repairs included, on the current tree. A `round:N` built by hand after a stop that returned null, such as `human-decision-required`, runs that round again without the decision, and what stands between it and publication is the independent review. A boundary the run never reaches changes no prompt, and the run returns the same stop from cache. The skill passes `retry_next` unchanged to keep all three from happening. The one case the script closes by itself is a hand-built `ship` after a push, through the check on the remote.
 
-The same bench run found that a capture directory left by an earlier run stops a fresh launch as `capture-unavailable`. This record does not change that path.
+The same bench run found that a capture directory left by an earlier run stops a fresh launch as `capture-unavailable`. The capture step's move-aside covers that path too.
+
+Whether Workflow keys its cache by the prompt of each call alone, with `args` left out, is read from the tool's description ("calls with unchanged (prompt, opts) return their cached results"). The one resume that ran had an edited script and unchanged `args`. If the key covers `args`, a resume replays nothing and stops as `branch-exists`, which wastes the resume and publishes nothing.
 
 ### Reassessment Triggers
 

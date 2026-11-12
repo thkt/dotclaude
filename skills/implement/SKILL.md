@@ -42,14 +42,13 @@ Branch on the return value's `status` or `stopped`. In every case, return the br
 
 ## Observing the sandbox
 
-Inside the macOS sandbox Chromium cannot start, and the capture stops as `capture-unavailable` after implementation and review have finished. When the sandbox denies a local bind, a check that opens a web server socket fails on every round, and the uncapped repair loop never ends. Stop both before launch.
+Inside the macOS sandbox Chromium cannot start, and the capture stops as `capture-unavailable` after implementation and review have finished. When a local bind is denied, a check that opens a web server socket fails on every round, and the uncapped repair loop never ends. Stop both before launch. Apply the table from its top row.
 
-| Observation                                                                               | Handling                                                                                                             |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `sandboxed` is false                                                                      | Go on to the next step                                                                                               |
-| `sandboxed` is true. `capture` in `.dotagents.json` is not null, and `platform` is darwin          | Do not launch. Tell the user to run it again in a session with the sandbox off                                       |
-| `sandboxed` is true. `local_binding` is false                                             | Do not launch. Tell the user to set `sandbox.network.allowLocalBinding: true`. The setting applies without a restart |
-| `sandboxed` is true. Neither of the two rows above applies                                | Go on to the next step                                                                                               |
+| Observation                                                                                 | Handling                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `local_binding` is false                                                                    | Do not launch. When `sandboxed` is true, tell the user to set `sandbox.network.allowLocalBinding: true`. The setting applies without a restart. When it is false, ask the human what is denying the bind |
+| `sandboxed` is true. `capture` in `.dotagents.json` is not null, and `platform` is darwin | Do not launch. Tell the user to run it again in a session with the sandbox off                                                                                                                                       |
+| Neither of the two rows above applies                                                       | Go on to the next step                                                                                                                                                                                               |
 
 ## Resuming a run that stopped
 
@@ -79,7 +78,7 @@ Revising a PR this workflow published uses the same workflow. The user hands ove
 
 ## Stop conditions
 
-When the workflow stops, return `why` and the known URL, commit, and remaining conditions, and follow the handling below. From `push-unconfirmed` on, a write to GitHub may already have happened.
+When the workflow stops, return `why` and the known URL, commit, and remaining conditions, and follow the handling below. From `push-unconfirmed` on, a write to GitHub may already have happened. For a stop whose returned `retry_next` is not null, read "relaunch" in the table as § Resuming a run that stopped. A fresh launch stops as `branch-exists` while the earlier run's branch and worktree remain, so ask the human how to handle them first.
 
 | Stop reason                                                                                                                        | Handling                                                                                                                                                                                                                                        |
 | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

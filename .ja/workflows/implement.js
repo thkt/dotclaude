@@ -821,6 +821,9 @@ const snapshot = async (label, stage = "Verify", mark = "") => {
   return snap && { ...snap, configHeld: String(snap.config_blob).trim() === baseConfigBlob };
 };
 const requirementsHeld = (snap) => Boolean(snap) && snap.issue_digest === issueDigest;
+// 観測そのものの失敗 (agent が結果を返さない、digest を読めない) は、要求の変更と分けて止める。
+const observed = (snap) => Boolean(snap) && DIGEST_SHAPE.test(String(snap.issue_digest).trim());
+const UNOBSERVED = "Issue と tree を観測できなかった。実行環境を確かめる。";
 const history = [];
 // host の check や撮影の失敗を修正担当へ渡す証拠にする。過去のレビューがあれば履歴として添える。
 const hostFailure = (message) =>
@@ -900,10 +903,14 @@ const CAPTURE_SCHEMA = closed({
   log_tail: str,
   tree: str,
 });
+// 以前の撮影が残した出力 (ディレクトリと、harness がその隣に作る 3 つ) を脇へ移す。残っていると mkdir が失敗し、
+// 止まった実行の再開も、以前の branch を片付けた後の新しい起動も撮影で止まる。削除はしない。
+const staleAside = (output) =>
+  `for p in ${["", ".artifacts", ".config.mjs", ".report.json"].map((ext) => shq(`${output}${ext}`)).join(" ")}; do [ ! -e "$p" ] || mv "$p" "$p.stale-$(date +%s)-$$"; done`;
 const runCapture = (output, label) =>
   agent(
     `撮影を 1 回実行し、結果をそのまま返す。何も直さない。\n` +
-      `1. \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && mkdir ${shq(output)}\` を実行する。0 以外で終わったら started: false・timed_out: false・exit_code: -1 にし、その出力を log_tail に入れて手順 3 へ進む。\n` +
+      `1. \`H=${bundled("workflows/implement/harness")} && test -d "$H/scripts" && ${staleAside(output)} && mkdir ${shq(output)}\` を実行する。0 以外で終わったら started: false・timed_out: false・exit_code: -1 にし、その出力を log_tail に入れて手順 3 へ進む。\n` +
       `2. \`cd ${shq(worktree)} && H=${bundled("workflows/implement/harness")} && ${captureLine([...capture.command, output])}\` を、Bash tool の timeout parameter を 600000 にして実行し、started: true にする。時間切れなら timed_out: true・exit_code: -1 に、そうでなければ timed_out: false にして終了コードを exit_code に入れる。結合出力の末尾 80 行を log_tail に入れる。\n` +
       `3. \`${stageTree}\` を実行し、tree id を tree に入れる (失敗したら空文字)。`,
     {
@@ -945,7 +952,7 @@ const shotStop = (shot, tree) => {
     };
   return null;
 };
-const captureStep = async (tree, roundKey) => {
+const captureStep = async (tree) => {
   if (!capture) return {};
   if (!TREE_SHAPE.test(String(tree)))
     return { stop: "check-unavailable", why: "tree id を得られなかった。" };
@@ -956,12 +963,11 @@ const captureStep = async (tree, roundKey) => {
   }
   lastCaptureTree = "";
   counts.captures += 1;
-  // 止まった撮影は出力ディレクトリを残し、同じ path への mkdir は失敗する。やり直す巡は別の出力先に撮る。
-  const retried = retryCount(roundKey);
-  const output = `${worktree}-capture-${counts.captures}${retried ? `-retry-${retried}` : ""}`;
+  const output = `${worktree}-capture-${counts.captures}`;
   const shot = await runCapture(output, `capture:${counts.captures}`);
   const stopped = shotStop(shot, tree);
-  if (stopped) return stopped;
+  // 撮影の後の tree が撮影の前と同じだと確かめられた停止だけを再開できる。確かめられない tree は、次の観測が成果物として取り込む。
+  if (stopped) return { ...stopped, resumable: Boolean(shot) && shot.tree === tree };
   if (shot.exit_code !== 0)
     return {
       evidence: hostFailure(
@@ -1217,6 +1223,7 @@ const reviewRound = async (checked) => {
     },
   );
   const after = await snapshot(`source:${attempt}`);
+  if (!observed(after)) return { stop: "check-unavailable", why: UNOBSERVED };
   if (!requirementsHeld(after))
     return {
       stop: "requirements-changed",
@@ -1281,15 +1288,22 @@ const repairPrompt = (evidence) =>
 // 今の tree に対して揃う。媒体や設定に原因がある停止と、要求・成果物が変わった停止は入れない。
 const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
 let accepted = null;
-let round = 0;
+let roundNumber = 0;
 while (!accepted) {
-  round += 1;
-  const roundKey = `round:${round}`;
+  roundNumber += 1;
+  const roundKey = `round:${roundNumber}`;
   const before = await snapshot(
     `requirements:${counts.check_runs + 1}`,
     "Verify",
     retryMark(roundKey),
   );
+  if (!observed(before)) {
+    return await stop("check-unavailable", UNOBSERVED, {
+      ...where,
+      review: history.at(-1) || null,
+      retry_next: retryNext(roundKey),
+    });
+  }
   if (!requirementsHeld(before)) {
     return await stop(
       "requirements-changed",
@@ -1298,13 +1312,14 @@ while (!accepted) {
     );
   }
   if (!before.configHeld) return await stop(CONFIG_CHANGED.stop, CONFIG_CHANGED.why, where);
-  const shot = await captureStep(before.tree, roundKey);
+  const shot = await captureStep(before.tree);
   const step = shot.stop || shot.evidence ? shot : await checkAndReview();
   if (step.stop) {
     return await stop(step.stop, step.why, {
       ...where,
       review: history.at(-1) || null,
-      retry_next: ROUND_RETRY.includes(step.stop) ? retryNext(roundKey) : null,
+      retry_next:
+        ROUND_RETRY.includes(step.stop) && step.resumable !== false ? retryNext(roundKey) : null,
     });
   }
   if (step.accepted) {
@@ -1313,6 +1328,13 @@ while (!accepted) {
   }
   // 正本は correction.ts の beforeRepair。check に数分かかる間に Issue が変わっていないかを、修正の直前にも確かめる。
   const beforeRepair = await snapshot(`before-repair:${counts.repairs + 1}`);
+  if (!observed(beforeRepair)) {
+    return await stop("check-unavailable", UNOBSERVED, {
+      ...where,
+      review: history.at(-1) || null,
+      retry_next: retryNext(roundKey),
+    });
+  }
   if (!requirementsHeld(beforeRepair)) {
     return await stop(
       "requirements-changed",
@@ -1397,6 +1419,9 @@ const digest = (text) => {
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
 const gate = await snapshot("ship", "Ship", retryMark("ship"));
+if (!observed(gate)) {
+  return await shipStop("check-unavailable", UNOBSERVED, { retry_next: retryNext("ship") });
+}
 if (!requirementsHeld(gate)) {
   return await shipStop(
     "requirements-changed",
@@ -1507,6 +1532,30 @@ const inWorktree = (...argv) => argvLine(["git", "-C", worktree, ...argv]);
 // Ship の再開はこの段をもう 1 度実行する。accepted の変更が既に親の上の 1 つの commit になっていれば、commit を重ねない。
 const commitParent = revising ? revisionRow.commit : baseSha;
 const commitOnce = inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`);
+// Ship の再開は、止まった実行がまだ何も push していないときだけ進む。script は前の実行がどこで止まったかを知らないので、
+// remote の branch で確かめる。push の後の停止からの再開は、書き込みのやり直しになる。
+if (retryCount("ship")) {
+  const remoteHead = await agent(
+    anchor(
+      `次のコマンドを実行し、出力をそのまま返す。要約・判断をしない。\n` +
+        `1. \`${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}\`: 終了コードを ls_exit、stdout を remote_head に入れる。`,
+    ),
+    {
+      label: "pushed",
+      phase: "Ship",
+      agentType: "general-purpose",
+      schema: closed({ ls_exit: int, remote_head: str }),
+      model: "haiku",
+    },
+  );
+  const pushedSha = String((remoteHead && remoteHead.remote_head) || "").trim().split(/\s+/)[0];
+  if (!remoteHead || remoteHead.ls_exit !== 0 || pushedSha !== (revising ? revisionRow.commit : "")) {
+    return await shipStop(
+      "push-unconfirmed",
+      `再開の前に、この branch が既に remote にある (${pushedSha || "読めなかった"})。止まった実行が push している。実状態を確かめるまで再試行しない。`,
+    );
+  }
+}
 const commitCommand = retryCount("ship")
   ? `{ ${inWorktree("diff", "--cached", "--quiet")} && [ "$(${inWorktree("rev-parse", "HEAD^")})" = ${shq(commitParent)} ] || ${commitOnce}; }`
   : commitOnce;
@@ -1538,7 +1587,7 @@ published.commit = committed.commit;
 // 修正では、新しい commit の親は PR 全体の基点でなく公開した head になる。
 if (
   committed.tree !== accepted.tree ||
-  committed.parent !== (revising ? revisionRow.commit : baseSha)
+  committed.parent !== commitParent
 ) {
   return await shipStop(
     "commit-mismatch",
