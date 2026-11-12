@@ -1,6 +1,6 @@
 # Tool Preferences
 
-CLI ツール > 組み込み相当。WebFetch と WebSearch は、URL パターンに一致した CLI へフックが振り替える。
+CLI ツール > 組み込み相当。Web の取得と検索は `use-cli-scout` skill を先に使う。
 
 ## コード検索
 

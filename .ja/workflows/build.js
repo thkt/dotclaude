@@ -31,12 +31,6 @@ if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
   }
 }
 const input = typeof argsValue === "object" && argsValue ? argsValue : {};
-// implementer は code.js へそのまま転送する。有効値の一覧は code.js 側の定数
-// (VALID_IMPLEMENTERS) が持ち、ここでは文字列の有無だけを見て既定値を決める。
-const implementer =
-  typeof input.implementer === "string" && input.implementer.trim()
-    ? input.implementer.trim()
-    : "claude";
 const issueRef = String(typeof argsValue === "string" ? argsValue : input.issue || "").trim();
 // 受け付けるのは数字単体 / #数字 / issue URL のみ。数字を含むだけの自由記述
 // ("a11y" など) を issue 参照と読まない。
@@ -809,7 +803,6 @@ const code =
     // 実装は plan の contract / tests を実行する段で、設計判断は plan 側 (think /
     // critic-design) が済ませている。code.js の default 変更を暗黙に追従しない。
     model: "sonnet",
-    implementer,
     commit: perUnitCommits,
     // code を単独で呼ぶ側はテストコマンドを実行できるとは限らない。build は必ず実行できる。
     verify: true,
@@ -819,13 +812,7 @@ const code =
 if (!code || code.stopped) {
   // nested_reason が無いと、code の内側で起きた plan 起因の停止は code-failed としか数えられない。
   const nested = String((code && code.stopped) || "");
-  // codex-herdr の pane が code 自身の停止 (loop 途中の stopUnit など) より前に解決済みなら、
-  // その pane id は detail の中だけでなく build の返り値にもそのまま届く。
-  return await stop(
-    "code-failed",
-    { detail: code, herdr_panes: code && code.herdr_panes },
-    nested ? { nested_reason: nested } : {},
-  );
+  return await stop("code-failed", { detail: code }, nested ? { nested_reason: nested } : {});
 }
 if (!code.tests_pass || !code.gates_pass)
   log(
@@ -1154,8 +1141,8 @@ if (slots.length) {
         `厳守:\n` +
         `- file:line、パス、数値、件数、severity ラベル、識別子、コード片は逐語で保持する。\n` +
         `- 入力にある主張を過不足なく訳す。文の割り方を変えても主張は減らさない。\n` +
-        `- 1 文は 60 字以内、置く主張は 1 つ。超える文は主語と述語の切れ目で割る。\n` +
-        `- 根拠、実証した結果、別件の指摘は、それぞれ別の文にする。逐語で保持する要素を含む文は、字数の上限の対象外。\n` +
+        `- 1 文に置く主張は 1 つ。一度で追えない文は主語と述語の切れ目で割る。\n` +
+        `- 根拠、実証した結果、別件の指摘は、それぞれ別の文にする。\n` +
         `- em-dash (—) で節を連ねない。接続詞を置くか文を割る。\n` +
         `- \`kind\` が \`finding\` の要素は、主張と根拠の指し先だけを残して 4 文以内にする。\n` +
         `- \`kind\` が \`anomaly\` の要素には文数の上限を課さない。run が想定外に何をしたかの唯一の記録になる。\n` +
@@ -1362,5 +1349,4 @@ return {
   // Ship が意図して置き去りにしたもの。prompt がこれを求めるのは、stage すると仕様書・調査
   // メモ・ローカル設定が PR へ漏れるため。返り値に無いと、何が残ったか誰も見られない。
   unstaged: Array.isArray(ship.unstaged) ? ship.unstaged : [],
-  herdr_panes: code.herdr_panes,
 };

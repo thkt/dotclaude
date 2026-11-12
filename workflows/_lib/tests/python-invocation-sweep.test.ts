@@ -1,25 +1,22 @@
 /// <reference types="node" />
-// DR-0117 (docs/decisions/0117-decide-the-last-python3-invocation-in-a-shell-hook.md) is the
-// last unit in DR-0112's TypeScript migration: it found exactly one shell hook still launching
-// python3 (hooks/herdr-agent-state.sh, written and overwritten by herdr's own installer) and
-// chose to exclude it permanently rather than migrate it, because a migration there reverts
-// silently on herdr's next reinstall or update. This file guards that decided state going
-// forward: no OTHER tracked file picks python3 back up.
+// DR-0112's TypeScript migration left one shell hook launching python3, the herdr integration
+// script DR-0117 excluded. DR-0123 removed that script with the rest of the herdr hook
+// integration, so no tracked file launches python3. This file guards that state going forward:
+// no tracked file picks python3 back up.
 //
 // The needle is not the bare word "python3" (docs, comments and error messages name it freely,
 // as this very file's header does above), but three invocation shapes: settings.json's
 // `command` field naming python3, a file's own first-line shebang, and a shell heredoc launched
-// right after the python3 token (the shape hooks/herdr-agent-state.sh:25's
-// `python3 - <<'PY' ... PY` is). A file merely mentioning python3 in prose matches none of these
-// and stays unflagged -- the negative control inside T-461 checks exactly that.
+// right after the python3 token (`python3 - <<'PY' ... PY`). A file merely mentioning python3
+// in prose matches none of these and stays unflagged -- the negative control inside T-461
+// checks exactly that.
 //
 // Same shape as workflows/_lib/tests/gate-retirement.test.ts's T-014 and
 // skills/_lib/tests/standalone-scripts-retirement.test.ts's T-187: offendersAmong/trackedFiles/
 // assertDetectsAndMisses from workflows/_lib/tests/_retirement.ts drive a full-tree scan. The
 // extra exclusions here are wider than those two files' single SELF_PATH: plugins/ (DR-0112's
-// own vendored-scripts boundary) and hooks/herdr-agent-state.sh (this unit's permanent
-// exclusion) join it, named with their reasons in EXCLUSIONS below rather than as bare literals
-// scattered through the test body.
+// own vendored-scripts boundary) joins it, named with its reason in EXCLUSIONS below rather
+// than as a bare literal in the test body.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -47,13 +44,6 @@ const EXCLUSIONS: readonly Exclusion[] = [
     reason:
       "this file names python3's shebang, settings.json command and heredoc-launch shapes " +
       "in its own fixtures and comments to describe what it checks",
-  },
-  {
-    path: "hooks/herdr-agent-state.sh",
-    kind: "exact",
-    reason:
-      "DR-0117 chose permanent exclusion: herdr's installer writes and overwrites this file " +
-      "on every reinstall or update, so a migration here would revert silently on the next one",
   },
   {
     path: "plugins/",
@@ -92,8 +82,7 @@ function isPython3Shebang(line: string): boolean {
 // settings-shaped fixture use.
 const SETTINGS_COMMAND_INVOCATION = /"command"\s*:\s*"[^"]*\bpython3\b[^"]*"/;
 
-// python3 followed, on the same line, by a heredoc redirection -- the shape
-// hooks/herdr-agent-state.sh:25's `python3 - <<'PY'` is.
+// python3 followed, on the same line, by a heredoc redirection, such as `python3 - <<'PY'`.
 const HEREDOC_LAUNCH_INVOCATION = /\bpython3\b[^\n]*<<[-~]?\s*['"]?\w+/;
 
 function invokesPython3(content: string): boolean {
@@ -167,8 +156,8 @@ test(
   () => {
     assert.deepEqual(
       EXCLUSIONS.map((e) => e.path),
-      [SELF_PATH, "hooks/herdr-agent-state.sh", "plugins/"],
-      "EXCLUSIONS must name exactly these three excluded paths, in this order",
+      [SELF_PATH, "plugins/"],
+      "EXCLUSIONS must name exactly these two excluded paths, in this order",
     );
     for (const { path, reason } of EXCLUSIONS) {
       assert.ok(reason.trim().length > 0, `EXCLUSIONS entry for ${path} must carry a reason`);
@@ -178,7 +167,7 @@ test(
     // offendersAmong/sweepCandidates trace back to EXCLUSIONS.
     assert.deepEqual(
       exclusionPaths("exact"),
-      [SELF_PATH, "hooks/herdr-agent-state.sh"],
+      [SELF_PATH],
       "the sweep's exact-match exclusions must be read from EXCLUSIONS, not restated",
     );
     assert.deepEqual(

@@ -31,12 +31,6 @@ if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
   }
 }
 const input = typeof argsValue === "object" && argsValue ? argsValue : {};
-// implementer rides through to code.js unchanged. The valid-value list lives as code.js's
-// own constant (VALID_IMPLEMENTERS); here only presence decides the default.
-const implementer =
-  typeof input.implementer === "string" && input.implementer.trim()
-    ? input.implementer.trim()
-    : "claude";
 const issueRef = String(typeof argsValue === "string" ? argsValue : input.issue || "").trim();
 // Accept only a bare number, #number, or an issue URL. A freeform description that
 // merely contains digits (e.g. "a11y") must not be read as an issue reference.
@@ -829,7 +823,6 @@ const code =
     // happened on the plan side (think / critic-design). Do not silently track
     // code.js's default.
     model: "sonnet",
-    implementer,
     commit: perUnitCommits,
     // A standalone code caller may not be able to run the test command; build always can.
     verify: true,
@@ -839,13 +832,7 @@ const code =
 if (!code || code.stopped) {
   // Without nested_reason a plan-caused stop inside code would be counted as code-failed alone.
   const nested = String((code && code.stopped) || "");
-  // A pane already resolved before code's own stop (e.g. a mid-loop stopUnit after
-  // codex-herdr's panes started) still reaches build's return value, not just detail.
-  return await stop(
-    "code-failed",
-    { detail: code, herdr_panes: code && code.herdr_panes },
-    nested ? { nested_reason: nested } : {},
-  );
+  return await stop("code-failed", { detail: code }, nested ? { nested_reason: nested } : {});
 }
 if (!code.tests_pass || !code.gates_pass)
   log(
@@ -1178,8 +1165,8 @@ if (slots.length) {
         `Strict:\n` +
         `- Keep file:line, paths, numbers, counts, severity labels, identifiers, and code fragments verbatim.\n` +
         `- Carry every claim in the input across, no more and no fewer. Re-splitting the sentences drops none of them.\n` +
-        `- Keep every sentence within 25 words and to one claim. Split a longer one at its subject-predicate seam.\n` +
-        `- The claim, the evidence for it, and a separate observation each get their own sentence. A sentence carrying a verbatim element is exempt from the word limit.\n` +
+        `- Keep every sentence to one claim. Split a sentence the reader cannot follow in one pass at its subject-predicate seam.\n` +
+        `- The claim, the evidence for it, and a separate observation each get their own sentence.\n` +
         `- Do not chain clauses with em-dashes. Lead with a connective or split the sentence.\n` +
         `- For an element whose \`kind\` is \`finding\`, keep the claim and the pointer to its evidence, within 4 sentences.\n` +
         `- For an element whose \`kind\` is \`anomaly\`, no sentence-count limit applies. It is the only record of what the run did unexpectedly.\n` +
@@ -1391,5 +1378,4 @@ return {
   // leaks specs, research notes, and local config into the PR; without it on the return value
   // nobody can see what stayed out.
   unstaged: Array.isArray(ship.unstaged) ? ship.unstaged : [],
-  herdr_panes: code.herdr_panes,
 };

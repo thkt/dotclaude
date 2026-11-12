@@ -39,7 +39,6 @@ history/
 /.credentials.json
 /agent-memory/
 /chrome/
-/herdr-auto-title/
 /ide/
 # このリポジトリは public。memory/ に業務文脈が、jsonl に全会話が入るため打ち消さない。
 /projects/

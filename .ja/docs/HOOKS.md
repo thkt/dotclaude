@@ -1,6 +1,6 @@
 # Hooks Design
 
-Hook システムの設計意図と仕組み。実登録は `settings.json` が正で、本書は構造と意図を説明する。
+Hook システムの設計意図と仕組み。実登録は `settings.json` が正で、本書は構造と意図を説明する。`settings.json` は hook を 1 つも登録していない (DR-0123)。本書の表は、各スクリプトが最後に持っていた配線の記録である。statusLine の登録だけが残る。
 
 ## 実行レイヤー
 
@@ -49,8 +49,6 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 | ---------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PreToolUse       | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread, pre-bash/issue_body_gate |
 | PreToolUse       | Write/Edit         | edit/rust_pre_edit.ts                                                                                                                                             |
-| PreToolUse       | EnterPlanMode      | deny (計画は /think へ誘導)                                                                                                                                       |
-| PreToolUse       | WebFetch/WebSearch | deny (scout CLI へ誘導)                                                                                                                                           |
 | PostToolUse      | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/rumdl_check.ts, edit/mirror_prose_guard.ts                                                                     |
 | PostToolUse      | Bash               | post-bash/scribe_prompt                                                                                                                                           |
 | PostToolUse      | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |

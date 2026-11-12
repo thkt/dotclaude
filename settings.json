@@ -14,14 +14,11 @@
   },
   "permissions": {
     "allow": [
-      "Edit(*)",
       "ExitPlanMode(*)",
       "LS(*)",
       "ListMcpResourcesTool(*)",
-      "Read(*)",
       "ReadMcpResourceTool(*)",
       "TaskStop(*)",
-      "Write(*)",
       "Bash(gh *)",
       "Bash(git *)",
       "Bash(claude --print *)",
@@ -36,15 +33,6 @@
       "Bash(nr *)",
       "Bash(nun *)",
       "Bash(nup *)",
-      "Bash(go version)",
-      "Bash(gradle -v)",
-      "Bash(java -version)",
-      "Bash(mvn -v)",
-      "Bash(node -v)",
-      "Bash(pip list)",
-      "Bash(pip show *)",
-      "Bash(python --version)",
-      "Bash(docker version)",
       "Bash(kubectl describe *)",
       "Bash(kubectl get *)",
       "Bash(agent-browser *)",
@@ -59,20 +47,24 @@
       "Bash(sae status *)",
       "Bash(scout *)",
       "Bash(ugrep *)",
-      "Bash(xr *)",
-      "Bash(yq *)"
+      "Bash(xr *)"
     ],
     "deny": [
-      "Bash(git stash clear:*)",
-      "Bash(git stash drop:*)",
+      "Bash(git stash clear *)",
+      "Bash(git stash drop *)",
       "Bash(*--exec-path*)",
       "Bash(*--no-verify*)",
       "Bash(*--receive-pack*)",
       "Bash(*--upload-pack*)",
-      "Bash(curl:*)",
-      "Bash(kill -9:*)",
-      "Bash(sudo:*)",
-      "Bash(wget:*)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(kill -9 *)",
+      "Bash(sudo *)",
+      "Bash(rm *)",
+      "Bash(rmdir *)",
+      "Bash(unlink *)",
+      "Bash(shred *)",
+      "Bash(find * -delete*)",
       "Read(.env)",
       "Read(.env.*)",
       "Read(**/.env)",
@@ -103,250 +95,28 @@
       "Edit(~/.zprofile)",
       "Edit(~/.gitconfig)",
       "Edit(~/.gnupg/**)",
+      "Edit(~/.ssh/**)",
       "Edit(~/.aws/**)",
       "Edit(~/.kube/**)",
       "Edit(~/Library/LaunchAgents/**)",
       "NotebookEdit"
     ],
     "ask": [
-      "Bash(git branch -D *)",
-      "Bash(git restore:*)",
-      "Bash(git rm:*)",
       "Bash(git -c *)",
+      "Bash(git branch -D *)",
       "Bash(git checkout -- *)",
-      "Bash(git clean:*)",
-      "Bash(git rebase:*)",
-      "Bash(git reset:*)",
+      "Bash(git clean *)",
+      "Bash(git rebase *)",
+      "Bash(git reset *)",
+      "Bash(git restore *)",
+      "Bash(git rm *)",
       "Edit(~/.claude/settings.json)",
       "Edit(~/.claude/hooks/**)",
       "Edit(~/.claude/rules/**)",
       "Edit(//**/.claude/agent-memory/**)",
       "Edit(//**/.claude/agent-memory-local/**)"
     ],
-    "defaultMode": "auto",
-    "disableBypassPermissionsMode": "disable"
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/rust_post_edit.ts",
-            "if": "Write(**/*.rs)",
-            "timeout": 30,
-            "statusMessage": "cargo fmt..."
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/rust_post_edit.ts",
-            "if": "Edit(**/*.rs)",
-            "timeout": 30,
-            "statusMessage": "cargo fmt..."
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/textlint_fix.ts",
-            "if": "Write(**/*.md)",
-            "timeout": 60
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/textlint_fix.ts",
-            "if": "Edit(**/*.md)",
-            "timeout": 60
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/rumdl_check.ts",
-            "if": "Write(**/*.md)",
-            "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/rumdl_check.ts",
-            "if": "Edit(**/*.md)",
-            "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/mirror_prose_guard.ts",
-            "if": "Write(**/.ja/**)",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/mirror_prose_guard.ts",
-            "if": "Edit(**/.ja/**)",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/post-bash/scribe_prompt.ts",
-            "timeout": 30
-          }
-        ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.ts background",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/pre-bash/package_manager_rewrite.ts",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/security/npm_install_guard.ts",
-            "timeout": 60
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/security/rm_to_trash.ts",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/security/git_sandbox_guard.ts",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/pre-bash/body_proofread.ts",
-            "timeout": 60
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/pre-bash/issue_body_gate.ts",
-            "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/pre-bash/client_identifier_gate.ts",
-            "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/pre-bash/wiki_scene.ts",
-            "timeout": 30
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/rust_pre_edit.ts",
-            "if": "Write(**/*.rs)",
-            "timeout": 60,
-            "statusMessage": "clippy..."
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/edit/rust_pre_edit.ts",
-            "if": "Edit(**/*.rs)",
-            "timeout": 60,
-            "statusMessage": "clippy..."
-          }
-        ]
-      },
-      {
-        "matcher": "EnterPlanMode",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"EnterPlanMode is disabled. For planning, use the /think skill instead.\"}}'"
-          }
-        ]
-      },
-      {
-        "matcher": "WebFetch|WebSearch",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"WebFetch and WebSearch are disabled. Use the scout CLI through Bash instead (Bash(scout *) is already allowed): scout fetch <url> for a page body, scout search <query> for candidate URLs. Run scout --help for every other subcommand and flag.\"}}'"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "^(startup|resume|clear|compact|fork)$",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash '/Users/thkt/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/failure-alert.sh stop",
-            "timeout": 60
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.ts release",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
-    "StopFailure": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/lifecycle/failure-alert.sh fail",
-            "timeout": 60
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/integrations/amphetamine_agent_session.ts acquire",
-            "timeout": 15
-          },
-          {
-            "type": "command",
-            "command": "~/.local/share/mise/shims/codegraph prompt-hook",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
+    "defaultMode": "auto"
   },
   "statusLine": {
     "type": "command",
@@ -355,7 +125,6 @@
   },
   "enabledPlugins": {
     "agent-browser@agent-browser": true,
-    "kagami@kagami": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "html@skills": true,
@@ -368,12 +137,6 @@
       "source": {
         "source": "git",
         "url": "https://github.com/vercel-labs/agent-browser.git"
-      }
-    },
-    "delta": {
-      "source": {
-        "source": "github",
-        "repo": "thkt/delta"
       }
     },
     "claude-plugins-official": {
@@ -416,7 +179,7 @@
       "allowLocalBinding": true
     },
     "filesystem": {
-      "allowWrite": ["~/.Trash", "~/.claude/.git", "~/.claude/workflows"]
+      "allowWrite": ["~/.Trash", "~/.claude/.git"]
     },
     "enableWeakerNetworkIsolation": true,
     "excludedCommands": ["afplay", "scout"]
@@ -433,9 +196,8 @@
   "plansDirectory": "./.claude/workspace/planning",
   "autoMemoryEnabled": false,
   "showThinkingSummaries": true,
-  "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "preferredNotifChannel": "ghostty",
+  "preferredNotifChannel": "notifications_disabled",
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
@@ -460,6 +222,7 @@
       "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment (hyphen/underscore/dot-delimited — e.g. matches `prod-db`, not `producer`)",
       "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
       "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine or CI runner with open internet",
       "### User-specific",
       "**Primary use of Claude Code**: software development",
       "**Trusted repo**: The git repository the agent started in (its working directory), any git worktree or clone of it, and its configured remote(s). When the repo's public/private visibility is given — by the Repository visibility entry or the user's own message — use it to scope what is OK to commit or push there: confidential material is fine in a private repo; in a public one, only that repo's own work is — and content ported, repointed, or first read from outside this session's repo is not its own work, whoever directed the port. Visibility scopes confidential material only: secrets and sensitive data (personal & entrusted) are never cleared into any repo by its visibility (see Definitions).",

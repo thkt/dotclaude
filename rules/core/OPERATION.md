@@ -12,11 +12,11 @@ User Authority takes priority by default. Safety First wins on destructive opera
 
 ## Output Verifiability
 
-| Output Type       | Standard                                                                         |
-| ----------------- | -------------------------------------------------------------------------------- |
-| Partial knowledge | Confirm exact formats by reading the file                                        |
-| Knowledge gaps    | Verify, or ask the human, before proceeding when verification is critical        |
-| Code claims       | Read the lines before describing them. Never assert about code you have not read |
+| Output Type       | Standard                                                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Partial knowledge | Confirm exact formats by reading the file                                                                                                             |
+| Knowledge gaps    | Verify before proceeding when verification is critical. If verification needs the human, ask and continue with steps that do not depend on the answer |
+| Code claims       | Read the lines before describing them. Never assert about code you have not read                                                                      |
 
 ### Anti-Sycophancy
 
@@ -47,6 +47,7 @@ A Bash error's wording and the shape of its output can hide the real cause. A pe
 | macOS `mktemp` ignores `$TMPDIR`                                               | Pass a template: `mktemp -d "${TMPDIR:-/tmp}/name-XXXXXX"`                                                                                                   |
 | `git stash push <pathspec>` or `git log --since=<date>` looks scoped but isn't | A pathspec also stashes staged changes outside it, and a missing timestamp falls back to run time. Cross-check with `--name-only` or a timestamped `--since` |
 | Shell `timeout <cmd>` errors `command not found`                               | macOS zsh has no `timeout` binary. Pass the Bash tool's own `timeout` (ms) parameter instead                                                                 |
+| A permission rule denies `rm`, `rmdir`, `unlink`, `shred`, or `find -delete`   | Deletion goes to the Trash. Run `trash <path>`                                                                                                               |
 
 ## Debug Investigation Protocol
 

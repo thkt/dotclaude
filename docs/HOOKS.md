@@ -1,6 +1,6 @@
 # Hooks Design
 
-Hook system design intent and mechanism. `settings.json` is the source of truth for actual registration; this document explains structure and intent.
+Hook system design intent and mechanism. `settings.json` is the source of truth for actual registration; this document explains structure and intent. `settings.json` registers no hook (DR-0123). The tables in this document record the wiring each script last carried. Only the statusLine registration remains.
 
 ## Execution Layers
 
@@ -69,8 +69,6 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | ------------------ | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PreToolUse         | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread, pre-bash/issue_body_gate |
 | PreToolUse         | Write/Edit         | edit/rust_pre_edit.ts                                                                                                                                             |
-| PreToolUse         | EnterPlanMode      | deny (planning is routed to /think)                                                                                                                               |
-| PreToolUse         | WebFetch/WebSearch | deny (routed to the scout CLI)                                                                                                                                    |
 | PostToolUse        | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/rumdl_check.ts, edit/mirror_prose_guard.ts                                                                     |
 | PostToolUse        | Bash               | post-bash/scribe_prompt                                                                                                                                           |
 | PostToolUse        | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |

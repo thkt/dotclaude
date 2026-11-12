@@ -11,7 +11,7 @@ Conventions for workflow scripts under `workflows/`.
 
 ## Naming and file placement
 
-Discovery reads `workflows/` flat and registers only the `.js` files directly under it. The prompt strings inside a script are read by an LLM, so those follow the sentence-length conventions in PROSE.md.
+Discovery reads `workflows/` flat and registers only the `.js` files directly under it. The prompt strings inside a script are read by an LLM, so those follow PROSE.md.
 
 | Target            | Rule                                                                                                                                                                                                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

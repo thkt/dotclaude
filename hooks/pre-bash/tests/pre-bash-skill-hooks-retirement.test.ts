@@ -1,13 +1,12 @@
 /// <reference types="node" />
 // hooks/pre-bash/issue_body_gate.py, hooks/pre-bash/wiki_scene.py and hooks/_lib/gh_filing.py
-// retire once settings.json's PreToolUse Bash hooks run their TypeScript replacements, the .ts
-// files the preceding units built (hooks/pre-bash/issue_body_gate.ts, hooks/pre-bash/wiki_scene.ts).
-// This file guards the retirement itself, the same shape as
+// are retired in favor of their TypeScript replacements (hooks/pre-bash/issue_body_gate.ts,
+// hooks/pre-bash/wiki_scene.ts). This file guards the retirement itself, the same shape as
 // hooks/pre-bash/tests/pre-bash-hooks-retirement.test.ts: no tracked file still names the 3
-// retired scripts (T-328), and the actually-registered wiki_scene entry both names the .ts
-// replacement and still returns this repository's real issue-close pages once it does (T-327,
-// carrying forward wiki_scene_seam_test.py's T-013 real-finder pin and T-014 settings.json
-// registration check together). The walk and its historical-directory exclusions are
+// retired scripts (T-328), and wiki_scene.ts still returns this repository's real issue-close
+// pages (T-327, carrying forward wiki_scene_seam_test.py's T-013 real-finder pin). settings.json
+// registers no hook (DR-0123), so the hook is named by its tracked path. The walk and its
+// historical-directory exclusions are
 // offendersAmong (workflows/_lib/tests/_retirement.ts), reused here rather than re-derived; the
 // hook spawn reuses hooks/_lib/tests/_hook-harness.ts's run() rather than a second copy of that
 // child-process plumbing.
@@ -17,7 +16,6 @@ import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { run } from "../../_lib/tests/_hook-harness.ts";
-import { hookCommands } from "../../_lib/tests/_settings-hooks.ts";
 import {
   assertDetectsAndMisses,
   offendersAmong,
@@ -28,8 +26,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
-// The 3 retired hooks/pre-bash/*.py and hooks/_lib/*.py scripts, matched by name alone:
-// T-327's own settings.json check is what verifies the wiki_scene replacement is wired in, this
+// The 3 retired hooks/pre-bash/*.py and hooks/_lib/*.py scripts, matched by name alone: this
 // predicate only asks whether a retired filename still shows up anywhere.
 const RETIRED_NAMES = ["issue_body_gate.py", "wiki_scene.py", "gh_filing.py"];
 
@@ -68,14 +65,6 @@ test("T-328 no tracked file outside the historical directories names issue_body_
   );
 });
 
-/** The whitespace-delimited token inside `command` that names `stem`, or undefined when no
- * PreToolUse Bash command registers that stem at all. Mirrors pre-bash-hooks-retirement.test.ts's
- * own commandNaming. */
-function commandNaming(commands: string[], stem: string): string | undefined {
-  const pattern = new RegExp(`(^|[/\\s])${stem}\\.\\w+($|\\s)`);
-  return commands.find((command) => pattern.test(command));
-}
-
 // The docs/wiki/ pages this repository currently tags `scenes: ["issue-close"]`
 // (skills/scribe/tests/skill_contract_test.py fixes this set; a page added or dropped there has
 // to move here too). Listed exactly, not as a lower bound, the same way
@@ -101,29 +90,10 @@ function contextOf(stdout: string): string {
 }
 
 test("T-327 feeding the hook entry a gh issue close payload for this repository returns the issue-close page names, driven through the real finder", () => {
-  const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
-  const commands = hookCommands(settings, "PreToolUse", "Bash");
-  const command = commandNaming(commands, "wiki_scene");
-  assert.ok(
-    command,
-    `settings.json's PreToolUse Bash hooks carry no command naming wiki_scene: ${commands.join(", ")}`,
-  );
-
-  const token = (command as string).split(/\s+/).find((piece) => piece.includes("wiki_scene"));
-  assert.ok(token, `no whitespace-delimited token in the wiki_scene command names it: ${command}`);
-  assert.ok(
-    (token as string).endsWith(".ts"),
-    `settings.json's wiki_scene command does not end in .ts: ${token}`,
-  );
-
-  const relPath = (token as string).startsWith("~/.claude/")
-    ? (token as string).slice("~/.claude/".length)
-    : (token as string);
-  const hookPath = join(REPO_ROOT, relPath);
+  const hookPath = join(REPO_ROOT, "hooks", "pre-bash", "wiki_scene.ts");
 
   // Real repository, real find_wiki_rule.ts, nothing stubbed: pins the pages this repository's
-  // own docs/wiki/ tags scenes: ["issue-close"] against the entry settings.json actually
-  // registers, not a hardcoded path to wiki_scene.ts.
+  // own docs/wiki/ tags scenes: ["issue-close"].
   const stdout = run(hookPath, {
     tool_name: "Bash",
     tool_input: { command: `cd ${REPO_ROOT} && gh issue close 42` },
