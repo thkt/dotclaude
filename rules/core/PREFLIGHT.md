@@ -4,20 +4,20 @@ Confirm scope before implementation. Skip for follow-up edits to the same files 
 
 ## Outcome Reference
 
-Read `.claude/OUTCOME.md` at task start and judge scope against the outcome. Skip the re-read when OUTCOME.md was already read earlier in this session. Right before fixing scope, ask "and then what happens after this change?" and verbalize second-order effects (callers, operations, other tasks) in one line.
+Read `.claude/OUTCOME.md` at task start and judge scope against the outcome. Skip the re-read when OUTCOME.md was already read earlier in this session. Before fixing scope, check second-order effects (callers, operations, other tasks). Add each one found to the plan as a scope item; if there are none, say so.
 
-| Condition                             | Action                                                                |
-| ------------------------------------- | --------------------------------------------------------------------- |
-| OUTCOME.md absent                     | Generate stub via /outcome                                            |
-| Change requested in a non-goal area   | Confirm with user whether to redefine the non-goal or split as a task |
-| Change conflicts with Constraints     | Confirm the constraint change with the user and stop                  |
-| Change does not advance outcome state | Re-check YAGNI                                                        |
+| Condition                             | Action                                                                                                               |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| OUTCOME.md absent                     | Generate stub via /outcome                                                                                           |
+| Change requested in a non-goal area   | Confirm with user whether to redefine the non-goal or split as a task                                                |
+| Change conflicts with Constraints     | Confirm the constraint change with the user and stop that item. Continue any item that does not touch the constraint |
+| Change does not advance outcome state | Re-check YAGNI                                                                                                       |
 
 ## Interpretation Clarity
 
-| Trigger                               | Action                                                    |
-| ------------------------------------- | --------------------------------------------------------- |
-| Issue URL or external spec referenced | Present plan (changes, files, TODO) and wait for approval |
+| Trigger                               | Action                                                                                                                                                                                                                                                    |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Issue URL or external spec referenced | Present plan (changes, files, TODO). Interactive session: wait for approval. Unattended run: record the plan and every open question in the task checklist, continue with work that does not depend on the answer, and stop only when nothing can advance |
 
 ### How to ask
 

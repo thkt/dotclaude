@@ -12,11 +12,11 @@ User Authority takes priority by default. Safety First wins on destructive opera
 
 ## Output Verifiability
 
-| Output Type       | Standard                                                                         |
-| ----------------- | -------------------------------------------------------------------------------- |
-| Partial knowledge | Confirm exact formats by reading the file                                        |
-| Knowledge gaps    | Verify, or ask the human, before proceeding when verification is critical        |
-| Code claims       | Read the lines before describing them. Never assert about code you have not read |
+| Output Type       | Standard                                                                                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Partial knowledge | Confirm exact formats by reading the file                                                                                                             |
+| Knowledge gaps    | Verify before proceeding when verification is critical. If verification needs the human, ask and continue with steps that do not depend on the answer |
+| Code claims       | Read the lines before describing them. Never assert about code you have not read                                                                      |
 
 ### Anti-Sycophancy
 

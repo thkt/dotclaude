@@ -1178,8 +1178,8 @@ if (slots.length) {
         `Strict:\n` +
         `- Keep file:line, paths, numbers, counts, severity labels, identifiers, and code fragments verbatim.\n` +
         `- Carry every claim in the input across, no more and no fewer. Re-splitting the sentences drops none of them.\n` +
-        `- Keep every sentence within 25 words and to one claim. Split a longer one at its subject-predicate seam.\n` +
-        `- The claim, the evidence for it, and a separate observation each get their own sentence. A sentence carrying a verbatim element is exempt from the word limit.\n` +
+        `- Keep every sentence to one claim. Split a sentence the reader cannot follow in one pass at its subject-predicate seam.\n` +
+        `- The claim, the evidence for it, and a separate observation each get their own sentence.\n` +
         `- Do not chain clauses with em-dashes. Lead with a connective or split the sentence.\n` +
         `- For an element whose \`kind\` is \`finding\`, keep the claim and the pointer to its evidence, within 4 sentences.\n` +
         `- For an element whose \`kind\` is \`anomaly\`, no sentence-count limit applies. It is the only record of what the run did unexpectedly.\n` +

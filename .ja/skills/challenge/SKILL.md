@@ -1,6 +1,6 @@
 ---
 name: challenge
-description: 発見した問題が本物か、提案したアイデアが使えるかを 2 フェーズで判定する。Phase 1 は OUTCOME.md と並列 subagent の証拠に対し、subagent 検証と advisor 判断をループで回して設計の分岐を自力で解決する。残る分岐のうち不可逆なものだけをユーザーへ確認し、他は仮定を明記して進める。Phase 2 は critic-design の subagent 2 体 (内部攻撃 / OUTCOME.md 攻撃) を devil's advocate として起動する。判定は GO / NO-GO を最上段に出す。コードレビューの findings には使わない (audit workflow を使う)。outcome の assertion にも使わない (/assert に adversarial testing が組み込まれている)。
+description: 発見した問題が本物か、提案したアイデアが使えるかを 2 フェーズで判定する。Phase 1 は OUTCOME.md と集めた証拠に対し、検証と advisor 判断をループで回して設計の分岐を自力で解決する。残る分岐のうち不可逆なものだけをユーザーへ確認し、他は仮定を明記して進める。Phase 2 は critic-design の subagent 2 体 (内部攻撃 / OUTCOME.md 攻撃) を devil's advocate として起動する。判定は GO / NO-GO を最上段に出す。コードレビューの findings には使わない (audit workflow を使う)。outcome の assertion にも使わない (/assert に adversarial testing が組み込まれている)。
 when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, grill me, 壁打ち
 allowed-tools: Read LS Agent AskUserQuestion
 model: opus
@@ -23,15 +23,17 @@ argument-hint: "[proposal file | description]"
 
 判断はすべて下表が定める。advisor の自信度では決めない。
 
+subagent は 1 体ごとにセッションのコストを増やす。手元の Read と数回の検索で決まる論点は自分で確かめる。subagent に渡すのは、互いに独立した論点を並列で調べると時間が縮むときに限る。渡すときは、論点、確かめる対象のパス、返す形を起動プロンプトに書く。
+
 | 対象         | 条件                                                                               | 満たすときの扱い                      | 満たさないときの扱い                           |
 | ------------ | ---------------------------------------------------------------------------------- | ------------------------------------- | ---------------------------------------------- |
-| 論点         | 証拠で答えが 1 つに決まる。優先順位やスコープのように選択が要るものは決まらない    | subagent が並列で答えを確かめる       | 検証せず未決へ回す                             |
+| 論点         | 証拠で答えが 1 つに決まる。優先順位やスコープのように選択が要るものは決まらない    | 答えを確かめる                        | 検証せず未決へ回す                             |
 | 確かめた事実 | 狙う状態が既に成立している、または提案と矛盾する。advisor の見解だけでは満たさない | Phase 2 を飛ばし、根拠を Why に据える | 食い違わなかった主張で続ける                   |
 | 未決の論点   | 後戻りできない、または影響が大きい                                                 | AskUserQuestion で聞く。上限 7 問     | advisor の仮説を仮定として進め、Why に全件残す |
 
 1. `.claude/OUTCOME.md` を読む。無ければ `$ARGUMENTS` と会話から outcome を推定し、AskUserQuestion で確認する。Phase 2 の outcome 攻撃がこれを評価軸に使うので、省略せず確定させる
 2. 提案の論点を洗い出し、表に従って振り分ける
-3. 検証ループを回す。subagent が並列で答えを確かめ、advisor が振り分けを見直して次の証拠を指す
+3. 検証ループを回す。答えを確かめ、advisor が振り分けを見直して次の証拠を指す
 4. 証拠を足しても振り分けが変わらなくなったら打ち切る。上限 3 周。決着しなかった論点は未決へ回す
 5. 確かめた事実を表に当てる。Phase 2 を飛ばす扱いなら、そのまま出力へ抜ける
 6. 未決の論点へ advisor が仮説、可逆性、影響度を付け、表に従って振り分ける

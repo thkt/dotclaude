@@ -24,10 +24,10 @@ Name a skill after the operation it performs. Replace generic names like helper,
 
 The H1 tells a reader which kind of skill they opened: one a person types, or a wrapper only the model reaches.
 
-| user-invocable | H1                            | Example                              |
-| -------------- | ----------------------------- | ------------------------------------ |
-| true (default) | Opens with `/<name>`          | `# /issue - GitHub Issue Generation` |
-| false          | The skill's own name          | `# use-cli-scout`                    |
+| user-invocable | H1                   | Example                              |
+| -------------- | -------------------- | ------------------------------------ |
+| true (default) | Opens with `/<name>` | `# /issue - GitHub Issue Generation` |
+| false          | The skill's own name | `# use-cli-scout`                    |
 
 ## Directory structure
 
@@ -89,12 +89,12 @@ Skill input arguments expand at invocation time.
 
 A skill can satisfy every mechanical rule and still read poorly.
 
-| Axis                        | Pass condition                                                           | Fail signal                                                        |
-| --------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| Single responsibility       | One task per skill. A second unrelated trigger is a split signal         | description joins 2+ unrelated capabilities                        |
-| Description distinctiveness | Sentence 1 enumerates the capability with concrete verbs and objects     | Generic verbs like helps with or manages that fit many skills      |
-| Imperative voice            | Body commands the agent directly                                         | Passive recital of what the skill does                             |
-| Phase handoff               | A value handed to a later Phase has its source written into the receiver | The sending Phase alone says Phase N uses this, with no landing point |
-| Verifiable completion       | Steps end with checkable conditions and an explicit stop point           | Done-state absent, or a confirmation order with no check condition |
-| Concrete calibration        | A Good / Bad pair, Yes / Not contrast, or numeric threshold per judgment | Rules stated abstractly with no example                            |
-| Progressive disclosure      | SKILL.md stays thin; detail moves to references/                         | Inline dumps that belong in references/                            |
+| Axis                        | Pass condition                                                                                                                                                                                                                    | Fail signal                                                                                                                  |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Single responsibility       | One task per skill. A second unrelated trigger is a split signal                                                                                                                                                                  | description joins 2+ unrelated capabilities                                                                                  |
+| Description distinctiveness | Sentence 1 enumerates the capability with concrete verbs and objects                                                                                                                                                              | Generic verbs like helps with or manages that fit many skills                                                                |
+| Imperative voice            | Body commands the agent directly                                                                                                                                                                                                  | Passive recital of what the skill does                                                                                       |
+| Phase handoff               | A value handed to a later Phase has its source written into the receiver                                                                                                                                                          | The sending Phase alone says Phase N uses this, with no landing point                                                        |
+| Verifiable completion       | Steps end with checkable conditions and an explicit stop point. An unattended skill keeps its parts in a checklist and allows exactly two stops: nothing can advance without the user, or the blocker is protected from the agent | Done-state absent; a confirmation order with no check condition; a summary that announces the next step instead of taking it |
+| Concrete calibration        | A Good / Bad pair, Yes / Not contrast, or numeric threshold per judgment                                                                                                                                                          | Rules stated abstractly with no example                                                                                      |
+| Progressive disclosure      | SKILL.md stays thin; detail moves to references/                                                                                                                                                                                  | Inline dumps that belong in references/                                                                                      |

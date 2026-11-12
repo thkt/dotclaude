@@ -50,7 +50,7 @@ After understanding the problem and before writing code, work through these top 
 
 ## Strong Inference
 
-When two fixes under the same assumption have failed, switch from fixing the error (single-loop) to questioning the assumption itself (double-loop). Verbalize the governing assumption before forming the next hypothesis.
+When two fixes under the same assumption have failed, switch from fixing the error (single-loop) to questioning the assumption itself (double-loop). Name the assumption both failed fixes share as one line in the report to the user, then test its negation as the next hypothesis.
 
 ## Measurement
 
@@ -72,7 +72,7 @@ Concretizes AI-Assisted Development.
 - Add comments and types to the code you changed, where the logic is non-obvious
 - Put validation at system boundaries (user input, external APIs)
 - Create a helper or abstraction once call sites reach 2
-- Return split decisions to the user, and follow the existing directory structure
+- Return split decisions to the user in the same message as your next action on the parts that do not depend on them, and follow the existing directory structure
 - Before proposing to remove or merge existing structure, read the related DR's Reassessment Triggers and judge whether they are unmet
 - Before giving up on the grounds of a past rejection, read the criterion that rejection was judged against. Judge the same candidate again when the current objective calls for a different criterion
 - Before importing an external design, read your own deliverables (output templates, implementation) and confirm the failure that design addresses actually occurs
