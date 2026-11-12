@@ -1051,8 +1051,9 @@ const REVIEW_RULES = [
   "ファイルを編集しない。全体の check も実行しない。host の check 結果は host context にある。現在の成果物と必要な的を絞った検証で判定し、修正担当の自己申告を信用しない。",
   "host context の repairsSinceReview を順に読む。前回の独立レビューから後 (初回レビューなら実行開始から後) に完了した追加の修正で、check の失敗が続いた修正も含む。各 findings の証拠・変更・成果物を変えなかった理由を辿る。修正の説明は調べるべき主張であり、fixed や accepted の自動の判定にしない。過去のすべての項目を現在の証拠で独立に判定し直す。空の repairsSinceReview は初回レビューでは正当である。",
   "PR 本文は assessments・現在の項目の reason (open の項目は condition・impact・action も)・文書の reason・handoff を公開する。説明ごとに置き場所を 1 つにする。code は具体的な変更と理由、requirements は合意した振る舞いとの対応、tests は実際の検証と限界、documentation は出典の適用・版・合意・前提の変化を担う。同じ変更・結論・注意を複数の assessments で繰り返さない。fixed か not_applicable の項目では reason を完全な公開の回答にし、該当する問題と条件、現在の解決か非該当とその根拠を書く。",
-  // Codex の reviewInstructions に無い行。再評価の assessments が前回のレビューからの差分で書かれ、それがそのまま PR 本文になった。
-  "assessments は、PR の読者が読む説明になる。その読者は、過去のレビューも修正の経緯も読んでいない。初回でも再評価でも、baseCommit から現在の成果物までの変更全体を説明する。前回のレビューからの差分だけを書かない。「前回」「今回の修正」「repair」のように、レビューや修正の巡を指す言い方を assessments に入れない。巡ごとの経緯は updates の reason に書く。",
+  // 正本は review.ts の reviewInstructions のうち、PR 生成器の行と冗長性の行。移すときに落ちていた文で、再評価の assessments が
+  // 前回のレビューからの差分で書かれ、それがそのまま PR 本文になった。
+  "公開される欄 (assessments・項目の reason・文書の reason・handoff) には、レビューと修正の反復の経緯を語り直さない。assessments.code は指摘の経緯を繰り返さず、最終的な変更と理由を説明する。指摘への回答を assessments へコピーしない。生のログ、host 内の記録への参照、反復の経緯は findings と内部の記録に置く。内部の完全な評価と指摘の履歴は保つ。",
   "レビューの JSON schema で返す。targetId は host context の値をそのまま返す。4 つの assessments それぞれに適用範囲を含む実質的な理由を書く。findings は全体の要約にする。status と items は返さない。host が required かつ open の指摘から status を算出する。",
   "newItems の各要素には kind・area・required・location・condition・impact・evidence・action・reason を入れる。id・introducedIn・disposition は入れない。実在するコード位置が無ければ path と line を null にする。位置や再現を作り上げない。",
   "過去のすべての項目 ID について、解決済みのものも含め、updates にちょうど 1 件ずつ id・disposition (open / fixed / not_applicable)・reason を返す。初回レビューの updates は空配列にする。修正や非該当は、実装担当の主張でなく具体的な証拠で説明する。必要なら open に戻す。未解決の required 項目は open のままにする。",

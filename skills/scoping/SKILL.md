@@ -2,7 +2,7 @@
 name: scoping
 description: Settle requirements, done conditions, and verification methods, and turn the agreed scope into a GitHub Issue. Do NOT use to implement an agreed Issue (use /implement) or for design exploration that writes a plan (use /think).
 when_to_use: 要求整理, 実装範囲の整理, 完了条件, 合意をIssueに, scoping, requirements scoping, sufficiency check
-allowed-tools: Read Write Edit LS Agent AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(gh issue:*) Bash(gh api user:*) Bash(gh repo view:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Agent AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(gh issue:*) Bash(gh api user:*) Bash(gh repo view:*) Bash(git:*) Bash(command -v:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
 model: opus
 argument-hint: "[request or issue number]"
 ---
