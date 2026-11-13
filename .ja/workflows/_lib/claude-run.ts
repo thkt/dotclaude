@@ -7,9 +7,14 @@
 // `claude -p` の子 session に渡す。script の評価は、テストが使う run-workflow.ts の形である。
 //
 // Usage: claude-run.ts <workflow> --repo <abs path> [--issue N] [--base B] [--args <json>]
-//                      [--state <file>] [--concurrency N]
-// stdout: workflow の戻り値の JSON。stderr: log、phase、まとめの 1 行。
-// exit: script が値を返したら 0 (停止を含む)。script が throw したら 1。読めない呼び出しは 2。
+//                      [--args-file <file>] [--state <file>] [--concurrency N]
+// stdout: workflow の戻り値の JSON。同じものを state ファイルの隣の result.json にも書く。
+// stderr: log、phase、まとめの 1 行。まとめの行は state ファイルと結果のファイルを名乗る。
+// exit: script が値を返したら 0 (停止を含む)。script が throw したとき、または別の host が state ファイルを
+// 持っているときは 1。読めない呼び出しは 2。signal で終わらされたら 143。
+//
+// --args-file は、--args に書く JSON を持つファイルを指す。呼び出し元がファイルに書けば、自由な文章 (修正依頼)
+// が shell の引用を通らない。
 //
 // --state は、agent() 呼び出しごとの結果を残すファイルを指す。同じファイルで始めた実行は、prompt と option が
 // 同じ呼び出しに残っている結果を返し、何も実行しない。止まった実行はこの方法で再開する。同じファイルと、停止が
@@ -378,14 +383,23 @@ interface Call {
   state: string | undefined;
 }
 
-// --state はこの host だけの flag。残りは codex-run.ts が読む argv と同じ。読めない呼び出しは null で、
-// 呼び出し側が usage を出力する。
+// --state と --args-file はこの host だけの flag。残りは codex-run.ts が読む argv と同じ。読めない呼び出しは
+// null で、呼び出し側が usage を出力する。
+const takeFlag = (argv: string[], name: string): { value: string | undefined; rest: string[]; bad: boolean } => {
+  const at = argv.indexOf(name);
+  if (at < 0) return { value: undefined, rest: argv, bad: false };
+  const value = argv[at + 1];
+  return { value, rest: [...argv.slice(0, at), ...argv.slice(at + 2)], bad: !value || value.startsWith("--") };
+};
 export const readCall = (argv: string[]): Call | null => {
-  const at = argv.indexOf("--state");
-  const state = at < 0 ? undefined : argv[at + 1];
-  if (at >= 0 && (!state || state.startsWith("--"))) return null;
-  const rest = at < 0 ? argv : [...argv.slice(0, at), ...argv.slice(at + 2)];
+  const stateFlag = takeFlag(argv, "--state");
+  const fileFlag = takeFlag(stateFlag.rest, "--args-file");
+  if (stateFlag.bad || fileFlag.bad) return null;
+  const state = stateFlag.value;
   try {
+    const rest = fileFlag.value
+      ? [...fileFlag.rest, "--args", readFileSync(fileFlag.value, "utf8")]
+      : fileFlag.rest;
     const { name, args, concurrency } = parseArgv(rest);
     if (!name || typeof args.repo !== "string") return null;
     if (concurrency !== undefined && !(Number.isInteger(concurrency) && concurrency >= 1)) return null;
@@ -396,43 +410,98 @@ export const readCall = (argv: string[]): Call | null => {
   }
 };
 
-if (isMainModule(import.meta.url)) {
-  const call = readCall(process.argv.slice(2));
+// 子 session が、利用者の permission の規則の下でコマンドを実行できるかどうか。実行できない session は、何分も
+// 実装した後で「テストを実行できなかった」と報告する。そのため、呼び出し元は実行を始める前にこれを尋ねる。
+// `denied` は規則が拒んだコマンドを並べる。
+export async function probeChild(
+  repo: string,
+  commands: string[],
+  runOnce: (run: ChildRun) => Promise<ChildOutcome> = runClaudeOnce,
+): Promise<{ ran: boolean; denied: string[]; why: string }> {
+  const outcome = await runOnce({
+    prompt: `Run each of these commands with the Bash tool, one call for each, and then reply with the single word done. Do nothing else.\n${commands.join("\n")}`,
+    model: "haiku",
+    effort: undefined,
+    schema: undefined,
+    cwd: repo,
+    timeoutMs: 120_000,
+  });
+  let reply: JsonValue;
+  try {
+    reply = JSON.parse(outcome.stdout);
+  } catch {
+    return { ran: false, denied: [], why: `claude -p exited ${outcome.code} with no result. ${outcome.stderr.slice(-300)}` };
+  }
+  const denials: JsonValue[] = Array.isArray(reply.permission_denials) ? reply.permission_denials : [];
+  const denied = denials.map((denial) => String(denial?.tool_input?.command ?? denial?.tool_name ?? ""));
+  if (denied.length) return { ran: false, denied, why: "the user's permission rules refused a command" };
+  if (reply.is_error || outcome.code !== 0)
+    return { ran: false, denied, why: `the session ended as ${reply.subtype}` };
+  return { ran: true, denied, why: "" };
+}
+
+const USAGE =
+  "usage: claude-run.ts <workflow> --repo <abs path> [--issue N] [--base B] [--args <json>] " +
+  "[--args-file <file>] [--state <file>] [--concurrency N]\n";
+
+// コマンドを関数にしたもの。skill の script とテストが呼べる。`resolvePath` は、workflow の名前が指す script を返す。
+export async function main(
+  argv: string[],
+  {
+    resolvePath = resolveWorkflowPath,
+    out = (text: string) => process.stdout.write(text),
+    onLog = (message: string) => process.stderr.write(`${message}\n`),
+  }: {
+    resolvePath?: (name: string) => string;
+    out?: (text: string) => void;
+    onLog?: (message: string) => void;
+  } = {},
+): Promise<number> {
+  const call = readCall(argv);
   if (!call) {
-    process.stderr.write(
-      "usage: claude-run.ts <workflow> --repo <abs path> [--issue N] [--base B] [--args <json>] " +
-        "[--state <file>] [--concurrency N]\n",
-    );
-    process.exit(2);
+    onLog(USAGE.trimEnd());
+    return 2;
   }
   const state =
     call.state ?? join(mkdtempSync(join(process.env.TMPDIR || tmpdir(), "claude-run-")), "calls.jsonl");
-  const onLog = (message: string) => process.stderr.write(`${message}\n`);
-  const release = holdState(state);
-  for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) {
-    process.on(name, () => {
-      endAll();
-      release();
-      process.exit(143);
-    });
+  const resultPath = join(dirname(state), "result.json");
+  // 同じ state を別の host が持っているときは、stack trace ではなく 1 行で断る。
+  let release: () => void;
+  try {
+    release = holdState(state);
+  } catch (error) {
+    onLog(`claude-run: ${error instanceof Error ? error.message : String(error)}`);
+    return 1;
   }
+  const ended = () => {
+    endAll();
+    release();
+    process.exit(143);
+  };
+  const signals = ["SIGTERM", "SIGINT", "SIGHUP"] as const;
+  for (const name of signals) process.on(name, ended);
   onLog(`claude-run: state ${state}`);
   const { stubs, summary } = createHost({ repo: call.args.repo, state, concurrency: call.concurrency, onLog });
   let code = 0;
   try {
-    const { result } = await runWorkflow(resolveWorkflowPath(call.name), {
+    const { result } = await runWorkflow(resolvePath(call.name), {
       args: call.args,
       stubs,
       onLog,
       onPhase: (title) => onLog(`== ${title}`),
     });
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    const text = `${JSON.stringify(result, null, 2)}\n`;
+    writeFileSync(resultPath, text, PRIVATE_FILE);
+    out(text);
   } catch (error) {
     endAll();
     onLog(`claude-run: the script threw: ${error instanceof Error ? error.message : String(error)}`);
     code = 1;
   }
-  onLog(`claude-run: ${JSON.stringify({ ...summary, state })}`);
+  onLog(`claude-run: ${JSON.stringify({ ...summary, state, result: code === 0 ? resultPath : null })}`);
+  for (const name of signals) process.off(name, ended);
   release();
-  process.exit(code);
+  return code;
 }
+
+if (isMainModule(import.meta.url)) process.exit(await main(process.argv.slice(2)));
