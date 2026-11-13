@@ -4,7 +4,7 @@ How to write args, and how to handle the output of the probe and of the host. Ph
 
 ## args
 
-args is one JSON object. Write it to a file with the Write tool and pass it with `--args-file`. A file passes through no shell quoting, so a revision request that holds quotes or line breaks arrives whole. Leave `repo` out, because `--repo` supplies it. A launch through agents hands the Workflow tool an object with the same keys and `repo` added.
+args is one JSON object. Write it to a file with the Write tool and pass it with `--args-file`. A file passes through no shell quoting, so a revision request that holds quotes or line breaks arrives whole. Leave `repo` out, because `--repo` supplies it. A launch through agents hands the Workflow tool an object with the same keys and `repo` added. The args of a launch that does not publish are `{"issue":"123","publish":false}`.
 
 | Key           | Value                                                          | When it is present                              |
 | ------------- | -------------------------------------------------------------- | ----------------------------------------------- |
@@ -14,8 +14,6 @@ args is one JSON object. Write it to a file with the Write tool and pass it with
 | `reports`     | `[{"path": "<path>", "blob": "<blob>"}]`                       | When step 5 of Phase 1 selected references      |
 | `revision`    | `{"pr": "<PR URL>", "request": "<revision request>"}`          | In § Revising an existing PR                    |
 | `retry`       | The `retry_next` a stop returned, unchanged                    | In § Resuming a run that stopped                |
-
-The args of a launch that does not publish are `{"issue":"123","publish":false}`.
 
 ## Probe output
 
