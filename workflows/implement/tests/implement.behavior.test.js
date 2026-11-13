@@ -402,7 +402,7 @@ test("the loop has no round cap: six needs_changes rounds still end in acceptanc
 // A repair may leave the tree as it was and say why, and the next review reads that. One run repaired eleven
 // times that way: its Issue assigned a verification to a run the workflow does not make, the repair kept
 // answering that nothing was left to change, and the review kept the finding open.
-test("a repair that changes nothing gets one round to be read, and a round that still rejects the same tree stops as repair-no-progress", async () => {
+test("a repair that changes nothing gets one round to be read, and a round that rejects the same tree for the same thing stops as repair-no-progress", async () => {
   const open = (_, { tree }) =>
     reviewReply(tree, { updates: [{ id: "R1-1", disposition: "open", reason: "the sweep has not run" }] });
   const nothing = idle(() => ({ status: "repaired", findings: "No file changed. The host has to run the sweep." }));
@@ -417,11 +417,50 @@ test("a repair that changes nothing gets one round to be read, and a round that 
   assert.equal(result.retry_next, null);
   assert.equal(kinds.filter((kind) => kind === "repair").length, 1, "no second repair is asked for");
 
-  // The same tree failing its check twice, with a repair between that found nothing to change.
+  // The same tree failing its check twice, with a repair between that found nothing to change. The cause can
+  // be outside the tree, so the round can be run again.
   const failing = (_, { tree }) => ({ exit_code: 1, log_tail: "FAIL an unrelated test", tree });
   const flaky = await run({ check: [failing, failing, failing], repair: [nothing, nothing] });
   assert.equal(flaky.result.stopped, "repair-no-progress");
   assert.deepEqual([flaky.result.check_runs, flaky.result.review_rounds, flaky.result.repairs], [2, 0, 1]);
+  assert.deepEqual(flaky.result.retry_next, { "round:2": 1 });
+  assert.match(flaky.result.evidence, /FAIL an unrelated test/);
+});
+
+// The round after an idle repair can reject the same tree for something the repair has not seen: a check that
+// now passes and a first review, or a review that settles the old finding and raises another.
+test("a round that rejects an unchanged tree for something new goes on to a repair", async () => {
+  const nothing = idle(() => ({ status: "repaired", findings: "The failing test is unrelated to this change." }));
+  const fixed = (id) => (_, { tree }) => reviewReply(tree, { updates: [{ id, disposition: "fixed", reason: "done" }] });
+  const afterFlake = await run({
+    check: [(_, { tree }) => ({ exit_code: 1, log_tail: "FAIL an unrelated test", tree })],
+    review: [(_, { tree }) => reviewReply(tree, { newItems: [finding()] }), fixed("R1-1")],
+    repair: [nothing],
+  });
+  assert.equal(afterFlake.result.status, "verified_local");
+  assert.deepEqual([afterFlake.result.check_runs, afterFlake.result.review_rounds, afterFlake.result.repairs], [3, 2, 2]);
+
+  const another = await run({
+    review: [
+      (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
+      (_, { tree }) =>
+        reviewReply(tree, {
+          updates: [{ id: "R1-1", disposition: "fixed", reason: "the repair is right" }],
+          newItems: [finding({ condition: "another defect" })],
+        }),
+      // A review answers every earlier finding.
+      (_, { tree }) =>
+        reviewReply(tree, {
+          updates: [
+            { id: "R1-1", disposition: "fixed", reason: "settled" },
+            { id: "R2-1", disposition: "fixed", reason: "done" },
+          ],
+        }),
+    ],
+    repair: [nothing],
+  });
+  assert.equal(another.result.status, "verified_local", `${another.result.stopped}: ${another.result.why}`);
+  assert.deepEqual([another.result.review_rounds, another.result.repairs], [3, 2]);
 });
 
 test("a repair that changes nothing and whose reason the next review accepts ends in acceptance, and a repair that changes files starts the count again", async () => {
@@ -463,8 +502,8 @@ test("the implementing and repairing prompts say what the host runs, and send a 
   });
   for (const label of ["implement", "repair:1"]) {
     const prompt = calls.agent.find((c) => c.opts.label === label).prompt;
-    assert.match(prompt, /The host runs the configured check and capture after you return, and nothing else\./, label);
-    assert.match(prompt, /assigns a verification to a run this workflow does not make, return needs_human/, label);
+    assert.match(prompt, /The host runs the configured check and capture after you return\./, label);
+    assert.match(prompt, /a run by this workflow's host that is neither of those, and names no other owner for it, return needs_human/, label);
   }
 });
 
