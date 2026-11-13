@@ -86,7 +86,8 @@ test("a relay's commands run with no child session, and the fields carry their d
   assert.deepEqual(fields, { text: 'a\tb\nc "q"  ', code: 4 });
   assert.equal(relay_check, digest(canonical(fields)));
   assert.equal(relay_note, "");
-  assert.deepEqual([asked.length, summary.relays, summary.children], [0, 1, 0]);
+  assert.deepEqual([asked.length, summary.relays, summary.children, summary.child_ms], [0, 1, 0, 0]);
+  assert.ok(summary.relay_ms > 0, "the time the commands took is counted");
 });
 
 // An implementing prompt quotes the Issue body. A body that carries a spec block of its own, with the digest
@@ -295,7 +296,7 @@ console.log(JSON.stringify(n === 0 ? { is_error: false, result: "prose", session
     const schema = { type: "object" };
     assert.deepEqual(await agent("implement 本文", { label: "implement", model: "opus", effort: "high", schema }), { status: "done" });
     const calls = [0, 1].map((n) => JSON.parse(readFileSync(join(dir, `call-${n}.json`), "utf8")));
-    const common = ["-p", "--model", "opus", "--output-format", "json", "--allowedTools", "Read,Write,Edit,MultiEdit,Glob,Grep,LS", "--effort", "high"];
+    const common = ["-p", "--model", "opus", "--output-format", "json", "--allowedTools", "Read,Write,Edit,MultiEdit,Glob,Grep,LS", "--disallowedTools", "Agent,Workflow", "--effort", "high"];
     const tail = ["--json-schema", JSON.stringify(schema), "--settings", '{"sandbox":{"enabled":false}}'];
     assert.deepEqual(calls[0].argv, [...common, ...tail]);
     assert.deepEqual(calls[1].argv, [...common, "--resume", "s-9", ...tail]);

@@ -51,6 +51,9 @@ interface AgentOptions {
 // ので、Bash は含めない。コマンドは、Claude Code の中の agent と同じく、利用者自身の permission の規則が許す
 // ときに実行される。尋ねる相手がおらず、リポジトリを信頼する呼び出し元は、CLAUDE_RUN_TOOLS に広い一覧を書く。
 const CHILD_TOOLS = process.env.CLAUDE_RUN_TOOLS || "Read,Write,Edit,MultiEdit,Glob,Grep,LS";
+// Claude Code の workflow 実行環境の中の agent は、自分で agent を始めない。子 session は 1 つの完全な session
+// なので始めてしまう。実装の session が reviewer を 2 つ始め、script 自身のレビューがそれを繰り返した。
+const CHILD_DENIED = "Agent,Workflow";
 // いちばん長い呼び出しは実装の session。上限はそれに合わせ、label ごとには分けない。
 const CHILD_TIMEOUT_MS = Number(process.env.CLAUDE_RUN_TIMEOUT_MS) || 3_600_000;
 // 並列に広げる script は、単位ごとに子を 1 つ始める。Claude Code は in-process の agent 数に上限を持つが、
@@ -109,6 +112,7 @@ export const runClaudeOnce = ({
 }: ChildRun): Promise<ChildOutcome> =>
   new Promise((done) => {
     const argv = ["-p", "--model", model, "--output-format", "json", "--allowedTools", CHILD_TOOLS];
+    argv.push("--disallowedTools", CHILD_DENIED);
     if (effort) argv.push("--effort", effort);
     // session は作業を終え、文章で終わった。作業を知っている同じ session の中で、返答だけを求める。
     if (resume) argv.push("--resume", resume);
@@ -148,6 +152,10 @@ export interface Summary {
   children: number;
   kept: number;
   cost_usd: number;
+  // 中継のコマンドと子 session にかかった時間。この host が測った値である。session 自身が報告する時間は、
+  // 自分が始めたものを待った時間を含まない。
+  relay_ms: number;
+  child_ms: number;
 }
 
 export interface HostOptions {
@@ -235,7 +243,7 @@ export function createHost({
   onLog = () => {},
   runOnce = runClaudeOnce,
 }: HostOptions): { stubs: RunWorkflowStubs; summary: Summary } {
-  const summary: Summary = { relays: 0, children: 0, kept: 0, cost_usd: 0 };
+  const summary: Summary = { relays: 0, children: 0, kept: 0, cost_usd: 0, relay_ms: 0, child_ms: 0 };
   const beside = dirname(state);
   mkdirSync(beside, PRIVATE_DIR);
   const kept = readKept(state);
@@ -266,9 +274,11 @@ export function createHost({
       `${JSON.stringify({ type: "user", message: { role: "user", content: prompt } })}\n`,
       PRIVATE_FILE,
     );
+    const started = Date.now();
     const { fields } = await runSpec(spec);
     const shown = publicFields(fields);
     summary.relays += 1;
+    summary.relay_ms += Date.now() - started;
     return { ...shown, relay_check: digest(canonical(shown)), relay_note: "" };
   };
 
@@ -284,7 +294,9 @@ export function createHost({
         timeoutMs: CHILD_TIMEOUT_MS,
       };
       const session = async (asked: ChildRun, part: string) => {
+        const started = Date.now();
         const outcome = await runOnce(asked);
+        summary.child_ms += Date.now() - started;
         // session ごとの結果を残す。呼び出しが何も返さなかった理由と、かかった費用を読むため。
         serial += 1;
         writeFileSync(

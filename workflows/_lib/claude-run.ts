@@ -54,6 +54,9 @@ interface AgentOptions {
 // user's own permission rules allow it, as it would for an agent inside Claude Code. A caller with
 // no one to ask and a repository it trusts names a wider list in CLAUDE_RUN_TOOLS.
 const CHILD_TOOLS = process.env.CLAUDE_RUN_TOOLS || "Read,Write,Edit,MultiEdit,Glob,Grep,LS";
+// An agent inside Claude Code's workflow runtime starts no agent of its own. A child session is a whole session
+// and would: an implementing session started two reviewers, which the script's own review then repeated.
+const CHILD_DENIED = "Agent,Workflow";
 // An implementing session is the longest call. The ceiling is for that one, not per label.
 const CHILD_TIMEOUT_MS = Number(process.env.CLAUDE_RUN_TIMEOUT_MS) || 3_600_000;
 // A fan-out script starts one child per unit. Claude Code caps in-process agents, and child
@@ -113,6 +116,7 @@ export const runClaudeOnce = ({
 }: ChildRun): Promise<ChildOutcome> =>
   new Promise((done) => {
     const argv = ["-p", "--model", model, "--output-format", "json", "--allowedTools", CHILD_TOOLS];
+    argv.push("--disallowedTools", CHILD_DENIED);
     if (effort) argv.push("--effort", effort);
     // The session did its work and ended in prose. Its reply is asked for in the same session, where the work is known.
     if (resume) argv.push("--resume", resume);
@@ -152,6 +156,10 @@ export interface Summary {
   children: number;
   kept: number;
   cost_usd: number;
+  // The time the relays' commands and the child sessions took, as this host measured it. A session's own
+  // duration leaves out the time it waited on what it started.
+  relay_ms: number;
+  child_ms: number;
 }
 
 export interface HostOptions {
@@ -240,7 +248,7 @@ export function createHost({
   onLog = () => {},
   runOnce = runClaudeOnce,
 }: HostOptions): { stubs: RunWorkflowStubs; summary: Summary } {
-  const summary: Summary = { relays: 0, children: 0, kept: 0, cost_usd: 0 };
+  const summary: Summary = { relays: 0, children: 0, kept: 0, cost_usd: 0, relay_ms: 0, child_ms: 0 };
   const beside = dirname(state);
   mkdirSync(beside, PRIVATE_DIR);
   const kept = readKept(state);
@@ -271,9 +279,11 @@ export function createHost({
       `${JSON.stringify({ type: "user", message: { role: "user", content: prompt } })}\n`,
       PRIVATE_FILE,
     );
+    const started = Date.now();
     const { fields } = await runSpec(spec);
     const shown = publicFields(fields);
     summary.relays += 1;
+    summary.relay_ms += Date.now() - started;
     return { ...shown, relay_check: digest(canonical(shown)), relay_note: "" };
   };
 
@@ -289,7 +299,9 @@ export function createHost({
         timeoutMs: CHILD_TIMEOUT_MS,
       };
       const session = async (asked: ChildRun, part: string) => {
+        const started = Date.now();
         const outcome = await runOnce(asked);
+        summary.child_ms += Date.now() - started;
         // Each session's own result, for reading why a call returned nothing and what it cost.
         serial += 1;
         writeFileSync(
