@@ -4,7 +4,7 @@
 
 ## args
 
-args は 1 つの JSON オブジェクトで、Write tool でファイルに書いて `--args-file` で渡す。ファイルなら shell の引用を通らないので、修正依頼の文章に引用符や改行があっても壊れない。`repo` は入れない。`--repo` が渡す。agent 経由の起動では、同じ key に `repo` を足したオブジェクトを Workflow tool に渡す。
+args は 1 つの JSON オブジェクトで、Write tool でファイルに書いて `--args-file` で渡す。ファイルなら shell の引用を通らないので、修正依頼の文章に引用符や改行があっても壊れない。`repo` は入れない。`--repo` が渡す。agent 経由の起動では、同じ key に `repo` を足したオブジェクトを Workflow tool に渡す。 公開しない起動の args は `{"issue":"123","publish":false}` になる。
 
 | key           | 値                                                 | 入れるとき                          |
 | ------------- | -------------------------------------------------- | ----------------------------------- |
@@ -14,8 +14,6 @@ args は 1 つの JSON オブジェクトで、Write tool でファイルに書�
 | `reports`     | `[{"path": "<path>", "blob": "<blob>"}]`           | Phase 1 の手順 5 で参照を選んだとき |
 | `revision`    | `{"pr": "<PR の URL>", "request": "<修正依頼>"}`   | § 既存 PR の修正のとき              |
 | `retry`       | 停止の戻り値の `retry_next`。書き換えずに入れる    | § 停止した実行の再開のとき          |
-
-公開しない起動の args は `{"issue":"123","publish":false}` になる。
 
 ## probe の出力
 
