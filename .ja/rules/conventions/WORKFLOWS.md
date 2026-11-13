@@ -18,7 +18,7 @@ paths:
 | スクリプトのファイル名 | `workflows/<name>.js`。`<name>` がそのまま `Workflow({name})` で解決される名前                                                                                                                                                                   |
 | name の形              | 英単語 1 語で、workflow が行う操作を表す。helper, utils, tools のような汎用名は操作名へ置き換える                                                                                                                                                |
 | 補助スクリプト         | `workflows/<name>/` へ置く。直下へ `.js` を置くと、補助のつもりでも workflow として登録される                                                                                                                                                    |
-| 共有ハーネス           | `workflows/_lib/` へ置く。テストが import するもの、別ホストで script を評価する runner、どの workflow の中継も実行する helper に限る。`workflows/_lib/codex-run.ts` がその runner で、`agent()` を `codex exec` 子プロセスへ置き換えて Claude Code の外で workflow script を走らせる。`relay.ts` と `transcript.ts` が中継の helper である (§ 中継) |
+| 共有ハーネス           | `workflows/_lib/` へ置く。テストが import するもの、別ホストで script を評価する runner、どの workflow の中継も実行する helper に限る。`workflows/_lib/codex-run.ts` がその runner で、`agent()` を `codex exec` 子プロセスへ置き換えて Claude Code の外で workflow script を走らせる。`workflows/_lib/claude-run.ts` は 2 つ目の runner で、中継の spec を agent なしで自分で実行し、残りの `agent()` 呼び出しごとに `claude -p` の子 session を始める。`relay.ts` と `transcript.ts` が中継の helper である (§ 中継) |
 
 ## 参照記法
 

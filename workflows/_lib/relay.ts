@@ -72,7 +72,7 @@ const CALL_BUDGET_MS = Number(process.env.RELAY_CALL_BUDGET_MS) || 590_000;
 const STATE_MAX_AGE_MS = 15 * 60 * 1000;
 // A Bash call returns about 30,000 characters. A longer line reaches the agent cut short.
 const MAX_LINE = 28_000;
-const BLOCK = /RELAY_SPEC ([0-9a-f]{8}:\d+)\n\s*(\S.*)\n\s*RELAY_SPEC_END/g;
+const BLOCK = /RELAY_SPEC ([0-9a-f]{8}:\d+)\n\s*(\S[^\n]*)\n\s*RELAY_SPEC_END/g;
 
 // Keys sorted, so the digest does not depend on the order an agent returns the fields in.
 export const canonical = (fields: Record<string, unknown>): string =>
@@ -84,7 +84,7 @@ export const canonical = (fields: Record<string, unknown>): string =>
     ),
   );
 
-const publicFields = (fields: Fields): Fields =>
+export const publicFields = (fields: Fields): Fields =>
   Object.fromEntries(Object.entries(fields).filter(([key]) => !key.startsWith("_")));
 
 const lastLines = (text: string, count: number): string =>
@@ -104,20 +104,23 @@ interface Ran {
 
 // The command runs in its own process group. A timeout ends the whole group, so a compound
 // command leaves no child writing into the worktree after the step is reported.
-// A step runs in its own process group, so a signal sent to this process does not reach it. The group of the
-// running step is ended first, and nothing keeps writing into the worktree after this process is gone.
-let runningGroup = 0;
-const endRunningGroup = () => {
-  try {
-    if (runningGroup) process.kill(-runningGroup, "SIGTERM");
-  } catch {
-    // already gone
+// A step runs in its own process group, so a signal sent to this process does not reach it. The groups of the
+// running steps are ended first, and nothing keeps writing into the worktree after this process is gone. A host
+// that runs specs in its own process (claude-run.ts) ends them the same way.
+const runningGroups = new Set<number>();
+export const endRunningGroups = () => {
+  for (const group of runningGroups) {
+    try {
+      process.kill(-group, "SIGTERM");
+    } catch {
+      // already gone
+    }
   }
 };
 const endGroupOnSignal = () => {
   for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) {
     process.on(name, () => {
-      endRunningGroup();
+      endRunningGroups();
       process.exit(143);
     });
   }
@@ -126,7 +129,8 @@ const endGroupOnSignal = () => {
 const runStep = (step: Step): Promise<Ran> =>
   new Promise((resolve) => {
     const child = spawn("/bin/sh", ["-c", step.sh], { cwd: step.cwd, detached: true });
-    runningGroup = child.pid ?? 0;
+    const group = child.pid ?? 0;
+    if (group) runningGroups.add(group);
     const ran: Ran = { exit: -1, timedOut: false, stdout: "", combined: "" };
     const signal = (name: NodeJS.Signals) => {
       try {
@@ -151,12 +155,12 @@ const runStep = (step: Step): Promise<Ran> =>
     child.stdin.end(step.stdin ?? "");
     child.on("error", () => {
       clearTimeout(timer);
-      runningGroup = 0;
+      runningGroups.delete(group);
       resolve(ran);
     });
     child.on("close", (code) => {
       clearTimeout(timer);
-      runningGroup = 0;
+      runningGroups.delete(group);
       resolve({ ...ran, exit: ran.timedOut || code === null ? -1 : code });
     });
   });

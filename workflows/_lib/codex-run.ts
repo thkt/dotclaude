@@ -452,7 +452,7 @@ async function attemptOnce({
   }
 }
 
-const makeSlots = (limit: number) => {
+export const makeSlots = (limit: number) => {
   let active = 0;
   const waiting: (() => void)[] = [];
   return async <T>(task: () => Promise<T>): Promise<T> => {
@@ -470,7 +470,7 @@ const makeSlots = (limit: number) => {
 
 // stubs.workflow and runOnCodex both need the path a name resolves to, and the same missing-name
 // message build.js's sibling() matches on, so both go through this rather than repeating either.
-const resolveWorkflowPath = (name: string): string => {
+export const resolveWorkflowPath = (name: string): string => {
   const path = join(ROOT, "workflows", `${name}.js`);
   if (!existsSync(path)) throw new Error(`workflow('${name}'): no workflow with that name`);
   return path;
