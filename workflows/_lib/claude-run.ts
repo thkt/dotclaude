@@ -8,10 +8,14 @@
 // each. The evaluation form is run-workflow.ts's, the one the tests use.
 //
 // Usage: claude-run.ts <workflow> --repo <abs path> [--issue N] [--base B] [--args <json>]
-//                      [--state <file>] [--concurrency N]
+//                      [--args-file <file>] [--state <file>] [--concurrency N]
 // stdout: the workflow's return value as JSON, also written to result.json beside the state file.
 // stderr: the log, the phases, and one summary line that names the state file and the result file.
-// exit: 0 when the script returned, a stop included. 1 when it threw. 2 for a call it cannot read.
+// exit: 0 when the script returned, a stop included. 1 when it threw, or when another host holds the state
+// file. 2 for a call it cannot read. 143 when a signal ended it.
+//
+// --args-file names a file holding the JSON --args would carry. A caller that writes the file passes free
+// text (a revision request) through no shell quoting.
 //
 // --state names the file that keeps the result of every agent() call. A run started with the same
 // file returns the kept result of a call whose prompt and options are the same and runs nothing
@@ -384,14 +388,23 @@ interface Call {
   state: string | undefined;
 }
 
-// --state is this host's own flag. The rest is the argv codex-run.ts reads. A call that cannot be
-// read is null, and the caller prints the usage.
+// --state and --args-file are this host's own flags. The rest is the argv codex-run.ts reads. A call that
+// cannot be read is null, and the caller prints the usage.
+const takeFlag = (argv: string[], name: string): { value: string | undefined; rest: string[]; bad: boolean } => {
+  const at = argv.indexOf(name);
+  if (at < 0) return { value: undefined, rest: argv, bad: false };
+  const value = argv[at + 1];
+  return { value, rest: [...argv.slice(0, at), ...argv.slice(at + 2)], bad: !value || value.startsWith("--") };
+};
 export const readCall = (argv: string[]): Call | null => {
-  const at = argv.indexOf("--state");
-  const state = at < 0 ? undefined : argv[at + 1];
-  if (at >= 0 && (!state || state.startsWith("--"))) return null;
-  const rest = at < 0 ? argv : [...argv.slice(0, at), ...argv.slice(at + 2)];
+  const stateFlag = takeFlag(argv, "--state");
+  const fileFlag = takeFlag(stateFlag.rest, "--args-file");
+  if (stateFlag.bad || fileFlag.bad) return null;
+  const state = stateFlag.value;
   try {
+    const rest = fileFlag.value
+      ? [...fileFlag.rest, "--args", readFileSync(fileFlag.value, "utf8")]
+      : fileFlag.rest;
     const { name, args, concurrency } = parseArgv(rest);
     if (!name || typeof args.repo !== "string") return null;
     if (concurrency !== undefined && !(Number.isInteger(concurrency) && concurrency >= 1)) return null;
@@ -434,7 +447,7 @@ export async function probeChild(
 
 const USAGE =
   "usage: claude-run.ts <workflow> --repo <abs path> [--issue N] [--base B] [--args <json>] " +
-  "[--state <file>] [--concurrency N]\n";
+  "[--args-file <file>] [--state <file>] [--concurrency N]\n";
 
 // The command as a function, so a skill's script and the tests can call it. `resolvePath` names the script a
 // workflow name stands for.
@@ -458,7 +471,14 @@ export async function main(
   const state =
     call.state ?? join(mkdtempSync(join(process.env.TMPDIR || tmpdir(), "claude-run-")), "calls.jsonl");
   const resultPath = join(dirname(state), "result.json");
-  const release = holdState(state);
+  // Another host on the same state is a refusal with one line to read, not a stack trace.
+  let release: () => void;
+  try {
+    release = holdState(state);
+  } catch (error) {
+    onLog(`claude-run: ${error instanceof Error ? error.message : String(error)}`);
+    return 1;
+  }
   const ended = () => {
     endAll();
     release();

@@ -32,8 +32,8 @@ const stopReasons = () => {
   return found;
 };
 
-// The stop table is the section after the "## Stop conditions" heading.
-const stopTable = skill.slice(skill.indexOf("## Stop conditions"));
+// The table moved out of the body when the body passed its line cap. The body points at it.
+const stopTable = readFileSync(join(root, "skills", "implement", "references", "stops.md"), "utf8");
 
 test("the extraction reaches the workflow's stop reasons, including the later additions", () => {
   const reasons = stopReasons();
@@ -57,9 +57,12 @@ test("the skill launches the implement workflow by name and maps --no-publish to
 // The host runs the workflow's commands itself, so a launch costs no agent for a relay (DR-0127). The skill
 // reads the run's result and its state from the last line the host prints, so the two have to name the same keys.
 test("the skill launches on the host through its script, asks the probe first, and reads the keys the host prints", async () => {
-  const phase2 = skill.slice(skill.indexOf("## Phase 2"), skill.indexOf("## Phase 3"));
+  const steps = skill.slice(skill.indexOf("## Phase 2"), skill.indexOf("## Phase 3"));
+  assert.match(steps, /\$\{CLAUDE_SKILL_DIR\}\/references\/host\.md/, "Phase 2 does not point at its reference");
+  // The tables Phase 2 routes its outputs with live in the reference it names.
+  const phase2 = steps + readFileSync(join(root, "skills", "implement", "references", "host.md"), "utf8");
   assert.match(phase2, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/host\.ts probe --repo "[^"]+" "git status --short"/);
-  assert.match(phase2, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/host\.ts run implement --repo "[^"]+" --args '[^']+'/);
+  assert.match(phase2, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/host\.ts run implement --repo "[^"]+" --args-file "[^"]+"/);
   assert.ok(phase2.indexOf("host.ts probe") < phase2.indexOf("host.ts run"), "the probe comes before the launch");
   assert.match(phase2, /sandbox off/);
 
@@ -88,7 +91,7 @@ test("the skill launches on the host through its script, asks the probe first, a
   const runner = readFileSync(join(root, "workflows", "_lib", "claude-run.ts"), "utf8");
   for (const phrase of ["the script threw", "held by the running process"]) {
     assert.ok(runner.includes(phrase), `the host no longer says "${phrase}"`);
-    assert.ok(skill.includes(phrase), `SKILL.md does not handle "${phrase}"`);
+    assert.ok(phase2.includes(phrase), `Phase 2 and its reference do not handle "${phrase}"`);
   }
 });
 

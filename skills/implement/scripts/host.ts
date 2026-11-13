@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 // Usage: host.ts probe --repo <abs path> <command>...
-//        host.ts run <workflow> --repo <abs path> [--args <json>] [--state <file>]
+//        host.ts run <workflow> --repo <abs path> [--args-file <file>] [--state <file>]
 //
 // /implement launches the implement workflow on the host (workflows/_lib/claude-run.ts), which runs
 // each relay's commands itself and starts a claude -p child session only for the calls that think
@@ -18,7 +18,7 @@ import { main, probeChild } from "../../../workflows/_lib/claude-run.ts";
 
 const USAGE =
   "usage: host.ts probe --repo <abs path> <command>...\n" +
-  "       host.ts run <workflow> --repo <abs path> [--args <json>] [--state <file>]\n";
+  "       host.ts run <workflow> --repo <abs path> [--args-file <file>] [--state <file>]\n";
 
 export async function host(argv: string[]): Promise<number> {
   const [mode, ...rest] = argv;

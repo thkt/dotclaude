@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 // Usage: host.ts probe --repo <abs path> <command>...
-//        host.ts run <workflow> --repo <abs path> [--args <json>] [--state <file>]
+//        host.ts run <workflow> --repo <abs path> [--args-file <file>] [--state <file>]
 //
 // /implement は implement workflow を host (workflows/_lib/claude-run.ts) で起動する。host は中継のコマンドを
 // 自分で実行し、考える必要のある呼び出しにだけ claude -p の子 session を始める (DR-0127)。これは、その起動の
@@ -18,7 +18,7 @@ import { main, probeChild } from "../../../workflows/_lib/claude-run.ts";
 
 const USAGE =
   "usage: host.ts probe --repo <abs path> <command>...\n" +
-  "       host.ts run <workflow> --repo <abs path> [--args <json>] [--state <file>]\n";
+  "       host.ts run <workflow> --repo <abs path> [--args-file <file>] [--state <file>]\n";
 
 export async function host(argv: string[]): Promise<number> {
   const [mode, ...rest] = argv;

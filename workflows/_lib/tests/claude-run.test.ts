@@ -338,12 +338,22 @@ test("a call is read with its state path made absolute, and one it cannot read i
     ["implement", "/abs/repo", "12", resolve("run/calls.jsonl"), 2],
   );
   assert.equal(readCall(["implement", "--repo", "/abs/repo"])?.state, undefined);
+  // A request written by a person holds quotes and line breaks. From a file it passes through no shell quoting.
+  const dir = mkdtempSync(join(tmpdir(), "claude-run-args-"));
+  const request = `it's "wrong"\nfix the 'order'`;
+  writeFileSync(join(dir, "args.json"), JSON.stringify({ issue: "12", revision: { pr: "https://example.test/pr/1", request } }));
+  const fromFile = readCall(["implement", "--repo", "/abs/repo", "--args-file", join(dir, "args.json")]);
+  assert.deepEqual([fromFile?.args.issue, (fromFile?.args.revision as { request: string }).request], ["12", request]);
+  writeFileSync(join(dir, "broken.json"), '{"issue": ');
   const refused = [
     ["implement", "--repo", "/abs/repo", "--state"],
     ["implement", "--state", "--repo", "/abs/repo"],
     ["implement", "--repo", "/abs/repo", "--concurrency", "0"],
     ["implement", "--repo", "/abs/repo", "--concurrency", "many"],
     ["implement", "--repo", "/abs/repo", "--unknown", "x"],
+    ["implement", "--repo", "/abs/repo", "--args-file"],
+    ["implement", "--repo", "/abs/repo", "--args-file", join(dir, "no-such.json")],
+    ["implement", "--repo", "/abs/repo", "--args-file", join(dir, "broken.json")],
     ["implement"],
     [],
   ];
@@ -409,4 +419,11 @@ test("the command prints the script's return value, writes it beside the state f
   assert.match(thrown.logs.join("\n"), /the script threw: boom/);
   assert.equal(JSON.parse(thrown.logs.at(-1)?.replace(/^claude-run: /, "") ?? "").result, null);
   assert.equal((await run(["sample"])).code, 2);
+
+  // Another host on the same state: one line the skill can read, and nothing run.
+  writeFileSync(`${state}.lock`, String(process.ppid));
+  const held = await run(["sample", "--repo", "/abs/repo", "--state", state]);
+  assert.equal(held.code, 1);
+  assert.equal(held.out, "");
+  assert.match(held.logs.join("\n"), /^claude-run: the state file .* is held by the running process \d+$/);
 });
