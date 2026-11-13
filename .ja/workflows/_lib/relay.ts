@@ -70,7 +70,7 @@ const CALL_BUDGET_MS = Number(process.env.RELAY_CALL_BUDGET_MS) || 590_000;
 const STATE_MAX_AGE_MS = 15 * 60 * 1000;
 // Bash 呼び出しが返すのは約 30,000 文字。それより長い行は、途中で切れて agent に届く。
 const MAX_LINE = 28_000;
-const BLOCK = /RELAY_SPEC ([0-9a-f]{8}:\d+)\n\s*(\S.*)\n\s*RELAY_SPEC_END/g;
+const BLOCK = /RELAY_SPEC ([0-9a-f]{8}:\d+)\n\s*(\S[^\n]*)\n\s*RELAY_SPEC_END/g;
 
 // key を並べ替えるので、digest は agent が欄を返す順番によらない。
 export const canonical = (fields: Record<string, unknown>): string =>
@@ -102,20 +102,23 @@ interface Ran {
 
 // コマンドは自分の process group で走る。時間切れは group 全体を終わらせるので、複合コマンドの子が、step を報告した後に
 // worktree へ書き込み続けることは無い。
-// step は自分の process group で走るので、この process に送られた signal は届かない。実行中の step の group を先に終わらせ、
-// この process が消えた後に worktree へ書き込み続けるものを残さない。
-let runningGroup = 0;
-const endRunningGroup = () => {
-  try {
-    if (runningGroup) process.kill(-runningGroup, "SIGTERM");
-  } catch {
-    // もう無い
+// step は自分の process group で走るので、この process への signal は step に届かない。実行中の step の group を
+// 先に終わらせ、この process が消えた後に worktree へ書き込み続けるものを残さない。spec を自分の process で実行する
+// host (claude-run.ts) も、同じ方法で終わらせる。
+const runningGroups = new Set<number>();
+export const endRunningGroups = () => {
+  for (const group of runningGroups) {
+    try {
+      process.kill(-group, "SIGTERM");
+    } catch {
+      // すでに終わっている
+    }
   }
 };
 const endGroupOnSignal = () => {
   for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) {
     process.on(name, () => {
-      endRunningGroup();
+      endRunningGroups();
       process.exit(143);
     });
   }
@@ -124,7 +127,8 @@ const endGroupOnSignal = () => {
 const runStep = (step: Step): Promise<Ran> =>
   new Promise((resolve) => {
     const child = spawn("/bin/sh", ["-c", step.sh], { cwd: step.cwd, detached: true });
-    runningGroup = child.pid ?? 0;
+    const group = child.pid ?? 0;
+    if (group) runningGroups.add(group);
     const ran: Ran = { exit: -1, timedOut: false, stdout: "", combined: "" };
     const signal = (name: NodeJS.Signals) => {
       try {
@@ -149,12 +153,12 @@ const runStep = (step: Step): Promise<Ran> =>
     child.stdin.end(step.stdin ?? "");
     child.on("error", () => {
       clearTimeout(timer);
-      runningGroup = 0;
+      runningGroups.delete(group);
       resolve(ran);
     });
     child.on("close", (code) => {
       clearTimeout(timer);
-      runningGroup = 0;
+      runningGroups.delete(group);
       resolve({ ...ran, exit: ran.timedOut || code === null ? -1 : code });
     });
   });
