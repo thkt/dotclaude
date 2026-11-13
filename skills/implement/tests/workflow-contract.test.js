@@ -145,7 +145,12 @@ test("scoping names the three handlings of a step the workflow cannot carry out,
   assert.match(script, /The host runs the configured check and capture after you return\./);
   assert.ok(script.includes('"repair-no-progress"') && section.includes("`repair-no-progress`"));
   const phase1 = skill.slice(skill.indexOf("## Phase 1"), skill.indexOf("## Phase 2"));
-  assert.ok(phase1.includes('"Handling a step the workflow cannot carry out"'), "Phase 1 does not name the section");
+  assert.ok(phase1.includes("§ Handling a step the workflow cannot carry out"), "Phase 1 does not name the section");
+  // Phase 1 recognizes a handling by its name, so the names it lists are the rows of the table.
+  for (const row of rows) {
+    const name = row.split("|")[1].trim();
+    assert.ok(phase1.toLowerCase().includes(name.toLowerCase()), `Phase 1 does not name the handling "${name}"`);
+  }
 });
 
 // Codex's implement takes any agreed Issue. Routing by a `## Plan` section came from this harness's
