@@ -82,7 +82,7 @@ export const canonical = (fields: Record<string, unknown>): string =>
     ),
   );
 
-const publicFields = (fields: Fields): Fields =>
+export const publicFields = (fields: Fields): Fields =>
   Object.fromEntries(Object.entries(fields).filter(([key]) => !key.startsWith("_")));
 
 const lastLines = (text: string, count: number): string =>

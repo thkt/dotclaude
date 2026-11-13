@@ -26,7 +26,10 @@ export const digest = (text: string): string => {
   return `${h.toString(16).padStart(8, "0")}:${t.length}`;
 };
 
-export const defaultProjects = (): string => join(homedir(), ".claude", "projects");
+// RELAY_PROJECTS は別の場所を指す。claude-run.ts は agent なしでコマンドを実行するので transcript が無く、prompt を
+// 読むコマンドのためにそこへ prompt を置く。
+export const defaultProjects = (): string =>
+  process.env.RELAY_PROJECTS || join(homedir(), ".claude", "projects");
 
 // 読めない項目が 1 つあっても (sandbox が拒むディレクトリ、別のセッションが消したばかりの transcript)、
 // agent 自身の transcript に届く前に走査を終わらせない。

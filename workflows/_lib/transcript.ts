@@ -28,7 +28,10 @@ export const digest = (text: string): string => {
   return `${h.toString(16).padStart(8, "0")}:${t.length}`;
 };
 
-export const defaultProjects = (): string => join(homedir(), ".claude", "projects");
+// RELAY_PROJECTS names another place. claude-run.ts stores a prompt there for a command that reads one, since it
+// runs the command with no agent and so with no transcript.
+export const defaultProjects = (): string =>
+  process.env.RELAY_PROJECTS || join(homedir(), ".claude", "projects");
 
 // One entry that cannot be read (a directory the sandbox denies, a transcript another session just
 // removed) must not end the scan before it reaches the agent's own transcript.
