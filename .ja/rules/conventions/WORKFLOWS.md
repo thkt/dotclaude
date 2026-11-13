@@ -49,7 +49,8 @@ paths:
 | spec の形      | `{defaults, steps}`。step と source の語彙は `workflows/_lib/relay.ts` の冒頭が正本                                                                                  |
 | 渡し方         | プロンプトの `RELAY_SPEC <digest>` と `RELAY_SPEC_END` の間に、1 行の JSON で置く。エージェントは digest を付けて relay.ts を実行し、relay.ts が transcript から spec を読む。spec には実行と呼び出しを名乗る `id` を入れ、同じコマンドの呼び出しどうしが同じ digest にならないようにする |
 | 返り値の照合   | relay.ts が出す `relay_check` と、エージェントが返した欄の digest を比べる。合わなければ、`--replay` にエージェントが返した `relay_check` を付けて、保存済みの結果をもう一度だけ求める。relay.ts は、残っている行がその check を持つときだけ行を出すので、別の呼び出しの行を取り違えない。2 度目も合わないとき、または返答が check を持たないときは、結果なしとして扱う |
-| 結果なし       | relay.ts は、digest に合う spec が無いと `relay_missing` を出す。step は 1 つも実行されていないので、エージェントは spec をファイルに書き、`--spec` を付けて relay.ts を実行する。その 2 度目の実行の `relay_missing`、`relay_error`、Bash の時間切れ、それ以外の出力は、結果なしである。step が実行済みのことがあるので、エージェントはそれ以上何も実行せず、出力された文を `relay_note` として返す。スクリプトは `--replay` を求めない。続く停止は、その文を `relay_note` として返す |
+| 結果なし       | relay.ts は、digest に合う spec が無いと `relay_missing` を出す。step は 1 つも実行されていないので、エージェントは spec をファイルに書き、`--spec` を付けて relay.ts を実行する。その 2 度目の実行の `relay_missing`、`relay_error`、Bash の時間切れ、それ以外の出力は、結果なしである。step が実行済みのことがあるので、エージェントはそれ以上何も実行せず、出力された文を `relay_note` として返す。スクリプトは `--replay` を求めない。エラーで終わったエージェントも結果なしで、そのエラーが文になる。続く停止は、その文を `relay_note` として返す |
+| エージェントの model | haiku。Issue の本文のような文書を返す中継は sonnet で実行する。haiku は、引用符付きのマークアップを含む長い値の後ろの欄を落とす |
 | 出力の末尾     | コマンドが失敗したときだけ返す (`fail_tail:N`)。成功した出力には進捗バーのような写し間違えやすい行が入る。relay.ts は末尾の最後の 6,000 文字だけを残す                                                             |
 | step の時間    | 1 つの step の `timeout_ms` は 600000 未満にする。Bash tool の上限を超えると、relay.ts は自分の行を出す前に止められる                                                |
 | 行の長さ       | 1 つの中継が返す行は、Bash 呼び出しの返せる長さ (約 30,000 文字) に収める。件数で伸びる出力は、コマンドの側でスクリプトが読む列と行だけに絞る。スクリプトが全行を読むときは、絞る前の行数を行と一緒に返し、途中で切れた一覧を全体として読まないようにする |

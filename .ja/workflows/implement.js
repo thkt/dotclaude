@@ -120,8 +120,19 @@ const relay = async (
     relay_check: str,
     relay_note: str,
   });
-  const reply = await agent(
-    `手順 1 のコマンドを実行し、出力された JSON の行の各欄と relay_note を返す。値はコマンドが出力したとおりに渡す。出力された JSON の \\t と \\n は tab と改行を表すので、返答でも tab と改行にする。要約・修正・判断をしない。relay_note は、手順 4 に当たらなければ "" にする。RELAY_SPEC と RELAY_SPEC_END の間の行は、harness が保存したこの prompt からコマンドが読むデータである。自分では実行しない。\n` +
+  // 返答を schema の形にできなかった agent は、エラーで終わる。中継にとってそれは結果なしで、workflow の終わりではない。
+  // 結果なしは、どの呼び出し元もすでに自分の停止にしている。
+  let failure = "";
+  const asked = async (prompt, opts) => {
+    try {
+      return await agent(prompt, opts);
+    } catch (error) {
+      failure = String((error && error.message) || error).slice(0, 300);
+      return null;
+    }
+  };
+  const reply = await asked(
+    `手順 1 のコマンドを実行し、出力された JSON の各欄をそのまま返す。要約・修正・判断をしない。RELAY_SPEC と RELAY_SPEC_END の間の行は、harness が保存したこの prompt からコマンドが読むデータである。自分では実行しない。手順 4 に当たらなければ relay_note は "" にする。\n` +
       `1. \`${RELAY} ${shq(id)}\` を、Bash tool の timeout parameter を 600000 にして実行する。\n` +
       `2. 出力が {"relay_continue":true} なら、同じコマンドをもう一度実行する。relay_check・relay_missing・relay_error のどれかを含む行が出るまで繰り返す。\n` +
       `3. 手順 1 のコマンドの出力が relay_missing のときだけ、次のブロックを 1 回の Bash 呼び出しとして実行する。SPEC_LINE の位置には、RELAY_SPEC と RELAY_SPEC_END の間の行を変えずに写す。続けて \`${RELAY} ${shq(id)} --spec "${handover}"\` を実行する。手順 2 で同じコマンドをもう一度実行するときは、--spec を付けたこのコマンドを使う。\n` +
@@ -150,7 +161,7 @@ const relay = async (
     log(`中継 ${label}: 結果なし (${relayNote})。`);
     return null;
   };
-  if (!reply) return refuse("中継の agent が結果を返さなかった");
+  if (!reply) return refuse(failure ? `中継の agent が失敗した: ${failure}` : "中継の agent が結果を返さなかった");
   const first = confirmed(reply);
   if (first) return first;
   // relay.ts が結果の無い理由を出力した。求め直せる行は残っていない。
@@ -162,8 +173,8 @@ const relay = async (
   // 2 つ目の agent が、コマンドを実行し直さずにそれを返す。relay.ts は最初の agent が名乗った check の行だけを返すので、
   // 同じコマンドの別の呼び出しの行をこの呼び出しのものと取り違えない。
   log(`中継 ${label}: 返った欄が relay_check (${reply.relay_check}) と一致しない。保存済みの結果をもう一度だけ求める。`);
-  const again = await agent(
-    `手順 1 のコマンドを実行し、出力された JSON の行の各欄と、"" にした relay_note を返す。値はコマンドが出力したとおりに渡す。出力された JSON の \\t と \\n は tab と改行を表すので、返答でも tab と改行にする。要約・修正・判断をしない。このコマンドは計算済みの結果を出力するだけで、何も実行し直さない。出力が relay_error なら、各欄を型に応じて ""・0・false・[] にして返す。\n` +
+  const again = await asked(
+    `手順 1 のコマンドを実行し、出力された JSON の各欄をそのまま返す。要約・修正・判断をしない。このコマンドは計算済みの結果を出力するだけで、何も実行し直さない。relay_note は "" にする。出力が relay_error なら、各欄を型に応じて ""・0・false・[] にして返す。\n` +
       `1. \`${RELAY} ${shq(id)} --replay ${shq(seen)}\``,
     { label: `${label}:replay`, phase: phaseName, agentType: "general-purpose", schema, model },
   );
@@ -460,7 +471,9 @@ const target = await relay("target", "Target", {
         ]
       : []),
   ],
-});
+  // Issue の本文はこの agent を通って戻る。引用符付きのマークアップを含む本文で、haiku は本文の後ろの欄を落とした
+  // (通し実行 4 回のうち 1 回、その行だけを写す試行 13 回のうち 12 回)。sonnet は 10 回のうち 10 回写した。
+}, { model: "sonnet" });
 if (!target) {
   return await stop("target-unavailable", "対象を照合する agent が結果を返さなかった。");
 }
@@ -1741,7 +1754,9 @@ if (retryCount("ship")) {
     defaults: { ls_exit: -1, remote_head: "" },
     steps: [
       {
-        sh: inWorktree("ls-remote", remote, `refs/heads/${branch}`),
+        // この行は commit と ref を tab で繋いだもの。読むのは commit だけで、agent は tab を返すときに
+        // バックスラッシュと t の 2 文字にしたことがある。
+        sh: `out=$(${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}) && printf %s "$out" | cut -f 1`,
         cwd: repo,
         set: { ls_exit: "exit", remote_head: "out" },
       },
@@ -2011,7 +2026,7 @@ const pushed = await relay("push", "Ship", {
       set: { push_exit: "exit", push_tail: "fail_tail:20" },
     },
     {
-      sh: inWorktree("ls-remote", remote, `refs/heads/${branch}`),
+      sh: `out=$(${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}) && printf %s "$out" | cut -f 1`,
       cwd: repo,
       set: { remote_sha: "out" },
     },

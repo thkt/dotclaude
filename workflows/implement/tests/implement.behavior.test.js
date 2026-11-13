@@ -2237,6 +2237,44 @@ test("the listings a relay returns are limited to what the script reads from the
   assert.equal(stepSetting(plain.calls, "commit", "files"), undefined, "a run with no capture lists no files");
 });
 
+// A relay agent that cannot shape its reply ends in an error, which used to end the workflow before it could
+// record a stop. The Issue body is the longest value a relay returns, and that relay runs on a model that
+// copied it.
+test("a relay agent that fails is no result with its error in the stop, and the relay that returns the Issue runs on sonnet", async () => {
+  const { result, calls } = await run({
+    target: () => {
+      throw new Error("structured output retries exhausted");
+    },
+  });
+  assert.equal(result.stopped, "target-unavailable");
+  assert.match(result.relay_note, /failed: structured output retries exhausted/);
+  const models = Object.fromEntries(
+    (await run({}, publishArgs)).calls.agent
+      .filter((c) => !LLM_ROLES.includes(kindOf(c.opts)))
+      .map((c) => [c.opts.label, c.opts.model]),
+  );
+  assert.equal(models.target, "sonnet");
+  assert.deepEqual([...new Set(Object.entries(models).filter(([label]) => label !== "target").map(([, model]) => model))], ["haiku"]);
+  assert.ok(calls.agent.length > 0);
+});
+
+// ls-remote prints the commit and the ref with a tab between them. The script reads the commit, and a tab is a
+// character an agent has returned as two.
+test("the remote head command prints the commit alone, and fails when the remote cannot be read", async () => {
+  const { calls } = await run({}, publishArgs);
+  const command = stepSetting(calls, "push", "remote_sha").sh;
+  const branch = /'refs\/heads\/([^']+)'/.exec(command)[1];
+  const dir = mkdtempSync(join(tmpdir(), "implement-remote-"));
+  const git = (line) => execSync(`git -C '${dir}' ${line}`, { encoding: "utf8", stdio: "pipe" }).trim();
+  git("init -q");
+  git("-c user.name=t -c user.email=t@example.com commit -q --allow-empty -m base");
+  git(`branch '${branch}'`);
+  git(`remote add origin '${dir}'`);
+  const here = (line) => line.replace(/'git' '-C' '[^']*'/, `'git' '-C' '${dir}'`);
+  assert.deepEqual(sh(here(command)), { code: 0, out: `${git("rev-parse HEAD")}\n` });
+  assert.notEqual(sh(here(command).replace("'origin'", "'no-such-remote'")).code, 0);
+});
+
 // A successful command's output is not returned. A setup that succeeded printed a download's progress
 // bar, and the agent changed the count of its repeated character, which stopped the run at prepare.
 test("the tail of a command's output is asked for only when the command failed", async () => {

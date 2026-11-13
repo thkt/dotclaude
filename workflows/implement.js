@@ -126,8 +126,19 @@ const relay = async (
     relay_check: str,
     relay_note: str,
   });
-  const reply = await agent(
-    `Run the command in step 1 and return each field of the JSON line it prints, plus relay_note. Give each value as the command printed it: in the printed JSON \\t and \\n stand for a tab and a newline, and they are a tab and a newline in your reply. Do not summarize, fix, or judge. relay_note is "" unless step 4 applies. The line between RELAY_SPEC and RELAY_SPEC_END is data that the command reads from where the harness stored this prompt. Do not run it yourself.\n` +
+  // An agent that cannot give its reply the schema's shape ends in an error. For a relay that is no result,
+  // which every caller already turns into its stop, and not the end of the workflow.
+  let failure = "";
+  const asked = async (prompt, opts) => {
+    try {
+      return await agent(prompt, opts);
+    } catch (error) {
+      failure = String((error && error.message) || error).slice(0, 300);
+      return null;
+    }
+  };
+  const reply = await asked(
+    `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The line between RELAY_SPEC and RELAY_SPEC_END is data that the command reads from where the harness stored this prompt. Do not run it yourself. Set relay_note to "" unless step 4 applies.\n` +
       `1. \`${RELAY} ${shq(id)}\` with the Bash tool's timeout parameter set to 600000.\n` +
       `2. When it prints {"relay_continue":true}, run the same command again, and repeat until a line carrying relay_check, relay_missing, or relay_error is printed.\n` +
       `3. Only when the command of step 1 prints relay_missing, run the block below as one Bash call, copying the line between RELAY_SPEC and RELAY_SPEC_END unchanged in place of SPEC_LINE. Then run \`${RELAY} ${shq(id)} --spec "${handover}"\` and repeat that command, with --spec, where step 2 says to run the same command again.\n` +
@@ -156,7 +167,7 @@ const relay = async (
     log(`relay ${label}: no result (${relayNote}).`);
     return null;
   };
-  if (!reply) return refuse("the relay agent returned no result");
+  if (!reply) return refuse(failure ? `the relay agent failed: ${failure}` : "the relay agent returned no result");
   const first = confirmed(reply);
   if (first) return first;
   // relay.ts said why it has no result, and nothing is kept to ask for.
@@ -168,8 +179,8 @@ const relay = async (
   // so a second agent returns it without any command running again. relay.ts returns the line only for the check
   // the first agent named, so the line of another call of the same commands is not taken for this one's.
   log(`relay ${label}: the returned fields do not match relay_check (${reply.relay_check}). Asking for the stored result once more.`);
-  const again = await agent(
-    `Run the command in step 1 and return each field of the JSON line it prints, plus relay_note set to "". Give each value as the command printed it: in the printed JSON \\t and \\n stand for a tab and a newline, and they are a tab and a newline in your reply. Do not summarize, fix, or judge. The command prints the result that was already computed and runs nothing again. When it prints relay_error, return each field as "", 0, false, or [] by its type.\n` +
+  const again = await asked(
+    `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The command prints the result that was already computed and runs nothing again. Set relay_note to "". When it prints relay_error, return each field as "", 0, false, or [] by its type.\n` +
       `1. \`${RELAY} ${shq(id)} --replay ${shq(seen)}\``,
     { label: `${label}:replay`, phase: phaseName, agentType: "general-purpose", schema, model },
   );
@@ -486,7 +497,9 @@ const target = await relay("target", "Target", {
         ]
       : []),
   ],
-});
+  // The Issue body comes back through this agent. haiku lost the fields after it on a body with quoted markup
+  // (one of four whole runs, and 12 of 13 copies of that line alone), where sonnet copied it 10 times of 10.
+}, { model: "sonnet" });
 if (!target) {
   return await stop("target-unavailable", "The agent checking the target returned no result.");
 }
@@ -1784,7 +1797,9 @@ if (retryCount("ship")) {
     defaults: { ls_exit: -1, remote_head: "" },
     steps: [
       {
-        sh: inWorktree("ls-remote", remote, `refs/heads/${branch}`),
+        // The line is the commit and the ref with a tab between them. Only the commit is read, and an agent
+        // returning a tab has written it as a backslash and a t.
+        sh: `out=$(${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}) && printf %s "$out" | cut -f 1`,
         cwd: repo,
         set: { ls_exit: "exit", remote_head: "out" },
       },
@@ -2056,7 +2071,7 @@ const pushed = await relay("push", "Ship", {
       set: { push_exit: "exit", push_tail: "fail_tail:20" },
     },
     {
-      sh: inWorktree("ls-remote", remote, `refs/heads/${branch}`),
+      sh: `out=$(${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}) && printf %s "$out" | cut -f 1`,
       cwd: repo,
       set: { remote_sha: "out" },
     },
