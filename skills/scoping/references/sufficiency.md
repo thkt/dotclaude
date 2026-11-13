@@ -29,11 +29,11 @@ Do not make the existence of Storybook a requirement or evidence of agreement. W
 
 ## Steps the target repo's policy imposes
 
-For requirements handed over to implementation, list the steps the target repo's README and development policy impose on this change. Count the steps for the Issue body, and also the checks and approvals for the documents the implementation changes, the PR body, publication, and capture. Once running, the `/implement` workflow cannot ask a human, and its independent review raises a step not carried out as the policy says as a required finding. A step whose handling is undecided stops the run as `human-decision-required` after the implementation is done.
+For requirements handed over to implementation, list the steps the target repo's README and development policy impose on this change. Count the steps for the Issue body, and also the checks and approvals for the documents the implementation changes, the PR body, publication, and capture. Put the verification methods that confirm the Issue's done conditions on the same list. The verifications the workflow runs itself are the `check` of `.dotagents.json`, the capture, and CI when publishing, and no other. The capture is the one `capture` configures, and the CI is `ciChecks`. To judge a verification method, read `check` and `capture` in the committed `.dotagents.json`. When none of the three runs it, it is a step the workflow cannot carry out, even when a document of the target repo says another run does it (`needs_host`, for example). Once running, the `/implement` workflow cannot ask a human, and its independent review raises a step not carried out as the policy says as a required finding. A step whose handling is undecided stops the run as `human-decision-required` after the implementation is done.
 
 Show the listed steps and their verdicts to the human as a list, in the same round as the questions, and write them into the Issue or the draft. An installed CLI is not grounds for judging that a step can be carried out. Without the record, `/implement` cannot tell whether the listing has been done.
 
-Give each step a verdict from the table. For a step the workflow cannot carry out, agree on the handling with the human through AskUserQuestion, in the same round as the other questions.
+Give each step a verdict from the table. For a step the workflow cannot carry out, agree with the human through AskUserQuestion on one of the three under § Handling a step the workflow cannot carry out, in the same round as the other questions.
 
 | Verdict                           | Condition                                                                                                                      |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -41,7 +41,18 @@ Give each step a verdict from the table. For a step the workflow cannot carry ou
 | The workflow cannot carry it out  | A CLI it needs is missing (check with `command -v <name>`), or a permission it needs is missing                                |
 | The workflow cannot carry it out  | It takes a human's action                                                                                                      |
 | The workflow cannot carry it out  | It takes an operation the workflow forbids: starting a browser or a server, changing `.dotagents.json`, editing outside the worktree |
+| The workflow cannot carry it out  | A verification method that none of the configured `check`, `capture`, and CI when publishing runs                              |
 | The workflow can carry it out     | None of the above applies                                                                                                      |
+
+### Handling a step the workflow cannot carry out
+
+For each step choose one handling from these three, and write its name into the Issue as it is written here. There is no handling in which someone inside the run does the step later. The host that runs the check and the capture is inside the run too. Agreeing on that leaves the repair and the review disagreeing after the implementation, and the run stops as `repair-no-progress`.
+
+| Handling                         | What it means                                                                                                                                                                                       |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Put it into the check or capture | Change `check` or `capture` of `.dotagents.json` so that it runs the step. Write the change into the Issue, and a human commits it before launch. `/implement` confirms the committed setting      |
+| Hand it over to a named owner    | It is done outside the workflow. Take it out of the done conditions and write it as a handover, with who does it and when. The review treats it as a handover, and in the PR it stays an unverified item |
+| Leave it out of this scope       | Remove it from the done conditions and the verification methods, and write the reason into the Issue                                                                                                |
 
 ## Questions and re-evaluation
 
