@@ -963,7 +963,7 @@ const REPAIR_RULES = [
   "Apply the target documentation policy when present to documentation-only changes and accompanying updates; keep current operating instructions accurate and historical results in evidence. Compare document facts, quantities, conditions, scope, authority, unverified claims and references with original sources.",
   "Do not commit, push or publish. Leave configured full verification to the host after your changes; do not launch browsers or servers in your sandbox.",
   ...CAPTURE_RULES,
-  "Return repaired when implementation and test/capture definitions are ready; pending host execution alone is not needs_human. If requirements, scope, permissions or execution limits must change, return needs_human without changing them and stop work that depends on the answer.",
+  "Return repaired when implementation and test/capture definitions are ready; pending host execution alone is not needs_human. The host runs the configured check and capture after you return. When the agreed Issue assigns a verification to a run by this workflow's host that is neither of those, and names no other owner for it, return needs_human. If requirements, scope, permissions or execution limits must change, return needs_human without changing them and stop work that depends on the answer.",
   "Return JSON with status repaired or needs_human, and findings explaining your changes or the necessary human decision. For needs_human, findings must not be empty or whitespace-only: explain the question, the choice the human must make and its impact. If an instruction file caused the stop, link the file actually read, quote the relevant instruction and distinguish its explicit requirement from your interpretation.",
 ].join("\n");
 const REPLY_SCHEMA = closed({ status: choice(["repaired", "needs_human"]), findings: str });
@@ -1522,6 +1522,7 @@ const checkAndReview = async () => {
   }
   if (checked.exit_code !== 0) {
     return {
+      kind: "check",
       evidence: hostFailure(
         `The host check \`${argvLine(config.check)}\` failed with exit code ${checked.exit_code}. The end of its output:\n${checked.log_tail}`,
       ),
@@ -1532,7 +1533,7 @@ const checkAndReview = async () => {
   history.push(round.review);
   if (round.review.status === "accepted")
     return { accepted: { review: round.review, tree: checked.tree } };
-  return { evidence: reviewSummary(history) };
+  return { kind: "review", evidence: reviewSummary(history) };
 };
 const repairPrompt = (evidence) =>
   [
@@ -1551,6 +1552,22 @@ const repairPrompt = (evidence) =>
 // its observation, so the capture, the check, and the review all run against the current tree. A stop caused
 // by the media or the config, and a stop for changed requirements or a changed tree, are left out.
 const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
+// A repair may leave the tree as it was and give its reason, which the next review reads. When that review
+// keeps the same required findings open, the repair and the review disagree, and another repair would change
+// nothing again. One run repaired eleven times that way before its agent asked. The same holds for a tree that
+// fails the same host step twice with a repair between that changed nothing. correction.ts has no counterpart:
+// this stop is this harness's own. Kept from the round before: the tree before its repair, what the repair said,
+// and what the round had rejected.
+let treeBeforeRepair = "";
+let lastRepair = null;
+let lastRejection = null;
+// The required findings a review left open, as one value to compare two reviews by.
+const openRequired = (review) =>
+  review.items
+    .filter((item) => item.required && item.disposition === "open")
+    .map((item) => item.id)
+    .sort()
+    .join(" ");
 let accepted = null;
 let roundNumber = 0;
 while (!accepted) {
@@ -1578,8 +1595,9 @@ while (!accepted) {
     );
   }
   if (!before.configHeld) return await stop(CONFIG_CHANGED.stop, CONFIG_CHANGED.why, where);
+  const idleRepair = lastRepair !== null && before.tree === treeBeforeRepair;
   const shot = await captureStep(before.tree);
-  const step = shot.stop || shot.evidence ? shot : await checkAndReview();
+  const step = shot.stop ? shot : shot.evidence ? { ...shot, kind: "capture" } : await checkAndReview();
   if (step.stop) {
     return await stop(step.stop, step.why, {
       ...where,
@@ -1592,6 +1610,28 @@ while (!accepted) {
     accepted = step.accepted;
     break;
   }
+  // The last repair changed nothing, and this round rejects the same tree for the same thing. A round that
+  // rejects it for something new goes on to a repair, which has not seen that yet.
+  // What this round rejected the tree for: the host step that failed, or the required findings a review left open.
+  const reviewed = step.kind === "review";
+  const rejection = reviewed ? openRequired(history.at(-1)) : step.kind;
+  if (idleRepair && lastRejection === rejection) {
+    return await stop(
+      "repair-no-progress",
+      reviewed
+        ? "The last repair changed no file, and the review that read its reason keeps the same required findings open. The repair and the review disagree, so a human decides. Change the requirements or the scope in the Issue, then launch anew."
+        : "The last repair changed no file, and the same tree failed the same host step again. When the cause is outside the tree, fix it and resume. Otherwise a human decides on the requirements or the scope.",
+      {
+        ...where,
+        review: history.at(-1) || null,
+        findings: lastRepair.findings,
+        evidence: step.evidence,
+        // A host step can fail for a cause outside the tree, which a resume of the round reads again.
+        retry_next: reviewed ? null : retryNext(roundKey),
+      },
+    );
+  }
+  lastRejection = rejection;
   // Canonical source: beforeRepair in correction.ts. A check can take minutes, so the Issue is checked again right before the repair.
   const beforeRepair = await snapshot(`before-repair:${counts.repairs + 1}`);
   if (!observed(beforeRepair)) {
@@ -1624,6 +1664,8 @@ while (!accepted) {
     );
   }
   repairsSinceReview.push({ attempt: counts.repairs, findings: repaired.findings });
+  treeBeforeRepair = beforeRepair.tree;
+  lastRepair = repaired;
 }
 
 const verified = {

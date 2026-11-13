@@ -934,7 +934,7 @@ const REPAIR_RULES = [
   "文書のみの変更と付随する更新には、対象の文書方針があれば適用する。現行の運用手順を正確に保ち、過去の結果は証拠に残す。文書の事実・数量・条件・範囲・権限・未確認の主張・参照を元の資料と照合する。",
   "commit・push・公開をしない。設定された全体の検証は変更後に host に任せる。sandbox の中で browser や server を起動しない。",
   ...CAPTURE_RULES,
-  "実装とテスト・撮影の定義の準備が整ったら repaired を返す。host の実行待ちだけでは needs_human にしない。要求・範囲・権限・実行上限を変える必要があるなら、それらを変えずに needs_human を返し、答えに依存する作業を止める。",
+  "実装とテスト・撮影の定義の準備が整ったら repaired を返す。host の実行待ちだけでは needs_human にしない。host は、あなたが返した後に、設定された check と撮影を実行する。合意済みの Issue が、そのどちらでもない検証をこの workflow の host の実行に割り当て、ほかの担当も名指ししていないときは、needs_human を返す。要求・範囲・権限・実行上限を変える必要があるなら、それらを変えずに needs_human を返し、答えに依存する作業を止める。",
   "status (repaired か needs_human) と findings を持つ JSON を返す。findings には変更内容か、必要な人の判断を説明する。needs_human の findings は空にせず、問い・人が選ぶ選択肢・その影響を書く。指示ファイルが停止の理由なら、実際に読んだファイルと該当する指示を引用し、明示された要求と自分の解釈を分ける。",
 ].join("\n");
 const REPLY_SCHEMA = closed({ status: choice(["repaired", "needs_human"]), findings: str });
@@ -1483,6 +1483,7 @@ const checkAndReview = async () => {
   }
   if (checked.exit_code !== 0) {
     return {
+      kind: "check",
       evidence: hostFailure(
         `host の check \`${argvLine(config.check)}\` が終了コード ${checked.exit_code} で失敗した。出力の末尾:\n${checked.log_tail}`,
       ),
@@ -1493,7 +1494,7 @@ const checkAndReview = async () => {
   history.push(round.review);
   if (round.review.status === "accepted")
     return { accepted: { review: round.review, tree: checked.tree } };
-  return { evidence: reviewSummary(history) };
+  return { kind: "review", evidence: reviewSummary(history) };
 };
 const repairPrompt = (evidence) =>
   [
@@ -1511,6 +1512,21 @@ const repairPrompt = (evidence) =>
 // 原因を直せば、止まった巡の先頭から再開できる停止。巡の先頭の観測からやり直すので、撮影・check・レビューは
 // 今の tree に対して揃う。媒体や設定に原因がある停止と、要求・成果物が変わった停止は入れない。
 const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
+// 修正は tree を変えずに理由を述べてよく、次のレビューがそれを読む。そのレビューが同じ必須の指摘を開いたままに
+// するなら、修正とレビューが食い違っていて、次の修正も何も変えない。ある実行は、agent が人に尋ねるまでこの形で
+// 11 回修正した。何も変えない修正を挟んで、同じ tree が host の同じ手順に 2 度落ちるときも同じである。
+// correction.ts に対応するものは無く、この停止はこの harness 独自である。1 つ前の巡から持ち越すのは、その修正の
+// 前の tree、修正が述べたこと、その巡が受け入れなかった理由。
+let treeBeforeRepair = "";
+let lastRepair = null;
+let lastRejection = null;
+// レビューが開いたままにした必須の指摘。2 つのレビューを比べるための 1 つの値にする。
+const openRequired = (review) =>
+  review.items
+    .filter((item) => item.required && item.disposition === "open")
+    .map((item) => item.id)
+    .sort()
+    .join(" ");
 let accepted = null;
 let roundNumber = 0;
 while (!accepted) {
@@ -1538,8 +1554,9 @@ while (!accepted) {
     );
   }
   if (!before.configHeld) return await stop(CONFIG_CHANGED.stop, CONFIG_CHANGED.why, where);
+  const idleRepair = lastRepair !== null && before.tree === treeBeforeRepair;
   const shot = await captureStep(before.tree);
-  const step = shot.stop || shot.evidence ? shot : await checkAndReview();
+  const step = shot.stop ? shot : shot.evidence ? { ...shot, kind: "capture" } : await checkAndReview();
   if (step.stop) {
     return await stop(step.stop, step.why, {
       ...where,
@@ -1552,6 +1569,28 @@ while (!accepted) {
     accepted = step.accepted;
     break;
   }
+  // 直前の修正は何も変えず、この巡は同じ tree を同じ理由で受け入れなかった。新しい理由で受け入れなかった巡は、
+  // 修正へ進む。修正はまだそれを見ていない。
+  // この巡が tree を受け入れなかった理由。落ちた host の手順か、レビューが開いたままにした必須の指摘。
+  const reviewed = step.kind === "review";
+  const rejection = reviewed ? openRequired(history.at(-1)) : step.kind;
+  if (idleRepair && lastRejection === rejection) {
+    return await stop(
+      "repair-no-progress",
+      reviewed
+        ? "直前の修正はファイルを変えず、その理由を読んだレビューも同じ必須の指摘を開いたままにした。修正とレビューが食い違っているので、人が決める。Issue の要求か範囲を変えてから、新しく起動する。"
+        : "直前の修正はファイルを変えず、同じ tree が host の同じ手順にもう一度落ちた。原因が tree の外にあるなら、それを直して再開する。そうでなければ、要求か範囲について人が決める。",
+      {
+        ...where,
+        review: history.at(-1) || null,
+        findings: lastRepair.findings,
+        evidence: step.evidence,
+        // host の手順は tree の外の原因でも落ちる。巡を再開すれば、その原因をもう一度読む。
+        retry_next: reviewed ? null : retryNext(roundKey),
+      },
+    );
+  }
+  lastRejection = rejection;
   // 正本は correction.ts の beforeRepair。check に数分かかる間に Issue が変わっていないかを、修正の直前にも確かめる。
   const beforeRepair = await snapshot(`before-repair:${counts.repairs + 1}`);
   if (!observed(beforeRepair)) {
@@ -1584,6 +1623,8 @@ while (!accepted) {
     );
   }
   repairsSinceReview.push({ attempt: counts.repairs, findings: repaired.findings });
+  treeBeforeRepair = beforeRepair.tree;
+  lastRepair = repaired;
 }
 
 const verified = {
