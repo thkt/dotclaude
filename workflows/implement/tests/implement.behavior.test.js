@@ -116,8 +116,6 @@ const FILLED = {
   },
   prepare: { config_blob: CONFIG_BLOB, checkout_head: BASE_SHA },
   snapshot: { config_blob: CONFIG_BLOB },
-  // The count of the diff's lines, which the capture decision reads beside the lines themselves.
-  diff: { lines: "1" },
 };
 const KIND_BY_PROPERTY = [
   ["record_out", "record"],
@@ -218,7 +216,7 @@ const makeStubs = (overrides = {}) => {
       tree,
     }),
     check: () => ({ exit_code: 0, log_tail: "ok", tree }),
-    diff: () => ({ exit_code: 0, raw: ":100644 100644 aaa bbb M\tsrc/app.js\n" }),
+    diff: () => ({ exit_code: 0, raw: "1\n:100644 100644 M src/app.js\n" }),
     capture: () => ({ started: true, timed_out: false, exit_code: 0, log_tail: "", tree }),
     // Installing media changes the worktree, so the check and review that follow see a new tree.
     install: () => {
@@ -644,7 +642,7 @@ const withCapture = (captureConfig, overrides = {}, runArgs = args) =>
     },
     runArgs,
   );
-const mdOnly = { exit_code: 0, raw: ":100644 100644 aaa bbb M\tREADME.md\n" };
+const mdOnly = { exit_code: 0, raw: "1\n:100644 100644 M README.md\n" };
 
 test("a code change is captured before the check, its media is installed, and the review sees the capture", async () => {
   const prompts = {};
@@ -694,7 +692,7 @@ test("with required: false, a Markdown-only change needs no capture, and a later
   assert.equal(docsOnly.result.capture.decision, "not_required");
 
   const reused = await withCapture(CAPTURE, {
-    diff: [{ exit_code: 0, raw: ":100644 100644 aaa bbb M\tsrc/app.js\n" }, mdOnly],
+    diff: [{ exit_code: 0, raw: "1\n:100644 100644 M src/app.js\n" }, mdOnly],
     review: [
       (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
       (_, { tree }) =>
@@ -709,8 +707,8 @@ test("with required: false, a Markdown-only change needs no capture, and a later
 test("after a capture, a saved record beside the destination reuses it, and a destination at the repo root has no record place", async () => {
   const codeThenRecord = (record) => ({
     diff: [
-      { exit_code: 0, raw: ":100644 100644 aaa bbb M\tsrc/app.js\n" },
-      { exit_code: 0, raw: `:100644 100644 aaa bbb M\t${record}\n` },
+      { exit_code: 0, raw: "1\n:100644 100644 M src/app.js\n" },
+      { exit_code: 0, raw: `1\n:100644 100644 M ${record}\n` },
     ],
     review: [
       (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
@@ -733,11 +731,11 @@ test("after a capture, a saved record beside the destination reuses it, and a de
 test("a change to a capture definition, a mode change, or required: true forces a capture even when the path ends in .md", async () => {
   const definition = await withCapture(
     { ...CAPTURE, command: [...CAPTURE.command, "trial/capture-notes.md"] },
-    { diff: [{ exit_code: 0, raw: ":100644 100644 aaa bbb M\ttrial/capture-notes.md\n" }] },
+    { diff: [{ exit_code: 0, raw: "1\n:100644 100644 M trial/capture-notes.md\n" }] },
   );
   assert.equal(definition.result.captures, 1);
   const executable = await withCapture(CAPTURE, {
-    diff: [{ exit_code: 0, raw: ":100644 100755 aaa bbb M\tREADME.md\n" }],
+    diff: [{ exit_code: 0, raw: "1\n:100644 100755 M README.md\n" }],
   });
   assert.equal(executable.result.captures, 1);
   const required = await withCapture({ ...CAPTURE, required: true }, { diff: [mdOnly] });
@@ -2064,12 +2062,13 @@ test("fields that do not match the relay's digest are asked for once more, and a
     assert.equal(result.stopped, reason);
     assert.deepEqual(result.retry_next, next, reason);
     assert.ok(!kinds.includes("review"), `${reason}: no review runs on a result that was not confirmed`);
+    assert.match(result.relay_note, /also when asked again/, reason);
   }
 });
 
 // Every snapshot and every check of a run carries the same commands. relay.ts keeps the line it printed under
-// the spec's digest, so two calls sharing a digest could be answered with each other's line.
-test("every relay of a run carries a spec with a digest of its own, and a round run again differs from the stopped one", async () => {
+// the spec's digest, so two calls sharing a digest would share the kept line and the progress.
+test("every relay of a run carries a spec with a digest of its own, and the id names the run and the boundary run again", async () => {
   const repaired = {
     review: [
       (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
@@ -2077,26 +2076,33 @@ test("every relay of a run carries a spec with a digest of its own, and a round 
         reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "fixed" }] }),
     ],
   };
-  const digestsOf = ({ calls }) =>
-    calls.agent
-      .map((c) => /RELAY_SPEC ([0-9a-f]{8}:\d+)\n/.exec(c.raw))
-      .filter(Boolean)
-      .map((found) => found[1]);
   const plain = await withCapture(CAPTURE, repaired, publishArgs);
-  const digests = digestsOf(plain);
+  const digests = plain.calls.agent
+    .map((c) => /RELAY_SPEC ([0-9a-f]{8}:\d+)\n/.exec(c.raw))
+    .filter(Boolean)
+    .map((found) => found[1]);
   assert.ok(digests.length >= 20);
   assert.equal(new Set(digests).size, digests.length, "two calls share a spec digest");
 
-  const stopped = await run({}, args);
-  const again = await run({}, { ...args, retry: { "round:1": 1 } });
-  const label = (found, name) => found.calls.agent.find((c) => c.opts.label === name).spec;
-  assert.notEqual(label(stopped, "check:1").id, label(again, "check:1").id);
-  assert.deepEqual(label(stopped, "check:1").steps, label(again, "check:1").steps, "the commands are the same");
+  const specOfLabel = (found, name) => found.calls.agent.find((c) => c.opts.label === name).spec;
+  const sameCommands = (one, other, name) => {
+    assert.notEqual(specOfLabel(one, name).id, specOfLabel(other, name).id, name);
+    assert.deepEqual(specOfLabel(one, name).steps, specOfLabel(other, name).steps, `${name}: the commands are the same`);
+  };
+  sameCommands(await run({}, args), await run({}, { ...args, retry: { "round:1": 1 } }), "check:1");
+  sameCommands(await run({}, publishArgs), await run({}, { ...publishArgs, retry: { ship: 1 } }), "pulls");
+  // Another run of the same Issue is another run id, which the recorder mints.
+  const otherRun = await run({
+    record: (_, { spec }) => ({
+      record_out: JSON.stringify({ path: "/h/implement-runs.jsonl", run_id: JSON.parse(spec.steps[0].stdin).run_id || "f".repeat(32) }),
+    }),
+  });
+  sameCommands(await run({}, args), otherRun, "check:1");
 });
 
 // relay_error is relay.ts saying it has no result: the spec was unreadable, or its line was too long to
 // return. Nothing is kept to ask for, so no second agent is started, and the stop says why.
-test("a relay that reports relay_error is not asked again, and the stop carries what relay.ts printed", async () => {
+test("a relay with no result leaves its reason in the stop that follows, and a relay that returned one leaves none", async () => {
   const refused = () => ({
     exit_code: -1,
     log_tail: "",
@@ -2112,65 +2118,123 @@ test("a relay that reports relay_error is not asked again, and the stop carries 
     ["check:1"],
   );
 
-  const clean = await run({ check: [{ exit_code: 1, log_tail: "boom" }, { exit_code: 1, log_tail: "boom" }] });
-  assert.ok(clean.result.stopped, "the run stops on a failing check");
-  assert.ok(!("relay_note" in clean.result), "a stop that follows a returned result carries no note");
+  const silent = await run({ check: [() => null] });
+  assert.equal(silent.result.stopped, "check-unavailable");
+  assert.match(silent.result.relay_note, /returned no result/);
+
+  // The recorder's failure is tolerated, and the relays after it returned their results. The stop is not theirs.
+  const failing = { exit_code: 1, log_tail: "boom" };
+  const later = await run({ record: [() => null], check: [failing, failing] });
+  assert.ok(later.result.stopped, "the run stops on a failing check");
+  assert.ok(!("relay_note" in later.result), "a stop that follows a returned result carries no note");
 });
 
-// The recorder's row is the same for every run of an Issue until record.ts names the run, so a kept line
-// can be another run's row. A row that came back changed is not asked for again, and the run goes on.
-test("a record whose reply does not match is not asked for again", async () => {
-  const { result, calls } = await run({
-    record: [() => ({ record_out: "changed on the way", relay_check: "00000000:0" })],
-  });
-  assert.equal(result.status, "verified_local");
-  assert.ok(!calls.agent.some((c) => c.opts.label.endsWith(":replay")));
+// The line relay.ts kept is returned only for the check the first agent named, so the replay cannot answer with
+// the line of another call. The check goes into a command, so a reply that names none is not asked for.
+test("the replay names the check the first reply carried, and a reply that carries no check is not asked for again", async () => {
+  const changed = "0badc0de:7";
+  const miscopied = (_, { tree }) => ({ exit_code: 0, log_tail: "", tree, relay_check: changed });
+  const once = await run({ check: [miscopied] });
+  const replay = once.calls.agent.find((c) => c.opts.label === "check:1:replay");
+  assert.match(replay.raw, /relay\.ts[^\n]* --replay '0badc0de:7'` *$/m);
 
-  // With no run id the spec names no run, so the line relay.ts kept can be another run's.
-  const changed = (_, { tree }) => ({ exit_code: 0, log_tail: "", tree, relay_check: "00000000:0" });
-  const unnamed = await run({ record: () => null, check: [changed] });
+  const unnamed = await run({
+    check: [(_, { tree }) => ({ exit_code: 0, log_tail: "", tree, relay_check: "'; echo x; '" })],
+  });
   assert.equal(unnamed.result.stopped, "check-unavailable");
   assert.ok(!unnamed.calls.agent.some((c) => c.opts.label.endsWith(":replay")));
-  assert.match(unnamed.result.relay_note, /no id/);
-});
+  assert.match(unnamed.result.relay_note, /names no check/);
 
-// A relay's line has to fit in what one Bash call returns. A field that grows with the change is limited to
-// what the script reads from it.
-test("a field that grows with the size of the change is bounded where its command runs", async () => {
-  const { calls } = await withCapture(CAPTURE, {}, publishArgs);
-  const stepSetting = (kind, field) =>
-    calls.agent
-      .filter((c) => kindOf(c.opts) === kind)
-      .flatMap((c) => c.spec.steps)
-      .find((step) => Object.keys(step.set ?? {}).includes(field));
-  assert.match(stepSetting("diff", "raw").sh, / \| head -200$/);
-  assert.match(stepSetting("commit", "files").sh, / '--' 'trial\/evidence\/generated'$/);
-  // gh's exit code is the step's: a page that failed must not read as no open PR.
-  assert.match(stepSetting("pulls", "pulls_json").sh, /^out=\$\(gh api .*\) && printf %s "\$out" \| node -e /);
-
-  const long = await withCapture(CAPTURE, {
-    diff: [
-      { exit_code: 0, raw: ":100644 100644 aaa bbb M\tsrc/app.js\n" },
-      { ...mdOnly, lines: "201" },
-    ],
-    review: [
-      (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
-      (_, { tree }) =>
-        reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "ok" }] }),
+  // The first record's reply sets the run id, and its row is already written. Asking again recovers the id, so
+  // the terminal row joins the start row.
+  const { result, calls, rows } = await run({
+    record: [
+      () => ({ record_out: "changed on the way", relay_check: changed }),
+      () => ({ record_out: JSON.stringify({ path: "/h/implement-runs.jsonl", run_id: RUN_ID }) }),
     ],
   });
-  assert.equal(long.result.captures, 2, "a diff longer than the lines returned captures again");
-  const unread = await withCapture(CAPTURE, { diff: [{ ...mdOnly, lines: "" }] });
-  assert.equal(unread.result.captures, 1, "a diff whose length was not read captures");
+  assert.equal(result.status, "verified_local");
+  assert.ok(calls.agent.some((c) => c.opts.label === "record:started:replay"));
+  assert.equal(rows.at(-1).run_id, RUN_ID);
+});
 
-  const withoutCapture = await run({}, publishArgs);
-  assert.ok(
-    !withoutCapture.calls.agent
-      .filter((c) => kindOf(c.opts) === "commit")
-      .flatMap((c) => c.spec.steps)
-      .some((step) => "files" in (step.set ?? {})),
-    "a run with no capture lists no files",
+// The commands of a relay are data in the spec. These run them for real, with the paths of a repository made
+// for the test in place of the stubbed ones.
+const stepSetting = (calls, kind, field) =>
+  calls.agent
+    .filter((c) => kindOf(c.opts) === kind)
+    .flatMap((c) => c.spec.steps)
+    .find((step) => Object.keys(step.set ?? {}).includes(field));
+const sh = (command, options = {}) => {
+  try {
+    return { code: 0, out: execSync(command, { encoding: "utf8", stdio: "pipe", shell: "/bin/sh", ...options }) };
+  } catch (error) {
+    return { code: error.status, out: String(error.stdout ?? "") };
+  }
+};
+
+// A relay's line has to fit in what one Bash call returns. The diff grows with the change, and the decision
+// reads every line of it, so a diff that did not come back whole must capture.
+test("the tree diff command returns the count and the lines the decision reads, and a diff cut short captures", async () => {
+  const { calls } = await withCapture(CAPTURE, { diff: [mdOnly] });
+  const command = stepSetting(calls, "diff", "raw").sh;
+  const dir = mkdtempSync(join(tmpdir(), "implement-diff-"));
+  const git = (line) => execSync(`git -C '${dir}' ${line}`, { encoding: "utf8", stdio: "pipe" }).trim();
+  git("init -q");
+  git("-c user.name=t -c user.email=t@example.com commit -q --allow-empty -m base");
+  const commit = (count, name) => {
+    for (let i = 0; i < count; i += 1) writeFileSync(join(dir, name(i)), "x");
+    git("add -A");
+    git("-c user.name=t -c user.email=t@example.com commit -q -m change");
+    return git("rev-parse HEAD^{tree}");
+  };
+  const base = git("rev-parse HEAD^{tree}");
+  const few = commit(3, (i) => `note ${i}.md`);
+  const many = commit(201, (i) => `doc-${i}.md`);
+  const between = (from, to) =>
+    sh(command.replace(/^out=\$\(git -C '[^']*' diff-tree -r --no-renames '[^']*' '[^']*'\)/, `out=$(git -C '${dir}' diff-tree -r --no-renames '${from}' '${to}')`));
+
+  const small = between(base, few);
+  assert.equal(small.out, "3\n:000000 100644 A note 0.md\n:000000 100644 A note 1.md\n:000000 100644 A note 2.md\n");
+  const large = between(few, many).out.trimEnd().split("\n");
+  assert.deepEqual([large[0], large.length - 1], ["201", 200], "the count is the whole diff's, and 200 lines come back");
+  assert.notEqual(between("no-such-tree", few).code, 0, "a diff git could not compute is not an empty one");
+  assert.equal(between(few, few).out.trim(), "0");
+
+  // What the command printed, handed back to the script.
+  const decided = async (raw) => (await withCapture(CAPTURE, { diff: [{ exit_code: 0, raw }] })).result.captures;
+  assert.equal(await decided(small.out), 0, "three Markdown files need no capture");
+  assert.equal(await decided(between(few, many).out), 1, "a diff with more lines than came back captures");
+  assert.equal(await decided("2\n:100644 100644 M README.md\n"), 1, "one line of two captures");
+  assert.equal(await decided(":100644 100644 M README.md\n"), 1, "a diff with no count captures");
+  assert.equal(await decided("0\n"), 1, "an empty diff captures");
+});
+
+// A page gh failed to fetch must not read as no open PR: the run would open a second PR for the branch.
+test("the open PR command fails when gh fails, and prints the three fields the script reads when gh succeeds", async () => {
+  const { calls } = await run({}, publishArgs);
+  const command = stepSetting(calls, "pulls", "pulls_json").sh;
+  const bin = mkdtempSync(join(tmpdir(), "implement-gh-"));
+  const withGh = (script) => {
+    writeFileSync(join(bin, "gh"), `#!/bin/sh\n${script}\n`, { mode: 0o755 });
+    return sh(command, { env: { ...process.env, PATH: `${bin}:${process.env.PATH}` } });
+  };
+  assert.notEqual(withGh("exit 1").code, 0, "gh failed and printed nothing");
+  assert.notEqual(withGh("echo '[[]]'; exit 1").code, 0, "gh failed after printing a page");
+  const listed = withGh(
+    `echo '[[{"html_url":"u","number":7,"head":{"ref":"b","sha":"s","repo":{"full_name":"o/r","id":1}}}]]'`,
   );
+  assert.equal(listed.code, 0);
+  assert.deepEqual(JSON.parse(listed.out), [[{ html_url: "u", head: { ref: "b", repo: { full_name: "o/r" } } }]]);
+});
+
+// The commit lists files only to find the media under the capture destination, and a revision reads only
+// whether its worktree is clean. Neither returns a listing that grows with the change.
+test("the listings a relay returns are limited to what the script reads from them", async () => {
+  const captured = await withCapture(CAPTURE, {}, publishArgs);
+  assert.match(stepSetting(captured.calls, "commit", "files").sh, / '--' 'trial\/evidence\/generated'$/);
+  const plain = await run({}, publishArgs);
+  assert.equal(stepSetting(plain.calls, "commit", "files"), undefined, "a run with no capture lists no files");
 });
 
 // A successful command's output is not returned. A setup that succeeded printed a download's progress

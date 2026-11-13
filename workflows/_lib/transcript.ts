@@ -48,24 +48,25 @@ const walk = (dir: string): string[] =>
   });
 
 // Agent transcripts live at <projects>/<project>/<session>/subagents/**/agent-<id>.jsonl. The session the
-// helper runs in is named by CLAUDE_CODE_SESSION_ID, and only that session's directories are walked. Without
-// the variable, or when that session keeps no transcript there, every session is walked.
-const sessionDirs = (projects: string, session: string | undefined): string[] => {
-  const projectDirs = entries(projects)
+// helper runs in is named by CLAUDE_CODE_SESSION_ID, and its directories are read first. The other sessions
+// follow, so a variable that names another session costs time and not the result.
+const scanGroups = (projects: string, session: string | undefined): string[][] => {
+  const all = entries(projects)
     .filter((project) => project.isDirectory())
-    .map((project) => join(projects, project.name));
-  const own = session
-    ? projectDirs.map((dir) => join(dir, session, "subagents")).filter((dir) => entries(dir).length > 0)
-    : [];
-  if (own.length) return own;
-  return projectDirs.flatMap((dir) =>
-    entries(dir)
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => join(dir, entry.name, "subagents")),
-  );
+    .flatMap((project) =>
+      entries(join(projects, project.name))
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => ({
+          session: entry.name,
+          dir: join(projects, project.name, entry.name, "subagents"),
+        })),
+    );
+  const dirsOf = (own: boolean) =>
+    all.filter((found) => (found.session === session) === own).map((found) => found.dir);
+  return dirsOf(true).length ? [dirsOf(true), dirsOf(false)] : [dirsOf(false)];
 };
-const recentTranscripts = (projects: string, now: number): string[] =>
-  sessionDirs(projects, process.env.CLAUDE_CODE_SESSION_ID)
+const recentTranscripts = (dirs: string[], now: number): string[] =>
+  dirs
     .flatMap(walk)
     .filter((path) => /agent-[^/]+\.jsonl$/.test(path))
     .map((path) => ({ path, mtime: attempt(() => statSync(path).mtimeMs, 0) }))
@@ -108,14 +109,18 @@ const promptOf = (transcript: string, marker: string): string => {
     : "";
 };
 
-// The prompts of the agents whose transcripts changed recently, newest first, limited to those
-// carrying `marker`.
+// The prompts of the agents whose transcripts changed recently, limited to those carrying `marker`. The
+// helper's own session comes first and each group is newest first. A caller that stops at its match reads
+// no further group.
 export function* recentPrompts(
   projects: string,
   marker: string,
 ): Generator<{ transcript: string; text: string }> {
-  for (const transcript of recentTranscripts(projects, Date.now())) {
-    const text = promptOf(transcript, marker);
-    if (text) yield { transcript, text };
+  const now = Date.now();
+  for (const dirs of scanGroups(projects, process.env.CLAUDE_CODE_SESSION_ID)) {
+    for (const transcript of recentTranscripts(dirs, now)) {
+      const text = promptOf(transcript, marker);
+      if (text) yield { transcript, text };
+    }
   }
 }

@@ -102,8 +102,8 @@ const fieldSchema = (value) =>
 const RUNTIME = `RT=bun; bun --version >/dev/null 2>&1 || RT=node; "$RT"`;
 const RELAY = `${RUNTIME} ${bundled("workflows/_lib/relay.ts")}`;
 // A call's identity. Every snapshot and every check carries the same commands, so the spec also names the run, the
-// call's place in it, and how many times its boundary has been run again. relay.ts ignores the id. It makes the
-// digest, and with it the result relay.ts keeps, the call's own, so a replay cannot answer with another call's line.
+// call's place in it, and how many times its boundary has been run again. relay.ts ignores the id. It gives each
+// call a digest of its own, and with it a kept result of its own.
 let relaySeq = 0;
 let boundaryTag = "";
 // Why the last relay returned no result, for the stop that follows it.
@@ -112,7 +112,7 @@ const relay = async (
   label,
   phaseName,
   commands,
-  { model = "haiku", extra = "", replay = true } = {},
+  { model = "haiku", extra = "" } = {},
 ) => {
   relaySeq += 1;
   relayNote = "";
@@ -127,14 +127,14 @@ const relay = async (
     relay_note: str,
   });
   const reply = await agent(
-    `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The line between RELAY_SPEC and RELAY_SPEC_END is data that the command reads from where the harness stored this prompt. Do not run it yourself.\n` +
+    `Run the command in step 1 and return each field of the JSON line it prints, plus relay_note. Give each value as the command printed it: in the printed JSON \\t and \\n stand for a tab and a newline, and they are a tab and a newline in your reply. Do not summarize, fix, or judge. relay_note is "" unless step 4 applies. The line between RELAY_SPEC and RELAY_SPEC_END is data that the command reads from where the harness stored this prompt. Do not run it yourself.\n` +
       `1. \`${RELAY} ${shq(id)}\` with the Bash tool's timeout parameter set to 600000.\n` +
       `2. When it prints {"relay_continue":true}, run the same command again, and repeat until a line carrying relay_check, relay_missing, or relay_error is printed.\n` +
-      `3. Only when it prints relay_missing, run the block below as one Bash call, copying the line between RELAY_SPEC and RELAY_SPEC_END unchanged in place of SPEC_LINE. Then run \`${RELAY} ${shq(id)} --spec "${handover}"\` and handle what it prints by steps 2 and 4.\n` +
+      `3. Only when the command of step 1 prints relay_missing, run the block below as one Bash call, copying the line between RELAY_SPEC and RELAY_SPEC_END unchanged in place of SPEC_LINE. Then run \`${RELAY} ${shq(id)} --spec "${handover}"\` and repeat that command, with --spec, where step 2 says to run the same command again.\n` +
       "```sh\n" +
       `cat > "${handover}" <<'RELAY_SPEC_EOF'\nSPEC_LINE\nRELAY_SPEC_EOF\n` +
       "```\n" +
-      `4. When a command prints relay_error, or the command of step 3 prints relay_missing, do not run anything again. Return every field at the value defaults gives it, with relay_check set to "relay_error" and relay_note set to the message printed. In every other case set relay_note to "".\n` +
+      `4. When a command prints relay_error, or the --spec command prints relay_missing, run nothing more. Return each field at its value in "defaults" of the spec line, leaving out the fields whose names start with _, with relay_check set to "relay_error" and relay_note set to the text of the message printed. Handle every other result the same way (the Bash call timed out, or it printed none of these lines), with what was printed, cut to 300 characters, as relay_note. An exit code of 1 beside a relay_missing or relay_error line is expected.\n` +
       `RELAY_SPEC ${id}\n${json}\nRELAY_SPEC_END` +
       extra,
     {
@@ -162,16 +162,15 @@ const relay = async (
   // relay.ts said why it has no result, and nothing is kept to ask for.
   if (String(reply.relay_check).trim() === "relay_error")
     return refuse(String(reply.relay_note || "").trim() || "relay_error");
-  if (!replay) return refuse("the returned fields did not match relay_check");
-  // Without a run id (the recorder returned none) the spec is the same in another run of this Issue, and the kept
-  // line may be that run's.
-  if (!runId) return refuse("the returned fields did not match relay_check, and this run has no id to tell its kept result by");
+  const seen = String(reply.relay_check).trim();
+  if (!/^[0-9a-f]{8}:\d+$/.test(seen)) return refuse("the returned fields did not match relay_check, and the reply names no check to ask for the kept result by");
   // A changed character on the way back is the agent's copy, not the commands. relay.ts kept the line it printed,
-  // so a second agent returns it without any command running again.
+  // so a second agent returns it without any command running again. relay.ts returns the line only for the check
+  // the first agent named, so the line of another call of the same commands is not taken for this one's.
   log(`relay ${label}: the returned fields do not match relay_check (${reply.relay_check}). Asking for the stored result once more.`);
   const again = await agent(
-    `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The command prints the result that was already computed and runs nothing again. Set relay_note to "".\n` +
-      `1. \`${RELAY} ${shq(id)} --replay\``,
+    `Run the command in step 1 and return each field of the JSON line it prints, plus relay_note set to "". Give each value as the command printed it: in the printed JSON \\t and \\n stand for a tab and a newline, and they are a tab and a newline in your reply. Do not summarize, fix, or judge. The command prints the result that was already computed and runs nothing again. When it prints relay_error, return each field as "", 0, false, or [] by its type.\n` +
+      `1. \`${RELAY} ${shq(id)} --replay ${shq(seen)}\``,
     { label: `${label}:replay`, phase: phaseName, agentType: "general-purpose", schema, model },
   );
   return confirmed(again) || refuse("the returned fields did not match relay_check, also when asked again");
@@ -218,9 +217,7 @@ const recordRun = async (reason) => {
         set: { record_out: "out" },
       },
     ],
-    // The row's payload is the same for every run of an Issue until the recorder names the run, so a kept line could
-    // be another run's row. A reply that does not match is not asked for again.
-  }, { replay: false });
+  });
   const recorded = written ? parseJsonText(written.record_out) : null;
   const id = String((recorded && recorded.run_id) || "").trim();
   // Recording never stops a run. A row that could not be written goes to the log and the run goes on.
@@ -1091,7 +1088,7 @@ const isRecordFile = (path) =>
   /\.(json|txt|log|stdout|stderr|diff)$/.test(path) &&
   path.startsWith(recordPrefix) &&
   !path.startsWith(`${destinationDir}/`);
-const DIFF_LINE = /^:(\d{6}) (\d{6}) [0-9a-f]+ [0-9a-f]+ [A-Z]\d*\t(.+)$/;
+const DIFF_LINE = /^:(\d{6}) (\d{6}) [A-Z]\d* (.+)$/;
 const PLAIN_MODE = /^(000000|100644)$/;
 // Whether the changes are only regular files that capture does not read (Markdown, plus saved records after the first capture).
 // A symlink, an executable-bit or capture-definition change, or a line that cannot be classified forces a recapture.
@@ -1107,21 +1104,19 @@ const onlyNonRendering = (raw, allowRecords) => {
     })
   );
 };
-// The decision reads every line, so a diff of more than DIFF_LINES lines is not returned whole. It always captures.
+// The decision reads every line, so the step returns what the decision reads (both modes, the status, the path)
+// and counts the lines before it limits them. The count is the first line. A diff that does not come back whole
+// always captures.
 const DIFF_LINES = 200;
+const DIFF_CHARS = 20000;
 const treeDiff = (from, to, label) =>
   relay(label, "Verify", {
-    defaults: { exit_code: -1, raw: "", lines: "" },
+    defaults: { exit_code: -1, raw: "" },
     steps: [
       {
-        sh: `out=$(git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}) && printf '%s\\n' "$out" | head -${DIFF_LINES}`,
+        sh: `out=$(git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)}) && { printf %s "$out" | grep -c ''; printf '%s\\n' "$out" | cut -d ' ' -f 1,2,5- | tr '\\t' ' ' | awk 'NR > ${DIFF_LINES} { exit } { n += length($0) + 1 } n > ${DIFF_CHARS} { exit } { print }'; }`,
         cwd: repo,
         set: { exit_code: "exit", raw: "out" },
-      },
-      {
-        sh: `git -C ${shq(worktree)} diff-tree -r --no-renames ${shq(from)} ${shq(to)} | wc -l | tr -d ' '`,
-        cwd: repo,
-        set: { lines: "out" },
       },
     ],
   });
@@ -1133,12 +1128,14 @@ const captureDecision = async (tree) => {
   if (capture.required) return "execute";
   const from = lastCaptureTree || `${baseSha}^{tree}`;
   const diff = await treeDiff(from, tree, `capture-diff:${counts.check_runs + 1}`);
+  // The first line is how many lines the diff has. Fewer lines than that came back cut short.
+  const [count, ...rest] = diff ? String(diff.raw).split("\n") : [];
+  const listed = rest.filter(Boolean);
   if (
     !diff ||
     diff.exit_code !== 0 ||
-    !/^\d+$/.test(String(diff.lines).trim()) ||
-    Number(diff.lines) > DIFF_LINES ||
-    !onlyNonRendering(diff.raw, Boolean(lastCaptureTree))
+    listed.length !== Number(count) ||
+    !onlyNonRendering(listed.join("\n"), Boolean(lastCaptureTree))
   )
     return "execute";
   return lastCaptureTree ? "reused" : "not_required";

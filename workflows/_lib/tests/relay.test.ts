@@ -3,16 +3,26 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { canonical, runSpec } from "../relay.ts";
 import type { Spec } from "../relay.ts";
-import { digest } from "../transcript.ts";
+import { digest, recentPrompts } from "../transcript.ts";
 
 const script = join(dirname(fileURLToPath(import.meta.url)), "..", "relay.ts");
 const fieldsOf = async (spec: Spec) => (await runSpec(spec)).fields;
+// Waits until `holds` answers true, and fails the test when it does not within the limit. A fixed wait is too
+// short on a loaded machine, and a wait with no limit hangs the suite.
+const until = async (holds: () => boolean, what: string, limitMs = 10_000) => {
+  const deadline = Date.now() + limitMs;
+  while (!holds()) {
+    assert.ok(Date.now() < deadline, `${what} within ${limitMs} ms`);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+};
+const gone = (pid: string) => spawnSync("kill", ["-0", pid]).status !== 0;
 
 test("each source reads its part of a command's result", async () => {
   const fields = await fieldsOf({
@@ -59,8 +69,7 @@ test("a command that runs past its timeout reads as timed out with exit -1, and 
   });
   assert.deepEqual(fields, { code: -1, late: true });
   const child = readFileSync(pidFile, "utf8").trim();
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  assert.notEqual(spawnSync("kill", ["-0", child]).status, 0, "the background sleep is gone");
+  await until(() => gone(child), "the background sleep is gone");
 });
 
 test("a step runs only when every field named in when holds its value, and an unset field keeps its default", async () => {
@@ -242,17 +251,24 @@ test("the agent that ran every step gets the same line when it runs the command 
 
 // An agent that miscopies a long field returns fields without their digest. The script then asks a
 // second agent for the same line, and the commands must not run a second time.
-test("--replay prints the line the complete call printed and runs no step", () => {
+test("--replay prints the line the complete call printed, runs no step, and refuses a check that line does not carry", () => {
   const { projects, agents, tmp, log } = project();
   const { wanted, prompt } = promptWith({
     defaults: { text: "" },
     steps: [{ sh: `echo once >> '${log}'; echo ■■■■■■■■■■`, set: { text: "out" } }],
   });
   store(agents, "a1", prompt);
-  assert.equal(cli([wanted, "--replay"], tmp).code, 1, "nothing is kept before the call");
+  assert.equal(cli([wanted, "--replay", "00000000:0"], tmp).code, 1, "nothing is kept before the call");
   const ran = cli([wanted, "--projects", projects], tmp);
-  assert.deepEqual(cli([wanted, "--replay"], tmp), ran);
+  assert.deepEqual(cli([wanted, "--replay", ran.out.relay_check], tmp), ran);
   assert.equal(ranLines(log), "once\n");
+  // The line goes only to the agent that saw it. A reply naming another check came from another call, or from
+  // an agent that never ran the command.
+  for (const check of [["00000000:0"], []]) {
+    const refused = cli([wanted, "--replay", ...check], tmp);
+    assert.equal(refused.code, 1);
+    assert.match(refused.out.relay_error, /does not carry the check/);
+  }
 });
 
 // Every snapshot shares one spec. When the call before a write did not finish, --replay must not
@@ -262,11 +278,12 @@ test("--replay after a call that did not finish prints relay_error, not the line
   const { wanted, prompt } = promptWith(logging(log, ["first", "second"], 400));
   const args = [wanted, "--projects", projects];
   store(agents, "a1", prompt);
-  assert.equal(cli(args, tmp).code, 0);
-  assert.equal(cli([wanted, "--replay"], tmp).code, 0);
+  const first = cli(args, tmp);
+  assert.equal(first.code, 0);
+  assert.equal(cli([wanted, "--replay", first.out.relay_check], tmp).code, 0);
   store(agents, "a2", prompt);
   assert.deepEqual(cli(args, tmp, { RELAY_CALL_BUDGET_MS: "300" }).out, { relay_continue: true });
-  const replayed = cli([wanted, "--replay"], tmp);
+  const replayed = cli([wanted, "--replay", first.out.relay_check], tmp);
   assert.equal(replayed.code, 1);
   assert.match(replayed.out.relay_error, /no result/);
 });
@@ -303,7 +320,7 @@ test("a tail is cut to its last characters, so a failing command with wide lines
     ],
   });
   assert.equal(fields.code, 1);
-  assert.ok(String(fields.tail).length <= 6000);
+  assert.equal(String(fields.tail).length, 6000);
   assert.ok(String(fields.tail).endsWith("the failure is here"));
 });
 
@@ -317,24 +334,93 @@ test("ending the command while a step runs ends that step too", async () => {
   });
   store(agents, "a1", prompt);
   const child = spawn("node", [script, wanted, "--projects", projects], { env: { ...process.env, TMPDIR: tmp } });
-  while (!existsSync(pidFile) || !readFileSync(pidFile, "utf8").trim()) await new Promise((r) => setTimeout(r, 50));
+  const closed = new Promise((resolve) => child.on("close", resolve));
+  const started = () => existsSync(pidFile) && readFileSync(pidFile, "utf8").trim() !== "";
+  await until(() => started() || child.exitCode !== null, "the step starts");
+  assert.ok(started(), "the command ended before its step started");
   const step = readFileSync(pidFile, "utf8").trim();
   child.kill("SIGTERM");
-  await new Promise((resolve) => child.on("close", resolve));
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  assert.notEqual(spawnSync("kill", ["-0", step]).status, 0, "the step's sleep is gone");
+  await closed;
+  await until(() => gone(step), "the step's sleep is gone");
 });
 
-// The scan opens only the current session's transcripts when the session is known, and still finds a
-// spec when the variable names a session that holds none.
-test("the spec is found through the session CLAUDE_CODE_SESSION_ID names, and through every session when that one holds none", () => {
-  const { projects, agents, tmp } = project();
-  const { wanted, prompt } = promptWith(SPEC);
+// A call can be ended in the middle of a step. The steps before it ran, and running them again would repeat
+// a write.
+test("a call ended in the middle of a step goes on from that step, and the steps before it do not run again", async () => {
+  const { projects, agents, tmp, root, log } = project();
+  const pidFile = join(root, "step.pid");
+  const quick = join(root, "quick");
+  const { wanted, prompt } = promptWith({
+    defaults: { first: "", second: "" },
+    steps: [
+      { sh: `echo first >> '${log}'; echo first`, set: { first: "out" } },
+      {
+        sh: `echo second >> '${log}'; [ -e '${quick}' ] || { sleep 30 & echo $! > '${pidFile}'; wait; }; echo second`,
+        timeout_ms: 20000,
+        set: { second: "out" },
+      },
+    ],
+  });
   store(agents, "a1", prompt);
   const args = [wanted, "--projects", projects];
+  const child = spawn("node", [script, ...args], { env: { ...process.env, TMPDIR: tmp } });
+  const closed = new Promise((resolve) => child.on("close", resolve));
+  const started = () => existsSync(pidFile) && readFileSync(pidFile, "utf8").trim() !== "";
+  await until(() => started() || child.exitCode !== null, "the second step starts");
+  assert.ok(started(), "the command ended before its second step started");
+  child.kill("SIGTERM");
+  await closed;
+  writeFileSync(quick, "");
+  const again = cli(args, tmp);
+  assert.equal(again.code, 0);
+  assert.deepEqual([again.out.first, again.out.second], ["first", "second"]);
+  assert.equal(ranLines(log), "first\nsecond\nsecond\n");
+});
+
+// The helper's own session is read first, so a relay does not open the transcripts of every other session. The
+// variable can name a session that holds other agents but not this one, and the spec is still found.
+test("the spec is found when CLAUDE_CODE_SESSION_ID names a session that holds other transcripts but not the agent's", () => {
+  const { projects, agents, tmp } = project();
+  const { wanted, prompt } = promptWith(SPEC);
+  const elsewhere = join(projects, "-abs-repo", "session-2", "subagents");
+  mkdirSync(elsewhere, { recursive: true });
+  store(agents, "other", "another agent's prompt");
+  store(elsewhere, "a1", prompt);
+  const args = [wanted, "--projects", projects];
   assert.equal(cli(args, tmp, { CLAUDE_CODE_SESSION_ID: "session-1" }).code, 0);
-  store(agents, "a2", prompt);
-  assert.equal(cli(args, tmp, { CLAUDE_CODE_SESSION_ID: "another-session" }).code, 0);
+  assert.equal(cli(args, tmp, { CLAUDE_CODE_SESSION_ID: "no-such-session" }).code, 0);
+});
+
+test("a transcript of the helper's own session is read before a newer one of another session", () => {
+  const { projects, agents } = project();
+  const elsewhere = join(projects, "-abs-repo", "session-2", "subagents");
+  mkdirSync(elsewhere, { recursive: true });
+  store(agents, "own", "MARK own");
+  store(elsewhere, "newer", "MARK newer");
+  const earlier = new Date(Date.now() - 60_000);
+  utimesSync(join(agents, "agent-own.jsonl"), earlier, earlier);
+  const order = (session: string | undefined) => {
+    const before = process.env.CLAUDE_CODE_SESSION_ID;
+    if (session === undefined) delete process.env.CLAUDE_CODE_SESSION_ID;
+    else process.env.CLAUDE_CODE_SESSION_ID = session;
+    try {
+      return [...recentPrompts(projects, "MARK")].map((found) => found.text);
+    } finally {
+      if (before === undefined) delete process.env.CLAUDE_CODE_SESSION_ID;
+      else process.env.CLAUDE_CODE_SESSION_ID = before;
+    }
+  };
+  assert.deepEqual(order("session-1"), ["MARK own", "MARK newer"]);
+  assert.deepEqual(order(undefined), ["MARK newer", "MARK own"]);
+});
+
+// The agent reaches --spec only after relay_missing. A file it failed to write is one more case of no step run.
+test("a spec file that does not exist prints relay_missing", () => {
+  const { tmp } = project();
+  const { wanted } = promptWith(SPEC);
+  const { code, out } = cli([wanted, "--spec", join(tmp, "none.json")], tmp);
+  assert.equal(code, 1);
+  assert.match(out.relay_missing, /cannot be read/);
 });
 
 // The workflow starts the helper on bun when bun runs, and the rest of this file starts it on node.

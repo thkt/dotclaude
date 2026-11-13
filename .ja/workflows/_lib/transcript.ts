@@ -46,24 +46,25 @@ const walk = (dir: string): string[] =>
   });
 
 // agent の transcript は <projects>/<project>/<session>/subagents/**/agent-<id>.jsonl にある。helper が走っている
-// session は CLAUDE_CODE_SESSION_ID が示すので、その session のディレクトリだけを辿る。変数が無いとき、またはその
-// session がそこに transcript を持たないときは、全 session を辿る。
-const sessionDirs = (projects: string, session: string | undefined): string[] => {
-  const projectDirs = entries(projects)
+// session は CLAUDE_CODE_SESSION_ID が示すので、その session のディレクトリを先に読む。残りの session はその後に
+// 読むので、変数が別の session を指していても、失うのは時間で結果ではない。
+const scanGroups = (projects: string, session: string | undefined): string[][] => {
+  const all = entries(projects)
     .filter((project) => project.isDirectory())
-    .map((project) => join(projects, project.name));
-  const own = session
-    ? projectDirs.map((dir) => join(dir, session, "subagents")).filter((dir) => entries(dir).length > 0)
-    : [];
-  if (own.length) return own;
-  return projectDirs.flatMap((dir) =>
-    entries(dir)
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => join(dir, entry.name, "subagents")),
-  );
+    .flatMap((project) =>
+      entries(join(projects, project.name))
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => ({
+          session: entry.name,
+          dir: join(projects, project.name, entry.name, "subagents"),
+        })),
+    );
+  const dirsOf = (own: boolean) =>
+    all.filter((found) => (found.session === session) === own).map((found) => found.dir);
+  return dirsOf(true).length ? [dirsOf(true), dirsOf(false)] : [dirsOf(false)];
 };
-const recentTranscripts = (projects: string, now: number): string[] =>
-  sessionDirs(projects, process.env.CLAUDE_CODE_SESSION_ID)
+const recentTranscripts = (dirs: string[], now: number): string[] =>
+  dirs
     .flatMap(walk)
     .filter((path) => /agent-[^/]+\.jsonl$/.test(path))
     .map((path) => ({ path, mtime: attempt(() => statSync(path).mtimeMs, 0) }))
@@ -106,13 +107,17 @@ const promptOf = (transcript: string, marker: string): string => {
     : "";
 };
 
-// transcript が最近変わった agent の prompt を、新しい順に返す。marker を含むものに限る。
+// transcript が最近変わった agent の prompt を返す。marker を含むものに限る。helper 自身の session が先で、
+// それぞれの組の中では新しい順。一致した所で止まる呼び出し側は、後の組を読まない。
 export function* recentPrompts(
   projects: string,
   marker: string,
 ): Generator<{ transcript: string; text: string }> {
-  for (const transcript of recentTranscripts(projects, Date.now())) {
-    const text = promptOf(transcript, marker);
-    if (text) yield { transcript, text };
+  const now = Date.now();
+  for (const dirs of scanGroups(projects, process.env.CLAUDE_CODE_SESSION_ID)) {
+    for (const transcript of recentTranscripts(dirs, now)) {
+      const text = promptOf(transcript, marker);
+      if (text) yield { transcript, text };
+    }
   }
 }

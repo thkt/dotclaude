@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Usage: relay.ts <digest> [--spec <file>] [--projects <dir>]
-//        relay.ts <digest> --replay
+//        relay.ts <digest> --replay <relay_check>
 //
 // Runs the commands a workflow script wants run, and prints their results as one line of JSON.
 // The script declares them as data (a spec) and puts the spec into a relay agent's prompt between
@@ -37,8 +37,9 @@
 // again goes on from where its last call stopped, or gets the same line once every step has run,
 // so a step never runs twice for one agent. Another agent with the same spec starts from the first
 // step. --replay prints the line of the last call that ran every step of that spec, and runs
-// nothing: a script asks for it when the fields an agent returned do not carry relay_check. A call
-// that starts removes that line first, so --replay never answers with an earlier call's result.
+// nothing: a script asks for it when the fields an agent returned do not carry relay_check. It
+// names the relay_check that agent returned, and a kept line carrying another check is refused. A
+// call that starts removes the kept line first.
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -175,22 +176,25 @@ const holds = (when: Fields | undefined, fields: Fields): boolean =>
   !when || Object.entries(when).every(([key, value]) => fields[key] === value);
 
 // Runs the steps from `from` and returns the fields, or the index of the step it stopped before
-// when `fits` says that step may not fit in the caller's budget.
+// when `fits` says that step may not fit in the caller's budget. `ran` is called after each step
+// with the index of the next one, so a caller can keep how far the steps got.
 export const runSpec = async (
   spec: Spec,
   from = 0,
   seed: Fields = { ...spec.defaults },
   fits: (step: Step, index: number) => boolean = () => true,
+  ran: (next: number, fields: Fields) => void = () => {},
 ): Promise<{ fields: Fields; next: number }> => {
   const fields = { ...seed };
   for (let index = from; index < spec.steps.length; index += 1) {
     const step = spec.steps[index];
     if (!holds(step.when, fields)) continue;
     if (!fits(step, index)) return { fields, next: index };
-    const ran = await runStep(step);
-    for (const [field, source] of Object.entries(step.set ?? {})) fields[field] = pick(ran, source);
+    const result = await runStep(step);
+    for (const [field, source] of Object.entries(step.set ?? {})) fields[field] = pick(result, source);
     for (const [field, source] of Object.entries(step.append ?? {}))
-      fields[field] = [...((fields[field] as number[] | undefined) ?? []), pick(ran, source) as number];
+      fields[field] = [...((fields[field] as number[] | undefined) ?? []), pick(result, source) as number];
+    ran(index + 1, fields);
   }
   return { fields, next: spec.steps.length };
 };
@@ -241,6 +245,7 @@ const findSpec = (argv: string[], wanted: string): { spec: Spec; caller: string 
       `no recent agent transcript opens with a spec of digest ${wanted}`
     );
   }
+  if (!existsSync(specFile)) return `the spec file ${specFile} cannot be read`;
   const spec = readSpec(readFileSync(specFile, "utf8"), wanted);
   return spec
     ? { spec, caller: `${specFile}@${statSync(specFile).mtimeMs}` }
@@ -270,7 +275,11 @@ const runCall = async (
   let from = state.next;
   let fields = state.fields;
   while (from < spec.steps.length) {
-    const ran = await runSpec(spec, from, fields, fits);
+  // Kept after every step. A call that is ended in the middle of a step goes on from that step, and the steps
+  // before it are not run a second time.
+    const ran = await runSpec(spec, from, fields, fits, (next, reached) => {
+      keep(statePath, JSON.stringify({ next, fields: reached }));
+    });
     ({ fields } = ran);
     from = ran.next;
     if (from >= spec.steps.length) break;
@@ -305,7 +314,13 @@ async function main(argv: string[]): Promise<number> {
   const keptPath = join(tmpdir(), `relay-${name}.out.json`);
   if (argv.includes("--replay")) {
     if (!fresh(keptPath)) return fail(`no result of ${wanted} is kept`);
-    process.stdout.write(readFileSync(keptPath, "utf8"));
+    const kept = readFileSync(keptPath, "utf8");
+    // The line is returned only to the agent that saw it: the check it names is the one this line carries. A line
+    // another call of the same spec left is refused.
+    const check = flag(argv, "--replay");
+    if ((JSON.parse(kept) as { relay_check?: string }).relay_check !== check)
+      return fail(`the kept result of ${wanted} does not carry the check ${String(check)}`);
+    process.stdout.write(kept);
     return 0;
   }
   const found = findSpec(argv, wanted);

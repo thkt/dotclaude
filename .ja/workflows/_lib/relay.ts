@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Usage: relay.ts <digest> [--spec <file>] [--projects <dir>]
-//        relay.ts <digest> --replay
+//        relay.ts <digest> --replay <relay_check>
 //
 // workflow script が実行させたいコマンドを実行し、その結果を 1 行の JSON で出力する。
 // script はコマンドをデータ (spec) として宣言し、中継 agent の prompt の `RELAY_SPEC <digest>` と
@@ -36,7 +36,8 @@
 // 止まった所から続きを実行する。すべての step を実行した後なら同じ行を返す。1 つの agent に対して、step は 2 度実行
 // されない。同じ spec を持つ別の agent は、最初の step から始める。--replay は、その spec のすべての step を実行した
 // 最後の呼び出しの行を出力するだけで、何も実行しない。agent が返した欄が relay_check を持たないときに script が求める。
-// 呼び出しは始まるときにその行を消すので、--replay が前の呼び出しの結果を返すことは無い。
+// --replay にはその agent が返した relay_check を付け、残っている行の check がそれと違えば返さない。呼び出しは
+// 始まるときに残っている行を消す。
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -179,16 +180,18 @@ export const runSpec = async (
   from = 0,
   seed: Fields = { ...spec.defaults },
   fits: (step: Step, index: number) => boolean = () => true,
+  ran: (next: number, fields: Fields) => void = () => {},
 ): Promise<{ fields: Fields; next: number }> => {
   const fields = { ...seed };
   for (let index = from; index < spec.steps.length; index += 1) {
     const step = spec.steps[index];
     if (!holds(step.when, fields)) continue;
     if (!fits(step, index)) return { fields, next: index };
-    const ran = await runStep(step);
-    for (const [field, source] of Object.entries(step.set ?? {})) fields[field] = pick(ran, source);
+    const result = await runStep(step);
+    for (const [field, source] of Object.entries(step.set ?? {})) fields[field] = pick(result, source);
     for (const [field, source] of Object.entries(step.append ?? {}))
-      fields[field] = [...((fields[field] as number[] | undefined) ?? []), pick(ran, source) as number];
+      fields[field] = [...((fields[field] as number[] | undefined) ?? []), pick(result, source) as number];
+    ran(index + 1, fields);
   }
   return { fields, next: spec.steps.length };
 };
@@ -238,6 +241,7 @@ const findSpec = (argv: string[], wanted: string): { spec: Spec; caller: string 
       `no recent agent transcript opens with a spec of digest ${wanted}`
     );
   }
+  if (!existsSync(specFile)) return `the spec file ${specFile} cannot be read`;
   const spec = readSpec(readFileSync(specFile, "utf8"), wanted);
   return spec
     ? { spec, caller: `${specFile}@${statSync(specFile).mtimeMs}` }
@@ -267,7 +271,11 @@ const runCall = async (
   let from = state.next;
   let fields = state.fields;
   while (from < spec.steps.length) {
-    const ran = await runSpec(spec, from, fields, fits);
+  // step が終わるたびに残す。step の途中で終わらされた呼び出しはその step から続け、それより前の step を
+  // 2 度実行しない。
+    const ran = await runSpec(spec, from, fields, fits, (next, reached) => {
+      keep(statePath, JSON.stringify({ next, fields: reached }));
+    });
     ({ fields } = ran);
     from = ran.next;
     if (from >= spec.steps.length) break;
@@ -302,7 +310,13 @@ async function main(argv: string[]): Promise<number> {
   const keptPath = join(tmpdir(), `relay-${name}.out.json`);
   if (argv.includes("--replay")) {
     if (!fresh(keptPath)) return fail(`no result of ${wanted} is kept`);
-    process.stdout.write(readFileSync(keptPath, "utf8"));
+    const kept = readFileSync(keptPath, "utf8");
+    // 行は、それを見た agent にだけ返す。agent が名乗る check が、この行の持つ check であること。同じ spec の別の
+    // 呼び出しが残した行は返さない。
+    const check = flag(argv, "--replay");
+    if ((JSON.parse(kept) as { relay_check?: string }).relay_check !== check)
+      return fail(`the kept result of ${wanted} does not carry the check ${String(check)}`);
+    process.stdout.write(kept);
     return 0;
   }
   const found = findSpec(argv, wanted);
