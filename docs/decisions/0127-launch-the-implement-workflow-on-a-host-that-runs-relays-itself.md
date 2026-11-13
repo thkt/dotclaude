@@ -37,7 +37,7 @@ Chosen option: "Launch on the host by default, and through agents when a human c
 | What makes a call a relay | Its schema asks for `relay_check`. The schema is the script's, so a spec block quoted from an Issue body into an implementing prompt is never run. A relay whose spec cannot be read returns nothing, and is not handed to a session |
 | What a child session may do unasked | Read and edit files. A command runs when the user's own permission rules allow it. The session gets neither the Agent tool nor the Workflow tool |
 | Before launch | `host.ts probe` has one child session run `git status` and the check's executables. When the rules refuse one, `/implement` does not launch. It shows what was refused and asks the human to allow the commands or to launch this run through agents |
-| Where the host runs | Outside the sandbox, as a background command of the session. Inside it a child session cannot write its own record |
+| Where the host runs | Outside the sandbox, as a background command of the session. The host runs the check and the capture itself, and inside the sandbox Chromium does not start and a web server may fail to bind |
 | Resuming | The state file keeps each call's result. The same file and the `retry` a stop returned run only what the stopped boundary and the calls after it need. The file outlives the session that launched the run |
 | The launch through agents | Stays as DR-0126 left it, for the run a human sends there |
 
