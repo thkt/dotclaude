@@ -131,6 +131,23 @@ test("the skill resumes a stopped run by passing the stop's retry_next back as t
   assert.match(script, /retry_next: null,/);
 });
 
+// A run stopped after eleven repairs because its Issue gave a verification to a host run the workflow does not
+// have. /scoping names the handlings an Issue may agree on, and /implement sends back an Issue that agreed another.
+test("scoping names the three handlings of a step the workflow cannot carry out, and the launch check sends back any other", () => {
+  const sufficiency = readFileSync(join(root, "skills", "scoping", "references", "sufficiency.md"), "utf8");
+  const heading = "### Handling a step the workflow cannot carry out";
+  assert.ok(sufficiency.includes(heading), "sufficiency.md lost the section");
+  const section = sufficiency.slice(sufficiency.indexOf(heading), sufficiency.indexOf("## Questions and re-evaluation"));
+  const rows = section.split("\n").filter((line) => line.startsWith("| ") && !/^\| (Handling|-)/.test(line));
+  assert.equal(rows.length, 3, "the handlings an Issue may agree on");
+  // What the workflow runs itself, in the words its own prompt uses.
+  assert.match(sufficiency, /the `check` of `\.dotagents\.json`, the capture, and CI when publishing/);
+  assert.match(script, /The host runs the configured check and capture after you return\./);
+  assert.ok(script.includes('"repair-no-progress"') && section.includes("`repair-no-progress`"));
+  const phase1 = skill.slice(skill.indexOf("## Phase 1"), skill.indexOf("## Phase 2"));
+  assert.ok(phase1.includes('"Handling a step the workflow cannot carry out"'), "Phase 1 does not name the section");
+});
+
 // Codex's implement takes any agreed Issue. Routing by a `## Plan` section came from this harness's
 // build flow during the port and has no counterpart in Codex, so neither side routes by it.
 test("neither the skill nor the workflow routes an Issue by its Plan section", () => {
