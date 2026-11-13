@@ -47,7 +47,7 @@ Give each step a verdict from the table. For a step the workflow cannot carry ou
 
 ### Handling a step the workflow cannot carry out
 
-For each step choose one handling from these three, and write its name into the Issue as it is written here. There is no handling in which someone inside the run does the step later. The host that runs the check and the capture is inside the run too. Agreeing on that leaves the repair and the review disagreeing after the implementation, and the run stops as `repair-no-progress`.
+For each step choose one handling from these three, and write its name into the Issue as it is written here. There is no handling in which someone inside the run does the step later. The host that runs the check and the capture is inside the run too. Agreeing on that leaves the repair and the review disagreeing after the implementation, and the run stops as `repair-no-progress`. When a substitute step is to be done, do not add it to the handling cell: add it to the list as a step of its own and judge it by the same table. Doing the same check with another tool is such a case. A step added to the handling cell stays inside the run without having been judged.
 
 | Handling                         | What it means                                                                                                                                                                                       |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

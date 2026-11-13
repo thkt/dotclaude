@@ -3,6 +3,7 @@
 // workflow can return, so a reason added to the script cannot reach the user unhandled.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -150,6 +151,22 @@ test("scoping names the three handlings of a step the workflow cannot carry out,
   for (const row of rows) {
     const name = row.split("|")[1].trim();
     assert.ok(phase1.toLowerCase().includes(name.toLowerCase()), `Phase 1 does not name the handling "${name}"`);
+  }
+  // An Issue left a step out of scope and added "implement checks with another tool" to the same cell. One
+  // launch sent it back and another let it through, so both sides name the case in the same words.
+  assert.match(section, /substitute step/);
+  assert.match(phase1, /substitute step/);
+});
+
+// The contract takes the check as a shell string or as one argv array. The skill's line read it as an array
+// of argv arrays, which jq rejects for both.
+test("the skill's jq line reads the check's executable from both shapes the workflow's contract accepts", () => {
+  assert.match(script, /isShell\(c\.check\) \|\| isArgv\(c\.check\)/);
+  const filter = /`jq -r '([^']+)' "<absolute path>\/\.dotagents\.json"`/.exec(skill)?.[1];
+  assert.ok(filter, "Phase 2 lost its jq line");
+  for (const check of [["bun", "run", "check"], "bun run check"]) {
+    const out = execFileSync("jq", ["-r", filter], { input: JSON.stringify({ check }), encoding: "utf8" });
+    assert.equal(out.trim(), "bun", `check given as ${JSON.stringify(check)}`);
   }
 });
 
