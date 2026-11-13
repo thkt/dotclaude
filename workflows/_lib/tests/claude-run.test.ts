@@ -17,7 +17,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createHost, holdState, readCall } from "../claude-run.ts";
+import { createHost, holdState, main, probeChild, readCall } from "../claude-run.ts";
 import type { ChildOutcome, ChildRun } from "../claude-run.ts";
 import { canonical } from "../relay.ts";
 import type { Spec } from "../relay.ts";
@@ -352,4 +352,61 @@ test("a call is read with its state path made absolute, and one it cannot read i
   assert.equal(ran.status, 2);
   assert.match(ran.stderr, /^usage: claude-run\.ts /);
   assert.equal(ran.stdout, "");
+});
+
+// A session that cannot run a command would implement for minutes and then say it could not run a test.
+test("the probe says whether a child session ran the commands, and names the ones the user's rules refused", async () => {
+  const asked: ChildRun[] = [];
+  const answer = (outcome: ChildOutcome) => async (run: ChildRun) => {
+    asked.push(run);
+    return outcome;
+  };
+  assert.deepEqual(await probeChild("/abs/repo", ["git status --short", "bun --version"], answer(replied({ is_error: false, result: "done", permission_denials: [] }))), {
+    ran: true,
+    denied: [],
+    why: "",
+  });
+  assert.deepEqual([asked[0].model, asked[0].cwd, asked[0].schema], ["haiku", "/abs/repo", undefined]);
+  assert.match(asked[0].prompt, /git status --short\nbun --version$/);
+  const refused = await probeChild(
+    "/abs/repo",
+    ["bun --version"],
+    answer(replied({ is_error: false, result: "refused", permission_denials: [{ tool_name: "Bash", tool_input: { command: "bun --version" } }] })),
+  );
+  assert.deepEqual([refused.ran, refused.denied], [false, ["bun --version"]]);
+  const absent = await probeChild("/abs/repo", ["git status"], answer({ code: -1, stdout: "", stderr: "spawn claude ENOENT", timedOut: false }));
+  assert.deepEqual([absent.ran, absent.denied], [false, []]);
+  assert.match(absent.why, /exited -1 with no result. spawn claude ENOENT/);
+  const failed = await probeChild("/abs/repo", ["git status"], answer(replied({ is_error: true, subtype: "error_during_execution" }, 1)));
+  assert.deepEqual([failed.ran, failed.why], [false, "the session ended as error_during_execution"]);
+});
+
+// The skill reads the result from the file the summary line names, because the log and the result reach it
+// through one stream.
+test("the command prints the script's return value, writes it beside the state file, and names both files in its last line", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "claude-run-main-"));
+  const file = join(dir, "sample.js");
+  writeFileSync(file, `export const meta = { name: "sample", description: "returns its args" };\nif (args.fail) throw new Error("boom");\nreturn { stopped: "no-issue", issue: args.issue };\n`);
+  const run = async (argv: string[]) => {
+    const out: string[] = [];
+    const logs: string[] = [];
+    const code = await main(argv, { resolvePath: () => file, out: (text) => out.push(text), onLog: (message) => logs.push(message) });
+    return { code, out: out.join(""), logs };
+  };
+  const state = join(dir, "run", "calls.jsonl");
+  const ok = await run(["sample", "--repo", "/abs/repo", "--issue", "12", "--state", state]);
+  assert.equal(ok.code, 0, "a stop is a value the script returned");
+  assert.deepEqual(JSON.parse(ok.out), { stopped: "no-issue", issue: "12" });
+  const last = JSON.parse(ok.logs.at(-1)?.replace(/^claude-run: /, "") ?? "");
+  assert.deepEqual([last.state, last.result], [state, join(dir, "run", "result.json")]);
+  assert.equal(readFileSync(last.result, "utf8"), ok.out);
+  assert.equal((statSync(last.result).mode & 0o777).toString(8), "600");
+  assert.ok(!existsSync(`${state}.lock`), "the state file is released");
+
+  const thrown = await run(["sample", "--repo", "/abs/repo", "--args", '{"fail":true}', "--state", join(dir, "other", "calls.jsonl")]);
+  assert.equal(thrown.code, 1);
+  assert.equal(thrown.out, "");
+  assert.match(thrown.logs.join("\n"), /the script threw: boom/);
+  assert.equal(JSON.parse(thrown.logs.at(-1)?.replace(/^claude-run: /, "") ?? "").result, null);
+  assert.equal((await run(["sample"])).code, 2);
 });

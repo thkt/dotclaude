@@ -3,7 +3,8 @@
 // workflow can return, so a reason added to the script cannot reach the user unhandled.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { probe } from "../scripts/sandbox_probe.ts";
@@ -53,6 +54,44 @@ test("the skill launches the implement workflow by name and maps --no-publish to
   assert.match(script, /const publishing = input\.publish !== false;/);
 });
 
+// The host runs the workflow's commands itself, so a launch costs no agent for a relay (DR-0127). The skill
+// reads the run's result and its state from the last line the host prints, so the two have to name the same keys.
+test("the skill launches on the host through its script, asks the probe first, and reads the keys the host prints", async () => {
+  const phase2 = skill.slice(skill.indexOf("## Phase 2"), skill.indexOf("## Phase 3"));
+  assert.match(phase2, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/host\.ts probe --repo "[^"]+" "git status --short"/);
+  assert.match(phase2, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/host\.ts run implement --repo "[^"]+" --args '[^']+'/);
+  assert.ok(phase2.indexOf("host.ts probe") < phase2.indexOf("host.ts run"), "the probe comes before the launch");
+  assert.match(phase2, /sandbox off/);
+
+  const { main, probeChild } = await import("../../../workflows/_lib/claude-run.ts");
+  const answer = async () => ({ code: 0, stdout: '{"is_error":false,"permission_denials":[]}', stderr: "", timedOut: false });
+  for (const field of Object.keys(await probeChild("/abs/repo", ["git status"], answer)))
+    assert.ok(phase2.includes(`\`${field}\``), `Phase 2 does not route the probe's ${field}`);
+
+  const dir = mkdtempSync(join(tmpdir(), "implement-contract-"));
+  const file = join(dir, "sample.js");
+  writeFileSync(file, 'export const meta = { name: "sample", description: "returns" };\nreturn { status: "verified_local" };\n');
+  const logs = [];
+  await main(["sample", "--repo", "/abs/repo", "--state", join(dir, "calls.jsonl")], {
+    resolvePath: () => file,
+    out: () => {},
+    onLog: (message) => logs.push(message),
+  });
+  const last = logs.at(-1);
+  assert.match(last, /^claude-run: \{/);
+  assert.ok(phase2.includes("`claude-run: {...}`"), "Phase 2 does not name the line it reads");
+  const printed = JSON.parse(last.replace(/^claude-run: /, ""));
+  for (const key of ["result", "state"]) {
+    assert.ok(key in printed, `the host no longer prints ${key}`);
+    assert.ok(phase2.includes(`\`${key}\``), `Phase 2 does not read ${key}`);
+  }
+  const runner = readFileSync(join(root, "workflows", "_lib", "claude-run.ts"), "utf8");
+  for (const phrase of ["the script threw", "held by the running process"]) {
+    assert.ok(runner.includes(phrase), `the host no longer says "${phrase}"`);
+    assert.ok(skill.includes(phrase), `SKILL.md does not handle "${phrase}"`);
+  }
+});
+
 // The skill observes the sandbox by running its probe. Inferring it from settings files stopped a
 // session whose sandbox a launch flag had turned off, since no file showed the flag.
 test("the skill observes the sandbox with its probe before launch, and its table routes every field the probe prints", async () => {
@@ -82,6 +121,7 @@ test("the skill resumes a stopped run by passing the stop's retry_next back as t
     skill.indexOf("## Revising an existing PR"),
   );
   assert.match(section, /`scriptPath`[^\n]*`resumeFromRunId`/);
+  assert.match(section, /`--state "[^"]+"`/);
   assert.match(section, /`retry: <retry_next>`/);
   assert.match(section, /`run_id`/);
   assert.match(script, /const retrying = input\.retry !== undefined;/);
