@@ -187,6 +187,9 @@ const kindOf = (opts) => {
   throw new Error(`unclassified agent call: ${opts.label}`);
 };
 
+// Marks a repair stub as one that changes no file.
+const idle = (stub) => Object.assign(stub, { idle: true });
+
 // Each kind answers from a queue when one is given, else from its default. The check queue and
 // the review queue drive the loop; the rest default to the happy path.
 const makeStubs = (overrides = {}) => {
@@ -231,10 +234,7 @@ const makeStubs = (overrides = {}) => {
     },
     review: () => reviewReply(tree),
     implement: () => ({ status: "repaired", findings: "implemented" }),
-    repair: () => {
-      tree = treeOf(Number.parseInt(tree, 10) + 1);
-      return { status: "repaired", findings: "repaired" };
-    },
+    repair: () => ({ status: "repaired", findings: "repaired" }),
     // git ls-tree over the reviewed tree for the documents a review named: every path is a blob.
     documents: (prompt) => ({
       exit_code: 0,
@@ -292,6 +292,9 @@ const makeStubs = (overrides = {}) => {
         ? queued.shift()
         : defaults[kind]
       : (queued ?? defaults[kind]);
+    // A repair changes files, which moves the tree. A stub wrapped in idle() is a repair that left them alone.
+    if (kind === "repair" && !(typeof answer === "function" && answer.idle))
+      tree = treeOf(Number.parseInt(tree, 10) + 1);
     const value =
       typeof answer === "function"
         ? answer(readable(prompt), {
@@ -394,6 +397,75 @@ test("the loop has no round cap: six needs_changes rounds still end in acceptanc
   assert.equal(result.status, "verified_local");
   assert.equal(result.review_rounds, 7);
   assert.equal(result.repairs, 6);
+});
+
+// A repair may leave the tree as it was and say why, and the next review reads that. One run repaired eleven
+// times that way: its Issue assigned a verification to a run the workflow does not make, the repair kept
+// answering that nothing was left to change, and the review kept the finding open.
+test("a repair that changes nothing gets one round to be read, and a round that still rejects the same tree stops as repair-no-progress", async () => {
+  const open = (_, { tree }) =>
+    reviewReply(tree, { updates: [{ id: "R1-1", disposition: "open", reason: "the sweep has not run" }] });
+  const nothing = idle(() => ({ status: "repaired", findings: "No file changed. The host has to run the sweep." }));
+  const { result, kinds } = await run({
+    review: [(_, { tree }) => reviewReply(tree, { newItems: [finding()] }), open, open, open],
+    repair: [nothing, nothing, nothing],
+  });
+  assert.equal(result.stopped, "repair-no-progress");
+  assert.deepEqual([result.check_runs, result.review_rounds, result.repairs], [2, 2, 1]);
+  assert.equal(result.findings, "No file changed. The host has to run the sweep.");
+  assert.equal(result.review.status, "needs_changes", "the review the human has to judge is in the stop");
+  assert.equal(result.retry_next, null);
+  assert.equal(kinds.filter((kind) => kind === "repair").length, 1, "no second repair is asked for");
+
+  // The same tree failing its check twice, with a repair between that found nothing to change.
+  const failing = (_, { tree }) => ({ exit_code: 1, log_tail: "FAIL an unrelated test", tree });
+  const flaky = await run({ check: [failing, failing, failing], repair: [nothing, nothing] });
+  assert.equal(flaky.result.stopped, "repair-no-progress");
+  assert.deepEqual([flaky.result.check_runs, flaky.result.review_rounds, flaky.result.repairs], [2, 0, 1]);
+});
+
+test("a repair that changes nothing and whose reason the next review accepts ends in acceptance, and a repair that changes files starts the count again", async () => {
+  const nothing = idle(() => ({ status: "repaired", findings: "The finding misreads line 3." }));
+  const withdrawn = await run({
+    review: [
+      (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
+      (_, { tree }) => reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "the repair is right" }] }),
+    ],
+    repair: [nothing],
+  });
+  assert.equal(withdrawn.result.status, "verified_local");
+
+  const open = (_, { tree }) =>
+    reviewReply(tree, { updates: [{ id: "R1-1", disposition: "open", reason: "still broken" }] });
+  // Idle, then a repair that changes files: the round after it is a new tree, not a second rejection of the same one.
+  const changed = await run({
+    review: [
+      (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
+      (_, { tree }) => reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "done" }] }),
+    ],
+    check: [(_, { tree }) => ({ exit_code: 1, log_tail: "FAIL", tree })],
+    repair: [() => ({ status: "repaired", findings: "fixed the test" })],
+  });
+  assert.equal(changed.result.status, "verified_local");
+  const twice = await run({
+    review: [(_, { tree }) => reviewReply(tree, { newItems: [finding()] }), open, open],
+    repair: [() => ({ status: "repaired", findings: "changed a file" }), nothing],
+  });
+  assert.equal(twice.result.stopped, "repair-no-progress");
+  assert.deepEqual([twice.result.review_rounds, twice.result.repairs], [3, 2]);
+});
+
+// The agent of that run read "pending host execution alone is not needs_human" as covering a verification the
+// Issue gave to a host run the workflow does not have.
+test("the implementing and repairing prompts say what the host runs, and send a verification it does not run to a human", async () => {
+  const { calls } = await run({
+    review: [(_, { tree }) => reviewReply(tree, { newItems: [finding()] })],
+  });
+  for (const label of ["implement", "repair:1"]) {
+    const prompt = calls.agent.find((c) => c.opts.label === label).prompt;
+    assert.match(prompt, /The host runs the configured check and capture after you return, and nothing else\./, label);
+    assert.match(prompt, /assigns a verification to a run this workflow does not make, return needs_human/, label);
+  }
 });
 
 test("a non-required concern does not block acceptance, since status is computed from required open items", async () => {
@@ -756,7 +828,7 @@ test("with required: true, a repair that leaves the tree unchanged reuses the ca
         (_, { tree }) =>
           reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "ok" }] }),
       ],
-      repair: [{ status: "repaired", findings: "no file change needed" }],
+      repair: [idle(() => ({ status: "repaired", findings: "no file change needed" }))],
     },
   );
   assert.equal(result.status, "verified_local");

@@ -934,7 +934,7 @@ const REPAIR_RULES = [
   "文書のみの変更と付随する更新には、対象の文書方針があれば適用する。現行の運用手順を正確に保ち、過去の結果は証拠に残す。文書の事実・数量・条件・範囲・権限・未確認の主張・参照を元の資料と照合する。",
   "commit・push・公開をしない。設定された全体の検証は変更後に host に任せる。sandbox の中で browser や server を起動しない。",
   ...CAPTURE_RULES,
-  "実装とテスト・撮影の定義の準備が整ったら repaired を返す。host の実行待ちだけでは needs_human にしない。要求・範囲・権限・実行上限を変える必要があるなら、それらを変えずに needs_human を返し、答えに依存する作業を止める。",
+  "実装とテスト・撮影の定義の準備が整ったら repaired を返す。host の実行待ちだけでは needs_human にしない。host が実行するのは、あなたが返した後の、設定された check と撮影だけである。合意済みの Issue が、この workflow の行わない実行に検証を割り当てているときは、needs_human を返す。要求・範囲・権限・実行上限を変える必要があるなら、それらを変えずに needs_human を返し、答えに依存する作業を止める。",
   "status (repaired か needs_human) と findings を持つ JSON を返す。findings には変更内容か、必要な人の判断を説明する。needs_human の findings は空にせず、問い・人が選ぶ選択肢・その影響を書く。指示ファイルが停止の理由なら、実際に読んだファイルと該当する指示を引用し、明示された要求と自分の解釈を分ける。",
 ].join("\n");
 const REPLY_SCHEMA = closed({ status: choice(["repaired", "needs_human"]), findings: str });
@@ -1511,6 +1511,11 @@ const repairPrompt = (evidence) =>
 // 原因を直せば、止まった巡の先頭から再開できる停止。巡の先頭の観測からやり直すので、撮影・check・レビューは
 // 今の tree に対して揃う。媒体や設定に原因がある停止と、要求・成果物が変わった停止は入れない。
 const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
+// 修正は tree を変えずに理由を述べてよく、次のレビューがそれを読む。その巡が同じ tree をまだ受け入れないなら、
+// 修正とレビューが食い違っていて、次の修正も何も変えない。ある実行は、agent が人に尋ねるまでこの形で 11 回
+// 修正した。直前の修正の前の tree と、その修正が述べたこと。
+let treeBeforeRepair = "";
+let lastRepair = null;
 let accepted = null;
 let roundNumber = 0;
 while (!accepted) {
@@ -1538,6 +1543,7 @@ while (!accepted) {
     );
   }
   if (!before.configHeld) return await stop(CONFIG_CHANGED.stop, CONFIG_CHANGED.why, where);
+  const idleRepair = lastRepair !== null && before.tree === treeBeforeRepair;
   const shot = await captureStep(before.tree);
   const step = shot.stop || shot.evidence ? shot : await checkAndReview();
   if (step.stop) {
@@ -1551,6 +1557,14 @@ while (!accepted) {
   if (step.accepted) {
     accepted = step.accepted;
     break;
+  }
+  // 直前の修正は何も変えず、この巡の check かレビューは、同じ tree とその理由を見たうえで受け入れなかった。
+  if (idleRepair) {
+    return await stop("repair-no-progress", "直前の修正はファイルを変えず、その後の巡も同じ tree を受け入れなかった。修正とレビューが食い違っているので、人が決める。要求か範囲を変えるか、修正ができなかったことを実行に伝える。", {
+      ...where,
+      review: history.at(-1) || null,
+      findings: lastRepair.findings,
+    });
   }
   // 正本は correction.ts の beforeRepair。check に数分かかる間に Issue が変わっていないかを、修正の直前にも確かめる。
   const beforeRepair = await snapshot(`before-repair:${counts.repairs + 1}`);
@@ -1584,6 +1598,8 @@ while (!accepted) {
     );
   }
   repairsSinceReview.push({ attempt: counts.repairs, findings: repaired.findings });
+  treeBeforeRepair = beforeRepair.tree;
+  lastRepair = repaired;
 }
 
 const verified = {
