@@ -18,7 +18,7 @@ Discovery reads `workflows/` flat and registers only the `.js` files directly un
 | Script filename   | `workflows/<name>.js`. That `<name>` is the name `Workflow({name})` resolves                                                                                                                                                                                              |
 | Shape of the name | One English word naming the operation the workflow performs. Replace generic names like helper, utils, tools with the operation name                                                                                                                                      |
 | Helper script     | Place under `workflows/<name>/`. A `.js` directly under `workflows/` registers as a workflow                                                                                                                                                                              |
-| Shared harness    | Place under `workflows/_lib/`. Limited to what tests import and to a runner that evaluates the scripts on another host. `workflows/_lib/codex-run.ts` is that runner, replacing `agent()` with a `codex exec` child process to run a workflow script outside Claude Code. |
+| Shared harness    | Place under `workflows/_lib/`. Limited to what tests import, a runner that evaluates the scripts on another host, and the helpers every workflow's relays run. `workflows/_lib/codex-run.ts` is that runner, replacing `agent()` with a `codex exec` child process to run a workflow script outside Claude Code. `relay.ts` and `transcript.ts` are the relay helpers (§ Relays) |
 
 ## Reference notation
 
@@ -40,7 +40,24 @@ A script accepts `args` as either a string or an object. The string is shorthand
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Reading args           | Use an object as it stands. Parse a string as JSON only when it starts with `{`, and read it as shorthand when that fails                                                                                            |
 | String options         | Confirm the type with `typeof`, and fall to the default when `trim()` is empty. The `base` naming a diff comparison defaults to `main`                                                                               |
-| A script taking `repo` | Define `anchor(p)` and pass every prompt bound for an agent through it. anchor prepends one sentence asking for `cd <repo> &&`. A stage working somewhere other than the repo takes a separate pin naming that place |
+| A script taking `repo` | Give every prompt bound for an agent the place it works in. A prose prompt passes through `anchor(p)`, which prepends one sentence asking for `cd <repo> &&`. A stage working somewhere other than the repo takes a separate pin naming that place. A relay's spec names the place in the `cwd` of each step that runs git or gh (§ Relays) |
+
+## Relays
+
+A script cannot run a command, so an agent runs it. Given the commands as prose, the agent copies each command into its shell and each output into its structured reply, and either copy can change a character. A relay hands the commands over as data (a spec), has `workflows/_lib/relay.ts` run them, and checks the returned values by digest (DR-0126).
+
+| Target            | Convention                                                                                                                                                                        |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shape of the spec | `{defaults, steps}`. The header of `workflows/_lib/relay.ts` is canonical for the vocabulary of steps and sources                                                                 |
+| Handing it over   | Put it as one line of JSON between `RELAY_SPEC <digest>` and `RELAY_SPEC_END` in the prompt. The agent runs relay.ts with the digest, and relay.ts reads the spec from the transcript. The spec carries an `id` naming the run and the call, so two calls with the same commands do not share a digest |
+| Checking a reply  | Compare the `relay_check` relay.ts prints with the digest of the fields the agent returned. On a mismatch, ask once more for the kept result with `--replay` and the `relay_check` the agent returned. relay.ts prints the kept line only when the line carries that check, so the line of another call is not taken. A second mismatch, or a reply that names no check, is no result |
+| No result         | relay.ts prints `relay_missing` when no spec matches the digest. No step has run, so the agent writes the spec to a file and runs relay.ts with `--spec`. A `relay_missing` from that second run, a `relay_error`, a Bash timeout, and any other output are no result. Steps may have run, so the agent runs nothing more and returns the printed text as `relay_note`, and the script does not ask for `--replay`. An agent that ends in an error is no result as well, with the error as the text. The stop that follows returns that text as `relay_note` |
+| The agent's model | haiku. A relay whose reply carries a document, such as an Issue body, runs on sonnet. haiku loses the fields after a long value that holds quoted markup |
+| Output tails      | Return a tail only for a command that failed (`fail_tail:N`). Successful output carries lines an agent miscopies, such as a progress bar. relay.ts keeps the last 6,000 characters of a tail                                          |
+| A step's time     | Keep one step's `timeout_ms` under 600000. Past the Bash tool's ceiling, relay.ts is killed before it prints its line                                                             |
+| A line's length   | Keep the line one relay returns within what a Bash call returns (about 30,000 characters). Bound output that grows with a count in its command, to the columns and lines the script reads. When the script reads every line, return the line count before the limit with the lines, so a list that was cut short is not read as whole |
+| Runtime           | A bundled helper starts on bun, or on node when bun does not run. The helpers stay runnable on both (DR-0113)                                                                     |
+| What stays prose  | Content only an agent can copy stays a prose prompt checked by digest. The PR body on a host that cannot read it back is one                                                      |
 
 ## meta.description and whenToUse content
 

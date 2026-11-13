@@ -1,0 +1,103 @@
+---
+status: "accepted"
+date: "2026-11-12"
+decision-makers: thkt
+scope: [meta, workflows]
+---
+
+# Declare workflow relays as data and run them through relay.ts
+
+## Context and Problem Statement
+
+A workflow script has no file access and cannot run a command, so every `git`, `gh` or check command goes through an agent. `workflows/implement.js` gave each such agent its commands as numbered prose and asked it to copy each output into a structured reply. In the bench run that reached a draft PR without a stop (`thkt/dotagents-workflow-trial` Issue #169, 2026-11-12), these relay agents were 30 of 34 agents, 46% of the output tokens, about 12 of the 30 minutes of the implementation stage, and about three quarters of the cache writes. The first relay alone, which reads the Issue and the target, took 65 seconds and 18,906 output tokens. Every stop fixed that week traced back to a relay: an agent miscopied the PR body, left a capture directory behind, or could not be resumed. How does a script get a command run without an agent reading it as prose and copying text both ways?
+
+## Decision Drivers
+
+- The implementing and reviewing agents carry the quality of the result, so the weight has to come off the relays and not off them
+- A character an agent changes while copying a command or an output must not reach the script as a result
+- The same script has to run on a host that evaluates it without Claude Code's agents, which is where the relays can cost nothing
+- A plugin user's machine is not known to have bun, and a `bun` on PATH can be a shim that does not start
+
+## Considered Options
+
+- Declare each relay's commands as a spec, and have a bundled `relay.ts` run it (chosen)
+- One bundled script per phase, each with its own inputs and outputs
+- Keep the prose prompts and give the relays a cheaper model or lower effort
+
+## Decision Outcome
+
+Chosen option: "Declare each relay's commands as a spec", because the script stays the one place that says what runs, the agent copies neither a command nor a long output without a check, and a host can run the same spec with no agent.
+
+A relay is `relay(label, phase, spec)`. The spec is `{defaults, steps}`, and a step is one `/bin/sh -c` line with its `cwd`, an optional `stdin`, `timeout_ms` and `when`, and the fields its exit code and output go into. The prompt carries the spec as one line of JSON between `RELAY_SPEC <digest>` and `RELAY_SPEC_END`. The agent runs `workflows/_lib/relay.ts <digest>`, which reads the spec back from the agent's own transcript (the mechanism DR-0125 uses for the PR body), runs the steps, and prints the fields with `relay_check`, the digest of those fields. The script compares the fields the agent returned with `relay_check`. On a mismatch it asks a second agent for the line `relay.ts` kept (`--replay`), which runs no step again, and treats a second mismatch as no result, which each call site already handles as its `*-unavailable` stop. A step returns the tail of its output only when its command failed.
+
+A call belongs to the agent whose transcript carried the spec. Every snapshot and every check of a run carries the same spec, so progress is kept per agent and not per spec. The same agent running the command again goes on from its last step, or gets its finished line with no step run twice. Another agent with the same spec starts from the first step. A call removes the kept line when it starts, so `--replay` cannot answer with the result of an earlier call. A step runs in its own process group, and a timeout or a signal to `relay.ts` ends the whole group.
+
+The spec also carries an `id` that names the run, the call's label and place in the run, and how many times its boundary was run again. `relay.ts` does not read it. It gives each call a digest of its own, so the progress and the line kept for `--replay` belong to one call. The id cannot tell two executions apart when a resume repeats a boundary's count, or before the recorder has named the run. So `--replay` also names the `relay_check` the first agent returned, and `relay.ts` prints the kept line only when the line carries that check.
+
+`relay.ts` separates two ways of having no result. `relay_missing` means no spec of that digest was found, no step ran, and the agent hands the spec over in a file. `relay_error` means the line was too long to return or the run itself failed. Steps may have run, so the agent runs nothing again, the script asks for nothing again, and the message is returned in the stop as `relay_note`.
+
+Three details follow from limits outside the script.
+
+| Limit | What the relay does |
+| --- | --- |
+| The Bash tool ends a call at 600 seconds | A step's `timeout_ms` stays under 600000. A call that may not fit its next step prints `relay_continue`, and the agent runs the same command again |
+| A Bash call returns about 30,000 characters | `relay.ts` refuses to print a longer line, keeps the refusal for that caller so the steps do not run twice, and cuts a failed command's tail at 6,000 characters. A relay whose output grows with the checkout, the change, or a PR returns only what the script reads: the status is limited to the start inputs, the open PRs to three fields, the committed files to the capture destination, and the tree diff to the columns the decision reads (both modes, the status, the path), 200 lines and 20,000 characters. The diff's first line is its line count before the limit, and a diff with fewer lines than its count captures |
+| A host with no transcript | The prompt has the agent write the spec line to a file and pass `--spec`, and `relay.ts` refuses a file whose digest differs |
+| bun may be absent or a shim that fails | The launcher runs `bun --version` and starts the helper on node when that fails. The helpers stay runnable on both (DR-0113) |
+
+`implement.js` no longer defines `anchor()`. A spec step that runs `git` or `gh` names the repository in its `cwd`, and the prose prompts that remain (implement, repair, review) pin the worktree through `inTree`.
+
+### Consequences
+
+- Good, because a relay's agent makes one Bash call with one short command. On the real prompt for the first relay it took 19 seconds and 5,264 output tokens, where the prose relay took 65 seconds and 18,906
+- Good, because over a whole run the relays' output fell by about half. The 33 relays of the run on Issue #171 produced 1,166 output tokens each, where the 30 prose relays of the run on Issue #169 produced 2,500. Their time went from 23.7 to 19.1 seconds each, most of which is the commands themselves
+- Good, because a changed character in a returned field is detected. The prose relays had no check, and the Issue body reached the implementing agent through such a copy
+- Good, because the English and `.ja` scripts carry the same spec lines, so a relay's commands have no translation to keep in step
+- Good, because a host that evaluates the script can run the spec itself. Ten commands of the first relay ran in 1.5 seconds with no agent
+- Bad, because the agent count does not fall. Each relay still starts an agent and pays its context: the relays' cache writes were 1.42M tokens against 1.44M before
+- Bad, because the spec is a small language of its own, and a step's meaning is in `relay.ts`, not in the prompt a person reads
+- Bad, because the read-back depends on the transcript layout, the same dependency as DR-0125
+- Neutral, because `build.js` and `code.js` keep their prose relays until they are converted
+
+### Confirmation
+
+`workflows/_lib/tests/relay.test.ts` runs specs for real: each source, `when`, `append`, internal fields, a timeout, `stdin` and `cwd`, a spec read from a transcript built in a temp directory, a refused digest, a spec handed over in a file, a call that stops for its budget and goes on in the next call, a second agent that does not pick up another agent's unfinished call, a finished call its agent does not run again, `--replay` refused after an unfinished call, a timeout that leaves no child running, a tail in arrival order, a tail cut by characters, a line too long to return and not run again by the same agent, `relay_missing` for an unknown digest, a signal that ends the running step, the helper's own session read before the others and the others still read, a replay refused for a check the kept line does not carry, a call ended in the middle of a step going on from that step, and the same line printed on bun as on node. `workflows/implement/tests/implement.behavior.test.js` checks that every agent other than the implementing, repairing, reviewing and naming ones carries a spec whose digest the prompt names, that the schema is the spec's fields plus `relay_check`, that no step can outlast the Bash tool, that a step with git or gh names its `cwd`, that no step returns a tail for a command that succeeded, that fields not matching `relay_check` are asked for once more and read as no result the second time, that every relay of a run has a digest of its own, that `relay_error` starts no second agent and reaches the stop as `relay_note`, that the replay names the check the first reply carried, and that the fields growing with the change are bounded in their commands. The tree diff command and the open PR command are run for real, against a repository and a `gh` made for the test. The prompt `implement.js` builds for its first relay was given to a live haiku agent on 2026-11-12: one Bash call with the timeout as told, and the 7 KB reply matched `relay_check`.
+
+## Pros and Cons of the Options
+
+### One bundled script per phase, each with its own inputs and outputs
+
+A `target` script, a `verify` script, a `ship` script and so on, each doing a phase's commands and returning its result.
+
+- Good, because adjacent relays merge, so the agent count falls
+- Bad, because the commands and the decisions between them move out of the workflow script into as many scripts, and the script's tests stop covering them
+- Bad, because every phase needs its own input and output contract, where one spec format serves all relays and other workflows
+
+### Keep the prose prompts and give the relays a cheaper model or lower effort
+
+- Good, because nothing is rewritten
+- Bad, because the relays already run on haiku, and the copy in both directions stays, with the errors it produced
+
+## More Information
+
+DR-0105 (`docs/decisions/0105-*.md`) made `repo` a required argument and had every prompt pass through `anchor()`. One of its reassessment triggers is a rise in prompts that do not pass through `anchor()`. In `implement.js` the pin is now the `cwd` of each step, which the tests check, and no prompt names a command for the agent to place itself.
+
+DR-0125 (`docs/decisions/0125-read-the-pr-body-back-from-the-agent-transcript.md`) introduced the read-back for the PR body. `workflows/_lib/transcript.ts` now holds the scan both use.
+
+The first whole run with the converted relays (Issue #171) stopped at prepare. A setup that succeeded returned the last 40 lines of its output, among them the progress bar of a download, and the agent changed the count of its repeated character. `relay_check` caught it, and the run stopped as `prepare-unavailable` with the worktree already built. Two changes followed in the same change: a tail is returned only for a command that failed, and a mismatch is answered by `--replay` before it becomes no result. The run after that reached draft PR #172 with all five acceptance items met and no mismatch.
+
+A review of that version reproduced two faults in how a call was identified. The file that lets a call go on was named by the spec's digest alone, so a later check with the same spec skipped its command and returned the earlier exit code. `--replay` returned the line of whichever call of that spec finished last, so a gate before a write could pass on a snapshot taken before it. Both came from treating a spec as the identity of a call, and the per-agent state above replaced it.
+
+A second review found what the per-agent state left open. The kept line was still named by the spec's digest, so a replay after a failed call could return the line of an earlier call with the same commands, and the `id` in the spec closed that. The prompt sent the agent to the `--spec` fallback on every `relay_error`, which ran the steps of a too-long result a second time, and `relay_missing` now marks the only case that is run again. Three fields still grew with the change (the committed files, the worktree status of a revision, the tree diff), a failed `gh api` page read as no open PR because `/bin/sh` has no `pipefail`, a signal to `relay.ts` left its step running, and the scan opened the transcripts of every session.
+
+A third review measured the fixes of the second. Two hundred `diff-tree` lines of this repository were 28,782 characters, over the line limit, because each line carried two object ids the decision does not read. Without them the same lines are 11,982 characters. The line count came from a second `git` run whose failure read as zero lines. Refusing to replay the recorder left the run without an id whenever the first recorder reply was miscopied, and binding the replay to the returned `relay_check` replaced both that refusal and the refusal for a run with no id. The session-limited scan did not fall back when the session held other transcripts, so the other sessions are now read after the helper's own. Progress was kept only when a call stopped for its budget, so a call ended in the middle of a step ran the earlier steps again, and it is now kept after every step.
+
+The whole run on that version (Issue #177) ended at its first relay. The agent could not give its reply the shape of the schema: the fields after the Issue body were missing in all five tries, and the harness ended the workflow before a stop was recorded. Copying that line alone, haiku returned every field in 1 of 13 tries under two wordings of the prompt, and in 2 of 8 with each value printed as raw text between marker lines. sonnet returned it in 10 of 10. An opening sentence that explained the escapes of the printed JSON had been added for a tab an agent returned as two characters. It did no better than the earlier sentence in those tries (0 of 7 against 1 of 6) and went back. The relay that returns the Issue runs on sonnet, a relay agent that ends in an error is no result, and the two `ls-remote` steps return the commit without the tab.
+
+### Reassessment Triggers
+
+- A relay other than the one returning the Issue fails to shape its reply, such as the read-back or the CI view, which carry the PR body. That relay moves to sonnet too, or its document goes to a file
+- A `relay_check` mismatch survives the replay and stops a run. The copy back of a long field is then still too error-prone, and the field should go to a file with only its path and digest returned
+- Workflow scripts gain a way to run a command, at which point no relay is needed
+- The node or bun host that runs specs with no agent becomes the default, which leaves the agent path as a fallback and may let the fallback instructions in the prompt go
+- A second workflow needs a step the spec cannot express, which is the point to decide whether the spec grows or that relay stays prose

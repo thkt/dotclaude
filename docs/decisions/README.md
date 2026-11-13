@@ -131,6 +131,7 @@ This directory contains important decisions about the project.
 | [0123](0123-unwire-every-hook-from-settingsjson.md) | Unwire every hook from settings.json | accepted | 2026-11-12 |
 | [0124](0124-let-a-stopped-implement-run-resume-without-implementing-again.md) | Let a stopped implement run resume without implementing again | accepted | 2026-11-12 |
 | [0125](0125-read-the-pr-body-back-from-the-agent-transcript.md) | Read the PR body back from the agent transcript | accepted | 2026-11-12 |
+| [0126](0126-declare-workflow-relays-as-data-and-run-them-through-relayts.md) | Declare workflow relays as data and run them through relay.ts | accepted | 2026-11-12 |
 
 ## By Status
 
@@ -243,6 +244,7 @@ This directory contains important decisions about the project.
 - **0123**: Unwire every hook from settings.json
 - **0124**: Let a stopped implement run resume without implementing again
 - **0125**: Read the PR body back from the agent transcript
+- **0126**: Declare workflow relays as data and run them through relay.ts
 
 ### Deprecated
 

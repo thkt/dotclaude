@@ -15,7 +15,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { digest } from "../write-body.ts";
+import { digest } from "../../_lib/transcript.ts";
 
 const script = join(dirname(fileURLToPath(import.meta.url)), "..", "write-body.ts");
 const BODY = 'Closes #12\n\nのーと and ﾉｰﾄ give 0; `　pen　` trims; it\'s "quoted" $HOME \\ back\n';
