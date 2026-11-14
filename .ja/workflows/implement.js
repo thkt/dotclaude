@@ -927,6 +927,10 @@ const CAPTURE_RULES = capture
       "この対象は撮影を宣言していない。合意した Issue が媒体を必要とするなら、実行前に撮影を設定するため needs_human を返す。",
     ];
 const TESTING_RULE = `変更が、非同期 UI の E2E テスト、外部入力の境界、失敗後の経路、対象の版の再取得、検査が何を成功と数えるか、のいずれかを変えるときは、\`cat ${bundled("skills/implement/references/testing.md")}\` を実行し、該当する場合を適用する。それ以外では読まない。`;
+// agent は、Issue が挙げる CI をこれと照らす。公開しない実行が CI を確かめないことも、ここで知る。
+const CI_RULE = publishing
+  ? `この実行は公開まで進むので、公開した head で、設定された CI (${config.ciChecks.join(", ")}) も host が確かめる。`
+  : "この実行は公開しないので、host は CI を確かめない。";
 const REPAIR_RULES = [
   TESTING_RULE,
   "テストを作成・更新する前に、対象の test 方針があればそれと次の共通基準を適用する。各テストを削除したら見逃す現実的なバグは何かを問う。追加の担保を実行時間・不安定さ・保守コストと比べ、コストに見合わないテストは削除か統合する。安心感・テスト数・カバレッジ指標のためだけにテストを残さない。失われる検出条件と残る検証を説明する。",
@@ -934,7 +938,7 @@ const REPAIR_RULES = [
   "文書のみの変更と付随する更新には、対象の文書方針があれば適用する。現行の運用手順を正確に保ち、過去の結果は証拠に残す。文書の事実・数量・条件・範囲・権限・未確認の主張・参照を元の資料と照合する。",
   "commit・push・公開をしない。設定された全体の検証は変更後に host に任せる。sandbox の中で browser や server を起動しない。",
   ...CAPTURE_RULES,
-  "実装とテスト・撮影の定義の準備が整ったら repaired を返す。host の実行待ちだけでは needs_human にしない。host は、あなたが返した後に、設定された check と撮影を実行する。実行が公開まで進むときは、公開した head で、設定された CI も host が確かめる。合意済みの Issue が、そのどれでもない検証をこの workflow の host の実行に割り当て、ほかの担当も名指ししていないときは、needs_human を返す。要求・範囲・権限・実行上限を変える必要があるなら、それらを変えずに needs_human を返し、答えに依存する作業を止める。",
+  `実装とテスト・撮影の定義の準備が整ったら repaired を返す。host の実行待ちだけでは needs_human にしない。host は、あなたが返した後に、設定された check と撮影を実行する。${CI_RULE}合意済みの Issue が、そのどれでもない検証をこの workflow の host の実行に割り当て、ほかの担当も名指ししていないときは、needs_human を返す。要求・範囲・権限・実行上限を変える必要があるなら、それらを変えずに needs_human を返し、答えに依存する作業を止める。`,
   "status (repaired か needs_human) と findings を持つ JSON を返す。findings には変更内容か、必要な人の判断を説明する。needs_human の findings は空にせず、問い・人が選ぶ選択肢・その影響を書く。指示ファイルが停止の理由なら、実際に読んだファイルと該当する指示を引用し、明示された要求と自分の解釈を分ける。",
 ].join("\n");
 const REPLY_SCHEMA = closed({ status: choice(["repaired", "needs_human"]), findings: str });
