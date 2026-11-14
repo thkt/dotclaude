@@ -956,6 +956,10 @@ const CAPTURE_RULES = capture
       "This target declares no capture. If the agreed Issue needs media, return needs_human to configure required capture before execution.",
     ];
 const TESTING_RULE = `When the change alters an async UI's E2E test, an external-input boundary, a path after a failure, how a target's version is re-read, or what a check counts as success, run \`cat ${bundled("skills/implement/references/testing.md")}\` and apply the matching case. Otherwise do not read it.`;
+// Without this sentence the agent cannot tell whether the host confirms CI, or which checks it confirms.
+const CI_RULE = publishing
+  ? `This run publishes, so the host also confirms the configured CI checks (${config.ciChecks.join(", ")}) on the published head.`
+  : "This run does not publish, so the host runs only those two and confirms no CI check.";
 const REPAIR_RULES = [
   TESTING_RULE,
   "Before creating or updating tests, apply the target test policy when present and these common test criteria. Ask what realistic bug deleting each relevant test would miss. Compare its additional assurance with runtime, flakiness and maintenance cost; actively remove or consolidate tests that do not justify that cost. Do not retain tests merely for reassurance, test counts or coverage metrics. Explain any lost detection conditions and the remaining verification.",
@@ -963,7 +967,7 @@ const REPAIR_RULES = [
   "Apply the target documentation policy when present to documentation-only changes and accompanying updates; keep current operating instructions accurate and historical results in evidence. Compare document facts, quantities, conditions, scope, authority, unverified claims and references with original sources.",
   "Do not commit, push or publish. Leave configured full verification to the host after your changes; do not launch browsers or servers in your sandbox.",
   ...CAPTURE_RULES,
-  "Return repaired when implementation and test/capture definitions are ready; pending host execution alone is not needs_human. The host runs the configured check and capture after you return. When the run publishes, the host also confirms the configured CI checks on the published head. When the agreed Issue assigns a verification to a run by this workflow's host that is none of those, and names no other owner for it, return needs_human. If requirements, scope, permissions or execution limits must change, return needs_human without changing them and stop work that depends on the answer.",
+  `Return repaired when implementation and test/capture definitions are ready; pending host execution alone is not needs_human. The host runs the configured check and capture after you return. ${CI_RULE} When the agreed Issue assigns a verification to a run by this workflow's host that is none of those, and names no other owner for it, return needs_human. If requirements, scope, permissions or execution limits must change, return needs_human without changing them and stop work that depends on the answer.`,
   "Return JSON with status repaired or needs_human, and findings explaining your changes or the necessary human decision. For needs_human, findings must not be empty or whitespace-only: explain the question, the choice the human must make and its impact. If an instruction file caused the stop, link the file actually read, quote the relevant instruction and distinguish its explicit requirement from your interpretation.",
 ].join("\n");
 const REPLY_SCHEMA = closed({ status: choice(["repaired", "needs_human"]), findings: str });
