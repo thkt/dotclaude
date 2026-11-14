@@ -37,6 +37,13 @@ history/
 /docs/research/*
 !/docs/research/*.md
 /.credentials.json
+# 認証情報の書き換え中に Claude Code が作る一時ファイル。末尾が乱数なので *.tmp には当たらない。
+/.credentials.json.tmp.*
+/.claude.json
+/policy-limits.json*
+/remote-settings.json*
+/scheduled-tasks/
+/state/
 /agent-memory/
 /chrome/
 /ide/
