@@ -3,6 +3,7 @@
 // workflow can return, so a reason added to the script cannot reach the user unhandled.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -150,6 +151,26 @@ test("scoping names the three handlings of a step the workflow cannot carry out,
   for (const row of rows) {
     const name = row.split("|")[1].trim();
     assert.ok(phase1.toLowerCase().includes(name.toLowerCase()), `Phase 1 does not name the handling "${name}"`);
+  }
+  // An Issue left a step out of scope and added "implement confirms with another tool" to the same cell. One
+  // launch sent it back and another let it through. Both sides now decide by who does the step, so the launch
+  // check lists the same actors scoping forbids in the cell.
+  const actors = /Someone inside the run means ([^.]+)\./.exec(section)?.[1];
+  assert.ok(actors, "the section no longer says who is inside the run");
+  assert.ok(phase1.includes(`assigns work to ${actors}`), `Phase 1 does not return a cell that assigns work to ${actors}`);
+  assert.match(section, /or to an option you offer the human/);
+});
+
+// The contract takes the check as a shell string or as one argv array. The skill's line read it as an array
+// of argv arrays, which jq rejects for both.
+test("the skill's jq line reads the check in every shape the workflow's contract accepts", () => {
+  assert.match(script, /isShell\(c\.check\) \|\| isArgv\(c\.check\)/);
+  const phase2 = skill.slice(skill.indexOf("## Phase 2"), skill.indexOf("## Launching through agents"));
+  const filter = /`jq -c '([^']+)' "<absolute path>\/\.dotagents\.json"`/.exec(phase2)?.[1];
+  assert.ok(filter, "Phase 2 lost its jq line");
+  for (const check of [["bun", "run", "check"], "bun run check", "FOO=1 bun run check", "cd trial && bun test"]) {
+    const out = execFileSync("jq", ["-c", filter], { input: JSON.stringify({ check }), encoding: "utf8" });
+    assert.deepEqual(JSON.parse(out), check, `check given as ${JSON.stringify(check)}`);
   }
 });
 

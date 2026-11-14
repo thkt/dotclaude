@@ -17,7 +17,7 @@ argument-hint: "[issue number or URL] [--no-publish]"
 
 ## Phase 1: 起動前の照合
 
-1. `gh issue view <ref> --json number,title,body,state,url,comments` で Issue を取る。state が OPEN で title と body が空でないことを確認する。本文の全節とコメントから合意の記録を読む。未合意の点が残っていれば起動せず、`/scoping` へ戻す。未合意の点とは、未合意と書かれた項目、未解決の問い、実装者に委ねた判断、「実装時に確認する」のように先送りした判断を指す。未決事項の節が「なし」でも、他の節にある先送りを数える。workflow は走り出すと人に問えず、未決の判断に当たると `human-decision-required` で止まる。決定がコメントにだけあるときも `/scoping` へ戻し、本文へ反映する。対象 repo の方針が今回の変更に課す手順の判定が本文に無いときも、`/scoping` へ戻す。workflow が実行できないと判定された手順の扱いが本文に無いときも同じ。判定の基準は ${CLAUDE_SKILL_DIR}/../scoping/references/sufficiency.md § 対象 repo の方針が課す手順にあり、ここでは判定し直さない。扱いは、その文書の § workflow が実行できない手順の扱いの 3 つのどれかでなければならない。check か撮影に入れる、担当を決めて引き継ぐ、今回の範囲から外す、の 3 つである。どれでもないとき、引き継ぎに担当と時期が無いとき、host や workflow が後から実行するとしているときも、`/scoping` へ戻す。workflow が実装とレビューに渡すのは title と本文だけ。
+1. `gh issue view <ref> --json number,title,body,state,url,comments` で Issue を取る。state が OPEN で title と body が空でないことを確認する。本文の全節とコメントから合意の記録を読む。未合意の点が残っていれば起動せず、`/scoping` へ戻す。未合意の点とは、未合意と書かれた項目、未解決の問い、実装者に委ねた判断、「実装時に確認する」のように先送りした判断を指す。未決事項の節が「なし」でも、他の節にある先送りを数える。workflow は走り出すと人に問えず、未決の判断に当たると `human-decision-required` で止まる。決定がコメントにだけあるときも `/scoping` へ戻し、本文へ反映する。対象 repo の方針が今回の変更に課す手順の判定が本文に無いときも、`/scoping` へ戻す。workflow が実行できないと判定された手順の扱いが本文に無いときも同じ。判定の基準は ${CLAUDE_SKILL_DIR}/../scoping/references/sufficiency.md § 対象 repo の方針が課す手順にあり、ここでは判定し直さない。扱いは、その文書の § workflow が実行できない手順の扱いの 3 つのどれかでなければならない。check か撮影に入れる、担当を決めて引き継ぐ、今回の範囲から外す、の 3 つである。どれでもないとき、引き継ぎに担当と時期が無いとき、host や workflow が後から実行するとしているときも、`/scoping` へ戻す。扱いの欄が、扱いそのもののほかに implement・workflow・host・レビューのどれかへ作業を割り当てているときも戻す。「implement は別の道具で確認する」がその例である。名前を挙げた人が実行の外で行う手順は、これにあたらない。workflow が実装とレビューに渡すのは title と本文だけ。
 2. `git rev-parse --show-toplevel` で対象 repo の絶対パスを決める。
 3. `.dotagents.json` が commit 済みであることを確認する。workflow は repository・remote・baseBranch・setup・check・ciChecks・capture を持つ Codex の対象契約で検査する。無ければ package.json の scripts や CI 定義から内容を仮説付きで AskUserQuestion に出し、合意した内容をユーザーの判断で commit してから進める。未 commit の差分があれば stash や移植をせず、扱いを尋ねる。Issue の必要媒体を `${CLAUDE_SKILL_DIR}/references/capture.md` の表で `capture` の設定と照合し、食い違えば起動せず `/scoping` へ戻す。Issue の扱いが「check か撮影に入れる」の手順は、commit 済みの `check` か `capture` が実行することを確かめ、実行しなければ起動せず `/scoping` へ戻す。
 4. sandbox を観測する。${CLAUDE_SKILL_DIR}/scripts/sandbox_probe.ts を実行し、出力を控える。`local_binding` と `sandboxed` がどちらも false なら起動せず、bind を拒んでいるものを人に尋ねる。出力の残りは、agent 経由で起動するときに § sandbox の観測の表で扱う。設定ファイルからは推測しない。起動時の flag や管理設定で変わった sandbox は、設定ファイルに現れない。
@@ -32,7 +32,7 @@ workflow は host (`workflows/_lib/claude-run.ts`) で起動する。host は wo
 
 手順 2 と 4 のコマンドは、Bash で sandbox を外して実行する (`dangerouslyDisableSandbox: true`)。host は check と撮影を自分で実行し、sandbox の中では Chromium が起動せず、web server が bind できないことがある。sandbox を外す許可が下りなければ、sandbox の中で実行し直さずに止め、人に伝える。args の書き方と、probe と host の出力の扱いは ${CLAUDE_SKILL_DIR}/references/host.md にある。
 
-1. check の実行ファイルを `jq -r '.check[][0]' "<絶対パス>/.dotagents.json" | sort -u` で並べる。
+1. `jq -c '.check' "<絶対パス>/.dotagents.json"` で check を読み、実行ファイルを挙げる。argv の配列なら最初の要素である。shell の文字列なら、実行するコマンドごとに挙げる。`VAR=value` の前置きと `cd` は数えない。
 2. `${CLAUDE_SKILL_DIR}/scripts/host.ts probe --repo "<絶対パス>" "git status --short" "<実行ファイル> --version"` を実行する。timeout は 180000 にし、実行ファイルごとに引用符で囲んだ引数を 1 つ足す。出力を references の § probe の出力で扱う。
 3. args の JSON を Write tool でファイルに書く。key は references の § args にある。`--no-publish` のときは `publish: false` を足す。
 4. `${CLAUDE_SKILL_DIR}/scripts/host.ts run implement --repo "<絶対パス>" --args-file "<args のファイル>"` を background で実行する。`run_in_background: true` と timeout 7200000 を指定する。
