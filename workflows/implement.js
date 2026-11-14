@@ -956,10 +956,10 @@ const CAPTURE_RULES = capture
       "This target declares no capture. If the agreed Issue needs media, return needs_human to configure required capture before execution.",
     ];
 const TESTING_RULE = `When the change alters an async UI's E2E test, an external-input boundary, a path after a failure, how a target's version is re-read, or what a check counts as success, run \`cat ${bundled("skills/implement/references/testing.md")}\` and apply the matching case. Otherwise do not read it.`;
-// The agent compares the checks the Issue names with these, and learns that a run that does not publish confirms none.
+// Without this sentence the agent cannot tell whether the host confirms CI, or which checks it confirms.
 const CI_RULE = publishing
   ? `This run publishes, so the host also confirms the configured CI checks (${config.ciChecks.join(", ")}) on the published head.`
-  : "This run does not publish, so the host confirms no CI check.";
+  : "This run does not publish, so the host runs only those two and confirms no CI check.";
 const REPAIR_RULES = [
   TESTING_RULE,
   "Before creating or updating tests, apply the target test policy when present and these common test criteria. Ask what realistic bug deleting each relevant test would miss. Compare its additional assurance with runtime, flakiness and maintenance cost; actively remove or consolidate tests that do not justify that cost. Do not retain tests merely for reassurance, test counts or coverage metrics. Explain any lost detection conditions and the remaining verification.",
