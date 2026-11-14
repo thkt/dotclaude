@@ -41,7 +41,7 @@ Rate each candidate 1 to 10 on how often it would happen and how bad it would be
 
 ## Steps
 
-1. Read `.claude/OUTCOME.md` and confirm the sweep target sits inside the outcome. If absent, generate the stub via /outcome.
+1. Read `.claude/OUTCOME.md` and confirm the sweep target sits inside the outcome. If absent, generate the stub via `/outcome`.
 2. Look for the lens's "What to find" across every target file. Split a wide area across Explore subagents.
 3. Apply "Whether to fix" to each candidate.
 4. Fix the candidates one at a time, and run the tests after each. When a test fails, revert that fix and list it.
