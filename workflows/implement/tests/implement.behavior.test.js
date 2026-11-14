@@ -503,7 +503,8 @@ test("the implementing and repairing prompts say what the host runs, and send a 
   for (const label of ["implement", "repair:1"]) {
     const prompt = calls.agent.find((c) => c.opts.label === label).prompt;
     assert.match(prompt, /The host runs the configured check and capture after you return\./, label);
-    assert.match(prompt, /a run by this workflow's host that is neither of those, and names no other owner for it, return needs_human/, label);
+    assert.match(prompt, /When the run publishes, the host also confirms the configured CI checks on the published head\./, label);
+    assert.match(prompt, /a run by this workflow's host that is none of those, and names no other owner for it, return needs_human/, label);
   }
 });
 
