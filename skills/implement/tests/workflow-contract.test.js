@@ -143,7 +143,11 @@ test("scoping names the three handlings of a step the workflow cannot carry out,
   assert.equal(rows.length, 3, "the handlings an Issue may agree on");
   // What the workflow runs itself, in the words its own prompt uses.
   assert.match(sufficiency, /the `check` of `\.dotagents\.json`, the capture, and CI when publishing/);
-  assert.match(script, /The host runs the configured check and capture after you return\./);
+  // The implementer returns needs_human for a verification outside this list, so the list has all three.
+  assert.match(
+    script,
+    /The host runs the configured check and capture after you return\. When the run publishes, the host also confirms the configured CI checks on the published head\./,
+  );
   assert.ok(script.includes('"repair-no-progress"') && section.includes("`repair-no-progress`"));
   const phase1 = skill.slice(skill.indexOf("## Phase 1"), skill.indexOf("## Phase 2"));
   assert.ok(phase1.includes("§ Handling a step the workflow cannot carry out"), "Phase 1 does not name the section");
