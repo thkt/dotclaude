@@ -1,12 +1,13 @@
 /// <reference types="node" />
 // validate-outcome.py (skills/outcome/scripts/validate-outcome.py,
 // .ja/skills/outcome/scripts/validate-outcome.py), find-prior-research.py
-// (skills/research/scripts/find-prior-research.py, .ja/skills/research/scripts/find-prior-research.py)
+// (skills/research/scripts/find-prior-research.py, .ja/skills/research/scripts/find-prior-research.py;
+// the .ts port now lives under skills/scribe/scripts/, DR-0128)
 // and list-source-files.py (skills/census/scripts/list-source-files.py,
 // .ja/skills/census/scripts/list-source-files.py) are retired in favor of their .ts ports
 // (established by the preceding units U-002/U-003/U-004). This file guards the retirement
 // itself: no tracked file still names one of the three as a word, the EN / .ja outcome,
-// research and census SKILL.md and the EN / .ja assert.js invoke the .ts script by
+// scribe and census SKILL.md and the EN / .ja assert.js invoke the .ts script by
 // path, and census's allowed-tools grants the script path instead of Bash(python3:*).
 //
 // Same shape as workflows/_lib/tests/record-retirement.test.ts, which guards its own
@@ -102,14 +103,14 @@ const SCRIPT_INVOCATION_SOURCES: ScriptInvocationSource[] = [
       extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/validate-outcome\.(?:ts|py)/),
   },
   {
-    label: "skills/research/SKILL.md",
-    path: "skills/research/SKILL.md",
+    label: "skills/scribe/SKILL.md",
+    path: "skills/scribe/SKILL.md",
     extract: (s) =>
       extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/find-prior-research\.(?:ts|py)/),
   },
   {
-    label: ".ja/skills/research/SKILL.md",
-    path: ".ja/skills/research/SKILL.md",
+    label: ".ja/skills/scribe/SKILL.md",
+    path: ".ja/skills/scribe/SKILL.md",
     extract: (s) =>
       extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/find-prior-research\.(?:ts|py)/),
   },
@@ -134,7 +135,7 @@ const SCRIPT_INVOCATION_SOURCES: ScriptInvocationSource[] = [
 ];
 
 test(
-  "T-188 the EN and .ja outcome, research and census SKILL.md and the EN and .ja " +
+  "T-188 the EN and .ja outcome, scribe and census SKILL.md and the EN and .ja " +
     "assert.js each invoke the .ts script by path and none names the .py, read from source text",
   () => {
     for (const { label, path, extract } of SCRIPT_INVOCATION_SOURCES) {

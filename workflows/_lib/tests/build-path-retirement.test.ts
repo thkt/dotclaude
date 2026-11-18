@@ -2,7 +2,9 @@
 // DR-0128 retires the plan-based path (/think, /issue, /qualify, /preview, /slice, the build and
 // code workflows), /fix, the manual git skills (/commit, /checkout, /pr, use-workflow-pageshot),
 // the agents only that path called, and the issue-body-gate hook. The path from an Issue to a PR
-// becomes /scoping then /implement. This file guards the removal: the removed paths stay gone on
+// becomes /scoping then /implement. /research and explorer-feature, its one caller's agent, go in a
+// later change (#803) after the earlier-report search moves to /scribe and the verification rules to
+// /scoping. This file guards the removal: the removed paths stay gone on
 // both trees, and the skill, agent, rule, plugin, README and catalog prose hands no work to a
 // removed name.
 //
@@ -43,6 +45,8 @@ const REMOVED_PATHS = [
   "hooks/pre-bash/tests/issue-body-gate-template.test.ts",
   "hooks/pre-bash/tests/issue-body-gate-validator.test.ts",
   "hooks/pre-bash/tests/_issue-body-gate-fixtures.ts",
+  "skills/research",
+  "agents/explorers/explorer-feature.md",
 ];
 
 test("no path the build-path retirement removed exists on the English side or under .ja/", () => {
@@ -60,10 +64,11 @@ const SCANNED_FILE =
 // A slash command counts only after a line start, whitespace, a backtick or an opening bracket,
 // and only when no letter, digit, slash or hyphen follows. The brackets include the full-width
 // ones .ja/ prose uses, such as `（/think）`, `「/fix」` and `【/pr】`, and `[` for a Markdown link
-// `[/pr](...)`. So `PR/issue`, `actions/checkout`, `skills/fix/` and `/preview-x` stay out, and
-// `gh issue` / `git commit` carry no slash at all.
+// `[/pr](...)`. So `PR/issue`, `actions/checkout`, `skills/fix/`, `/preview-x`, the directory
+// `docs/research/` and the link `../research/name.md` stay out, and `gh issue` / `git commit` carry
+// no slash at all.
 const RETIRED_COMMAND =
-  /(^|[\s`([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr)(?![A-Za-z0-9/-])/m;
+  /(^|[\s`([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr|research)(?![A-Za-z0-9/-])/m;
 
 const RETIRED_NAMES = [
   "use-workflow-pageshot",
@@ -73,6 +78,8 @@ const RETIRED_NAMES = [
   "generator-test",
   "resolver-build",
   "issue_body_gate",
+  "skills/research",
+  "explorer-feature",
 ];
 
 function namesRetiredRoute(content: string): boolean {
@@ -106,6 +113,10 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "【/issue】で起票する。",
     "『/slice』で分割する。",
     "{/commit} で記録する。",
+    "Investigate it with `/research` first.",
+    "「/research」で調べる。",
+    "Read skills/research/SKILL.md for the template.",
+    "Delegate to explorer-feature for the shape.",
   ];
   const replaced = [
     "Plan it with /scoping first.",
@@ -131,6 +142,10 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "【/scoping】で起票する。",
     "『/scoping』で分割する。",
     "{/implement} で記録する。",
+    "Investigate it with `/scoping` first.",
+    "「/scoping」で調べる。",
+    "Read skills/scoping/SKILL.md for the template.",
+    "Delegate to enhancer-code for the shape.",
   ];
   for (const line of flagged) {
     assert.equal(namesRetiredRoute(line), true, `flagged: ${line}`);
@@ -150,12 +165,15 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "「skills/fix/」を消した",
     "（PR/issue の参照）",
     "[actions/checkout](x)",
+    "Save the report under docs/research/ in the target repo.",
+    "[research:name.md](../research/name.md)",
+    "`docs/research/` に置く。",
   ]) {
     assert.equal(namesRetiredRoute(line), false, `not a slash command: ${line}`);
   }
 });
 
-test("no skill, agent, rule, plugin manifest, README or catalog names a retired command, agent, hook or the build workflow", () => {
+test("no skill, agent, rule, plugin manifest, README or catalog names a retired command, agent, hook, skill path or the build workflow", () => {
   const scanned = trackedFiles(REPO_ROOT).filter((path) => SCANNED_FILE.test(path));
   assert.ok(scanned.includes("README.md"), "the scan reaches README.md");
   assert.ok(scanned.includes(".ja/docs/COMMANDS.md"), "the scan reaches the .ja catalog");

@@ -1,20 +1,20 @@
 # 検証手順
 
-/research の Phase 4 と Phase 5 の sweep から参照する手順を定義する。
+`/scoping` の Phase 2 から参照する手順を定義する。
 
-どれを使うかは finding の種類で決まる。網羅性 finding には Cross-method 検証、外部システムの挙動に関する主張には一次ソース検証を構造的に適用し、自己判断による finding 除外は認めない。ライブラリ API 挙動の検証は ${CLAUDE_SKILL_DIR}/../../rules/development/SOURCING.md を適用する。
+どれを使うかは Issue に書く主張の種類で決まる。網羅性を述べる主張には Cross-method 検証、外部システムの挙動に関する主張には一次ソース検証を構造的に適用し、自己判断による主張の除外は認めない。ライブラリ API 挙動の検証は ${CLAUDE_SKILL_DIR}/../../rules/development/SOURCING.md を適用する。
 
 ## Cross-method 検証
 
-各トリガーは構造的に適用し、自己判断による finding 除外は認めない。網羅性を主張する finding が後段の PR スコープを駆動する、またはリポジトリを跨ぐときに、この検証を掛ける。対象は「該当の caller が無い」「X が唯一の Y」「X が Y の網羅的な一覧」「[リポジトリ集合]で未使用」のような主張。ugrep、bfs、Agent(Explore)、対象を絞った Read のうち少なくとも 2 つで検証する。結果が食い違うときは差異をフラグし、ツールエラーを特定してから記録する。単一ツールでの 0 件結果は疑わしい状態であって、決定的ではない。
+各トリガーは構造的に適用し、自己判断による主張の除外は認めない。Issue に書く主張のうち網羅性を述べるものが、後段の PR スコープを駆動する、またはリポジトリを跨ぐときに、この検証を掛ける。対象は「該当の caller が無い」「X が唯一の Y」「X が Y の網羅的な一覧」「[リポジトリ集合]で未使用」のような主張。ugrep、bfs、Agent(Explore)、対象を絞った Read のうち少なくとも 2 つで検証する。結果が食い違うときは差異をフラグし、ツールエラーを特定してから記録する。単一ツールでの 0 件結果は疑わしい状態であって、決定的ではない。
 
 ## 一次ソース検証
 
 外部挙動の claim を一次ソースで検証する。
 
-1. Source が、このセッションで実行していない外部システムの振る舞いを参照する finding を抽出する。hook 発火タイミング、action や parser の要求 schema、ライブラリ API 挙動、引用文献の主張が典型。結論、Next Action、Disconfirmation のいずれかがその claim の正しさへ依存するものに限る
+1. 出典が、このセッションで実行していない外部システムの振る舞いを参照する Issue に書く主張を抽出する。hook 発火タイミング、action や parser の要求 schema、ライブラリ API 挙動、引用文献の主張が典型。Issue の範囲と完了条件のいずれかがその claim の正しさへ依存するものに限る
 2. 抽出した claim を一括で一次ソースと突合する。web docs は `scout fetch <公式 docs URL>`、GitHub 上のソースは `scout repo-read` か `scout repo-overview` を使う。コマンドの正典は use-cli-scout
-3. paywall、docs 不在、fetch 失敗、scout 未導入などで一次ソースが辿れない場合は finding を残して `unverified external claim` とマークし、Disconfirmation の根拠や Next Action の前提には使わない
+3. paywall、docs 不在、fetch 失敗、scout 未導入などで一次ソースが辿れない場合は主張を残して `unverified external claim` とマークし、Issue の範囲と完了条件の前提には使わない
 
 リポジトリの README は未リリースの main を反映するので、公開版の機能の一次ソースにはならない。公開版が何を受けるかは `npx <pkg>@latest <cmd> --help` と実行で確かめる。
 
@@ -30,7 +30,7 @@
 
 ## Same-origin sweep
 
-Bug investigation で root cause を確定した後、同じ origin を共有する artifact 群を sweep して兄弟欠陥を探す。
+既存のコードが要求と違う結果を返すことを直す要求で、根本原因を確かめた後、同じ origin を共有する artifact 群を sweep して兄弟欠陥を探す。
 
 1. root cause ファイルの導入コミットを `git log --follow --diff-filter=A` で特定し、そのコミットの全ファイルを `git show --stat` で列挙する
 2. コミットメッセージやファイルヘッダに `auto-generated from X` や template・deploy 注記のような生成元表記があれば、X 由来の全ファイルも sweep 対象に加える

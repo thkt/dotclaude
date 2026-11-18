@@ -2,7 +2,7 @@
 name: scribe
 description: 過去の closed PR / issue と対象 repo の docs/research/ の調査結果から繰り返しの共通項を抽出し、最新コードと突き合わせて docs/wiki/ に PR で提案する。
 when_to_use: scribe 実行, wiki 抽出, 共通項の蒸留, PR/issue からの知見蓄積, research 成果の蓄積, run scribe, wiki extraction, distill recurring patterns
-allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../research/scripts/*) Read Write Edit LS
+allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Read Write Edit LS
 ---
 
 # /scribe - PR / issue / research 共通項の wiki 蓄積
@@ -30,7 +30,7 @@ allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scri
 ## Phase 2: スコープ決定
 
 1. 最後にマージされた scribe PR の mergedAt を `gh pr list --label scribe --state merged --limit 1 --json mergedAt -q '.[0].mergedAt'` で取得する
-2. `${CLAUDE_SKILL_DIR}/../research/scripts/find-prior-research.ts --all docs/research research .claude/workspace/research` で新旧配置の原本を再帰的に列挙する。対象 repo 内の通常ファイルだけを読む。`path` を読み、root 相対名・原文同一のコピーは `aliases` で 1 件として扱う。同名で内容が違う原本は両方を確認し、版の違いを独立した根拠数にしない。mergedAt が無ければ初回として全原本と `gh pr list --state merged --search '-label:scribe'`、`gh issue list --state closed` の全件を対象にする
+2. `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts --all docs/research research .claude/workspace/research` で新旧配置の原本を再帰的に列挙する。対象 repo 内の通常ファイルだけを読む。`path` を読み、root 相対名・原文同一のコピーは `aliases` で 1 件として扱う。同名で内容が違う原本は両方を確認し、版の違いを独立した根拠数にしない。mergedAt が無ければ初回として全原本と `gh pr list --state merged --search '-label:scribe'`、`gh issue list --state closed` の全件を対象にする
 3. mergedAt があれば PR/issue は従来どおり `merged:><mergedAt>`／`closed:><mergedAt>` で絞る。原本は次のコマンドが列挙したパスを対象にする。
 
    ```sh

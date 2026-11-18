@@ -128,7 +128,6 @@ test("/outcome skips publishing under --no-publish, and every stub caller passes
   }
   const callers = [
     "skills/sweep/SKILL.md",
-    "skills/research/SKILL.md",
     "rules/core/PREFLIGHT.md",
   ].flatMap(bothSides);
   for (const rel of callers) {

@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -185,7 +185,9 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
         place: /differs from the place of the cause, write the place of the cause/,
         unidentified: /cannot identify the root cause, do not agree on a fix/,
         scope: /investigation of the cause the scope of that Issue/,
-        done: /done condition "the root cause can be written in the form above"/,
+        report: /result of the investigation under the target repo's `docs\/research\/`/,
+        done: /done condition "the root cause is written as which line of which file returns a different result, for which input, and why"/,
+        handover: /hand it over to the person who reviews the PR with "Hand it over to a named owner"/,
       },
     },
     {
@@ -198,8 +200,10 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
         form: /どのファイルのどの行が、どの入力でなぜ違う結果を返すか/,
         place: /症状が出る場所と原因の場所が違うときは、原因の場所を書く/,
         unidentified: /根本原因を特定できないときは、修正を合意しない/,
-        scope: /原因の調査をその Issue の範囲にし/,
-        done: /完了条件を「根本原因が上の形で書けること」にする/,
+        scope: /原因の調査をその Issue の範囲にする/,
+        report: /調査の結果は対象 repo の `docs\/research\/` に書き/,
+        done: /完了条件を「根本原因を、どのファイルのどの行が、どの入力でなぜ違う結果を返すかとして書いてある」にする/,
+        handover: /「担当を決めて引き継ぐ」で、PR をレビューする人に引き継ぐ/,
       },
     },
   ];
@@ -214,6 +218,29 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
     assert.ok(item, `${path.join("/")} has no numbered item that confirms the root cause`);
     for (const [name, pattern] of Object.entries(points))
       assert.match(item, pattern, `${path.join("/")} lost the ${name} point of the root-cause item`);
+  }
+});
+
+// DR-0128 retires /research after moving two of its parts: the search of earlier reports (now under
+// skills/scribe/scripts/) and the verification rules (now skills/scoping/references/verification.md).
+// A path left pointing at the removed skill, or a section dropped in the move, leaves /scoping without them.
+test("scoping's Phase 2 points at the earlier-report search and the verification rules, and both files exist, on both sides", () => {
+  const sections = {
+    skills: ["## Cross-method verification", "## Primary-source verification", "## Reading a zero-result", "## Same-origin sweep"],
+    ".ja": ["## Cross-method 検証", "## 一次ソース検証", "## 0 件の解釈", "## Same-origin sweep"],
+  };
+  for (const [side, prefix] of [["skills", []], [".ja", [".ja"]]]) {
+    const skillDir = join(root, ...prefix, "skills", "scoping");
+    const doc = readFileSync(join(skillDir, "SKILL.md"), "utf8");
+    const phase2 = /^## Phase 2[^\n]*\n([\s\S]*?)(?=^## )/m.exec(doc)?.[1];
+    assert.ok(phase2, `${side}: scoping lost Phase 2`);
+    for (const ref of ["/../scribe/scripts/find-prior-research.ts", "/references/verification.md"]) {
+      assert.ok(phase2.includes(`\${CLAUDE_SKILL_DIR}${ref}`), `${side}: Phase 2 does not name ${ref}`);
+      assert.ok(existsSync(join(skillDir, ref)), `${side}: ${ref} resolves to no file`);
+    }
+    const verification = readFileSync(join(skillDir, "references", "verification.md"), "utf8");
+    for (const heading of sections[side])
+      assert.match(verification, new RegExp(`^${heading}$`, "m"), `${side}: verification.md lost "${heading}"`);
   }
 });
 

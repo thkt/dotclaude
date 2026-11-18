@@ -19,10 +19,11 @@ Investigate the facts you can confirm, and ask early about facts only the user k
 
 ## Phase 2: Judgment
 
-1. Per `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain, select the target repo's related wiki pages and decision records. Read the `matched` and `scenes` pages from `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <request terms> <paths likely touched> --scene plan`. Check the selected pages and records against the current code and agreement. Continue investigating even when no documents exist.
+1. Per `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain, select the target repo's related wiki pages and decision records. Read the `matched` and `scenes` pages from `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <request terms> <paths likely touched> --scene plan`. For earlier investigations, derive a lowercase hyphenated slug from the request terms and search with `${CLAUDE_SKILL_DIR}/../scribe/scripts/find-prior-research.ts <slug> docs/research research .claude/workspace/research`. Read the candidates whose `shared` is 2 or more or equals `slug_words`, and confirm the conditions under which they apply this time. Do not read the other candidates. Check the selected pages, records, and earlier investigations against the current code and agreement. Continue investigating even when no documents exist.
 2. Read `${CLAUDE_SKILL_DIR}/references/sufficiency.md` from its first line to its last. Decide what to settle next, and check evidence, alternatives, uncertainty, and permission with the six questions in its table. Investigate the gaps that facts can close.
-3. When intent, priority, tolerance, or permission is unsettled, ask through AskUserQuestion with the options and their impact. Put the hypothesis as the first option. Re-evaluate when evidence that drives the decision changes.
-4. Consider a small experiment per `${CLAUDE_SKILL_DIR}/references/experiment.md` only when existing material cannot settle it and an observation would change the direction.
+3. Apply the verification in `${CLAUDE_SKILL_DIR}/references/verification.md` to the claims to be written in the Issue that state something "does not exist", "is the only one", or "is exhaustive", and to those that rely on external behavior not executed in this session.
+4. When intent, priority, tolerance, or permission is unsettled, ask through AskUserQuestion with the options and their impact. Put the hypothesis as the first option. Re-evaluate when evidence that drives the decision changes.
+5. Consider a small experiment per `${CLAUDE_SKILL_DIR}/references/experiment.md` only when existing material cannot settle it and an observation would change the direction.
 
 ## Phase 3: Deliverable
 

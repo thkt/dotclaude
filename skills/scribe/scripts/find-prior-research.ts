@@ -16,8 +16,8 @@
 // main port, in node:* only.
 //
 // Contract: this script's own behavior, pinned by the fixture below. Exercised by
-// skills/research/tests/find-prior-research.test.ts, replayed from
-// skills/research/tests/fixtures/find-prior-research-cases.json (U-001).
+// skills/scribe/tests/find-prior-research.test.ts, replayed from
+// skills/scribe/tests/fixtures/find-prior-research-cases.json (U-001).
 //
 // Multiple roots or --all return path and aliases. Only identical same-name originals collapse; differing versions remain visible.
 

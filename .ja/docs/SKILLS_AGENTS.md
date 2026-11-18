@@ -47,14 +47,14 @@ Skills は「ナレッジモジュール」。AI がタスク実行時にドメ�
 
 ### カテゴリ
 
-`/audit`、`/polish` は `workflows/*.js` の Workflow であり、Skill ではない。User-invocable Skills は下表の 11 件。
+`/audit`、`/polish` は `workflows/*.js` の Workflow であり、Skill ではない。User-invocable Skills は下表の 10 件。
 
 | カテゴリ       | Skills                                                                                                                          | 用途                         |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | Workflow       | use-workflow-tdd-cycle                                                                                                          | 多段ワークフロー定義         |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                                                        | エージェント向けドメイン知識 |
 | CLI ラッパー   | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud                                                                | CLI ツール統合               |
-| User-invocable | ablate, census, challenge, dr, implement, outcome, research, scoping, scribe, sweep, transcribe                                 | スラッシュコマンドの入口     |
+| User-invocable | ablate, census, challenge, dr, implement, outcome, scoping, scribe, sweep, transcribe                                           | スラッシュコマンドの入口     |
 
 ### ロード機構
 
@@ -112,7 +112,6 @@ user-invocable: false # スラッシュコマンドとして起動可能か
 agents/
 ├── critics/        # 反論検証 (critic-audit, critic-design, critic-evidence)
 ├── enhancers/      # コード改善・結果統合 (enhancer-code, enhancer-evidence, enhancer-integration)
-├── explorers/      # 探索 (explorer-feature)
 ├── generators/     # 生成 (generator-snapshot)
 └── reviewers/      # レビュー (16 種の専門 reviewer)
 ```

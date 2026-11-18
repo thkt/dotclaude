@@ -17,7 +17,6 @@ The only naming pattern is lowercase + hyphens, `<role>-<scope>`. Files live in 
 | ----------- | ---------------------------- | ----------------- |
 | critic-     | Challenge                    | critic-design     |
 | enhancer-   | Code improvement + synthesis | enhancer-code     |
-| explorer-   | Codebase exploration         | explorer-feature  |
 | generator-  | Artifact generation          | generator-snapshot |
 | reviewer-   | Inspection                   | reviewer-security |
 

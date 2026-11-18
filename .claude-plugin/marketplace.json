@@ -15,7 +15,7 @@
     {
       "name": "build",
       "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping (optionally after /challenge and /research), then hand the Issue to /implement, which carries it through the implement workflow to implementation, verification, a draft PR, and CI confirmation. Heavy assurance (/audit, /polish) is human-invoked on that draft PR. Bundles the full reviewer and critic agent set, the implement / audit / polish / shake / assert / adrift workflows, and /sweep, /outcome, /dr, /census, /scribe.",
+      "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping (optionally after /challenge), then hand the Issue to /implement, which carries it through the implement workflow to implementation, verification, a draft PR, and CI confirmation. Heavy assurance (/audit, /polish) is human-invoked on that draft PR. Bundles the full reviewer and critic agent set, the implement / audit / polish / shake / assert / adrift workflows, and /sweep, /outcome, /dr, /census, /scribe.",
       "version": "4.1.0",
       "author": {
         "name": "thkt",

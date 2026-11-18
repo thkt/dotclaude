@@ -3,11 +3,11 @@
 // Python original, replayed from the frozen fixture
 // skills/census/tests/fixtures/list-source-files-cases.json (built the same way U-001 built
 // skills/outcome/tests/fixtures/validate-outcome-cases.json and
-// skills/research/tests/fixtures/find-prior-research-cases.json: run the real
+// skills/scribe/tests/fixtures/find-prior-research-cases.json: run the real
 // /opt/homebrew/bin/python3 lister against a constructed tree and freeze its exit code and
 // stdout). Reuses the shared runCli/withTempHome/fixture harness from
 // workflows/_lib/tests/_cli-fixture.ts (skills/outcome/tests/validate-outcome.test.ts and
-// skills/research/tests/find-prior-research.test.ts carry the sibling pattern), and
+// skills/scribe/tests/find-prior-research.test.ts carry the sibling pattern), and
 // hooks/_lib/shebang_scope.ts's trackedEntries for the git-index mode check (T-186) instead of
 // a standalone statSync or spawn.
 //

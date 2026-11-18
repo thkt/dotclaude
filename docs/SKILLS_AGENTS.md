@@ -50,14 +50,14 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 ### Categories
 
 `/audit` and `/polish` are workflows under `workflows/*.js`, not Skills. The
-User-invocable row lists all 11 current Skills.
+User-invocable row lists all 10 current Skills.
 
 | Category       | Skills                                                                                                                          | Purpose                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | Workflow       | use-workflow-tdd-cycle                                                                                                          | Multi-phase workflow definitions |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                                                        | Domain knowledge for agents      |
 | CLI wrapper    | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud                                                                | CLI tool integration             |
-| User-invocable | ablate, census, challenge, dr, implement, outcome, research, scoping, scribe, sweep, transcribe                                 | Slash command entry points       |
+| User-invocable | ablate, census, challenge, dr, implement, outcome, scoping, scribe, sweep, transcribe                                           | Slash command entry points       |
 
 ### Loading Mechanism
 
@@ -116,7 +116,6 @@ perform specific analysis or generation tasks.
 agents/
 ├── critics/        # Critical verification (critic-audit, critic-design, critic-evidence)
 ├── enhancers/      # Code improvement + synthesis (enhancer-code, enhancer-evidence, enhancer-integration)
-├── explorers/      # Exploration (explorer-feature)
 ├── generators/     # Generation (generator-snapshot)
 └── reviewers/      # Review (16 specialized reviewers)
 ```

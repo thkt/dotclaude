@@ -16,8 +16,8 @@
 // 踏襲する。DATE_PREFIX / words / main を node:* のみで移植する。
 //
 // Contract: このスクリプト自身の振る舞い。下記の fixture が固定する。
-// skills/research/tests/find-prior-research.test.ts が検証し、
-// skills/research/tests/fixtures/find-prior-research-cases.json (U-001) から再生する。
+// skills/scribe/tests/find-prior-research.test.ts が検証し、
+// skills/scribe/tests/fixtures/find-prior-research-cases.json (U-001) から再生する。
 //
 // 複数 root または --all は path と aliases を返す。同名・原文同一だけをまとめ、版が異なる原本は残す。
 
