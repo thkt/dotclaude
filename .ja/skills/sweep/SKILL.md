@@ -1,7 +1,7 @@
 ---
 name: sweep
 description: コードベース全体を1つの観点で総点検し、確実なものは直し、残りは file:line の一覧で返す。
-when_to_use: 総点検, 全体を見直して, ホットパス, 暗黙の状態機械, モジュールを深く, 過剰な防御, 不要なコード, テストの整理, sweep, codebase scan
+when_to_use: コードベース全体か 1 つのディレクトリを、1 種類の問題について点検し、確実なものを直す依頼。sweep, codebase scan.
 argument-hint: "<観点: async | state | modules | defense | dead | tests> [対象のパス]"
 ---
 

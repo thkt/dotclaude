@@ -21,7 +21,7 @@ skill は `skills/<name>/SKILL.md` を本体とし、Skill tool が読み込む�
 
 | 対象                         | 契約                                                                                                                                                                          |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| frontmatter の必須           | `name`、`description`、`allowed-tools` の 3 つを 31 件すべてが持つ。`model` は 18 件、`argument-hint` は 16 件、`user-invocable` は 12 件、`context` は 7 件、`agent` は 4 件 |
+| frontmatter の必須           | `name`、`description`、`allowed-tools` の 3 つを 31 件すべてが持つ。`model` は 0 件、`argument-hint` は 16 件、`user-invocable` は 12 件、`context` は 7 件、`agent` は 4 件 |
 | `${CLAUDE_SKILL_DIR}`        | skill 自身のディレクトリを指す。`../` で 1 つ上がると `skills/` に届き、他の skill の scripts へ辿れる                                                                        |
 | `allowed-tools` と呼び出し形 | SKILL.md が書くコマンドと `allowed-tools` の許可が一致しないと拒否される。script のパスを覆う `Bash(...)` の grant を持たない skill はその script を呼べない |
 | テストの置き場               | `skills/<name>/tests/*_test.py`（Python）または `*.test.js`/`*.test.ts`（Node）。CI は前者を `find agents hooks skills workflows -name '*_test.py'` で、後者を `.github/workflows/test.yml` の `skills/**/tests/*.test.js`/`skills/**/tests/*.test.ts` の明示 glob で拾う。いずれも `docs/` 配下に置くと走らない |

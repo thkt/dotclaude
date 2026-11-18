@@ -136,6 +136,24 @@ test("the decision type table carries type, use case, and topics only", () =>
     assert.equal(row.split("|").length - 2, 3, `${lang}: the row carries three columns`);
   }));
 
+// validate-dr.ts counts no lines per section, so a line cap in the body is a rule nothing checks,
+// and accepted DRs already exceed it. The body states what each section carries instead.
+const LINE_CAP = { en: /\d+(-\d+)? (lines|bullets)/, ja: /\d+(〜\d+)? ?(行|項目)/ };
+const decisionTypeSection = (doc) => doc.split(/^## (?:Decision Type|決定タイプ)$/m)[1]?.split(/^## /m)[0];
+
+test("the Decision Type section states what each section carries, with no line cap", () => {
+  const oldSentence = {
+    en: "Per-section guidance is common to all types: Context 3 lines, Options 3-5 lines each, Consequences 2-3 bullets.",
+    ja: "分量は全タイプ共通で、Context は 3 行、Options は各 3〜5 行、Consequences は箇条書き 2〜3 項目とする。",
+  };
+  return eachLanguage(skills, (doc, lang) => {
+    assert.match(oldSentence[lang], LINE_CAP[lang], `${lang}: the old cap sentence is detected`);
+    const section = decisionTypeSection(doc);
+    assert.ok(section, `${lang}: the Decision Type section is readable`);
+    assert.doesNotMatch(section, LINE_CAP[lang], `${lang}: Decision Type states a line cap`);
+  });
+});
+
 // A remove-or-merge proposal is sent to Reassessment Triggers. Three places carry it and all three
 // are needed: the template slot gives the writer somewhere to put it, the body tells them to, and
 // madr-format is what stops the section from being filed as optional while the body requires it.

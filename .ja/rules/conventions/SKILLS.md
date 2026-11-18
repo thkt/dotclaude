@@ -52,7 +52,7 @@ skills/
 | context                  | fork = sub-agent、inline = main                    |
 | user-invocable           | デフォルト true。false は `/` メニューから隠す     |
 | disable-model-invocation | true でモデルからの起動を止め、`/` 経由だけに絞る  |
-| model                    | 実行モデルの上書き。未指定は呼び出し元モデルを継承 |
+| model                    | 指定しない。skill は session の model で動く。model を固定すると会話の途中で session の model が切り替わり、切り替わる前の thinking と prompt cache は引き継がれない |
 | argument-hint            | `/` メニューに表示する引数ヒント                   |
 
 ## 参照記法

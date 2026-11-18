@@ -154,13 +154,13 @@ A skill marked "no" under user-invocable is a knowledge module the model loads f
 | Skill                              | Model   | User-invocable | Artifact or side effect                             |
 | ---------------------------------- | ------- | -------------- | --------------------------------------------------- |
 | `census`                           | opus    | yes            | Candidate list of decisions with no DR              |
-| `challenge`                        | opus    | yes            | A GO / NO-GO verdict with its counterarguments      |
+| `challenge`                        | inherit | yes            | A GO / NO-GO verdict with its counterarguments      |
 | `checkout`                         | haiku   | yes            | A new git branch                                    |
 | `commit`                           | haiku   | yes            | A git commit                                        |
-| `dr`                               | opus    | yes            | A MADR v4 file under `docs/decisions/`              |
+| `dr`                               | inherit | yes            | A MADR v4 file under `docs/decisions/`              |
 | `fix`                              | opus    | yes            | Edits confined to 1 to 3 files                      |
 | `issue`                            | opus    | yes            | A GitHub issue                                      |
-| `outcome`                          | opus    | yes            | `.claude/OUTCOME.md` created or updated             |
+| `outcome`                          | inherit | yes            | `.claude/OUTCOME.md` created or updated             |
 | `pr`                               | opus    | yes            | A draft pull request                                |
 | `preview`                          | opus    | yes            | The match between a PR diff and its Plan            |
 | `qualify`                          | opus    | yes            | build-ready / needs-plan / needs-fix / needs-split  |

@@ -52,7 +52,7 @@ skills/
 | context                  | fork = sub-agent, inline = main                                                  |
 | user-invocable           | Default true. false hides it from the / menu                                     |
 | disable-model-invocation | true stops model-side invocation, leaving only the / route                       |
-| model                    | Model override for execution (e.g. opus). Inherits the invoking model when unset |
+| model                    | Leave unset, so the skill runs on the session's model. A pinned model switches the session mid-conversation, and the thinking and the prompt cache from before the switch are not carried over |
 | argument-hint            | Argument hint shown in the / menu (e.g. `"[decision title]"`)                    |
 
 ## Reference notation
