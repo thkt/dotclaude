@@ -1,5 +1,5 @@
 ---
-globs: ["workflows/_lib/gate.ts"]
+globs: []
 scenes: ["implement"]
 ---
 

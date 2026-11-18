@@ -63,21 +63,18 @@ A script cannot run a command, so an agent runs it. Given the commands as prose,
 
 `meta.description` and `meta.whenToUse` are prose for whoever decides whether to invoke the workflow. `description` answers what the workflow does, `whenToUse` answers when to reach for it. A reader gets the `args` shape from the "Taking arguments and prompts" table above instead, so neither field names that identifier or spells out its object keys.
 
-A workflow script holds a top-level `return`, so it is neither ESM nor CommonJS and nothing can `import()` it to read `FOCUS` or `MODES` as live values (Script evaluation form). That is why the check below parses both sides as source text rather than importing either.
-
-| Target                                                          | Convention                                                                                                                                                                                                 |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `description`                                                   | Name the operation the workflow performs and what its script enforces deterministically, so a reader tells it apart from its siblings                                                                      |
-| `whenToUse`                                                     | Name the situation that calls for this workflow, the sibling that fits a neighbouring situation, and what the caller supplies, in prose                                                                    |
-| `args` shape                                                    | Write the target in prose (which repository, which scope). Naming `args` or its keys belongs in code and in this document, not in workflow prose                                                           |
-| An option `whenToUse` enumerates (audit's focus, polish's mode) | The script's own const (audit.js's `FOCUS`, polish.js's `MODES`) is canonical. A `whenToUse` listing such as "focus (a / b / ...)" or "mode (a / b / ...)" is a derived copy and follows that const's keys |
-| Keeping the copy honest                                         | `workflows/_lib/tests/meta-contract.test.js` checks both: it fails when a `whenToUse` names `args`, and when an enumerated `whenToUse` diverges from its script's const                                    |
+| Target        | Convention                                                                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `description` | Name the operation the workflow performs and what its script enforces deterministically, so a reader tells it apart from its siblings            |
+| `whenToUse`   | Name the situation that calls for this workflow, the sibling that fits a neighbouring situation, and what the caller supplies, in prose          |
+| `args` shape  | Write the target in prose (which repository, which scope). Naming `args` or its keys belongs in code and in this document, not in workflow prose |
+| Enforcement   | `workflows/_lib/tests/meta-contract.test.js` fails when a `description` or `whenToUse` names `args`                                              |
 
 ## Degradation recording
 
 Degradation is a branch that drops or defaults a failed or missing sub-result without recording it at loss granularity in either a structured field or `log()`. Loss granularity is the information that lets a reader reconstruct what / how many / why was lost (count, id, target name, reason).
 
-The primary channel is the workflow return value. The snapshot is an additional channel only the audit workflow has (the `docs/audit/` write per DR-0047); implementers of the other workflows record on the return value. `log()` is a conversational supplement that surfaces on the run log a degradation the return value alone would hide from a human. A site that already keeps loss granularity in a structured field (a return array or count) is out of scope, and duplicating the same information into `log()` is not required.
+The primary channel is the workflow return value. `log()` is a conversational supplement that surfaces on the run log a degradation the return value alone would hide from a human. A site that already keeps loss granularity in a structured field (a return array or count) is out of scope, and duplicating the same information into `log()` is not required.
 
 | Situation                                                    | Granularity to record                               |
 | ------------------------------------------------------------ | --------------------------------------------------- |
@@ -98,4 +95,4 @@ A script is evaluated as one function body, so it cannot carry an `import` state
 
 ## Script resolution timing
 
-`Workflow({name})` runs the script as it stood at session start, so running a version you just fixed takes `Workflow({scriptPath})`. scriptPath reaches the top-level call alone; a nested call inside a script (`assert.js` calling audit) resolves by name. When the script you fixed runs nested, run it directly from the top level.
+`Workflow({name})` runs the script as it stood at session start, so running a version you just fixed takes `Workflow({scriptPath})`. scriptPath reaches the top-level call alone; a nested call inside a script resolves by name. When the script you fixed runs nested, run it directly from the top level.

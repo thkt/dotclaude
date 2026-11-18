@@ -71,9 +71,8 @@ install specific workflow sets:
   build: namespace. Settle the requirements into an agreed Issue with /scoping,
   then hand the Issue to /implement, which carries it through the implement
   workflow to implementation, verification, a draft PR, and CI confirmation.
-  Humans invoke /audit and /polish separately on the draft PR.
-  Bundles the reviewer and critic agents, the implement / audit / polish / shake
-  / assert / adrift workflows, and /challenge, /sweep, /outcome, /dr, /scribe.
+  Bundles the reviewer and critic agents, the implement workflow, and
+  /challenge, /sweep, /outcome, /dr, /scribe.
 
 ### Option 2: Manual Installation (Full Configuration)
 
@@ -203,7 +202,7 @@ See the complete command reference:
 ### Feature Development
 
 ```txt
-/scoping → /implement → /audit · /polish
+/scoping → /implement
 ```
 
 ### Bug Investigation & Fix

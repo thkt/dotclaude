@@ -1,13 +1,13 @@
 /// <reference types="node" />
 // Behavior tests for extractBracedBody in workflows/_lib/tests/_brace.ts. That helper is the
-// shared, non-eval oracle meta-contract.test.js and run-workflow.test.ts use to pull a top-level
-// `<marker>{ ... }` object literal out of workflow-script source. This file pins the boundary
-// case parseStringArrayConst already guards (an unclosed literal reports null, not a slice built
-// from a sentinel index) and the balanced case the depth-count relies on (brace pairs nested
-// inside a string value stay balanced, so the scan still lands on the real closing brace).
+// non-eval oracle run-workflow.test.ts uses to pull a top-level `<marker>{ ... }` object literal
+// out of workflow-script source. This file pins the boundary case (an unclosed literal reports
+// null, not a slice built from a sentinel index) and the balanced cases the depth-count relies on
+// (brace pairs nested inside a string value or a nested object stay balanced, so the scan still
+// lands on the real closing brace).
 import assert from "node:assert/strict";
 import test from "node:test";
-import { extractBracedBody, parseStringArrayConst } from "./_brace.ts";
+import { extractBracedBody } from "./_brace.ts";
 
 test("T-048 extractBracedBody returns null when the brace opened after the marker never closes", () => {
   const source = 'const meta = { "name": "audit", "phases": [';
@@ -22,18 +22,10 @@ test("T-049 extractBracedBody returns the inner text of a balanced literal whose
   );
 });
 
-test("T-426 the shared scan returns the same end index for a brace pair and for a bracket pair, driven through the two existing call sites", () => {
-  const braceSource = 'const meta = { "outer": { "inner": 1 }, "after": "tail" };';
+test("T-426 extractBracedBody returns the inner text through the outer closing brace when an object literal is nested inside", () => {
+  const source = 'const meta = { "outer": { "inner": 1 }, "after": "tail" };';
   assert.strictEqual(
-    extractBracedBody(braceSource, "const meta = {"),
+    extractBracedBody(source, "const meta = {"),
     ' "outer": { "inner": 1 }, "after": "tail" ',
   );
-
-  const bracketSource = 'const LIST = [ "a", ["nested"], "tail" ];';
-  assert.deepStrictEqual(parseStringArrayConst(bracketSource, "LIST"), ["a", "nested", "tail"]);
-});
-
-test("T-427 an unclosed pair returns the same not-found result for both delimiter kinds", () => {
-  assert.strictEqual(extractBracedBody('const meta = { "a": [', "const meta = {"), null);
-  assert.strictEqual(parseStringArrayConst('const LIST = [ "a", "b"', "LIST"), null);
 });

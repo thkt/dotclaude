@@ -6,7 +6,7 @@
 
 Severity は影響の大きさを表す。Disposition は読んだ人間が次に何をするかを表す。マージを止めるべきか作者の判断に委ねてよいかは severity が答えない軸なので、2 つを 1 つの finding に並べて載せる。
 
-「併走する severity」は目安であって導出規則ではない。既定値は severity から導かず must に固定する。`workflows/assert.js` の gate は severity を見ず `issues.length > 0` だけで NotReady を出すので、severity 由来の既定値だと blocking な finding へ nits が付く。
+「併走する severity」は目安であって導出規則ではない。既定値は severity から導かず must に固定する。
 
 | 値   | 意味                                 | 併走する severity | 供給元                          |
 | ---- | ------------------------------------ | ----------------- | ------------------------------- |

@@ -15,14 +15,14 @@
     {
       "name": "build",
       "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping (optionally after /challenge), then hand the Issue to /implement, which carries it through the implement workflow to implementation, verification, a draft PR, and CI confirmation. Heavy assurance (/audit, /polish) is human-invoked on that draft PR. Bundles the full reviewer and critic agent set, the implement / audit / polish / shake / assert / adrift workflows, and /sweep, /outcome, /dr, /scribe.",
+      "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping (optionally after /challenge), then hand the Issue to /implement, which carries it through the implement workflow to implementation, verification, a draft PR, and CI confirmation. Bundles the full reviewer and critic agent set, the implement workflow, and /sweep, /outcome, /dr, /scribe.",
       "version": "4.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
       },
       "license": "MIT",
-      "keywords": ["build", "tdd", "issue", "audit", "polish", "workflow", "autonomous", "review"],
+      "keywords": ["build", "tdd", "issue", "workflow", "autonomous", "review"],
       "category": "Implementation",
       "commands": ["./skills/scoping/SKILL.md", "./skills/implement/SKILL.md"]
     }

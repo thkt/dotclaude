@@ -16,8 +16,8 @@ This directory contains important decisions about the project.
 | [0008](0008-audience-optimized-templates.md) | ADR-0008: 読み手別テンプレート最適化の採用 | accepted | Not set |
 | [0009](0009-externalize-idr-as-rust-binary.md) | IDR生成システムの外部リポジトリ化（Rustバイナリ） | accepted | 2026-02-07 |
 | [0010](0010-schema-first-api-documentation.md) | Schema-First API ドキュメント生成と Dual Output | accepted | 2026-02-08 |
-| [0011](0011-add-evidence-verifier-to-audit-pipeline.md) | Audit パイプラインに Evidence Verifier を追加 | accepted | 2026-02-10 |
-| [0012](0012-flatten-audit-pipeline-remove-compound-reviewers.md) | ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers | accepted | Not set |
+| [0011](0011-add-evidence-verifier-to-audit-pipeline.md) | Audit パイプラインに Evidence Verifier を追加 | superseded by DR-0129 | 2026-11-18 |
+| [0012](0012-flatten-audit-pipeline-remove-compound-reviewers.md) | ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers | superseded by DR-0129 | 2026-11-18 |
 | [0013](0013-adopt-hook-trinity-pattern-with-claude-reviews.md) | ADR-0013: Hook Trinity パターンの採用 - claude-reviews による Pre-flight 分析の確実な実行 | superseded by DR-0121 | 2026-11-01 |
 | [0014](0014-integrate-aidlc-design-separation-and-ops-reviewer.md) | ADR-0014: AI-DLC 統合 - 設計分離と Operational Readiness Reviewer | accepted | Not set |
 | [0015](0015-frontend-security-guardrails-strategy.md) | Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security | accepted | 2026-02-23 |
@@ -40,7 +40,7 @@ This directory contains important decisions about the project.
 | [0032](0032-build-esa-semantic-search-cli-sae.md) | ADR-0032: Build esa semantic search CLI (sae) | proposed | 2026-03-23 |
 | [0033](0033-add-recursive-unwrap-stack-to-shields.md) | ADR-0033: shields に Recursive Unwrap Stack を追加 | proposed | 2026-03-24 |
 | [0034](0034-automate-backlog-lifecycle-with-remote-trigger.md) | ADR-0034: LaunchAgent によるバックログライフサイクル自動化 | deprecated | 2026-03-24 |
-| [0035](0035-audit-verify-convergence-signal-and-reconciliation-ownership.md) | Record convergence signals in audit/verify dedup and move reconciliation into enhancer-evidence | accepted | 2026-04-04 |
+| [0035](0035-audit-verify-convergence-signal-and-reconciliation-ownership.md) | Record convergence signals in audit/verify dedup and move reconciliation into enhancer-evidence | superseded by DR-0129 | 2026-11-18 |
 | [0036](0036-build-llm-wiki-plugin-for-cross-session-knowledge-synthesis.md) | LLMによるクロスセッション知識合成wikiプラグインの構築 | deprecated | 2026-04-07 |
 | [0037](0037-align-sae-filter-helpers-for-amici-extraction.md) | ADR-0037: sae フィルタヘルパーを amici 抽出前提で yomu パターンに揃える | accepted | 2026-04-10 |
 | [0038](0038-add-stencils-as-sixth-posttooluse-hook-for-pattern-cataloging.md) | ADR-0038: hook pipelineに stencils を追加しコードパターンをカタログ化する | proposed | 2026-04-13 |
@@ -48,11 +48,11 @@ This directory contains important decisions about the project.
 | [0040](0040-wiki-plugin-v2-global-mode-and-publish-layer.md) | wiki plugin v2: グローバルモード・publish 層・wiki_root リゾルバーの導入 | accepted | 2026-04-14 |
 | [0041](0041-fork-strategy-for-carte.md) | ADR-0041: carte を CCPlanView からフォークする運用方針 | proposed | 2026-04-19 |
 | [0042](0042-colocate-skill-specific-scripts-within-skill.md) | ADR-0042: Colocate Skill-Specific Scripts Within Skill Directory | accepted | 2026-04-20 |
-| [0043](0043-normalize-findings-in-audit-multi-run-aggregation.md) | Normalize findings in audit multi-run aggregation with line and category tolerance | accepted | 2026-04-20 |
+| [0043](0043-normalize-findings-in-audit-multi-run-aggregation.md) | Normalize findings in audit multi-run aggregation with line and category tolerance | superseded by DR-0129 | 2026-11-18 |
 | [0044](0044-reject-snapshot-aware-audit-pipeline.md) | Reject snapshot-aware audit pipeline in favor of multi-run aggregation | rejected | 2026-04-20 |
 | [0045](0045-replace-scout-skill-with-scout-search-cli-wrapper.md) | Replace /scout skill with scout-search CLI wrapper, retire scouting-anomalies | accepted | 2026-04-20 |
-| [0046](0046-colocate-audit-templates-in-skill-references.md) | Colocate audit assets under skills/audit with references and templates split | accepted | 2026-04-20 |
-| [0047](0047-adopt-snapshot-as-canonical-with-rendered-output.md) | Adopt snapshot as canonical source with rendered Markdown output for audit reports | accepted | 2026-04-20 |
+| [0046](0046-colocate-audit-templates-in-skill-references.md) | Colocate audit assets under skills/audit with references and templates split | superseded by DR-0129 | 2026-11-18 |
+| [0047](0047-adopt-snapshot-as-canonical-with-rendered-output.md) | Adopt snapshot as canonical source with rendered Markdown output for audit reports | superseded by DR-0129 | 2026-11-18 |
 | [0048](0048-standardize-generator-skill-structure.md) | Adopt unified SKILL.md template for generator-class workflows | accepted | 2026-04-21 |
 | [0049](0049-consolidate-skill-to-skill-wrapper-pairs.md) | ADR-0049: Consolidate skill-to-skill wrapper pairs | accepted | 2026-04-21 |
 | [0050](0050-consolidate-fix-via-skill-delegation.md) | ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md | superseded by DR-0128 | 2026-11-18 |
@@ -76,15 +76,15 @@ This directory contains important decisions about the project.
 | [0068](0068-stop-hook-knowledge-reflection-subagent-and-mechanical.md) | Adopt Stop hook Knowledge Reflection with subagent extraction and mechanical activity log | deprecated | 2026-05-14 |
 | [0069](0069-adopt-yomu-indirect-prompt-injection-defense.md) | Adopt Indirect Prompt Injection Defense Design for yomu | accepted | 2026-05-19 |
 | [0070](0070-rename-audit-undocumented-skill-to-audit-adr-gaps.md) | ADR-0070: Rename audit-undocumented skill to audit-adr-gaps | superseded by DR-0075 | 2026-06-13 |
-| [0071](0071-think-assert-no-source-enforcement.md) | ADR-0071: think と assert の no-source 状態の統一原則と enforcement 非対称 | accepted | 2026-06-01 |
+| [0071](0071-think-assert-no-source-enforcement.md) | ADR-0071: think と assert の no-source 状態の統一原則と enforcement 非対称 | superseded by DR-0129 | 2026-11-18 |
 | [0072](0072-discontinue-yomu-and-unify-code-search-on-ugrep.md) | ADR-0072: yomu 利用停止とコード検索の ugrep/bfs 統一 | accepted | 2026-06-09 |
 | [0073](0073-adopt-ja-as-canonical-source-for-mirror.md) | ADR-0073: .ja を意図の正とするミラー運用への転換 | accepted | 2026-06-10 |
 | [0074](0074-consolidate-adr-templates-into-a-single-madr-template.md) | ADR-0074: ADR テンプレートの単一 MADR テンプレートへの統合 | accepted | 2026-06-11 |
-| [0075](0075-rename-adr-audit-skills-to-adrift-and-census.md) | ADR-0075: Rename audit-adr-drift to adrift and audit-adr-gaps to census | accepted | 2026-06-13 |
+| [0075](0075-rename-adr-audit-skills-to-adrift-and-census.md) | ADR-0075: Rename audit-adr-drift to adrift and audit-adr-gaps to census | superseded by DR-0129 | 2026-11-18 |
 | [0076](0076-adopt-source-driven-discipline-for-framework-code.md) | ADR-0076: framework コードの source-driven discipline 採用 | accepted | 2026-06-18 |
 | [0077](0077-finding-id-routing-and-audit-fix-loop-closure.md) | ADR-0077: fix の finding ID routing を severity で gate し audit→fix ループを閉じる | superseded by DR-0099 | 2026-08-18 |
 | [0078](0078-align-finding-atom-family-on-audit-finding-schema.md) | ADR-0078: finding atom family を audit finding-schema の共通コアに揃える | accepted | 2026-06-19 |
-| [0079](0079-purify-polish-to-external-cli-cleanup-and-fix-audit-boundary.md) | ADR-0079: polish を Codex + cleanup へ純化し audit との境界を確定する | accepted | 2026-06-23 |
+| [0079](0079-purify-polish-to-external-cli-cleanup-and-fix-audit-boundary.md) | ADR-0079: polish を Codex + cleanup へ純化し audit との境界を確定する | superseded by DR-0129 | 2026-11-18 |
 | [0080](0080-design-workflow-outcome-evaluation-instrument-first.md) | ADR-0080: skill/workflow 成果の評価を instrument-first で設計する | accepted | 2026-06-24 |
 | [0081](0081-move-machinery-fan-out-from-skill-prose-to-deterministic-workflow.md) | ADR-0081: machinery の fan-out を skill prose から決定論 workflow へ移す | accepted | 2026-07-01 |
 | [0082](0082-retire-generator-e2e-agent.md) | ADR 0082: generator-e2e エージェントの廃止 | accepted | 2026-07-05 |
@@ -100,8 +100,8 @@ This directory contains important decisions about the project.
 | [0092](0092-place-tests-only-on-the-english-side.md) | DR-0092: テストを英語側のみに置き `.ja/` から外す | accepted | 2026-07-29 |
 | [0093](0093-split-reference-module-null-into-kinds.md) | DR-0093: reference_module の null を kind (module/no-module/new-shape) に分ける | accepted | 2026-07-30 |
 | [0094](0094-require-root-cause-for-bug-plans.md) | DR-0094: Bug の plan に root_cause を要求する判定を title のプレフィックスで行う | superseded by DR-0128 | 2026-11-18 |
-| [0095](0095-move-audit-membership-rule-from-agent-to-script.md) | DR-0095: audit の membership 判定を enhancer-integration の Phase 2 から script の triage に移す | accepted | 2026-08-02 |
-| [0096](0096-fence-untrusted-findings-in-four-audit-stages.md) | DR-0096: audit の prompt data 境界を Challenge/Verify/Integrate/Snapshot の 4 段に絞る | accepted | 2026-08-03 |
+| [0095](0095-move-audit-membership-rule-from-agent-to-script.md) | DR-0095: audit の membership 判定を enhancer-integration の Phase 2 から script の triage に移す | superseded by DR-0129 | 2026-11-18 |
+| [0096](0096-fence-untrusted-findings-in-four-audit-stages.md) | DR-0096: audit の prompt data 境界を Challenge/Verify/Integrate/Snapshot の 4 段に絞る | superseded by DR-0129 | 2026-11-18 |
 | [0097](0097-ask-instead-of-extract-when-returning-corrections-to-rules.md) | Ask instead of extract when returning corrections to rules | deprecated | 2026-08-09 |
 | [0098](0098-adopt-usage-census-over-time-based-prediction-ledger.md) | ADR-0098: 機構の退役判断に時間ベースの予測台帳ではなく使用センサスを採る | accepted | 2026-08-13 |
 | [0099](0099-retire-fix-finding-id-route-for-direct-finding-input.md) | Retire fix's Finding ID route in favor of Direct Finding Input | superseded by DR-0128 | 2026-11-18 |
@@ -109,7 +109,7 @@ This directory contains important decisions about the project.
 | [0101](0101-extract-shared-embedding-crate-ruri-core.md) | embedding + storage ユーティリティの共有クレート化 (rurico) | proposed | 2026-03-24 |
 | [0102](0102-resolve-uncertainty-at-issue-creation-instead-of-marking-it.md) | Resolve uncertainty at issue creation instead of marking it | superseded by DR-0128 | 2026-11-18 |
 | [0103](0103-carry-reference-rules-in-the-plan-instead-of-a-flat-index.md) | Carry reference rules in the plan instead of a flat index | superseded by DR-0128 | 2026-11-18 |
-| [0104](0104-keep-disposition-out-of-audit-gates.md) | Keep disposition out of audit gates | accepted | 2026-08-21 |
+| [0104](0104-keep-disposition-out-of-audit-gates.md) | Keep disposition out of audit gates | superseded by DR-0129 | 2026-11-18 |
 | [0105](0105-require-argsrepo-in-every-workflow.md) | Require args.repo in every workflow | accepted | 2026-08-23 |
 | [0106](0106-adopt-the-wiki-as-the-current-state-view-over-immutable-drs.md) | Adopt the wiki as the current-state view over immutable DRs | accepted | 2026-08-24 |
 | [0107](0107-track-research-reports-in-git-while-the-rest-of-the-workspace-stays-untracked.md) | Track research reports in git while the rest of the workspace stays untracked | superseded by DR-0119 | 2026-09-25 |
@@ -168,8 +168,6 @@ This directory contains important decisions about the project.
 - **0008**: ADR-0008: 読み手別テンプレート最適化の採用
 - **0009**: IDR生成システムの外部リポジトリ化（Rustバイナリ）
 - **0010**: Schema-First API ドキュメント生成と Dual Output
-- **0011**: Audit パイプラインに Evidence Verifier を追加
-- **0012**: ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers
 - **0014**: ADR-0014: AI-DLC 統合 - 設計分離と Operational Readiness Reviewer
 - **0015**: Adopt Pattern-Match + Taint-Checklist Strategy for Frontend Security
 - **0018**: explorer のファイル文脈に Index-time storage を採用
@@ -177,14 +175,10 @@ This directory contains important decisions about the project.
 - **0024**: ADR-0024: Adopt two-layer Delta for compaction resilience
 - **0025**: ADR-0025: ralph-loop を退役しネイティブ /goal を採用
 - **0026**: ADR-0026: LLM指示設計における仕様-コード収束則を認識する
-- **0035**: Record convergence signals in audit/verify dedup and move reconciliation into enhancer-evidence
 - **0037**: ADR-0037: sae フィルタヘルパーを amici 抽出前提で yomu パターンに揃える
 - **0040**: wiki plugin v2: グローバルモード・publish 層・wiki_root リゾルバーの導入
 - **0042**: ADR-0042: Colocate Skill-Specific Scripts Within Skill Directory
-- **0043**: Normalize findings in audit multi-run aggregation with line and category tolerance
 - **0045**: Replace /scout skill with scout-search CLI wrapper, retire scouting-anomalies
-- **0046**: Colocate audit assets under skills/audit with references and templates split
-- **0047**: Adopt snapshot as canonical source with rendered Markdown output for audit reports
 - **0048**: Adopt unified SKILL.md template for generator-class workflows
 - **0049**: ADR-0049: Consolidate skill-to-skill wrapper pairs
 - **0051**: ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent
@@ -199,14 +193,11 @@ This directory contains important decisions about the project.
 - **0065**: scout JSON output schema and sysexits exit code policy
 - **0066**: CLI exit code policy grouped by error topology
 - **0069**: Adopt Indirect Prompt Injection Defense Design for yomu
-- **0071**: ADR-0071: think と assert の no-source 状態の統一原則と enforcement 非対称
 - **0072**: ADR-0072: yomu 利用停止とコード検索の ugrep/bfs 統一
 - **0073**: ADR-0073: .ja を意図の正とするミラー運用への転換
 - **0074**: ADR-0074: ADR テンプレートの単一 MADR テンプレートへの統合
-- **0075**: ADR-0075: Rename audit-adr-drift to adrift and audit-adr-gaps to census
 - **0076**: ADR-0076: framework コードの source-driven discipline 採用
 - **0078**: ADR-0078: finding atom family を audit finding-schema の共通コアに揃える
-- **0079**: ADR-0079: polish を Codex + cleanup へ純化し audit との境界を確定する
 - **0080**: ADR-0080: skill/workflow 成果の評価を instrument-first で設計する
 - **0081**: ADR-0081: machinery の fan-out を skill prose から決定論 workflow へ移す
 - **0082**: ADR 0082: generator-e2e エージェントの廃止
@@ -214,11 +205,8 @@ This directory contains important decisions about the project.
 - **0090**: Unify workspace and history storage locations
 - **0092**: DR-0092: テストを英語側のみに置き `.ja/` から外す
 - **0093**: DR-0093: reference_module の null を kind (module/no-module/new-shape) に分ける
-- **0095**: DR-0095: audit の membership 判定を enhancer-integration の Phase 2 から script の triage に移す
-- **0096**: DR-0096: audit の prompt data 境界を Challenge/Verify/Integrate/Snapshot の 4 段に絞る
 - **0098**: ADR-0098: 機構の退役判断に時間ベースの予測台帳ではなく使用センサスを採る
 - **0100**: Replace 5 Whys with hypothesis elimination in root cause analysis
-- **0104**: Keep disposition out of audit gates
 - **0105**: Require args.repo in every workflow
 - **0106**: Adopt the wiki as the current-state view over immutable DRs
 - **0108**: Grant ast-grep only to write-capable agents
@@ -255,15 +243,24 @@ This directory contains important decisions about the project.
 - **0002**: ADR 0002: /fix モジュール化とTDD共通化
 - **0003**: Marketplace構造の維持
 - **0006**: Adopt Deterministic Script Pattern
+- **0011**: Audit パイプラインに Evidence Verifier を追加
+- **0012**: ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers
 - **0013**: ADR-0013: Hook Trinity パターンの採用 - claude-reviews による Pre-flight 分析の確実な実行
 - **0029**: ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合
+- **0035**: Record convergence signals in audit/verify dedup and move reconciliation into enhancer-evidence
+- **0043**: Normalize findings in audit multi-run aggregation with line and category tolerance
+- **0046**: Colocate audit assets under skills/audit with references and templates split
+- **0047**: Adopt snapshot as canonical source with rendered Markdown output for audit reports
 - **0050**: ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md
 - **0052**: ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills
 - **0053**: Adopt ctx- prefix for agent-only skills
 - **0054**: Adopt workflow- prefix for workflow skills
 - **0067**: Define boundary between RULES, ADR, and CLAUDE.md
 - **0070**: ADR-0070: Rename audit-undocumented skill to audit-adr-gaps
+- **0071**: ADR-0071: think と assert の no-source 状態の統一原則と enforcement 非対称
+- **0075**: ADR-0075: Rename audit-adr-drift to adrift and audit-adr-gaps to census
 - **0077**: ADR-0077: fix の finding ID routing を severity で gate し audit→fix ループを閉じる
+- **0079**: ADR-0079: polish を Codex + cleanup へ純化し audit との境界を確定する
 - **0084**: ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す
 - **0085**: ADR-0085: build の audit fan-out を選択ベース検証に置換する
 - **0086**: ADR-0086: Plan 節なし issue の plan を build 内で自律生成する
@@ -272,9 +269,12 @@ This directory contains important decisions about the project.
 - **0089**: ADR-0089: Plan 節なし issue の plan 自律生成をやめ、build は issue へ差し戻す
 - **0091**: ADR-0091: リファレンス注入をフラットインデックスと glob 照合で決定的に行う
 - **0094**: DR-0094: Bug の plan に root_cause を要求する判定を title のプレフィックスで行う
+- **0095**: DR-0095: audit の membership 判定を enhancer-integration の Phase 2 から script の triage に移す
+- **0096**: DR-0096: audit の prompt data 境界を Challenge/Verify/Integrate/Snapshot の 4 段に絞る
 - **0099**: Retire fix's Finding ID route in favor of Direct Finding Input
 - **0102**: Resolve uncertainty at issue creation instead of marking it
 - **0103**: Carry reference rules in the plan instead of a flat index
+- **0104**: Keep disposition out of audit gates
 - **0107**: Track research reports in git while the rest of the workspace stays untracked
 - **0121**: Narrow the hook trinity to guardrails alone
 

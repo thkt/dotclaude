@@ -1,6 +1,6 @@
 # Canonical Finding Schema
 
-audit の reviewer 全員が finding ごとに返すフィールド。schema を渡す呼び出し元 (workflows/audit.js の `findingsSchema()`) の下では、出力は下のフィールドだけを持つ JSON の `findings` 配列になる。schema の無い skill 経由では、各 finding は見出し `### {PREFIX}-{seq}` に続く 1 つの表で、同じフィールドを持つ。読んだ人間が次に何をするかは `finding-disposition.md` に、reviewer ごとの prefix と追加材料は `finding-registry.md` にある。
+audit の reviewer 全員が finding ごとに返すフィールド。schema を渡す呼び出し元の下では、出力は下のフィールドだけを持つ JSON の `findings` 配列になる。schema の無い skill 経由では、各 finding は見出し `### {PREFIX}-{seq}` に続く 1 つの表で、同じフィールドを持つ。読んだ人間が次に何をするかは `finding-disposition.md` に、reviewer ごとの prefix と追加材料は `finding-registry.md` にある。
 
 ## Base Fields
 

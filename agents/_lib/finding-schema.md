@@ -1,6 +1,6 @@
 # Canonical Finding Schema
 
-The fields every audit reviewer returns per finding. Under a caller that passes a schema (workflows/audit.js `findingsSchema()`), the output is a JSON `findings` array carrying the fields below and nothing else. Under a skill route with no schema, each finding is a heading `### {PREFIX}-{seq}` followed by one table with the same fields. What the reader does next lives in `finding-disposition.md`, and the per-reviewer prefixes and extra fields in `finding-registry.md`.
+The fields every audit reviewer returns per finding. Under a caller that passes a schema, the output is a JSON `findings` array carrying the fields below and nothing else. Under a skill route with no schema, each finding is a heading `### {PREFIX}-{seq}` followed by one table with the same fields. What the reader does next lives in `finding-disposition.md`, and the per-reviewer prefixes and extra fields in `finding-registry.md`.
 
 ## Base Fields
 

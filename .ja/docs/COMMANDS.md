@@ -6,7 +6,7 @@
 
 ## 開発フロー全体
 
-要求と完了条件は人間が `/scoping` で対話して Issue に合意し、実装は implement workflow が headless で進め、重い担保は draft PR に対して人間が起動する。機能追加とバグ修正は同じ経路を通る。
+要求と完了条件は人間が `/scoping` で対話して Issue に合意し、実装は implement workflow が headless で draft PR まで進める。機能追加とバグ修正は同じ経路を通る。
 
 ```mermaid
 flowchart LR
@@ -16,11 +16,8 @@ flowchart LR
     subgraph Build["実装 (headless)"]
         M["/implement"] --> W["implement workflow"]
     end
-    subgraph Assure["担保 (人間起動)"]
-        PR["draft PR"] --> A["/audit · /polish"]
-    end
     I --> M
-    W --> PR
+    W --> PR["draft PR"]
 ```
 
 Issue を経ない変更は `/sweep`、`/dr`、`/outcome`、`/scribe` が自分で draft PR まで公開する。
@@ -49,16 +46,9 @@ Issue を経ない変更は `/sweep`、`/dr`、`/outcome`、`/scribe` が自分�
 
 ## Workflow 一覧
 
-入れ子は assert が audit を呼ぶ 1 経路だけ。他は単体起動する。
-
 | Workflow  | 役割                                                      | 主な nested agent                                   |
 | --------- | --------------------------------------------------------- | --------------------------------------------------- |
 | implement | 合意済み Issue の実装から draft PR と CI 確認まで         | 実装、レビュー、修正、命名の `claude -p` セッション |
-| audit     | diff への adversarial review fan-out                      | file-routed reviewer、critic-audit、critic-evidence |
-| polish    | Codex 外部レンズの review + cleanup                       | critic-audit、enhancer-code                         |
-| assert    | merge readiness の独立判定 (Codex を隔離 worktree で並走) | codex、critic 層                                    |
-| shake     | flaky テストの 4 次元検出と根本修正                       | 実行 agent、静的 smell scan                         |
-| adrift    | DR と現行コードの乖離スキャン                             | manifest-routed reviewer                            |
 
 ## Command → 実装マッピング
 
@@ -68,8 +58,6 @@ skill は SKILL.md の手順を会話の文脈で実行し、workflow はスク�
 | ------------ | --------------------------- | ------------------------------------- |
 | `/scoping`   | `skills/scoping/SKILL.md`   | skill (合意した範囲を Issue にする)   |
 | `/implement` | `skills/implement/SKILL.md` | skill (implement workflow を起動する) |
-| `/audit`     | `workflows/audit.js`        | workflow                              |
-| `/polish`    | `workflows/polish.js`       | workflow                              |
 
 ## 関連
 

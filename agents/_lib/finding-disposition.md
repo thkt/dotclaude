@@ -6,7 +6,7 @@ What the reader does with a finding, and which findings get reported at all. The
 
 Severity states how large the impact is. Disposition states what the reader does next. Whether a finding blocks a merge or is left to the author is an axis severity does not answer, so the two ride on one finding together.
 
-"Severity it rides with" is a guide, not a derivation rule. The default is pinned to must rather than derived from severity. `workflows/assert.js`'s gate ignores severity and returns NotReady on `issues.length > 0` alone, so a severity-derived default would put nits on a finding that blocks the merge.
+"Severity it rides with" is a guide, not a derivation rule. The default is pinned to must rather than derived from severity.
 
 | Value | Meaning                                  | Severity it rides with | Supplied by                        |
 | ----- | ---------------------------------------- | ---------------------- | ---------------------------------- |
