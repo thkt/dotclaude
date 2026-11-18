@@ -1,6 +1,6 @@
 # Bug-Driven TDD
 
-`/fix` がバグ修正で TDD をどう使うか。${CLAUDE_SKILL_DIR}/SKILL.md の RGRC サイクルと Baby Steps を基盤とする。
+バグ修正で TDD をどう使うか。${CLAUDE_SKILL_DIR}/SKILL.md の RGRC サイクルと Baby Steps を基盤とする。
 
 ## 文脈
 

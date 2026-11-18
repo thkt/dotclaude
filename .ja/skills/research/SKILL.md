@@ -1,6 +1,6 @@
 ---
 name: research
-description: プロジェクトと技術的な質問を調査する。発見事項は結論ではなく、明示的なソース付きで反証にさらすべき主張として扱う。Phase 6 では統合が確定する前に advisor がそれへ反論する。設計計画や plan 生成には使わない (代わりに /think を使う)。
+description: プロジェクトと技術的な質問を調査する。発見事項は結論ではなく、明示的なソース付きで反証にさらすべき主張として扱う。Phase 6 では統合が確定する前に advisor がそれへ反論する。変更の要求整理には使わない (代わりに /scoping を使う)。
 when_to_use: 調査して, 調べて, リサーチ, investigate, 分析して, issueやろう, issue見て, 横並びチェック, 類似パターン検出, refactor 横展開
 allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(git show:*) Bash(wc:*) Bash(scout:*) Read LS Agent AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(codegraph:*) Bash(node:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*)
 model: opus
@@ -80,7 +80,7 @@ ${CLAUDE_SKILL_DIR}/../../rules/core/OPERATION.md § Debug Investigation Protoco
 
 ${CLAUDE_SKILL_DIR}/templates/research.md の骨格に従ってレポートを生成し、`${CLAUDE_SESSION_ID}`を埋めて`docs/research/YYYY-MM-DD-<slug>.md` に保存する。
 
-保存後、テンプレートの Next Steps 表から渡し先を選んで会話で提案する。いずれも自動実行しない。提案には保存したレポートのパスと、slug の元になった語をそのまま添える。`/think` はその語から slug を作り、同じ script でこのレポートを引くので、語がずれると引けなくなる。
+保存後、テンプレートの Next Steps 表から渡し先を選んで会話で提案する。いずれも自動実行しない。提案には保存したレポートのパスと、slug の元になった語をそのまま添える。
 
 ## 完了条件
 

@@ -190,7 +190,7 @@ test("loadAgent gives general-purpose no preamble and the write sandbox", () => 
 });
 
 test("loadAgent reads a reviewer definition and marks it read-only", () => {
-  const loaded = loadAgent("reviewer-conformance");
+  const loaded = loadAgent("reviewer-readability");
   assert.equal(loaded.missing, undefined);
   assert.ok(loaded.preamble.length > 0);
   assert.equal(loaded.readOnly, true);

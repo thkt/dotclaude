@@ -185,12 +185,11 @@ const writeSnapshot = async ({
 // jsx / tsx にだけ付けるので、JSX を使わない React には付かない。型の機械的チェック (any /
 // アサーション / strict モード) は gates のリンタが担う。
 const ROUTING = {
-  "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
+  "*.sh": ["security", "silence", "duplication", "efficiency", "operations", "resilience"],
   "*.js": [
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "testability",
@@ -201,7 +200,6 @@ const ROUTING = {
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "testability",
@@ -212,7 +210,6 @@ const ROUTING = {
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "react-pattern",
@@ -226,7 +223,6 @@ const ROUTING = {
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "react-pattern",
@@ -241,7 +237,6 @@ const ROUTING = {
     "silence",
     "rust",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "testability",
@@ -252,7 +247,6 @@ const ROUTING = {
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "testability",
@@ -262,7 +256,7 @@ const ROUTING = {
   "*.md": ["prompt"],
   "*.css,*.html": ["accessibility", "progressive", "duplication"],
   test: ["coverage", "testability"],
-  default: ["duplication", "reuse", "efficiency"],
+  default: ["duplication", "efficiency"],
 };
 
 // /audit の focus フィルタ。routing 結果との積集合を取る。
@@ -275,7 +269,6 @@ const FOCUS = {
     "rust",
     "resilience",
     "duplication",
-    "reuse",
     "testability",
     "operations",
     "prompt",

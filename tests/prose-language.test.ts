@@ -42,18 +42,6 @@ test("no test on the English side is named in Japanese", async () => {
   );
 });
 
-// /think turns tests[].name into the test name as written, so a Japanese T-NNN lands a Japanese
-// test name from an implementer following instructions. The rule has to reach the plan.
-test("the id-numbering reference tells a plan to write T-NNN in English", async () => {
-  for (const path of [
-    join(root, "skills", "think", "references", "id-numbering.md"),
-    join(root, ".ja", "skills", "think", "references", "id-numbering.md"),
-  ]) {
-    const doc = await readFile(path, "utf8");
-    assert.match(doc, /MIRROR\.md/, `${path} points at the rule that owns the prose language`);
-  }
-});
-
 // The sweep is only as wide as this extractor. It missed two single-quoted names already in the
 // tree (build.behavior.test.js), so a Japanese name written in any form below passed unseen.
 test("testNames reads every registration form, not just a double-quoted test()", () => {

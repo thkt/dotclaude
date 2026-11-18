@@ -1,5 +1,5 @@
-// U-005 seam: settings.json grants Bash(ast-grep *) and the two write-capable agents
-// (enhancer-code, generator-test) grant Bash(ast-grep:*) in their tools: line. These tests also
+// U-005 seam: settings.json grants Bash(ast-grep *) and the write-capable agent enhancer-code
+// grants Bash(ast-grep:*) in its tools: line. These tests also
 // re-check the U-001/U-002 deliverables (TOOLS.md, the use-cli-ast-grep skill) that this unit's
 // wiring depends on, so the whole ast-grep introduction is actually reachable end to end.
 import { test } from "node:test";
@@ -30,7 +30,7 @@ test("settings.json grants ast-grep in the space form every other entry in permi
   assert.equal(names[i + 1], "bfs", "ast-grep sorts right before bfs");
 });
 
-test("enhancer-code and generator-test are the only agent definitions whose tools line grants ast-grep", async () => {
+test("enhancer-code is the only agent definition whose tools line grants ast-grep", async () => {
   // Test placement is English-side only (MIRROR.md): the .ja/ mirror never runs its own tests.
   const dir = join(root, "agents");
   const entries = await readdir(dir, { recursive: true, withFileTypes: true });
@@ -45,7 +45,7 @@ test("enhancer-code and generator-test are the only agent definitions whose tool
     if (/Bash\(ast-grep:\*\)/.test(toolsLine)) granters.push(basename(file, ".md"));
   }
 
-  assert.deepEqual(granters.sort(), ["enhancer-code", "generator-test"]);
+  assert.deepEqual(granters.sort(), ["enhancer-code"]);
 });
 
 test("rules/development/TOOLS.md carries no paths frontmatter, so it loads in every session", async () => {

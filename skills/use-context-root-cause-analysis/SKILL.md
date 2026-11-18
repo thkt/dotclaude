@@ -41,7 +41,7 @@ Pattern turns on whether a recurrence path exists, not on how deep the cause sit
 
 ## Output Format
 
-Callers branch on Pattern. `/fix` decides between applying defense-in-depth and delegating to `/research`.
+Callers branch on Pattern.
 
 | Field      | Description                       |
 | ---------- | --------------------------------- |

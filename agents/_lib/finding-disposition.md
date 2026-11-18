@@ -6,7 +6,7 @@ What the reader does with a finding, and which findings get reported at all. The
 
 Severity states how large the impact is. Disposition states what the reader does next. Whether a finding blocks a merge or is left to the author is an axis severity does not answer, so the two ride on one finding together.
 
-"Severity it rides with" is a guide, not a derivation rule. The default is pinned to must rather than derived from severity. `workflows/assert.js`'s gate ignores severity and returns NotReady on `issues.length > 0` alone, so a severity-derived default would put nits on a finding that blocks the merge. The vocabulary stays on the audit side and does not return to `/preview`, which `skills/preview/tests/plan-alignment.test.js` forbids.
+"Severity it rides with" is a guide, not a derivation rule. The default is pinned to must rather than derived from severity. `workflows/assert.js`'s gate ignores severity and returns NotReady on `issues.length > 0` alone, so a severity-derived default would put nits on a finding that blocks the merge.
 
 | Value | Meaning                                  | Severity it rides with | Supplied by                        |
 | ----- | ---------------------------------------- | ---------------------- | ---------------------------------- |
@@ -21,7 +21,7 @@ Severity states how large the impact is. Disposition states what the reader does
 | -------------- | -------------------------------------------------------------------------------------------------------------- |
 | Default        | must. The script sets it on a finding the reviewer did not declare                                             |
 | Declarable     | must / want / imo / nits. ask and info are not kinds a reviewer produces                                       |
-| Who overrides  | reviewer-design / reviewer-readability / reviewer-reuse only, the lenses whose findings can turn on preference |
+| Who overrides  | reviewer-design / reviewer-readability only, the lenses whose findings can turn on preference |
 | Override needs | A disposition_reason. An override without one falls back to the default must                                   |
 | Merge order    | must > want > imo > nits. A merged finding takes the strongest value among its sources                         |
 | Gates          | Disposition feeds no gate. It is the order to fix in, not the call on whether to merge                         |

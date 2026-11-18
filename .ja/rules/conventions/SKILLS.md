@@ -15,10 +15,10 @@ paths:
 
 | user-invocable | バインド   | パターン              | 例                                            |
 | -------------- | ---------- | --------------------- | --------------------------------------------- |
-| true           | -          | 短縮名                | commit, fix, audit                            |
+| true           | -          | 短縮名                | scoping, implement, dr                        |
 | false          | CLI ラップ | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                 |
 | false          | Agent 専用 | `use-context-<agent>` | use-context-reviewer-security                 |
-| false          | Workflow   | `use-workflow-<noun>` | use-workflow-tdd-cycle, use-workflow-pageshot |
+| false          | Workflow   | `use-workflow-<noun>` | use-workflow-tdd-cycle                        |
 
 ## H1
 
@@ -26,7 +26,7 @@ paths:
 
 | user-invocable | H1                 | 例                                   |
 | -------------- | ------------------ | ------------------------------------ |
-| true (既定)    | `/<name>` で始める | `# /issue - GitHub Issue Generation` |
+| true (既定)    | `/<name>` で始める | `# /scoping - 要求と実装範囲の整理` |
 | false          | skill 名そのもの   | `# use-cli-scout`                    |
 
 ## ディレクトリ構造

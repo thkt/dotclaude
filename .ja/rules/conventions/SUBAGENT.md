@@ -18,8 +18,7 @@ paths:
 | critic-     | 反論                 | critic-design     |
 | enhancer-   | コード改善・結果統合 | enhancer-code     |
 | explorer-   | コードベース探索     | explorer-feature  |
-| generator-  | アーティファクト生成 | generator-test    |
-| resolver-   | エラー修正           | resolver-build    |
+| generator-  | アーティファクト生成 | generator-snapshot |
 | reviewer-   | 検査                 | reviewer-security |
 
 ## YAML Frontmatter
@@ -37,7 +36,7 @@ paths:
 | mcpServers, hooks               | 必要に応じて                                                                                                                                                                                                                                                                        |
 | memory                          | `user`/`project`/`local`。有効化で Read/Write/Edit を自動付与                                                                                                                                                                                                                       |
 | background                      | Boolean。対話セッションでの起動は `false` を書いてもバックグラウンドで走る。workflow と headless はこの既定の外                                                                                                                                                                     |
-| omitClaudeMd                    | Boolean。ユーザー / プロジェクト / ローカルの CLAUDE.md と rules/ を読み込まずに起動する。委譲プロンプトから判定対象を全て受け取るエージェントに付ける。対象リポジトリの規約に照らして判定するエージェント (reviewer-conformance、reviewer-readability) には付けない。v2.1.271 以降 |
+| omitClaudeMd                    | Boolean。ユーザー / プロジェクト / ローカルの CLAUDE.md と rules/ を読み込まずに起動する。委譲プロンプトから判定対象を全て受け取るエージェントに付ける。対象リポジトリの規約に照らして判定するエージェント (reviewer-readability) には付けない。v2.1.271 以降 |
 | effort                          | low/medium/high/xhigh/max。省略時はセッションの effort を引き継ぐ (メイン会話と同じモデルで走る場合)。xhigh と max は品質向上を測定できた場合に限る。思考を減らすときは、プロンプトの指示を足す前に effort を下げる                                                                 |
 | isolation, color, initialPrompt | 必要に応じて                                                                                                                                                                                                                                                                        |
 | observer                        | このエージェントが走るたび background で起動する observer の agent 型名。observer は読み取り専用の活動ダイジェストを受け取り ObserverReport で報告し、タスクには参加しない                                                                                                          |

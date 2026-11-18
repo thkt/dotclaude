@@ -88,9 +88,8 @@ Prior research: {引き継いだファイルの slug、または "none found"}
 
 ## Next Steps
 
-| Intent             | Next Command |
-| ------------------ | ------------ |
-| Feature planning   | `/think`     |
-| Bug investigation  | `/fix`       |
-| Understanding only | complete     |
+| Intent                      | Next Command |
+| --------------------------- | ------------ |
+| Feature or bug fix to agree | `/scoping`   |
+| Understanding only          | complete     |
 ```

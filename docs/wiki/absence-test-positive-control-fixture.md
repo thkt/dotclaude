@@ -18,7 +18,7 @@ scenes: []
 
 ## 参照コード
 
-- `skills/scribe/tests/structure-page.test.ts` の T-229（参照コードが名指す定数を改名した写しでは検査が対象を見つけられなくなることを確認する）
+- `workflows/_lib/tests/_retirement.ts` の `assertDetectsAndMisses`（退役した名前を literal で書いた行は検出され、名前を置き換えた写しは検出されないことを確かめる）
 
 ## 根拠
 

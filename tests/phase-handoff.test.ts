@@ -17,14 +17,10 @@ const CONTROL_ONLY = new Map([
   ["census 1->2", "Phase 1 names Phase 2 as where collection lands, and Phase 2 opens on that set"],
   ["census 3->4", "Phase 3 says an absent DR directory sends every candidate to Phase 4, a route"],
   ["challenge 1->2", "Phase 1 names Phase 2 as the stage that runs after self-resolution, a route"],
-  ["pr 1->2", "Phase 1 settles the UI decision that Phase 2 and Phase 3 both read; both name it"],
-  ["pr 1->3", "same decision as pr 1->2, read by the pageshot branch"],
-  ["qualify 2->3", "Phase 2 says a plan-less issue inspects one axis of Phase 3, a route"],
   ["research 4->7", "Phase 4 says its scratch is what Phase 7 quotes; Phase 7 names the scratch"],
   ["scribe 1->6", "Phase 1 says the write happens inside Phase 6's worktree, a location"],
   ["scribe 2->3", "Phase 2 says an empty candidates file still advances to Phase 3, a route"],
   ["scribe 5->6", "Phase 5 says the change is prepared for Phase 6 to write, a location"],
-  ["slice 2->3", "Phase 2 says the coverage check surfaces in what Phase 3 presents, a route"],
 ]);
 
 const phaseSections = (doc: string) => {

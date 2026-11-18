@@ -643,7 +643,7 @@ if (revising && (!prHeld(parseJsonText(target.revision_pr)) || !DIGEST_SHAPE.tes
 
 // ---- Prepare: base から隔離 worktree と branch を作り、setup を実行する ----
 phase("Prepare");
-// branch 名は skills/checkout/references/branch-naming.md の <type>/<scope>-<description>。
+// branch 名は <type>/<Issue 番号>-<description> の形。
 // type は Target で確かめた Issue title の接頭辞から、description は title の英数字語から決定論的に作る。
 const titleWords = issue.title
   .replace(/^\[\w+\]\s*/, "")

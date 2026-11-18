@@ -670,7 +670,7 @@ if (revising && (!prHeld(parseJsonText(target.revision_pr)) || !DIGEST_SHAPE.tes
 
 // ---- Prepare: cut an isolated worktree and branch from the base, then run setup ----
 phase("Prepare");
-// The branch name is skills/checkout/references/branch-naming.md's <type>/<scope>-<description>.
+// The branch name takes the shape <type>/<Issue number>-<description>.
 // The type comes from the Issue title's prefix checked at Target, and the description is built
 // deterministically from the title's alphanumeric words.
 const titleWords = issue.title

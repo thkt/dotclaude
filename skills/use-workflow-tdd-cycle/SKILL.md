@@ -17,8 +17,8 @@ When the table below does not settle the variant, and when checking whether a te
 
 | Trigger                           | Variant         | Reference                                        |
 | --------------------------------- | --------------- | ------------------------------------------------ |
-| spec.md / new feature (`/code`)   | Feature-driven  | ${CLAUDE_SKILL_DIR}/references/feature-driven.md |
-| Bug report / regression (`/fix`)  | Bug-driven      | ${CLAUDE_SKILL_DIR}/references/bug-driven.md     |
+| spec.md / new feature             | Feature-driven  | ${CLAUDE_SKILL_DIR}/references/feature-driven.md |
+| Bug report / regression           | Bug-driven      | ${CLAUDE_SKILL_DIR}/references/bug-driven.md     |
 | Coverage gap in existing codebase | Coverage-driven | Active tests, no skip. Reuse RGRC below          |
 
 ## What to Test
@@ -77,7 +77,7 @@ Right (vertical):
 
 ## Test Failure Judgment
 
-When a test fails, decide whether to fix the test or the implementation. For `/fix`'s bug-driven flow, reproduction steps serve as the spec.
+When a test fails, decide whether to fix the test or the implementation. For the bug-driven flow, reproduction steps serve as the spec.
 
 | Judgment | Condition                 | Action                               |
 | -------- | ------------------------- | ------------------------------------ |

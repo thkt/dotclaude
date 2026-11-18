@@ -17,8 +17,8 @@ user-invocable: false
 
 | トリガー                             | バリアント      | 参照                                                 |
 | ------------------------------------ | --------------- | ---------------------------------------------------- |
-| spec.md / 新機能 (`/code`)           | Feature-driven  | ${CLAUDE_SKILL_DIR}/references/feature-driven.md     |
-| バグ報告 / リグレッション (`/fix`)   | Bug-driven      | ${CLAUDE_SKILL_DIR}/references/bug-driven.md         |
+| spec.md / 新機能                     | Feature-driven  | ${CLAUDE_SKILL_DIR}/references/feature-driven.md     |
+| バグ報告 / リグレッション            | Bug-driven      | ${CLAUDE_SKILL_DIR}/references/bug-driven.md         |
 | 既存コードベースのカバレッジギャップ | Coverage-driven | テストを active にし skip しない。下記 RGRC を再利用 |
 
 ## 何をテストするか
@@ -77,7 +77,7 @@ Right (vertical):
 
 ## テスト失敗の判断
 
-テストが失敗したら、テストを直すか実装を直すかを判断する。`/fix` の bug-driven フローでは、再現手順が spec の役割を果たす。
+テストが失敗したら、テストを直すか実装を直すかを判断する。bug-driven フローでは、再現手順が spec の役割を果たす。
 
 | 判断       | 条件                        | アクション                     |
 | ---------- | --------------------------- | ------------------------------ |

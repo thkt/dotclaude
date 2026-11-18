@@ -7,7 +7,7 @@ This directory contains important decisions about the project.
 | Number | Title | Status | Date |
 |--------|-------|--------|------|
 | [0001](0001-code-command-responsibility-separation.md) | ADR 0001: code.md コマンドの責任分離 | accepted | 2025-12-16 |
-| [0002](0002-fix-modularization-and-tdd-commonization.md) | ADR 0002: /fix モジュール化とTDD共通化 | accepted | 2025-12-24 |
+| [0002](0002-fix-modularization-and-tdd-commonization.md) | ADR 0002: /fix モジュール化とTDD共通化 | superseded by DR-0128 | 2026-11-18 |
 | [0003](0003-marketplace.md) | Marketplace構造の維持 | superseded by DR-0083 | 2026-01-03 |
 | [0004](0004-skill-centric-architecture-restructuring.md) | ADR 0004: スキル中心アーキテクチャへの再構成 | accepted | Not set |
 | [0005](0005-documentation-role-separation.md) | ADR-0005: ドキュメントの役割分離とAI最適化 | accepted | Not set |
@@ -55,7 +55,7 @@ This directory contains important decisions about the project.
 | [0047](0047-adopt-snapshot-as-canonical-with-rendered-output.md) | Adopt snapshot as canonical source with rendered Markdown output for audit reports | accepted | 2026-04-20 |
 | [0048](0048-standardize-generator-skill-structure.md) | Adopt unified SKILL.md template for generator-class workflows | accepted | 2026-04-21 |
 | [0049](0049-consolidate-skill-to-skill-wrapper-pairs.md) | ADR-0049: Consolidate skill-to-skill wrapper pairs | accepted | 2026-04-21 |
-| [0050](0050-consolidate-fix-via-skill-delegation.md) | ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md | accepted | 2026-04-21 |
+| [0050](0050-consolidate-fix-via-skill-delegation.md) | ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md | superseded by DR-0128 | 2026-11-18 |
 | [0051](0051-consolidate-formatting-audits-into-sow-spec-reviewer.md) | ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent | accepted | 2026-04-23 |
 | [0052](0052-unify-skill-naming-with-use-prefix-for-cli-wrappers.md) | ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills | superseded by DR-0055 | 2026-04-23 |
 | [0053](0053-adopt-ctx-prefix-for-agent-only-skills.md) | Adopt ctx- prefix for agent-only skills | superseded by DR-0055 | 2026-04-24 |
@@ -89,26 +89,26 @@ This directory contains important decisions about the project.
 | [0081](0081-move-machinery-fan-out-from-skill-prose-to-deterministic-workflow.md) | ADR-0081: machinery の fan-out を skill prose から決定論 workflow へ移す | accepted | 2026-07-01 |
 | [0082](0082-retire-generator-e2e-agent.md) | ADR 0082: generator-e2e エージェントの廃止 | accepted | 2026-07-05 |
 | [0083](0083-collapse-marketplace-to-single-build-plugin.md) | Marketplace を単一 build plugin に集約する | accepted | 2026-07-07 |
-| [0084](0084-retire-issue-gate-and-hand-issue-flow-orchestration-to-human.md) | ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す | accepted | 2026-07-13 |
-| [0085](0085-replace-builds-audit-fan-out-with-selection-based-verification.md) | ADR-0085: build の audit fan-out を選択ベース検証に置換する | accepted | 2026-07-14 |
+| [0084](0084-retire-issue-gate-and-hand-issue-flow-orchestration-to-human.md) | ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す | superseded by DR-0128 | 2026-11-18 |
+| [0085](0085-replace-builds-audit-fan-out-with-selection-based-verification.md) | ADR-0085: build の audit fan-out を選択ベース検証に置換する | superseded by DR-0128 | 2026-11-18 |
 | [0086](0086-draft-plans-for-plan-less-issues-in-build.md) | ADR-0086: Plan 節なし issue の plan を build 内で自律生成する | superseded by DR-0089 | 2026-07-14 |
-| [0087](0087-enforce-unit-size-caps-with-regeneration-in-build.md) | ADR-0087: unit サイズ上限を build に決定論強制し、超過時は再生成 + fail-closed で処理する | accepted | 2026-07-22 |
-| [0088](0088-commit-each-unit-in-build-with-plan-anchors-as-trailers.md) | ADR-0088: build の実装を unit ごとにコミットし、plan のアンカーを trailer に載せる | accepted | 2026-07-25 |
-| [0089](0089-retire-build-plan-drafting-and-hand-plan-less-issues-back.md) | ADR-0089: Plan 節なし issue の plan 自律生成をやめ、build は issue へ差し戻す | accepted | 2026-07-27 |
+| [0087](0087-enforce-unit-size-caps-with-regeneration-in-build.md) | ADR-0087: unit サイズ上限を build に決定論強制し、超過時は再生成 + fail-closed で処理する | superseded by DR-0128 | 2026-11-18 |
+| [0088](0088-commit-each-unit-in-build-with-plan-anchors-as-trailers.md) | ADR-0088: build の実装を unit ごとにコミットし、plan のアンカーを trailer に載せる | superseded by DR-0128 | 2026-11-18 |
+| [0089](0089-retire-build-plan-drafting-and-hand-plan-less-issues-back.md) | ADR-0089: Plan 節なし issue の plan 自律生成をやめ、build は issue へ差し戻す | superseded by DR-0128 | 2026-11-18 |
 | [0090](0090-unify-workspace-and-history-storage-locations.md) | Unify workspace and history storage locations | accepted | 2026-07-28 |
 | [0091](0091-adopt-flat-index-reference-injection-for-workflows.md) | ADR-0091: リファレンス注入をフラットインデックスと glob 照合で決定的に行う | superseded by DR-0103 | 2026-07-28 |
 | [0092](0092-place-tests-only-on-the-english-side.md) | DR-0092: テストを英語側のみに置き `.ja/` から外す | accepted | 2026-07-29 |
 | [0093](0093-split-reference-module-null-into-kinds.md) | DR-0093: reference_module の null を kind (module/no-module/new-shape) に分ける | accepted | 2026-07-30 |
-| [0094](0094-require-root-cause-for-bug-plans.md) | DR-0094: Bug の plan に root_cause を要求する判定を title のプレフィックスで行う | accepted | 2026-07-31 |
+| [0094](0094-require-root-cause-for-bug-plans.md) | DR-0094: Bug の plan に root_cause を要求する判定を title のプレフィックスで行う | superseded by DR-0128 | 2026-11-18 |
 | [0095](0095-move-audit-membership-rule-from-agent-to-script.md) | DR-0095: audit の membership 判定を enhancer-integration の Phase 2 から script の triage に移す | accepted | 2026-08-02 |
 | [0096](0096-fence-untrusted-findings-in-four-audit-stages.md) | DR-0096: audit の prompt data 境界を Challenge/Verify/Integrate/Snapshot の 4 段に絞る | accepted | 2026-08-03 |
 | [0097](0097-ask-instead-of-extract-when-returning-corrections-to-rules.md) | Ask instead of extract when returning corrections to rules | deprecated | 2026-08-09 |
 | [0098](0098-adopt-usage-census-over-time-based-prediction-ledger.md) | ADR-0098: 機構の退役判断に時間ベースの予測台帳ではなく使用センサスを採る | accepted | 2026-08-13 |
-| [0099](0099-retire-fix-finding-id-route-for-direct-finding-input.md) | Retire fix's Finding ID route in favor of Direct Finding Input | accepted | 2026-08-18 |
+| [0099](0099-retire-fix-finding-id-route-for-direct-finding-input.md) | Retire fix's Finding ID route in favor of Direct Finding Input | superseded by DR-0128 | 2026-11-18 |
 | [0100](0100-replace-5-whys-with-hypothesis-elimination-in-rca.md) | Replace 5 Whys with hypothesis elimination in root cause analysis | accepted | 2026-08-18 |
 | [0101](0101-extract-shared-embedding-crate-ruri-core.md) | embedding + storage ユーティリティの共有クレート化 (rurico) | proposed | 2026-03-24 |
-| [0102](0102-resolve-uncertainty-at-issue-creation-instead-of-marking-it.md) | Resolve uncertainty at issue creation instead of marking it | accepted | 2026-08-19 |
-| [0103](0103-carry-reference-rules-in-the-plan-instead-of-a-flat-index.md) | Carry reference rules in the plan instead of a flat index | accepted | 2026-08-20 |
+| [0102](0102-resolve-uncertainty-at-issue-creation-instead-of-marking-it.md) | Resolve uncertainty at issue creation instead of marking it | superseded by DR-0128 | 2026-11-18 |
+| [0103](0103-carry-reference-rules-in-the-plan-instead-of-a-flat-index.md) | Carry reference rules in the plan instead of a flat index | superseded by DR-0128 | 2026-11-18 |
 | [0104](0104-keep-disposition-out-of-audit-gates.md) | Keep disposition out of audit gates | accepted | 2026-08-21 |
 | [0105](0105-require-argsrepo-in-every-workflow.md) | Require args.repo in every workflow | accepted | 2026-08-23 |
 | [0106](0106-adopt-the-wiki-as-the-current-state-view-over-immutable-drs.md) | Adopt the wiki as the current-state view over immutable DRs | accepted | 2026-08-24 |
@@ -163,7 +163,6 @@ This directory contains important decisions about the project.
 ### Accepted
 
 - **0001**: ADR 0001: code.md コマンドの責任分離
-- **0002**: ADR 0002: /fix モジュール化とTDD共通化
 - **0004**: ADR 0004: スキル中心アーキテクチャへの再構成
 - **0005**: ADR-0005: ドキュメントの役割分離とAI最適化
 - **0008**: ADR-0008: 読み手別テンプレート最適化の採用
@@ -188,7 +187,6 @@ This directory contains important decisions about the project.
 - **0047**: Adopt snapshot as canonical source with rendered Markdown output for audit reports
 - **0048**: Adopt unified SKILL.md template for generator-class workflows
 - **0049**: ADR-0049: Consolidate skill-to-skill wrapper pairs
-- **0050**: ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md
 - **0051**: ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent
 - **0055**: ADR-0055: Consolidate user-invocable:false skills under unified use- prefix with role subcategories
 - **0056**: ADR-0056: Remove redundant CLI wrapper skills (use-cli-git/gh/npm)
@@ -213,22 +211,13 @@ This directory contains important decisions about the project.
 - **0081**: ADR-0081: machinery の fan-out を skill prose から決定論 workflow へ移す
 - **0082**: ADR 0082: generator-e2e エージェントの廃止
 - **0083**: Marketplace を単一 build plugin に集約する
-- **0084**: ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す
-- **0085**: ADR-0085: build の audit fan-out を選択ベース検証に置換する
-- **0087**: ADR-0087: unit サイズ上限を build に決定論強制し、超過時は再生成 + fail-closed で処理する
-- **0088**: ADR-0088: build の実装を unit ごとにコミットし、plan のアンカーを trailer に載せる
-- **0089**: ADR-0089: Plan 節なし issue の plan 自律生成をやめ、build は issue へ差し戻す
 - **0090**: Unify workspace and history storage locations
 - **0092**: DR-0092: テストを英語側のみに置き `.ja/` から外す
 - **0093**: DR-0093: reference_module の null を kind (module/no-module/new-shape) に分ける
-- **0094**: DR-0094: Bug の plan に root_cause を要求する判定を title のプレフィックスで行う
 - **0095**: DR-0095: audit の membership 判定を enhancer-integration の Phase 2 から script の triage に移す
 - **0096**: DR-0096: audit の prompt data 境界を Challenge/Verify/Integrate/Snapshot の 4 段に絞る
 - **0098**: ADR-0098: 機構の退役判断に時間ベースの予測台帳ではなく使用センサスを採る
-- **0099**: Retire fix's Finding ID route in favor of Direct Finding Input
 - **0100**: Replace 5 Whys with hypothesis elimination in root cause analysis
-- **0102**: Resolve uncertainty at issue creation instead of marking it
-- **0103**: Carry reference rules in the plan instead of a flat index
 - **0104**: Keep disposition out of audit gates
 - **0105**: Require args.repo in every workflow
 - **0106**: Adopt the wiki as the current-state view over immutable DRs
@@ -263,18 +252,29 @@ This directory contains important decisions about the project.
 
 ### Superseded
 
+- **0002**: ADR 0002: /fix モジュール化とTDD共通化
 - **0003**: Marketplace構造の維持
 - **0006**: Adopt Deterministic Script Pattern
 - **0013**: ADR-0013: Hook Trinity パターンの採用 - claude-reviews による Pre-flight 分析の確実な実行
 - **0029**: ADR 0029: Spec 駆動 E2E テスト生成のワークフロー統合
+- **0050**: ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md
 - **0052**: ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills
 - **0053**: Adopt ctx- prefix for agent-only skills
 - **0054**: Adopt workflow- prefix for workflow skills
 - **0067**: Define boundary between RULES, ADR, and CLAUDE.md
 - **0070**: ADR-0070: Rename audit-undocumented skill to audit-adr-gaps
 - **0077**: ADR-0077: fix の finding ID routing を severity で gate し audit→fix ループを閉じる
+- **0084**: ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す
+- **0085**: ADR-0085: build の audit fan-out を選択ベース検証に置換する
 - **0086**: ADR-0086: Plan 節なし issue の plan を build 内で自律生成する
+- **0087**: ADR-0087: unit サイズ上限を build に決定論強制し、超過時は再生成 + fail-closed で処理する
+- **0088**: ADR-0088: build の実装を unit ごとにコミットし、plan のアンカーを trailer に載せる
+- **0089**: ADR-0089: Plan 節なし issue の plan 自律生成をやめ、build は issue へ差し戻す
 - **0091**: ADR-0091: リファレンス注入をフラットインデックスと glob 照合で決定的に行う
+- **0094**: DR-0094: Bug の plan に root_cause を要求する判定を title のプレフィックスで行う
+- **0099**: Retire fix's Finding ID route in favor of Direct Finding Input
+- **0102**: Resolve uncertainty at issue creation instead of marking it
+- **0103**: Carry reference rules in the plan instead of a flat index
 - **0107**: Track research reports in git while the rest of the workspace stays untracked
 - **0121**: Narrow the hook trinity to guardrails alone
 

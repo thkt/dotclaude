@@ -14,7 +14,7 @@ graph LR
     end
 
     subgraph Agents["Agents (Execution)"]
-        A1[generator-test]
+        A1[generator-snapshot]
         A2[reviewer-security]
         A3[enhancer-integration]
     end
@@ -29,8 +29,8 @@ graph LR
 
 ## Skills vs Agents
 
-`dr` creates a DR file and index through Write/Edit, and `commit` runs
-`git commit`. Skill state and output therefore depend on the permitted tools and
+`dr` creates a DR file and index through Write/Edit, and `implement` launches
+the implement workflow. Skill state and output therefore depend on the permitted tools and
 procedure.
 
 | Aspect         | Skills                         | Agents         |
@@ -49,15 +49,15 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 
 ### Categories
 
-`/code`, `/audit`, and `/polish` are workflows under `workflows/*.js`, not
-Skills. The User-invocable row lists all 17 current Skills.
+`/audit` and `/polish` are workflows under `workflows/*.js`, not Skills. The
+User-invocable row lists all 11 current Skills.
 
 | Category       | Skills                                                                                                                          | Purpose                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| Workflow       | use-workflow-tdd-cycle, use-workflow-pageshot                                                                                   | Multi-phase workflow definitions |
+| Workflow       | use-workflow-tdd-cycle                                                                                                          | Multi-phase workflow definitions |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                                                        | Domain knowledge for agents      |
 | CLI wrapper    | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud                                                                | CLI tool integration             |
-| User-invocable | census, challenge, checkout, commit, dr, fix, issue, outcome, pr, preview, qualify, research, scribe, slice, think, transcribe | Slash command entry points       |
+| User-invocable | ablate, census, challenge, dr, implement, outcome, research, scoping, scribe, sweep, transcribe                                 | Slash command entry points       |
 
 ### Loading Mechanism
 
@@ -117,18 +117,16 @@ agents/
 ├── critics/        # Critical verification (critic-audit, critic-design, critic-evidence)
 ├── enhancers/      # Code improvement + synthesis (enhancer-code, enhancer-evidence, enhancer-integration)
 ├── explorers/      # Exploration (explorer-feature)
-├── generators/     # Generation (generator-test, generator-snapshot)
-├── resolvers/      # Problem resolution (resolver-build)
-└── reviewers/      # Review (18 specialized reviewers)
+├── generators/     # Generation (generator-snapshot)
+└── reviewers/      # Review (16 specialized reviewers)
 ```
 
-### Reviewer Agents (18 types)
+### Reviewer Agents (16 types)
 
 | Agent                  | Focus                             |
 | ---------------------- | --------------------------------- |
 | reviewer-accessibility | WCAG 2.2 conformance              |
 | reviewer-causation     | Root cause analysis               |
-| reviewer-conformance   | Diff-vs-spec conformance          |
 | reviewer-coverage      | Test coverage quality             |
 | reviewer-design        | Module depth via deletion test    |
 | reviewer-duplication   | Cross-file DRY analysis           |
@@ -139,7 +137,6 @@ agents/
 | reviewer-react-pattern | React design patterns             |
 | reviewer-readability   | Code structure, readability       |
 | reviewer-resilience    | Resilience weakness analysis      |
-| reviewer-reuse         | Existing code reuse opportunities |
 | reviewer-rust          | Rust idioms and safety            |
 | reviewer-security      | OWASP Top 10                      |
 | reviewer-silence       | Silent failure detection          |
@@ -176,6 +173,6 @@ Reason: each extra level adds files to read and makes the reference graph harder
 
 ## Related
 
-- [COMMANDS.md](./COMMANDS.md) - Commands, workflows, and the build-centered development flow
+- [COMMANDS.md](./COMMANDS.md) - Commands, workflows, and the development flow centered on `/scoping` → `/implement`
 - [SKILLS](../rules/conventions/SKILLS.md) - Skill definition format
 - [SUBAGENT](../rules/conventions/SUBAGENT.md) - Sub-agent definition format

@@ -48,15 +48,6 @@ This reviewer uses 2+ as the unified detection threshold. Severity follows the o
 5. Report clusters (group of locations sharing the same pattern)
 6. If Dimensions 1-2 yield zero matches above the similarity threshold, skip Dimensions 3-5
 
-## Distinction from reviewer-reuse
-
-| This reviewer (duplication)            | reviewer-reuse                     |
-| -------------------------------------- | ---------------------------------- |
-| Code vs code (any direction)           | New code vs existing utilities     |
-| "Extract shared Y from A and B"        | "Use the existing X instead"       |
-| Cross-compares all target files        | Searches outward from changed code |
-| Actionable: extract new shared utility | Actionable: replace with import    |
-
 ## Calibration
 
 See ${CLAUDE_PLUGIN_ROOT}/agents/_lib/calibration/DRY.md.

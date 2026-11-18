@@ -187,12 +187,11 @@ const writeSnapshot = async ({
 // attaches to jsx / tsx only, so React written without JSX loses it. Mechanical type checks
 // (any / assertions / strict mode) belong to the gates linters, not a reviewer.
 const ROUTING = {
-  "*.sh": ["security", "silence", "duplication", "reuse", "efficiency", "operations", "resilience"],
+  "*.sh": ["security", "silence", "duplication", "efficiency", "operations", "resilience"],
   "*.js": [
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "testability",
@@ -203,7 +202,6 @@ const ROUTING = {
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "testability",
@@ -214,7 +212,6 @@ const ROUTING = {
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "react-pattern",
@@ -228,7 +225,6 @@ const ROUTING = {
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "react-pattern",
@@ -243,7 +239,6 @@ const ROUTING = {
     "silence",
     "rust",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "testability",
@@ -254,7 +249,6 @@ const ROUTING = {
     "security",
     "silence",
     "duplication",
-    "reuse",
     "efficiency",
     "design",
     "testability",
@@ -264,7 +258,7 @@ const ROUTING = {
   "*.md": ["prompt"],
   "*.css,*.html": ["accessibility", "progressive", "duplication"],
   test: ["coverage", "testability"],
-  default: ["duplication", "reuse", "efficiency"],
+  default: ["duplication", "efficiency"],
 };
 
 // /audit focus filter, intersected with the routed reviewers.
@@ -277,7 +271,6 @@ const FOCUS = {
     "rust",
     "resilience",
     "duplication",
-    "reuse",
     "testability",
     "operations",
     "prompt",

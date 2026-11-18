@@ -2,8 +2,8 @@
 // record.py (workflows/build/record.py, .ja/workflows/build/record.py, workflows/assert/record.py,
 // .ja/workflows/assert/record.py) is retired in favor of record.ts (established by the preceding
 // units U-002/U-003/U-004). This file guards the retirement itself: no tracked file still names
-// record.py, and the EN / .ja recorder prompts in build.js / assert.js invoke record.ts through
-// node rather than record.py through python3.
+// record.py, and the EN / .ja recorder prompts in assert.js invoke record.ts through node rather
+// than record.py through python3.
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and docs in one
 // change, then confirm zero residual references across git ls-files. A mention under
@@ -84,14 +84,12 @@ interface RecorderPromptSource {
 }
 
 const RECORDER_PROMPT_SOURCES: RecorderPromptSource[] = [
-  { label: "workflows/build.js", path: "workflows/build.js" },
-  { label: ".ja/workflows/build.js", path: ".ja/workflows/build.js" },
   { label: "workflows/assert.js", path: "workflows/assert.js" },
   { label: ".ja/workflows/assert.js", path: ".ja/workflows/assert.js" },
 ];
 
 test(
-  "T-114 the EN and .ja build.js and assert.js recorder prompts each invoke record.ts " +
+  "T-114 the EN and .ja assert.js recorder prompts each invoke record.ts " +
     "through node and none still invokes python3, read from source text rather than a copied " +
     "literal",
   () => {

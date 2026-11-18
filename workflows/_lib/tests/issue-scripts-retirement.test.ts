@@ -1,11 +1,9 @@
 /// <reference types="node" />
 // validate-issue-body.py and pick-plan.py (skills/issue/scripts/, .ja mirror) are retired in
 // favor of their .ts ports (established by the preceding units U-002/U-003/U-004). This file
-// guards the retirement itself, in the same two-test shape as record-retirement.test.ts: T-194
-// scans the whole tree for a leftover reference to either retired name, and T-195 checks that
-// the callers actually switched to the .ts path and dropped python3 — the EN / .ja issue and
-// slice SKILL.md files (which invoke the scripts by path) and the issue-body-gate hook (which
-// shells out to the validator).
+// guards the retirement itself: it scans the whole tree for a leftover reference to either
+// retired name. The .ts ports and their callers (/issue, /slice, the issue-body-gate hook) were
+// removed later (DR-0128), so the caller check went with them.
 //
 // Historical exclusions follow docs/wiki/retire-rename-procedure.md: docs/decisions/ and
 // docs/research/ are offendersAmong's own default (a DR / a research report stays a
@@ -60,85 +58,5 @@ test("no tracked file outside docs/decisions/, docs/research/and docs/wiki/deter
     "no tracked file outside docs/decisions/, docs/research/ and " +
       "docs/wiki/deterministic-script-judgment.md references validate-issue-body.py or " +
       `pick-plan.py\n${offenders.join(", ")}`,
-  );
-});
-
-// Same extraction shape as workflows/_lib/tests/record-retirement.test.ts's
-// extractRecorderInvocation: read the source text and pull out what the caller actually
-// invokes, never a copied-in literal (docs/wiki/workflow-const-source-text-check.md).
-//
-// The issue and slice SKILL.md files spell the invoked script as
-// `${CLAUDE_SKILL_DIR}/scripts/<name>.<ext>` (issue) or
-// `${CLAUDE_SKILL_DIR}/../issue/scripts/<name>.<ext>` (slice); either way the extension sits
-// right after "scripts/<name>.".
-function scriptInvocationExtension(source: string, scriptName: string): string | null {
-  const m = source.match(new RegExp(`scripts/${scriptName}\\.(py|ts)\\b`));
-  return m ? m[1] : null;
-}
-
-interface SkillSource {
-  label: string;
-  path: string;
-  scripts: string[];
-}
-
-const SKILL_SOURCES: SkillSource[] = [
-  {
-    label: "skills/issue/SKILL.md",
-    path: "skills/issue/SKILL.md",
-    scripts: ["pick-plan", "validate-issue-body"],
-  },
-  {
-    label: ".ja/skills/issue/SKILL.md",
-    path: ".ja/skills/issue/SKILL.md",
-    scripts: ["pick-plan", "validate-issue-body"],
-  },
-  {
-    label: "skills/slice/SKILL.md",
-    path: "skills/slice/SKILL.md",
-    scripts: ["validate-issue-body"],
-  },
-  {
-    label: ".ja/skills/slice/SKILL.md",
-    path: ".ja/skills/slice/SKILL.md",
-    scripts: ["validate-issue-body"],
-  },
-];
-
-// The hook builds VALIDATOR from path segments rather than spelling a bare filename, so its
-// extraction anchors on the assignment itself: `VALIDATOR = ROOT / ... / "validate-issue-body.<ext>"`
-// (Python) or `VALIDATOR: string = join(ROOT, ..., "validate-issue-body.<ext>")` (TypeScript,
-// once the issue-body-gate hook itself retired to its own .ts port) -- `[^=\n]*`
-// between VALIDATOR and `=` admits either declaration's optional `: <type>`.
-function validatorPathExtension(source: string): string | null {
-  const m = source.match(/VALIDATOR[^=\n]*=[^\n]*"validate-issue-body\.(py|ts)"/);
-  return m ? m[1] : null;
-}
-
-test("the en and ja issue and slice skill files invoke the issue scripts by their .ts path and the issue body gate hook names the validator's .ts path, and none of them still names python3 for those scripts", () => {
-  for (const { label, path, scripts } of SKILL_SOURCES) {
-    const source = readFileSync(join(REPO_ROOT, path), "utf8");
-    for (const scriptName of scripts) {
-      const ext = scriptInvocationExtension(source, scriptName);
-      assert.equal(ext, "ts", `${label} invokes ${scriptName} by its .ts path, got .${ext}`);
-    }
-    assert.ok(!source.includes("python3"), `${label} still names python3`);
-  }
-
-  const hookPath = "hooks/pre-bash/issue_body_gate.ts";
-  const hookSource = readFileSync(join(REPO_ROOT, hookPath), "utf8");
-  const validatorExt = validatorPathExtension(hookSource);
-  assert.equal(
-    validatorExt,
-    "ts",
-    `${hookPath} names the validator's .ts path, got .${validatorExt}`,
-  );
-  assert.ok(
-    !hookSource.includes("python3 で直接実行して"),
-    `${hookPath} error text still tells to run python3 directly`,
-  );
-  assert.ok(
-    hookSource.includes("bun か node で直接実行して"),
-    `${hookPath} error text does not tell to run bun or node directly`,
   );
 });
