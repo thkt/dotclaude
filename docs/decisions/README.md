@@ -134,6 +134,7 @@ This directory contains important decisions about the project.
 | [0126](0126-declare-workflow-relays-as-data-and-run-them-through-relayts.md) | Declare workflow relays as data and run them through relay.ts | accepted | 2026-11-12 |
 | [0127](0127-launch-the-implement-workflow-on-a-host-that-runs-relays-itself.md) | Launch the implement workflow on a host that runs relays itself | accepted | 2026-11-13 |
 | [0128](0128-retire-the-plan-based-build-path-for-scoping-and-implement.md) | Retire the plan-based build path for scoping and implement | accepted | 2026-11-18 |
+| [0129](0129-retire-review-workflows-reviewer-agents-and-unused-skills.md) | Retire review workflows, reviewer agents, and unused skills | accepted | 2026-11-18 |
 
 ## By Status
 
@@ -249,6 +250,7 @@ This directory contains important decisions about the project.
 - **0126**: Declare workflow relays as data and run them through relay.ts
 - **0127**: Launch the implement workflow on a host that runs relays itself
 - **0128**: Retire the plan-based build path for scoping and implement
+- **0129**: Retire review workflows, reviewer agents, and unused skills
 
 ### Deprecated
 
