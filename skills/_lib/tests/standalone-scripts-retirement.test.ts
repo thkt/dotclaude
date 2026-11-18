@@ -2,13 +2,11 @@
 // validate-outcome.py (skills/outcome/scripts/validate-outcome.py,
 // .ja/skills/outcome/scripts/validate-outcome.py), find-prior-research.py
 // (skills/research/scripts/find-prior-research.py, .ja/skills/research/scripts/find-prior-research.py;
-// the .ts port now lives under skills/scribe/scripts/, DR-0128)
-// and list-source-files.py (skills/census/scripts/list-source-files.py,
-// .ja/skills/census/scripts/list-source-files.py) are retired in favor of their .ts ports
-// (established by the preceding units U-002/U-003/U-004). This file guards the retirement
-// itself: no tracked file still names one of the three as a word, the EN / .ja outcome,
-// scribe and census SKILL.md and the EN / .ja assert.js invoke the .ts script by
-// path, and census's allowed-tools grants the script path instead of Bash(python3:*).
+// the .ts port now lives under skills/scribe/scripts/, DR-0128) are retired in favor of their
+// .ts ports (established by the preceding units). This file guards the retirement
+// itself: no tracked file still names either as a word, the EN / .ja outcome and scribe
+// SKILL.md and the EN / .ja assert.js invoke the .ts script by path, and no SKILL.md grants
+// Bash(python3:*).
 //
 // Same shape as workflows/_lib/tests/record-retirement.test.ts, which guards its own
 // retirement: offendersAmong/trackedFiles/assertDetectsAndMisses from
@@ -32,9 +30,9 @@ const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
 // A word boundary, not a bare substring: my-validate-outcome.py or validate-outcome.py.bak
-// would not count as one of the three retired scripts being named. Mirrors
-// record-retirement.test.ts's own RETIRED_PATTERN, generalized to the three filenames.
-const RETIRED_PATTERN = /(^|[^\w.-])(validate-outcome|find-prior-research|list-source-files)\.py\b/;
+// would not count as one of the retired scripts being named. Mirrors
+// record-retirement.test.ts's own RETIRED_PATTERN, generalized to the two filenames.
+const RETIRED_PATTERN = /(^|[^\w.-])(validate-outcome|find-prior-research)\.py\b/;
 
 // The one predicate the absence scan below relies on, factored out so the positive control can
 // drive it directly instead of re-deriving its own copy
@@ -45,12 +43,12 @@ function namesRetiredScript(content: string): boolean {
 
 test(
   "T-187 no tracked file outside docs/decisions/and docs/research/ names " +
-    "validate-outcome.py, find-prior-research.py or list-source-files.py as a word, and the " +
+    "validate-outcome.py or find-prior-research.py as a word, and the " +
     "same predicate flags a fixture line carrying one",
   () => {
     assertDetectsAndMisses(namesRetiredScript, "validate-outcome.py");
 
-    // This test's own file names all three retired scripts in comments to describe what it
+    // This test's own file names both retired scripts in comments to describe what it
     // checks; the historical directories are offendersAmong's own default.
     const offenders = offendersAmong(
       trackedFiles(REPO_ROOT),
@@ -62,7 +60,7 @@ test(
       offenders,
       [],
       "no tracked file outside docs/decisions/ and docs/research/ names " +
-        `validate-outcome.py, find-prior-research.py or list-source-files.py\n${offenders.join(", ")}`,
+        `validate-outcome.py or find-prior-research.py\n${offenders.join(", ")}`,
     );
   },
 );
@@ -114,18 +112,6 @@ const SCRIPT_INVOCATION_SOURCES: ScriptInvocationSource[] = [
     extract: (s) =>
       extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/find-prior-research\.(?:ts|py)/),
   },
-  {
-    label: "skills/census/SKILL.md",
-    path: "skills/census/SKILL.md",
-    extract: (s) =>
-      extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/list-source-files\.(?:ts|py)/),
-  },
-  {
-    label: ".ja/skills/census/SKILL.md",
-    path: ".ja/skills/census/SKILL.md",
-    extract: (s) =>
-      extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/list-source-files\.(?:ts|py)/),
-  },
   { label: "workflows/assert.js", path: "workflows/assert.js", extract: extractBundledArg },
   {
     label: ".ja/workflows/assert.js",
@@ -135,7 +121,7 @@ const SCRIPT_INVOCATION_SOURCES: ScriptInvocationSource[] = [
 ];
 
 test(
-  "T-188 the EN and .ja outcome, scribe and census SKILL.md and the EN and .ja " +
+  "T-188 the EN and .ja outcome and scribe SKILL.md and the EN and .ja " +
     "assert.js each invoke the .ts script by path and none names the .py, read from source text",
   () => {
     for (const { label, path, extract } of SCRIPT_INVOCATION_SOURCES) {
@@ -152,35 +138,9 @@ test(
   },
 );
 
-const CENSUS_ALLOWED_TOOLS_SOURCES = [
-  { label: "skills/census/SKILL.md", path: "skills/census/SKILL.md" },
-  { label: ".ja/skills/census/SKILL.md", path: ".ja/skills/census/SKILL.md" },
-];
-
-test(
-  "T-189 the EN and .ja census SKILL.md allowed-tools grant " +
-    "Bash(${CLAUDE_SKILL_DIR}/scripts/*) and no longer grant Bash(python3:*)",
-  () => {
-    for (const { label, path } of CENSUS_ALLOWED_TOOLS_SOURCES) {
-      const source = readFileSync(join(REPO_ROOT, path), "utf8");
-      const allowedToolsLine = source.match(/^allowed-tools:.*$/m);
-      assert.ok(allowedToolsLine, `${label}: allowed-tools line is extractable from source`);
-      const line = allowedToolsLine ? allowedToolsLine[0] : "";
-      // One fixed message per source, carrying no line value, so a --require-output anchor on
-      // the Red gate can seal on exactly one line rather than on a set that could reorder.
-      assert.ok(
-        line.includes("Bash(${CLAUDE_SKILL_DIR}/scripts/*)") && !line.includes("Bash(python3:*)"),
-        `${label} allowed-tools still grants Bash(python3:*)`,
-      );
-    }
-  },
-);
-
-// U-002: ablate's harness_elements and report Phase 1 / Phase 3 calls and allowed-tools grant
-// carry the same python3-premised shape census's did before T-189. T-407 generalizes the
-// absence check to every tracked SKILL.md rather than a second census-only two-file list, and
-// T-408 checks ablate's own Phase 1 / Phase 3 calls against the path grant its own frontmatter
-// names, the same source-read shape as T-188 above.
+// A python3 grant on a SKILL.md's allowed-tools line is the shape every retired .py script was
+// invoked through. T-407 checks every tracked SKILL.md rather than a per-skill list, so a skill
+// added later cannot bring the grant back unnoticed.
 
 function grantsPython3Bash(content: string): boolean {
   return content.includes("Bash(python3:*)");
@@ -205,55 +165,5 @@ test(
       [],
       `SKILL.md files still granting Bash(python3:*): ${offenders.join(", ")}`,
     );
-  },
-);
-
-const ABLATE_SKILL_MD_SOURCES = [
-  { label: "skills/ablate/SKILL.md", path: "skills/ablate/SKILL.md" },
-  { label: ".ja/skills/ablate/SKILL.md", path: ".ja/skills/ablate/SKILL.md" },
-];
-
-/** The path token immediately preceding `${scriptName}.ts` in `source`, read straight from the
- * text instead of restated as a literal (docs/wiki/workflow-const-source-text-check.md). */
-function extractScriptPath(source: string, scriptName: string): string | null {
-  const m = source.match(new RegExp(`[\\w$\\{\\}./-]+${scriptName}\\.ts\\b`));
-  return m ? m[0] : null;
-}
-
-/** Every `Bash(...)` grant on the frontmatter's allowed-tools line that names a path (contains
- * "/"), with its trailing `*` stripped and `${CLAUDE_SKILL_DIR}` resolved to skills/ablate. */
-function extractAblatePathGrants(source: string): string[] {
-  const allowedToolsLine = source.match(/^allowed-tools:.*$/m);
-  const line = allowedToolsLine ? allowedToolsLine[0] : "";
-  return [...line.matchAll(/Bash\(([^)]+)\)/g)]
-    .map((m) => m[1])
-    .filter((grant) => grant.includes("/"))
-    .map((grant) => grant.replace(/\*+$/, "").replaceAll("${CLAUDE_SKILL_DIR}", "skills/ablate"));
-}
-
-test(
-  "T-408 ablate's SKILL.md invokes its scripts through the path grant its frontmatter names, " +
-    "read from the file rather than restated",
-  () => {
-    for (const { label, path } of ABLATE_SKILL_MD_SOURCES) {
-      const source = readFileSync(join(REPO_ROOT, path), "utf8");
-      const harnessPath = extractScriptPath(source, "harness_elements");
-      const reportPath = extractScriptPath(source, "report");
-      assert.ok(harnessPath, `${label}: harness_elements.ts is not invoked by a file path`);
-      assert.ok(reportPath, `${label}: report.ts is not invoked by a file path`);
-
-      const grantPrefixes = extractAblatePathGrants(source);
-      assert.ok(grantPrefixes.length > 0, `${label}: allowed-tools grants no path at all`);
-
-      for (const scriptPath of [harnessPath, reportPath]) {
-        const resolved = (scriptPath as string)
-          .replaceAll("${CLAUDE_SKILL_DIR}", "skills/ablate")
-          .replace(/^\.\//, "");
-        assert.ok(
-          grantPrefixes.some((prefix) => resolved.startsWith(prefix)),
-          `${label}: allowed-tools grants no path covering ${scriptPath}`,
-        );
-      }
-    }
   },
 );

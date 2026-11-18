@@ -8,7 +8,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 
 このリポジトリは Claude AI のパーソナル設定を含み、以下を提供する。
 
-- 体系的な開発ワークフローのためのカスタムスラッシュコマンド (21 skills)
+- 体系的な開発ワークフローのためのカスタムスラッシュコマンド (18 skills)
 - コードレビュー、生成、分析のための専門 AI エージェント (23 agents)
 - AI 動作のコア原則と開発のベストプラクティス
 - 品質パイプラインバイナリ 6 本。いずれも未配線
@@ -24,7 +24,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 │   ├── core/             # AI 動作のコア原則
 │   ├── conventions/      # ドキュメント規約
 │   └── development/      # 開発パターン・方法論
-├── skills/               # スキルベースのナレッジモジュール (21 skills)
+├── skills/               # スキルベースのナレッジモジュール (18 skills)
 ├── agents/               # 専門 AI エージェント (23 agents)
 │   ├── critics/          # 発見事項への反論 (devils-advocate)
 │   ├── enhancers/        # コード改善・簡素化
@@ -63,7 +63,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 
 #### 利用可能なプラグイン
 
-- build: 自己完結の開発ワークフロー一式。install 時にリポジトリ全体を一度 clone し、全 skill/agent/workflow を build: namespace でロードする。`/scoping` で要求を整理して Issue に合意し、その Issue を `/implement` に渡す。`/implement` は implement workflow で実装から検証を経て draft PR と CI 確認まで進める。`/audit` と `/polish` は draft PR に対して人間が個別に起動する。同梱対象は reviewer/critic エージェントと implement/audit/polish/shake/assert/adrift workflow。`/challenge` `/sweep` `/outcome` `/dr` `/census` `/scribe` の 6 skill も含む。
+- build: 自己完結の開発ワークフロー一式。install 時にリポジトリ全体を一度 clone し、全 skill/agent/workflow を build: namespace でロードする。`/scoping` で要求を整理して Issue に合意し、その Issue を `/implement` に渡す。`/implement` は implement workflow で実装から検証を経て draft PR と CI 確認まで進める。`/audit` と `/polish` は draft PR に対して人間が個別に起動する。同梱対象は reviewer/critic エージェントと implement/audit/polish/shake/assert/adrift workflow。`/challenge` `/sweep` `/outcome` `/dr` `/scribe` の 5 skill も含む。
 
 ### Option 2: 手動インストール (フル設定)
 

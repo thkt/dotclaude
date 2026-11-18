@@ -4,7 +4,8 @@
 // the agents only that path called, and the issue-body-gate hook. The path from an Issue to a PR
 // becomes /scoping then /implement. /research and explorer-feature, its one caller's agent, go in a
 // later change (#803) after the earlier-report search moves to /scribe and the verification rules to
-// /scoping. This file guards the removal: the removed paths stay gone on
+// /scoping. DR-0129 then retires /ablate, /census and /transcribe with the _lib helpers only /ablate
+// used (#805). This file guards the removal: the removed paths stay gone on
 // both trees, and the skill, agent, rule, plugin, README and catalog prose hands no work to a
 // removed name.
 //
@@ -47,6 +48,15 @@ const REMOVED_PATHS = [
   "hooks/pre-bash/tests/_issue-body-gate-fixtures.ts",
   "skills/research",
   "agents/explorers/explorer-feature.md",
+  "skills/ablate",
+  "skills/census",
+  "skills/transcribe",
+  "skills/_lib/harness_elements.ts",
+  "skills/_lib/python_json.ts",
+  "skills/_lib/tests/harness-elements.test.ts",
+  "skills/_lib/tests/_tree-fixture.ts",
+  "skills/_lib/tests/fixtures/harness-elements-cases.json",
+  "workflows/_lib/tests/transcribe-retirement.test.ts",
 ];
 
 test("no path the build-path retirement removed exists on the English side or under .ja/", () => {
@@ -68,7 +78,7 @@ const SCANNED_FILE =
 // `docs/research/` and the link `../research/name.md` stay out, and `gh issue` / `git commit` carry
 // no slash at all.
 const RETIRED_COMMAND =
-  /(^|[\s`([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr|research)(?![A-Za-z0-9/-])/m;
+  /(^|[\s`([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr|research|ablate|census|transcribe)(?![A-Za-z0-9/-])/m;
 
 const RETIRED_NAMES = [
   "use-workflow-pageshot",
@@ -80,6 +90,9 @@ const RETIRED_NAMES = [
   "issue_body_gate",
   "skills/research",
   "explorer-feature",
+  "skills/ablate",
+  "skills/census",
+  "skills/transcribe",
 ];
 
 function namesRetiredRoute(content: string): boolean {
@@ -117,6 +130,12 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "「/research」で調べる。",
     "Read skills/research/SKILL.md for the template.",
     "Delegate to explorer-feature for the shape.",
+    "Measure the rule with /ablate first.",
+    "Run `/census` on a repository without DRs.",
+    "表計算は「/transcribe」で読む。",
+    "Read skills/ablate/SKILL.md for the arms.",
+    "Read skills/census/SKILL.md for the criteria.",
+    "Read skills/transcribe/SKILL.md for the converter.",
   ];
   const replaced = [
     "Plan it with /scoping first.",
@@ -146,6 +165,12 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "「/scoping」で調べる。",
     "Read skills/scoping/SKILL.md for the template.",
     "Delegate to enhancer-code for the shape.",
+    "Measure the rule with /scoping first.",
+    "Run `/scoping` on a repository without DRs.",
+    "表計算は「/scoping」で読む。",
+    "Read skills/scoping/SKILL.md for the arms.",
+    "Read skills/scoping/SKILL.md for the criteria.",
+    "Read skills/scoping/SKILL.md for the converter.",
   ];
   for (const line of flagged) {
     assert.equal(namesRetiredRoute(line), true, `flagged: ${line}`);
@@ -168,6 +193,8 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "Save the report under docs/research/ in the target repo.",
     "[research:name.md](../research/name.md)",
     "`docs/research/` に置く。",
+    "Do not transcribe each question or create a separate canonical source.",
+    "the /census-x flag",
   ]) {
     assert.equal(namesRetiredRoute(line), false, `not a slash command: ${line}`);
   }

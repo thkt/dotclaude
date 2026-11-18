@@ -3,7 +3,7 @@ export const meta = {
   description:
     "Deterministic workflow that scans for drift between DR Decision Outcomes and the current code. Per DR, it pipelines symbol extraction -> reference search -> semantic matching by manifest-routed reviewers, and writes a report with file:line + fix direction + priority to docs/audit/. Exhaustive per-DR listing and the reviewer routing table are enforced by the script.",
   whenToUse:
-    "When you want to check DR-code consistency or surface decayed decisions. For repositories without DRs, run census first. Name the target repository. Narrow the scope with focus, which takes DR ids or keywords; when omitted, every DR under docs/decisions/ is in scope.",
+    "When you want to check DR-code consistency or surface decayed decisions. Name the target repository. Narrow the scope with focus, which takes DR ids or keywords; when omitted, every DR under docs/decisions/ is in scope.",
   phases: [{ title: "Detect" }, { title: "Scan" }, { title: "Report" }],
 };
 
@@ -288,7 +288,7 @@ const detect = (await agent(
 if (!detect.found || !detect.drs.length) {
   return {
     stopped: "no-drs",
-    why: detect.reason || "No DRs found, run /census first",
+    why: detect.reason || "No DRs found",
   };
 }
 const localIds = new Set(detect.drs.map((a) => canonicalId(a.id)));

@@ -50,14 +50,14 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 ### Categories
 
 `/audit` and `/polish` are workflows under `workflows/*.js`, not Skills. The
-User-invocable row lists all 10 current Skills.
+User-invocable row lists all 7 current Skills.
 
 | Category       | Skills                                                                                                                          | Purpose                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | Workflow       | use-workflow-tdd-cycle                                                                                                          | Multi-phase workflow definitions |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                                                        | Domain knowledge for agents      |
 | CLI wrapper    | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud                                                                | CLI tool integration             |
-| User-invocable | ablate, census, challenge, dr, implement, outcome, scoping, scribe, sweep, transcribe                                           | Slash command entry points       |
+| User-invocable | challenge, dr, implement, outcome, scoping, scribe, sweep                                                                       | Slash command entry points       |
 
 ### Loading Mechanism
 
