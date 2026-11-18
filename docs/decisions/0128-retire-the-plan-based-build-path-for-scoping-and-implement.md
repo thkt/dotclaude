@@ -47,6 +47,10 @@ The plan-based path was stronger on one point in task 1. It handled a character 
 - Good, because the stops caused by the shape of a `## Plan` section end with the section
 - Bad, because a run costs about 1.5 to 2 times as much
 - Bad, because a bug in one file takes an agreed Issue and a whole run, where `/fix` changed it in the session
+- Good, because a branch name, a commit subject, and a PR body each have one shape, the one `workflows/implement.js` builds
+- Bad, because a change with no Issue (a DR, a configuration file, a page under `docs/`) takes an agreed Issue and a whole run, where `/commit` and `/pr` published it from the session
+- Bad, because what `/pr` did for a PR opened by hand is not replaced: finding the base branch from the reflog, the prose review of the body, the screenshot attached through `use-workflow-pageshot`, and the prompt log. `/implement` writes its own body and takes media through `capture`
+- Bad, because `/dr`, `/outcome`, `/sweep`, and `/research` write files in the session, and no skill carries those files to a PR. Until each starts from an Issue, they are committed with plain `git` and `gh` under no rule of this repository
 - Bad, because a run asks a human 1 to 2 decisions where the build workflow asked none
 - Bad, because a target repository needs a committed `.dotagents.json` (repository, remote, baseBranch, setup, check, ciChecks, capture) before its first run
 - Bad, because the per-unit Red confirmed by script (`workflows/code.js`) and the per-unit commit carrying plan trailers (DR-0088) are not replaced. `/implement` checks the configured check's exit code in script, and whether the added tests are enough rests on the independent review of the whole diff. A change that adds no test still exits 0 on the existing suite
@@ -55,7 +59,7 @@ The plan-based path was stronger on one point in task 1. It handled a character 
 
 ### Confirmation
 
-The removal change adds a retirement test of the form `workflows/_lib/tests/*-retirement.test.ts`. It fails when a removed path exists on the English side or under `.ja/`, and when a file under `skills`, `agents`, `workflows`, `rules`, or `hooks` names `/think`, `/issue`, `/qualify`, `/preview`, or the build workflow as a place to hand work to.
+The removal change adds a retirement test of the form `workflows/_lib/tests/*-retirement.test.ts`. It fails when a removed path exists on the English side or under `.ja/`, and when a file under `skills`, `agents`, `workflows`, `rules`, or `hooks` names `/think`, `/issue`, `/qualify`, `/preview`, `/fix`, `/commit`, `/checkout`, `/pr`, or the build workflow as a place to hand work to.
 
 ## Pros and Cons of the Options
 
@@ -80,9 +84,15 @@ Since 2026-10-20 the plan-based path was called 45 times in cantle, 25 in cli-re
 
 `/challenge` on 2026-11-18 returned NO-GO for this record as first drafted, because unspecified items remained. Both critic passes returned weakened and neither disputed keeping one path. The four items are settled above, and the record holds once the Migration Plan's steps 1 to 3 are done.
 
+Later the same day thkt decided that `/commit`, `/checkout`, and `/pr` go as well, so that every change starts from an Issue. `tests/manual-lane.test.ts` records why the three existed: each is the manual counterpart of a stage of the build workflow (Branch, Code, Ship), and that workflow is removed here. No DR decides to keep them. The first draft kept them because they were in use: since 2026-10-01 `/pr` was called in at least 27 sessions, `/commit` in 18, and `/checkout` in 9, in at least eight repositories, for changes that had no Issue.
+
+The three also carried rules that `workflows/implement.js` does not follow. It commits with the subject `<Issue title> (#<number>)`, where `/commit` requires `<type>(<scope>): <subject>`, and it builds its PR body from the review, where `/pr` fills a template. With the skills gone, the shapes `implement.js` builds are the only ones defined.
+
 ### Deprecation Target
 
-`/pr`, `/commit`, `/checkout`, `/research`, and `/challenge` stay, because each is called outside `/implement`.
+`/research` and `/challenge` stay, because each is called before an Issue is agreed.
+
+`/commit`, `/checkout`, and `/pr` go, with `use-workflow-pageshot`, which `/pr` alone calls. A change that has no Issue gets one through `/scoping` and goes through `/implement`.
 
 `/fix` goes with the path. It changes one to three files with no agreed Issue, and thkt judged on 2026-11-18 that a fix made that easily leaves the codebase in a worse state. A bug goes through `/scoping` and `/implement` like any other change. It was called 8 times since 2026-09-28.
 
@@ -91,6 +101,7 @@ Since 2026-10-20 the plan-based path was called 45 times in cantle, 25 in cli-re
 | `skills/think`, `skills/issue`, `skills/qualify`, `skills/preview`, `skills/slice` | `.ja/` mirrors, scripts, references, tests. `/slice` reads `/issue`'s validator and template and routes each slice to the build workflow |
 | `workflows/build.js`, `workflows/build/`, `workflows/code.js`, `workflows/code/` | `.ja/` mirrors, tests, and the retirement tests that read them |
 | `skills/fix` | `.ja/` mirror, references, tests |
+| `skills/commit`, `skills/checkout`, `skills/pr`, `skills/use-workflow-pageshot` | `.ja/` mirrors, references, templates, scripts, tests, and `tests/manual-lane.test.ts` |
 | `agents/reviewers/reviewer-conformance.md`, `agents/reviewers/reviewer-reuse.md` | `.ja/` mirrors. The build workflow is their one workflow caller |
 | `agents/generators/generator-test.md`, `agents/resolvers/resolver-build.md` | `.ja/` mirrors. `/fix` is their one caller |
 | `hooks/pre-bash/issue_body_gate.ts` | Its tests. It reads `skills/issue`'s validator and templates and is registered nowhere (DR-0123) |
@@ -100,7 +111,6 @@ Files that stay and name the removed path are rewritten in the removal change.
 | File | What it holds |
 | --- | --- |
 | `.claude-plugin/marketplace.json`, `README.md`, `.ja/README.md` | The plugin is named `build` and described by the route `/issue` then the build workflow (DR-0083) |
-| `skills/checkout/tests/branch-naming.test.js`, `skills/commit/tests/message-rules.test.js`, `skills/pr/tests/template-priority.test.js` | Each matches its skill's rule against the text `build.js` or `code.js` hands an agent. Each is pointed at `implement.js` or its rule loses the check by a stated choice |
 | `skills/scribe/tests/structure-page.test.ts`, `workflows/tests/unit-caps-ssot.test.js` | The unit caps of `build.js`, which go with it |
 
 Two things the removal leaves as they are.
@@ -113,7 +123,7 @@ Two things the removal leaves as they are.
 1. Commit a `.dotagents.json` to the repositories that used the plan-based path and have none, which are this repository and blog. cantle, cli-recall, cli-scout, feedback-loop, and `~/.agents` have one
 2. Add to `/scoping` the root cause of a bug as something settled before the Issue is agreed. DR-0094 required it of a bug plan, and `skills/scoping` names neither a bug nor a root cause today
 3. Carry every open Issue that holds a `## Plan` through the build workflow, or agree it again through `/scoping`, in each repository that used the path. `/implement` returns an Issue with no recorded agreement to `/scoping`
-4. Remove the workflows and the skills in one change, so no skill that stays hands work to a route that is gone. `/research` and `use-workflow-tdd-cycle` name `/fix` and are rewritten in it
+4. Remove the workflows and the skills in one change, so no skill that stays hands work to a route that is gone. `/research` and `use-workflow-tdd-cycle` name `/fix` and are rewritten in it. `/commit`, `/checkout`, `/pr`, and `use-workflow-pageshot` go in the same change
 5. In the change that removes the code a DR governs, mark that DR superseded by this one and rewrite the wiki pages that derive from it. The DRs are DR-0084, DR-0085, DR-0087, DR-0088, DR-0089, DR-0094, DR-0102, and DR-0103, and for `/fix` DR-0002, DR-0050, and DR-0099. DR-0083 stays while the plugin keeps its name. DR-0071 keeps its part about `assert`
 
 ### Rollback Plan
@@ -126,3 +136,4 @@ The removal is one revert per change. An Issue written by `/scoping` carries no 
 - The cost of a run rises above twice the measured $10.97 on a task of the same size
 - A repository cannot commit a `.dotagents.json` and has work to carry to a PR
 - A PR that `/implement` published is merged with no test for a behavior its Issue lists as a done condition
+- A PR opened by hand, outside `/implement`, is merged after `/commit` and `/pr` are removed
