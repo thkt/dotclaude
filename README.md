@@ -9,7 +9,7 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows (21 skills)
+- Custom slash commands for systematic development workflows (18 skills)
 - Specialized AI agents for code review, generation, and analysis (23 agents)
 - Core AI operation principles and development best practices
 - Six quality pipeline binaries, none of them wired
@@ -26,7 +26,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── core/             # Core AI operation principles
 │   ├── conventions/      # Documentation conventions
 │   └── development/      # Development patterns & methodologies
-├── skills/               # Skill-based knowledge modules (21 skills)
+├── skills/               # Skill-based knowledge modules (18 skills)
 ├── agents/               # Specialized AI agents (23 agents)
 │   ├── critics/          # Finding challengers (devils-advocate)
 │   ├── enhancers/        # Code enhancers & simplifiers
@@ -73,8 +73,7 @@ install specific workflow sets:
   workflow to implementation, verification, a draft PR, and CI confirmation.
   Humans invoke /audit and /polish separately on the draft PR.
   Bundles the reviewer and critic agents, the implement / audit / polish / shake
-  / assert / adrift workflows, and /challenge, /sweep, /outcome, /dr, /census,
-  /scribe.
+  / assert / adrift workflows, and /challenge, /sweep, /outcome, /dr, /scribe.
 
 ### Option 2: Manual Installation (Full Configuration)
 

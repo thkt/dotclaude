@@ -130,7 +130,7 @@ test("every agent naming a bundled asset pairs the plugin form with the fallback
 // up as a prompt that did not appear.
 test("no skill grants Bash without narrowing it to the commands it names", async () => {
   const files = instructionFiles().filter((f) => f.rel.endsWith("/SKILL.md"));
-  assert.ok(files.length > 40, `the number scanned (${files.length})`);
+  assert.ok(files.length >= 20, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
     const grant = (await readFile(full, "utf8")).match(/^allowed-tools:.*$/m)?.[0] ?? "";
     assert.doesNotMatch(grant, /(^|\s)Bash(\s|$)/, `${lang}: ${rel} grants Bash unnarrowed`);

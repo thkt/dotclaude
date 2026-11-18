@@ -47,14 +47,14 @@ Skills は「ナレッジモジュール」。AI がタスク実行時にドメ�
 
 ### カテゴリ
 
-`/audit`、`/polish` は `workflows/*.js` の Workflow であり、Skill ではない。User-invocable Skills は下表の 10 件。
+`/audit`、`/polish` は `workflows/*.js` の Workflow であり、Skill ではない。User-invocable Skills は下表の 7 件。
 
 | カテゴリ       | Skills                                                                                                                          | 用途                         |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | Workflow       | use-workflow-tdd-cycle                                                                                                          | 多段ワークフロー定義         |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                                                        | エージェント向けドメイン知識 |
 | CLI ラッパー   | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud                                                                | CLI ツール統合               |
-| User-invocable | ablate, census, challenge, dr, implement, outcome, scoping, scribe, sweep, transcribe                                           | スラッシュコマンドの入口     |
+| User-invocable | challenge, dr, implement, outcome, scoping, scribe, sweep                                                                       | スラッシュコマンドの入口     |
 
 ### ロード機構
 
