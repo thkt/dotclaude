@@ -46,6 +46,7 @@ The plan-based path was stronger on one point in task 1. It handled a character 
 - Good, because one path carries the rules for Issues, checks, and PR bodies
 - Good, because the stops caused by the shape of a `## Plan` section end with the section
 - Bad, because a run costs about 1.5 to 2 times as much
+- Bad, because a bug in one file takes an agreed Issue and a whole run, where `/fix` changed it in the session
 - Bad, because a run asks a human 1 to 2 decisions where the build workflow asked none
 - Bad, because a target repository needs a committed `.dotagents.json` (repository, remote, baseBranch, setup, check, ciChecks, capture) before its first run
 - Bad, because the per-unit Red confirmed by script (`workflows/code.js`) and the per-unit commit carrying plan trailers (DR-0088) are not replaced. `/implement` checks the configured check's exit code in script, and whether the added tests are enough rests on the independent review of the whole diff. A change that adds no test still exits 0 on the existing suite
@@ -62,7 +63,7 @@ The removal change adds a retirement test of the form `workflows/_lib/tests/*-re
 
 - Good, because a repository with no `.dotagents.json` keeps a route
 - Good, because a task that suits a fixed plan keeps the lower cost
-- Bad, because every rule about Issues and PR bodies stays written twice, and `/fix` and `/research` each name which path to hand off to
+- Bad, because every rule about Issues and PR bodies stays written twice, and `/research` names which path to hand off to
 - Bad, because the choice per task is left to the session, which the outcome moves away from
 
 ### Keep the plan-based path and retire `/scoping` and `/implement`
@@ -81,13 +82,17 @@ Since 2026-10-20 the plan-based path was called 45 times in cantle, 25 in cli-re
 
 ### Deprecation Target
 
-`/fix`, `/pr`, `/commit`, `/checkout`, `/research`, and `/challenge` stay, because each is called outside `/implement`. `/fix` hands a change of four or more files to `/scoping` instead of `/think`.
+`/pr`, `/commit`, `/checkout`, `/research`, and `/challenge` stay, because each is called outside `/implement`.
+
+`/fix` goes with the path. It changes one to three files with no agreed Issue, and thkt judged on 2026-11-18 that a fix made that easily leaves the codebase in a worse state. A bug goes through `/scoping` and `/implement` like any other change. It was called 8 times since 2026-09-28.
 
 | Removed | With its |
 | --- | --- |
 | `skills/think`, `skills/issue`, `skills/qualify`, `skills/preview`, `skills/slice` | `.ja/` mirrors, scripts, references, tests. `/slice` reads `/issue`'s validator and template and routes each slice to the build workflow |
 | `workflows/build.js`, `workflows/build/`, `workflows/code.js`, `workflows/code/` | `.ja/` mirrors, tests, and the retirement tests that read them |
+| `skills/fix` | `.ja/` mirror, references, tests |
 | `agents/reviewers/reviewer-conformance.md`, `agents/reviewers/reviewer-reuse.md` | `.ja/` mirrors. The build workflow is their one workflow caller |
+| `agents/generators/generator-test.md`, `agents/resolvers/resolver-build.md` | `.ja/` mirrors. `/fix` is their one caller |
 | `hooks/pre-bash/issue_body_gate.ts` | Its tests. It reads `skills/issue`'s validator and templates and is registered nowhere (DR-0123) |
 
 Files that stay and name the removed path are rewritten in the removal change.
@@ -108,8 +113,8 @@ Two things the removal leaves as they are.
 1. Commit a `.dotagents.json` to the repositories that used the plan-based path and have none, which are this repository and blog. cantle, cli-recall, cli-scout, feedback-loop, and `~/.agents` have one
 2. Add to `/scoping` the root cause of a bug as something settled before the Issue is agreed. DR-0094 required it of a bug plan, and `skills/scoping` names neither a bug nor a root cause today
 3. Carry every open Issue that holds a `## Plan` through the build workflow, or agree it again through `/scoping`, in each repository that used the path. `/implement` returns an Issue with no recorded agreement to `/scoping`
-4. Remove the workflows, then the skills. The change that removes the build workflow also rewrites `/fix`, so no skill hands work to a route that is gone
-5. In the change that removes the code a DR governs, mark that DR superseded by this one and rewrite the wiki pages that derive from it. The DRs are DR-0084, DR-0085, DR-0087, DR-0088, DR-0089, DR-0094, DR-0102, and DR-0103. DR-0083 stays while the plugin keeps its name. DR-0071 keeps its part about `assert`
+4. Remove the workflows and the skills in one change, so no skill that stays hands work to a route that is gone. `/research` and `use-workflow-tdd-cycle` name `/fix` and are rewritten in it
+5. In the change that removes the code a DR governs, mark that DR superseded by this one and rewrite the wiki pages that derive from it. The DRs are DR-0084, DR-0085, DR-0087, DR-0088, DR-0089, DR-0094, DR-0102, and DR-0103, and for `/fix` DR-0002, DR-0050, and DR-0099. DR-0083 stays while the plugin keeps its name. DR-0071 keeps its part about `assert`
 
 ### Rollback Plan
 
