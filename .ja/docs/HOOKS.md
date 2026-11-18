@@ -47,7 +47,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 
 | イベント         | Matcher            | フック                                                                                                                                                            |
 | ---------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PreToolUse       | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread, pre-bash/issue_body_gate |
+| PreToolUse       | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread |
 | PreToolUse       | Write/Edit         | edit/rust_pre_edit.ts                                                                                                                                             |
 | PostToolUse      | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/rumdl_check.ts, edit/mirror_prose_guard.ts                                                                     |
 | PostToolUse      | Bash               | post-bash/scribe_prompt                                                                                                                                           |
@@ -64,7 +64,6 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 | -------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
 | package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed | パッケージマネージャーコマンドを ni 系へ変換。マネージャー自身のフラグと bun 内蔵のテストランナーは素通しする |
 | body_proofread.ts          | PreToolUse(Bash) | fail-closed | gh issue/pr create の本文と commit メッセージを校正し、起票には構造チェックを添える (advisory)                |
-| issue_body_gate.ts         | PreToolUse(Bash) | fail-closed | 本文が骨格から外れた `gh issue create` を deny する                                                           |
 
 ### edit/
 
@@ -106,7 +105,7 @@ hook が読み込む共有コード。単体では登録しない。`japanese.ts
 | モジュール      | 利用元                                                      |
 | --------------- | ----------------------------------------------------------- |
 | command_scan.ts | body_proofread, wiki_scene, scribe_trigger, gh_filing, security の 3 本 |
-| gh_filing.ts    | body_proofread, issue_body_gate                             |
+| gh_filing.ts    | body_proofread                                              |
 | hook_payload.ts | hook すべてと mirror_prose, rust_target, amphetamine_state  |
 | mirror_prose.ts | mirror_prose_guard と .ja/ 一括検査テスト                   |
 | japanese.ts     | body_proofread, mirror_prose, textlint_fix                  |

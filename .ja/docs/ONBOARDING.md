@@ -2,23 +2,15 @@
 
 ## How We Use Claude
 
-2026-08-17 時点の実測。過去 30 日に更新されたセッションログ 6018 件から、`<command-name>` の出現を集計した。
+2026-08-17 時点の実測。過去 30 日に更新されたセッションログ 6018 件から、`<command-name>` の出現を集計した。その後に消えたコマンドは載せていない。
 
 ```text
 Top Skills & Commands
 /clear ████████████████████ 111
-/build █████░░░░░░░░░░░░░░░ 28
-/qualify ████░░░░░░░░░░░░░░░░ 23
-/polish ████░░░░░░░░░░░░░░░░ 21
 /model ███░░░░░░░░░░░░░░░░░ 14
 /compact ███░░░░░░░░░░░░░░░░░ 14
 /exit ██░░░░░░░░░░░░░░░░░░ 10
-/issue ██░░░░░░░░░░░░░░░░░░ 9
-/think █░░░░░░░░░░░░░░░░░░░ 8
 /code-review █░░░░░░░░░░░░░░░░░░░ 6
-/audit █░░░░░░░░░░░░░░░░░░░ 6
-/assert █░░░░░░░░░░░░░░░░░░░ 6
-/adrift █░░░░░░░░░░░░░░░░░░░ 6
 ```
 
 MCP Servers: 同じ期間の呼び出しは 0 件。
@@ -45,16 +37,8 @@ MCP Servers: 同じ期間の呼び出しは 0 件。
 
 ### Skills to Know About
 
-- `/build`. Plan 節付き issue を end-to-end で実装し draft PR を作る。最もよく使う入口。
-- `/qualify`. issue を build へ渡せる状態か点検する。build 起動前に走らせる。
-- `/polish`. Codex の外部レンズによる review と cleanup。機能の落着後に slop を捕まえる。
-- `/issue`. 構造化した title と body で GitHub Issue を作る。plan があれば `## Plan` 節へ転記する。
-- `/think`. plan を生成する設計探索 (issue の Plan 節へ転記)。非自明な新機能のエントリポイント。
-- `/audit`. 専門 reviewer (security, type safety, silent failures 等) を diff に対して fan-out する。
-- `/assert`. merge 可否の独立判定。Codex を隔離 worktree で並走させる。
-- `/adrift`. DR と現行コードの乖離をスキャンする。
-- `/commit`. ステージ済み diff から Conventional Commits メッセージを生成する。手書きする代わりに編集後へ実行する。
-- `/challenge`. 提案、設計、計画への悪魔の代弁者パス。アーキテクチャ判断を確定する前に使う。
+- `/scoping`. 要求、完了条件、検証方法を整理し、合意した範囲を GitHub Issue にする。機能とバグのどちらで始めるときもここから入る。
+- `/implement`. 合意済みの Issue を implement workflow で draft PR まで進める。
 - `/compact`. 使用率が 70% に近づいたらコンテキストを要約・圧縮する。長いセッションで先回り実行する。
 
 ## Team Tips

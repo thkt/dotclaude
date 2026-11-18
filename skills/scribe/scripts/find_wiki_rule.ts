@@ -48,9 +48,8 @@ export interface Report {
   scenes: string[];
 }
 
-// The same subset workflows/code.js's globToRegExp accepts: `**/` crosses directories, `*`
-// stops at one. Keeping the two in step is what glob-parity guards; widening one side alone
-// would make a page reach an implementation the other side never routes to.
+// The subset of glob syntax a wiki page's `globs` uses: `**/` crosses directories, `*` stops
+// at one.
 const SEGMENT = /(\*\*\/|\*)/;
 const ESCAPE = /[.+^${}()|[\]\\]/g;
 
@@ -187,8 +186,8 @@ export function main(argv: readonly string[]): number {
     return 2;
   }
 
-  // Preserving the pre-scene 2-key shape when --scene is absent is what keeps every existing
-  // caller (skills/think, skills/fix) byte-for-byte unaffected by this axis's addition.
+  // Without --scene the output keeps the two keys it had before the scene axis, matched and
+  // related.
   const output: Record<string, unknown> = { matched: report.matched, related: report.related };
   if (scene !== undefined) {
     output.scenes = report.scenes;

@@ -72,7 +72,6 @@ hook は stdin から JSON payload を受け取り、stdout に JSON か additio
 | PreToolUse        | `Bash`             | `security/rm_to_trash.ts`                       | なし               | 15      |
 | PreToolUse        | `Bash`             | `security/git_sandbox_guard.ts`                 | なし               | 15      |
 | PreToolUse        | `Bash`             | `pre-bash/body_proofread.ts`                    | なし               | 60      |
-| PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.ts`                   | なし               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | なし               | 30      |
 | PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.ts`                         | `**/*.rs`          | 60      |
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
@@ -96,7 +95,6 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `git_sandbox_guard.ts`          | Bash                    | サンドボックス下で tree を書き換える git 呼び出しを deny          | fail-close |
 | `package_manager_rewrite.ts`    | Bash                    | パッケージ マネージャ コマンドを ni 系へ書き換え、決定は常に allow | advisory  |
 | `body_proofread.ts`             | Bash                    | gh filing と commit の本文を校正し additionalContext で返す       | advisory  |
-| `issue_body_gate.ts`            | Bash                    | `gh issue create` の本文をタイトル型のテンプレートと照合し、乖離と比較不能をどちらも deny | fail-close |
 | `client_identifier_gate.ts`     | Bash                    | 本リポジトリの commit で、外部に置いた識別子リストの語を含む staged diff を deny | fail-close |
 | `rust_pre_edit.ts`              | Write / Edit (`*.rs`)   | clippy の指摘を additionalContext として注入                      | advisory  |
 | `rust_post_edit.ts`             | Write / Edit (`*.rs`)   | `cargo fmt` の後に clippy を再実行し指摘を返す                    | advisory  |
@@ -133,7 +131,7 @@ fail-close は判断できない入力を通さない方針、advisory は決定
 | `model`         | 実行モデルの指定                                              | セッションのモデル         |
 | `argument-hint` | 引数の形をユーザーに示す文字列                                | 引数なし                   |
 | `context`       | `fork` を指定すると本文脈を汚さず別文脈で走る                 | 本文脈                     |
-| `agent`         | 対応する agent 名。reviewer 系の skill が持つ                 | なし                       |
+| `agent`         | 対応する agent 名                                             | なし                       |
 | `user-invocable`| `false` ならスラッシュ コマンド一覧に出さない                 | `true`                     |
 
 ### 補助資産
@@ -153,33 +151,12 @@ skill ディレクトリの下位ディレクトリは名前で役割が決ま�
 
 | skill                              | model | ユーザー起動 | 成果物または副作用                                  |
 | ---------------------------------- | ----- | ------------ | --------------------------------------------------- |
-| `census`                           | opus  | 可           | DR 未記録の判断の候補一覧                           |
-| `challenge`                        | 継承  | 可           | GO / NO-GO の判定と反証                             |
-| `checkout`                         | haiku | 可           | git ブランチの作成                                  |
-| `commit`                           | haiku | 可           | git commit の実行                                   |
 | `dr`                               | 継承  | 可           | `docs/decisions/` への MADR v4 ファイル追加         |
-| `fix`                              | opus  | 可           | 1 から 3 ファイルの修正                             |
-| `issue`                            | opus  | 可           | GitHub Issue の作成                                 |
 | `outcome`                          | 継承  | 可           | `.claude/OUTCOME.md` の生成と更新                   |
-| `pr`                               | opus  | 可           | draft PR の作成                                     |
-| `preview`                          | opus  | 可           | PR 差分と Plan の突合結果                           |
-| `qualify`                          | opus  | 可           | build-ready / needs-plan / needs-fix / needs-split  |
-| `research`                         | opus  | 可           | 調査結果。fork 文脈で走る                           |
 | `scribe`                           | 継承  | 可           | `docs/wiki/` への PR 提案                           |
-| `slice`                            | opus  | 可           | 依存順に並べた GitHub Issue 群                      |
-| `think`                            | opus  | 可           | units と test_command を持つ構造化 plan             |
-| `transcribe`                       | 継承  | 可           | 表計算ファイルの Markdown 化                        |
-| `use-cli-codegraph`                | 継承  | 不可         | codegraph の呼び出し方の知識                        |
 | `use-cli-gcloud`                   | 継承  | 不可         | gsheet と gdoc の呼び出し方の知識                   |
 | `use-cli-recall`                   | 継承  | 不可         | recall の呼び出し方の知識                           |
 | `use-cli-scout`                    | 継承  | 不可         | scout の呼び出し方の知識                            |
-| `use-context-reviewer-readability` | 継承  | 不可         | `reviewer-readability` を fork で起動               |
-| `use-context-reviewer-security`    | 継承  | 不可         | `reviewer-security` を fork で起動                  |
-| `use-context-reviewer-silence`     | 継承  | 不可         | `reviewer-silence` を fork で起動                   |
-| `use-context-reviewer-testability` | 継承  | 不可         | `reviewer-testability` を fork で起動               |
-| `use-context-root-cause-analysis`  | 継承  | 不可         | 仮説消去による原因分析の手順                        |
-| `use-workflow-pageshot`            | opus  | 不可         | スクリーンショットまたは動画のパス                  |
-| `use-workflow-tdd-cycle`           | 継承  | 不可         | RGRC サイクルの手順                                 |
 
 ## Agent 契約
 
@@ -194,94 +171,25 @@ agent は必ず fork 文脈で走り、呼び出し元の会話履歴を持た�
 | `tools`       | 許すツールの列挙                                 |
 | `model`       | 実行モデル                                       |
 
-指摘を返す agent は `agents/_lib/finding-schema.md` の Base Fields に従う。Agent 行は起動側が埋めるため、reviewer 自身は書かない。
-
-| フィールド     | 内容                                          |
-| -------------- | --------------------------------------------- |
-| `Severity`     | critical / high / medium / low                |
-| `Category`     | 領域別の分類                                  |
-| `Location`     | `file:line`                                   |
-| `Evidence`     | コード断片または観測                          |
-| `Trigger`      | 再現できる発火条件                            |
-| `Reasoning`    | 問題である理由                                |
-| `Fix`          | 修正案                                        |
-| `Verification` | 検証の種類と問い                              |
-
 ### 一覧
 
-reviewer は 18 体である。`audit` の ROUTING が拡張子から選ぶのはうち 15 体で、`causation`, `readability`, `conformance` の 3 体は skill か `build` から直接呼ぶ。`agents/_lib/` は agent 本体ではなく、finding の書式 (`finding-schema.md`) と重大度の較正例 (`calibration-examples.md`) を置く共有資産である。
-
-| 分類      | agent                                                                                                                   | model                        |
-| --------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| critics   | `critic-audit`, `critic-design`, `critic-evidence`                                                                      | opus                         |
-| enhancers | `enhancer-code`, `enhancer-evidence`, `enhancer-integration`                                                            | opus                         |
-| explorers | `explorer-feature`                                                                                                      | opus                         |
-| generators| `generator-snapshot`, `generator-test`                                                                                  | sonnet / opus                |
-| resolvers | `resolver-build`                                                                                                        | opus                         |
-| reviewers | `reviewer-accessibility`, `reviewer-causation`, `reviewer-conformance`, `reviewer-coverage`, `reviewer-design`, `reviewer-duplication`, `reviewer-readability`, `reviewer-react-pattern`, `reviewer-rust`, `reviewer-security`, `reviewer-silence`, `reviewer-testability` | opus |
-| reviewers | `reviewer-efficiency`, `reviewer-operations`, `reviewer-progressive`, `reviewer-prompt`, `reviewer-resilience`, `reviewer-reuse` | sonnet |
+| 分類    | agent           | model |
+| ------- | --------------- | ----- |
+| critics | `critic-design` | opus  |
 
 ## Workflow 契約
 
 ### 起動と引数
 
-workflow は `Workflow({name, args})` で起動する。args はオブジェクト、JSON 文字列、素の文字列のいずれでも受け取り、各スクリプトの `parseArgs` が 1 つの形に正規化する。素の文字列は workflow ごとの短縮形として解釈される。`audit`, `polish`, `assert` では scope、`adrift` では DR ディレクトリか id 列になる。
+workflow は `Workflow({name, args})` で起動する。args はオブジェクト、JSON 文字列、素の文字列のいずれでも受け取り、スクリプトが 1 つの形に正規化する。素の文字列は workflow ごとの短縮形として解釈され、`implement` は Issue として読む。
 
 `repo` は全 workflow で必須である。絶対パスが無い呼び出しは `{stopped: "no-repo"}` を返し、対象リポジトリを取り違えたまま走ることはない。
 
-| workflow | args                                                     | phases                                                              | stopped                                                        |
-| -------- | -------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `build`  | `{issue, repo, base?}`                                   | Load / Revalidate / Branch / Code / Cleanup / Verify / Ship         | 14 種 (下表)                                                   |
-| `code`   | `{plan, repo, model?, commit?, issue?, untracked_baseline?}` | Implement / Verify                                               | `no-plan`, `no-repo`                                           |
-| `audit`  | `{scope?, focus?, repo, noLimit?, skipPreflight?}`        | Pre-flight / Route / Review / Challenge / Verify / Integrate / Snapshot | `no-repo`                                                  |
-| `polish` | `{scope?, repo, mode?, base?}`                           | Review / Challenge / Fix / Rejudge / Cleanup                        | `no-repo`                                                      |
-| `assert` | `{scope?, base?, repo}`                                  | Bootstrap / Evidence / Challenge / Triage / Synthesize / Cleanup    | `no-repo`, `no-changes`, `codex-missing`                       |
-| `shake`  | `{scope?, base?, repo}`                                  | Route / Shake / Fix                                                 | `no-repo`, `no-targets`                                        |
-| `adrift` | `{dir?, repo, focus?}`                                   | Detect / Scan / Report                                              | `no-repo`, `no-drs`, `no-matching-drs`                         |
-
-`build` の停止コードは、その issue の `## Plan` を直せば防げたかどうかで 2 群に分かれる。スクリプトはこの区別を `PLAN_QUALITY` として持ち、実行ごとに 1 行の jsonl に記録する。
-
-| 群                       | コード                                                                                        |
-| ------------------------ | --------------------------------------------------------------------------------------------- |
-| Plan の改善で防げる      | `no-plan`, `extraction-failed`, `invalid-plan`, `extraction-mismatch`, `oversized-unit`, `plan-drift` |
-| Plan とは無関係          | `no-issue`, `no-repo`, `invalid-base`, `no-issue-body`, `dirty-branch-point`, `revalidate-failed`, `revalidate-incomplete`, `code-failed` |
+今ある workflow は `implement` だけである。その phase は[COMMANDS.md](./COMMANDS.md)の implement workflow の節が持つ。
 
 ### 返り値
 
 返り値は呼び出し元が読む唯一の一次情報である。報告書ファイルを書く workflow でも、判断に要る数はここに載る。
-
-| workflow | 主なキー                                                                                          |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| `build`  | `pr_url`, `committed`, `unstaged`, `conformance_status`, `conformance_high`, `missing_tests`, `untouched_plan_files`, `backlog_candidates` |
-| `code`   | `completed`, `skipped`, `anomalies`, `commits`, `verification`, `tests_pass`, `gates_pass`        |
-| `audit`  | `findings`, `survivors`, `needs_context`, `tally`, `assignments`, `zero_reviewer_files`, `snapshot` |
-| `polish` | `findings`, `survivors`, `fixed`, `reopened`, `needs_context`, `cleanup`                          |
-| `assert` | `gate`, `gate_reason`, `build`, `tests`, `issues`, `root_causes`, `outcome_ref`, `report`         |
-| `shake`  | `ecosystem`, `runs_per_dimension`, `targets`, `dropped`, `blockers`                               |
-| `adrift` | `report_path`, `report_written`, `findings`, `priorities`, `unverifiable`, `external_refs`, `followup_candidates` |
-
-### スクリプトが握る判断
-
-OUTCOME に書いた「品質保証を LLM の裁量から決定論的な層へ移す」は、この列で具体になる。以下の判断は agent に返させず、スクリプトが計算する。
-
-| workflow | スクリプトが持つ判断                                                                    |
-| -------- | ---------------------------------------------------------------------------------------- |
-| `audit`  | ファイル glob から reviewer への割り当て表                                              |
-| `polish` | confirmed / disputed / downgraded / needs_context の振り分けと、修正後の再判定           |
-| `shake`  | 4 次元それぞれ 10 回という実行回数と、confirmed-flaky / latent-flaky / stable の分類     |
-| `assert` | Ready / Ready (caveat) / NotReady の三値ゲートを build と tests と issues から計算       |
-| `adrift` | DR ごとの網羅列挙と reviewer ルーティング、file:line 単位の重複統合                      |
-| `build`  | plan の抽出結果の検証、id 突合、停止コードの決定                                        |
-| `code`   | unit ごとの Red 確認と、テストを持たない unit の直接実装への振り分け                    |
-
-### ネスト
-
-workflow は他の workflow を 1 階層だけ入れ子にできる。ルーティング表を写経せずに再利用するための構成である。重い保証 (`audit`, `polish`) は draft PR に対して人が起動する。
-
-| 呼び出し元 | 呼ぶ workflow    | 目的                                       |
-| ---------- | ---------------- | ------------------------------------------ |
-| `build`    | `code`           | unit ごとの TDD 実装                       |
-| `assert`   | `audit`          | 静的証拠の収集                             |
 
 ## 品質ゲート
 
@@ -326,7 +234,6 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | -------------------------- | --------------------------------------------------------------- |
 | `decision-records.test.js` | DR 番号の重複と、見出しの番号がファイル名と一致すること         |
 | `live-instructions.test.js`| 指示文の表記。旧称 ADR、home 起点パス、絞りのない Bash 権限、`.claude/` の無い workspace パス |
-| `manual-lane.test.js`      | 手動レーンの skill と build のステージ対応、共有ルールの読み手表記 |
 | `phase-handoff.test.js`    | 受け渡す Phase を受け取る側が名指ししていること                 |
 | `prose-language.test.js`   | 英語側のテスト名が日本語でないこと                              |
 | `skill-h1.test.js`         | wrapper skill の H1 が自名、ユーザー起動 skill の H1 がスラッシュ コマンド始まりであること |

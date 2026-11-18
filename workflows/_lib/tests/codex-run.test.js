@@ -44,7 +44,7 @@ test("T-050 the CLI invoked through a symlinked path to codex-run.ts with no arg
   });
 });
 
-// The shape workflows/build.js's obj(required, properties) produces: required is a subset of
+// The shape a workflow script's obj(required, properties) can produce: required is a subset of
 // properties on purpose, which is what OpenAI strict mode rejects.
 const FETCH_SCHEMA = {
   type: "object",
@@ -96,7 +96,6 @@ test("strictify descends into array items", () => {
 });
 
 test("strictify gives an object declared with no required list every key as nullable", () => {
-  // build.js's reference_module is written this way: properties with no required list at all.
   const schema = {
     type: ["object", "null"],
     properties: { kind: { type: "string" }, reason: { type: "string" } },
@@ -231,7 +230,7 @@ test("parseArgv leaves Object.prototype untouched when --args carries a __proto_
   assert.equal(args.repo, "/tmp/repo");
 });
 
-// The unit shape build.js requires: files and tests are arrays the script reads .length from,
+// A unit shape whose files and tests are arrays a script reads .length from,
 // so a null arriving there throws inside the vm instead of taking a degradation branch.
 const UNIT_SCHEMA = {
   type: "object",
@@ -288,14 +287,14 @@ test("pruneNulls leaves a required null in place for findSchemaViolation to catc
   assert.equal(findSchemaViolation(pruned, UNIT_SCHEMA), "units[0].files is null");
 });
 
-test("stubs.workflow throws the message build.js's sibling() matches on an unresolved name", async () => {
+test("stubs.workflow rejects an unresolved name with the fixed missing-name message", async () => {
   const tmp = mkdtempSync(join(tmpdir(), "codex-run-test-"));
   try {
     const stubs = createStubs({ repo: "/tmp/repo", tmp });
     await assert.rejects(
       () => stubs.workflow("does-not-exist", {}),
-      // build.js:159 tests the message for this exact substring before falling back to the
-      // plugin namespace, so a reworded throw silently disables that fallback.
+      // A calling script can test the message for this exact substring, so a reworded throw
+      // breaks that check without a type error.
       (err) => err.message.includes("workflow('does-not-exist'): no workflow with that name"),
     );
   } finally {

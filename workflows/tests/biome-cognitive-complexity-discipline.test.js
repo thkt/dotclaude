@@ -63,7 +63,7 @@ const COMPLEXITY_15 = `export function nested(a, b, c, d, e) {
 }
 `;
 
-// T-003/T-004's shared script: a bare top-level `return`, the shape workflows/adrift.js uses
+// T-003/T-004's shared script: a bare top-level `return`, a shape a workflow script can use
 // (the harness runs it as a function body). Under `workflows/` biome must skip it; under `src/`
 // the same source must raise a parse diagnostic, which proves the skip is path-specific.
 const TOP_LEVEL_RETURN_SCRIPT = `if (typeof shouldSkip === "undefined") {

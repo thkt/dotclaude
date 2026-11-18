@@ -9,7 +9,7 @@
 // helper gives its callers, for the same real temp-repo commit sequence T-235 replays. The
 // temp repository itself, and the GIT_ENV identity git() runs commits under, both come from
 // workflows/_lib/tests/_git-repo.ts's withTempRepo -- the same disposable-repo helper
-// verify-run.test.ts and workflows/assert/tests/worktree.test.ts share.
+// verify-run.test.ts uses.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";

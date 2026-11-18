@@ -179,7 +179,7 @@ test("T-005 a pair with one extra statement on the EN side is judged divergent",
 });
 
 // The fixtures above are the algorithm's positive and negative controls. Without this test the
-// suite would still pass on the day workflows/_lib/gate.ts and its .ja mirror drift apart, since
+// suite would still pass on the day workflows/_lib/claude-run.ts and its .ja mirror drift apart, since
 // nothing else compares a pair the repository actually tracks.
 test("every tracked EN and .ja .ts pair matches once comments are removed", async () => {
   // .ts only. MIRROR.md has the .ja side translate prompts and message strings, which are

@@ -1,7 +1,6 @@
 /// <reference types="node" />
-// Shared by workflows/build/tests/record.test.ts and workflows/assert/tests/record.test.ts,
-// and open to an argv-based CLI fixture such as #631's validate-issue-body: each needs to
-// launch a CLI under a temp HOME, replay a frozen fixture case (argv and stdin in, exit code
+// Shared by workflows/implement/tests/record.test.ts and the argv-based CLI tests under
+// skills/ (such as skills/dr/tests/validate-dr.test.ts): each needs to launch a CLI under a temp HOME, replay a frozen fixture case (argv and stdin in, exit code
 // and stdout out), and compare the result against the frozen case with certain
 // values (a minted uuid, a resolved history path) checked by shape instead of exact value.
 // This module gives that replay one home, in the same shape as
@@ -14,16 +13,10 @@
 //     optional -- only a history-backed CLI seeds a file before the run and checks appended
 //     rows after it; an argv CLI with no file of its own supplies neither.
 //   - record layer, on top of the core: historyPath, seedHistory, readLines, assertRowLine.
-//     Adds the $HOME/.claude/history/<name>.jsonl concept the build and assert recorders
-//     share. historyPath calls workflows/_lib/cli.ts's historyPath(home, name) -- the same
-//     function the CLIs under test call -- rather than hand-joining ".claude"/"history" a
-//     second time the way workflows/build/tests/record.test.ts and
-//     workflows/assert/tests/record.test.ts each used to.
-//
-// T-123 and T-124 exercise the shape-aware comparison below (key-order check, placeholder
-// resolution) directly against workflows/build/record.ts; workflows/build/tests/record.test.ts
-// and workflows/assert/tests/record.test.ts exercise it again, end to end, through their own
-// fixtures.
+//     Adds the $HOME/.claude/history/<name>.jsonl concept a history-recording CLI writes.
+//     historyPath calls workflows/_lib/cli.ts's historyPath(home, name) -- the same
+//     function the CLI under test calls -- rather than hand-joining ".claude"/"history" a
+//     second time.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

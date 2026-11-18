@@ -479,7 +479,7 @@ class WikiPageFormat(unittest.TestCase):
                 self.assertIsInstance(glob, str, f"{page.name}: each glob is a string")
 
     def test_a_page_carries_only_the_sections_of_its_kind(self) -> None:
-        """A page carrying both kinds' sections leaves think's citation form undecidable."""
+        """A page carrying both kinds' sections leaves the form a reader cites it in undecidable."""
         for page in self.pages():
             text = page.read_text(encoding="utf-8")
             structure = "\nkind: structure\n" in text.split("---", 2)[1]
@@ -500,7 +500,7 @@ class WikiPageFormat(unittest.TestCase):
 
     def test_no_page_traces_its_由来_to_a_retired_dr(self) -> None:
         """A page whose 由来 names a retired DR states a shape the successor already replaced,
-        and think copies that shape into a plan verbatim."""
+        and a reader citing the page copies that shape verbatim."""
         retired = ("superseded by", "deprecated", "rejected")
         for page in self.pages():
             for dr in self.origins(page):

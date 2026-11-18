@@ -45,7 +45,7 @@ const SINGLE_ESCAPES: Record<string, string> = {
   0: "\0",
 };
 
-// Not a raw slice of the source: code.js escapes an apostrophe inside its single-quoted
+// Not a raw slice of the source: a script can escape an apostrophe inside a single-quoted
 // description (`plan\'s`), and keeping the backslash would not match what readMeta's vm
 // evaluation returns.
 const extractStringField = (body: string, key: string): string | null => {

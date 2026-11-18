@@ -347,7 +347,7 @@ export function createHost({
     }
     return value;
   };
-  // A script that nests another one (build.js nests code) runs it on the same host.
+  // A script that nests another one runs it on the same host.
   stubs.workflow = async (name: string, wfArgs: JsonValue) => {
     onLog(`[workflow] ${name}`);
     const nested = await runWorkflow(resolveWorkflowPath(name), {

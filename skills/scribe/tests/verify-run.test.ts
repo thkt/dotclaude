@@ -9,8 +9,7 @@
 // the git-index mode check. runCli's cleared PATH is restored to the real one for these cases
 // because verify_run.ts shells out to the real `git` binary against the temp repo. The temp
 // repository itself comes from workflows/_lib/tests/_git-repo.ts's withTempRepo, the same
-// disposable-repo helper skills/scribe/tests/scripts-contract.test.ts and
-// workflows/assert/tests/worktree.test.ts share, so this file carries no GIT_ENV of its own --
+// disposable-repo helper skills/scribe/tests/scripts-contract.test.ts uses, so this file carries no GIT_ENV of its own --
 // GIT_ENV is imported from that helper.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";

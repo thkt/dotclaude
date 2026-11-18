@@ -1,6 +1,5 @@
-// SKILLS.md § H1 settles the two forms. Nothing enforced them, and the use-context-* /
-// use-workflow-* skills drifted to free-form titles while use-cli-* held (#79 #80 #81 #83 #84
-// #86 #89).
+// SKILLS.md § H1 settles the two forms. Nothing enforced them, and some skills drifted to
+// free-form titles while use-cli-* held (#79 #80 #81 #83 #84 #86 #89).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";

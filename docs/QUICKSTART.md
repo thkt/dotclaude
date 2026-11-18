@@ -2,37 +2,28 @@
 
 ## 1. Basic Commands
 
-| Command     | When to Use                                |
-| ----------- | ------------------------------------------ |
-| `/fix`      | Small bugs, fixes across 1-3 files         |
-| `/research` | Investigate before doing                   |
-| `/think`    | Plan a feature or a 4+ file change         |
-| `/issue`    | File the plan into an issue's Plan section |
-| `/audit`    | Review code quality                        |
-| `/commit`   | Create commit message                      |
+| Command      | When to Use                                                                  |
+| ------------ | ---------------------------------------------------------------------------- |
+| `/scoping`   | Settle the requirements and done conditions of a feature or a bug into an agreed Issue |
+| `/implement` | Implement an agreed Issue up to a draft PR                                   |
 
 ## 2. Decision Flow
 
 ```text
-Is it a quick fix? → /fix
-Need to understand first? → /research → /fix
-Building a feature? → /research → /think → /issue → build workflow → /audit
+A feature or a bug → /scoping → /implement
 ```
 
 ## 3. Example Session
 
 ```bash
-# Quick bug fix
-> /fix the login button is not working
+# Bug fix
+> /scoping the login button is not working
 
 # Feature development
-> /research how does auth work in this codebase?
-> /think add logout functionality
-> /issue
+> /scoping add logout functionality
 
-# Hand the issue number to the build workflow, then once the draft PR is up
-> /audit
-> /commit
+# Hand over the agreed Issue's number to reach a draft PR
+> /implement 123
 ```
 
 ## 4. Key Principles

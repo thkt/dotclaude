@@ -1,6 +1,5 @@
 {
   "extraPaths": [
-    "workflows/build",
     "skills/dr/scripts",
     ".ja/skills/dr/scripts",
     "skills/scribe/scripts",

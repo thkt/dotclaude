@@ -10,15 +10,15 @@ import test from "node:test";
 import { extractBracedBody } from "./_brace.ts";
 
 test("T-048 extractBracedBody returns null when the brace opened after the marker never closes", () => {
-  const source = 'const meta = { "name": "audit", "phases": [';
+  const source = 'const meta = { "name": "implement", "phases": [';
   assert.strictEqual(extractBracedBody(source, "const meta = {"), null);
 });
 
 test("T-049 extractBracedBody returns the inner text of a balanced literal whose string values carry nested braces", () => {
-  const source = 'const meta = { "description": "Workflow({name:\'audit\'})" };';
+  const source = 'const meta = { "description": "Workflow({name:\'implement\'})" };';
   assert.strictEqual(
     extractBracedBody(source, "const meta = {"),
-    ' "description": "Workflow({name:\'audit\'})" ',
+    ' "description": "Workflow({name:\'implement\'})" ',
   );
 });
 

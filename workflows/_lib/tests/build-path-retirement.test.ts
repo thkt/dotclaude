@@ -11,11 +11,12 @@
 // measurement harness under skills/_lib (#807). #823 then removes /challenge, whose attack
 // critic-design runs when /scoping or /dr calls it, and the use-cli-ast-grep and use-cli-codegraph
 // wrappers, whose commands run without them (DR-0056's criterion). This file guards the removal: the removed paths stay gone on
-// both trees, and the skill, agent, rule, plugin, README and catalog prose hands no work to a
-// removed name.
+// both trees, and no tracked file names a removed command, agent, hook, skill path or workflow.
 //
-// The prose scan covers the files #799 names. Comment-only references in code and the remaining
-// docs/ and docs/wiki pages are #799's follow-up Issue, so they sit outside SCANNED_FILE.
+// #800 widened the scan from the skill, agent, rule, plugin, README and catalog prose to every
+// tracked file. isScanned leaves out exactly these: the historical records (docs/decisions/,
+// docs/research/), docs/wiki/ (whose pages a separate Issue moves), this file, and the absence
+// tests that hold a removed name as a literal so they can check it stays gone.
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -118,10 +119,20 @@ test("no path the build-path retirement removed exists on the English side or un
   assert.deepEqual(present, [], `removed paths still on disk: ${present.join(", ")}`);
 });
 
-// skills/**/*.md, agents/**/*.md, rules/**/*.md, the plugin manifest, the README and the two
-// catalogs, each with its .ja/ mirror.
-const SCANNED_FILE =
-  /^(\.ja\/)?((skills|agents|rules)\/.+\.md|\.claude-plugin\/marketplace\.json|README\.md|docs\/(COMMANDS|SKILLS_AGENTS)\.md)$/;
+const THIS_FILE = "workflows/_lib/tests/build-path-retirement.test.ts";
+const ABSENCE_TESTS = [
+  "skills/implement/tests/workflow-contract.test.js",
+  "workflows/_lib/tests/codex-run.test.js",
+];
+
+function isScanned(path: string): boolean {
+  return !(
+    /^(\.ja\/)?docs\/(decisions|research|wiki)\//.test(path) ||
+    path === THIS_FILE ||
+    path.endsWith("-retirement.test.ts") ||
+    ABSENCE_TESTS.includes(path)
+  );
+}
 
 // A slash command counts only after a line start, whitespace, a backtick or an opening bracket,
 // and only when no letter, digit, slash or hyphen follows. The brackets include the full-width
@@ -168,8 +179,19 @@ const RETIRED_NAMES = [
   "use-cli-codegraph",
 ];
 
+// The removed skill and workflow paths, and the pageshot name. A path counts only when no letter,
+// digit or hyphen continues it, so `skills/prompt-audit`, `workflows/codex-run.ts` and
+// `build.json` stay out. build.js and code.js also need no letter, digit, dot or hyphen before
+// them, so `esbuild.js` and `vscode.js` stay out.
+const RETIRED_PATH =
+  /(workflows\/(build|code)|skills\/(think|issue|qualify|preview|slice|fix|commit|checkout|pr))(?![A-Za-z0-9_-])|(?<![A-Za-z0-9_.-])(build|code)\.js(?![A-Za-z0-9_])|pageshot/;
+
 function namesRetiredRoute(content: string): boolean {
-  return RETIRED_COMMAND.test(content) || RETIRED_NAMES.some((name) => content.includes(name));
+  return (
+    RETIRED_COMMAND.test(content) ||
+    RETIRED_PATH.test(content) ||
+    RETIRED_NAMES.some((name) => content.includes(name))
+  );
 }
 
 test("the retired-route predicate flags each removed name written in a fixture and passes the same lines once the name is replaced", () => {
@@ -238,6 +260,24 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "Read skills/challenge/SKILL.md for the verdict.",
     "Load use-cli-ast-grep for a structural rewrite.",
     "呼び出し元は use-cli-codegraph で調べる。",
+    "skills/fix/SKILL.md was removed",
+    "「skills/fix/」を消した",
+    "// history-recording CLIs (workflows/build/record.ts, workflows/implement/record.ts).",
+    '    "workflows/build",',
+    "// workflows/code/tests/verify-commit.test.ts shared this read.",
+    "// build.js's sibling() matches on the message.",
+    "// Not a raw slice of the source: code.js escapes an apostrophe.",
+    "// the same subset workflows/code.js's globToRegExp accepts",
+    "// every existing caller (skills/think, skills/fix) stays unaffected",
+    "Read skills/think/SKILL.md for the plan.",
+    "Read skills/issue/SKILL.md for the title.",
+    "Read skills/qualify/SKILL.md for the verdict.",
+    "Read skills/preview/SKILL.md for the match.",
+    "Read skills/slice/SKILL.md for the order.",
+    "Read skills/commit/SKILL.md for the subject.",
+    "Read skills/checkout/SKILL.md for the branch.",
+    "See .ja/skills/pr/SKILL.md for the body.",
+    "Attach the screenshot pageshot took.",
   ];
   const replaced = [
     "Plan it with /scoping first.",
@@ -302,6 +342,24 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "Read skills/scoping/SKILL.md for the verdict.",
     "Load use-cli-recall for a structural rewrite.",
     "呼び出し元は use-cli-recall で調べる。",
+    "skills/scoping/SKILL.md was removed",
+    "「skills/scoping/」を消した",
+    "// history-recording CLIs (workflows/implement/record.ts, workflows/implement/record.ts).",
+    '    "skills/dr/scripts",',
+    "// skills/scribe/tests/verify-run.test.ts shared this read.",
+    "// implement.js's sibling() matches on the message.",
+    "// Not a raw slice of the source: implement.js escapes an apostrophe.",
+    "// the same subset workflows/implement.js's globToRegExp accepts",
+    "// every existing caller (skills/scoping, skills/implement) stays unaffected",
+    "Read skills/scoping/SKILL.md for the plan.",
+    "Read skills/scoping/SKILL.md for the title.",
+    "Read skills/scoping/SKILL.md for the verdict.",
+    "Read skills/implement/SKILL.md for the match.",
+    "Read skills/scoping/SKILL.md for the order.",
+    "Read skills/implement/SKILL.md for the subject.",
+    "Read skills/implement/SKILL.md for the branch.",
+    "See .ja/skills/implement/SKILL.md for the body.",
+    "Attach the screenshot capture took.",
   ];
   for (const line of flagged) {
     assert.equal(namesRetiredRoute(line), true, `flagged: ${line}`);
@@ -316,9 +374,9 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "git checkout -b",
     "uses: actions/checkout@v4",
     "gh pr create --draft",
-    "skills/fix/SKILL.md was removed",
+    "docs/fix/SKILL.md was removed",
     "the /preview-x flag",
-    "「skills/fix/」を消した",
+    "「docs/fix/」を消した",
     "（PR/issue の参照）",
     "[actions/checkout](x)",
     "Save the report under docs/research/ in the target repo.",
@@ -334,15 +392,39 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "critic-design challenges the proposal.",
     "Run ast-grep with a pattern.",
     "codegraph init creates .codegraph/.",
+    "Read skills/prompt-audit/SKILL.md for the checks.",
+    "Run workflows/codex-run.ts on the host.",
+    "esbuild.js bundles the entry.",
+    "vscode.js and unicode.js load first.",
+    "Write the build.json manifest.",
+    "the skills/fixture directory",
   ]) {
-    assert.equal(namesRetiredRoute(line), false, `not a slash command: ${line}`);
+    assert.equal(namesRetiredRoute(line), false, `not a retired name: ${line}`);
   }
 });
 
-test("no skill, agent, rule, plugin manifest, README or catalog names a retired command, agent, hook, skill path or workflow", () => {
-  const scanned = trackedFiles(REPO_ROOT).filter((path) => SCANNED_FILE.test(path));
-  assert.ok(scanned.includes("README.md"), "the scan reaches README.md");
-  assert.ok(scanned.includes(".ja/docs/COMMANDS.md"), "the scan reaches the .ja catalog");
+test("no tracked file outside the records, the wiki and the absence tests names a retired command, agent, hook, skill path or workflow", () => {
+  const scanned = trackedFiles(REPO_ROOT).filter(isScanned);
+  for (const path of [
+    "README.md",
+    ".ja/docs/COMMANDS.md",
+    "docs/SPEC.md",
+    "workflows/_lib/cli.ts",
+    ".ja/workflows/_lib/cli.ts",
+    "pyrightconfig.json",
+    "workflows/_lib/tests/retirement.test.ts",
+  ]) {
+    assert.ok(scanned.includes(path), `the scan reaches ${path}`);
+  }
+  for (const path of [
+    THIS_FILE,
+    "docs/wiki/retire-rename-procedure.md",
+    "docs/decisions/0128-retire-the-plan-based-build-path-for-scoping-and-implement.md",
+    "workflows/_lib/tests/pr-body-retirement.test.ts",
+    ...ABSENCE_TESTS,
+  ]) {
+    assert.ok(!scanned.includes(path), `the scan leaves out ${path}`);
+  }
   const offenders = offendersAmong(
     scanned,
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),

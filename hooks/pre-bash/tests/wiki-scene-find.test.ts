@@ -7,7 +7,7 @@
 //
 // Spawns the hook (run(), from _hook-harness.ts) rather than importing wiki_scene.ts
 // in-process: it ends in an unguarded process.exit(main()) (DR-0114, no isMainModule guard,
-// same as hooks/pre-bash/body_proofread.ts and hooks/pre-bash/issue_body_gate.ts), so an
+// same as hooks/pre-bash/body_proofread.ts), so an
 // in-process import would exit the test runner's own process the moment the import ran.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
