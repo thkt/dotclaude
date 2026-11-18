@@ -22,7 +22,7 @@ Facts are `file:line` or command output, inferences `inferred from X`, unverifie
 
 ## Phase 1: Outcome Anchor
 
-Read `.claude/OUTCOME.md`. If absent, generate the stub via /outcome. If the investigation steps into Non-goals, confirm with the user before proceeding.
+Read `.claude/OUTCOME.md`. If absent, generate the stub via `/outcome --no-publish`. If the investigation steps into Non-goals, confirm with the user before proceeding.
 
 ## Phase 2: Prior Research Scan
 

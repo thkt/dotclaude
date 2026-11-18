@@ -41,11 +41,14 @@ Rate each candidate 1 to 10 on how often it would happen and how bad it would be
 
 ## Steps
 
-1. Read `.claude/OUTCOME.md` and confirm the sweep target sits inside the outcome. If absent, generate the stub via `/outcome`.
-2. Look for the lens's "What to find" across every target file. Split a wide area across Explore subagents.
-3. Apply "Whether to fix" to each candidate.
-4. Fix the candidates one at a time, and run the tests after each. When a test fails, revert that fix and list it.
-5. When every candidate sits in either "Fixed" or "Listed", return the result in the output shape and stop.
+1. Run `git status --porcelain` and record the result. Do not fix a file that shows a change there; put it under "Not looked at". This keeps a person's uncommitted changes out of the PR.
+2. Read `.claude/OUTCOME.md` and confirm the sweep target sits inside the outcome. If absent, generate the stub via `/outcome --no-publish`. Leave a `.claude/OUTCOME.md` made this way out of your commit.
+3. Look for the lens's "What to find" across every target file. Split a wide area across Explore subagents.
+4. Apply "Whether to fix" to each candidate.
+5. Fix the candidates one at a time, and run the tests after each. When a test fails, revert that fix and list it.
+6. When every candidate sits in either "Fixed" or "Listed", assemble the result in the output shape.
+7. When nothing was fixed, return the output without publishing and stop.
+8. Otherwise read ${CLAUDE_SKILL_DIR}/../_lib/publish.md and open a draft PR with the values in § Publish Values. Return the output and the PR URL, and stop.
 
 ## Output
 
@@ -54,6 +57,17 @@ Rate each candidate 1 to 10 on how often it would happen and how bad it would be
 | Fixed | file:line, what was fixed, the tests run and their result |
 | Listed | file:line, the problem, frequency × severity, why it was not fixed |
 | Not looked at | Files left out of the target, and why |
+
+## Publish Values
+
+Step 8 passes publish.md the values below.
+
+| Value | Contents |
+| --- | --- |
+| branch | `refactor/sweep-<lens>` |
+| subject | `[Chore] <title>`, the title naming the lens and how many fixes were made |
+| body | The three output sections (Fixed, Listed, Not looked at) |
+| files | The files that were fixed |
 
 ## Sources
 

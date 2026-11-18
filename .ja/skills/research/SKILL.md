@@ -22,7 +22,7 @@ argument-hint: "[research subject or question]"
 
 ## Phase 1: アウトカム参照
 
-`.claude/OUTCOME.md` を読む。存在しない場合は `/outcome` で雛形を生成する。調査が Non-goals へ踏み込む場合は、進める前にユーザーへ確認する。
+`.claude/OUTCOME.md` を読む。存在しない場合は `/outcome --no-publish` で雛形を生成する。調査が Non-goals へ踏み込む場合は、進める前にユーザーへ確認する。
 
 ## Phase 2: 過去調査スキャン
 

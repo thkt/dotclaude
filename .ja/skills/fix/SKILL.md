@@ -22,7 +22,7 @@ argument-hint: "[bug or issue description]"
 
 ## アウトカム参照
 
-ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら `/outcome` で stub を生成。バグまたは修正が outcome 状態の中にあるか確認する。範囲外なら § エスカレーション。
+ビルドチェックの前に `.claude/OUTCOME.md` を読む。不在なら `/outcome --no-publish` で stub を生成。バグまたは修正が outcome 状態の中にあるか確認する。範囲外なら § エスカレーション。
 
 ## ビルドチェック
 

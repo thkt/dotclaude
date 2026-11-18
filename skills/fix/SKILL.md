@@ -22,7 +22,7 @@ The shape of `$ARGUMENTS` decides the entry point. Scope is limited to small, we
 
 ## Outcome Anchor
 
-Read `.claude/OUTCOME.md` before Build Check. If absent, generate the stub via /outcome. Confirm the bug or fix lives inside the outcome state. If outside, § Escalation.
+Read `.claude/OUTCOME.md` before Build Check. If absent, generate the stub via `/outcome --no-publish`. Confirm the bug or fix lives inside the outcome state. If outside, § Escalation.
 
 ## Build Check
 

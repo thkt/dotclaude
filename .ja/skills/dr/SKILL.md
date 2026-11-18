@@ -2,7 +2,7 @@
 name: dr
 description: MADR v4 形式で Decision Record (DR) を自動採番付きで作成する。対象はアーキテクチャに限らず、覆しにくく文脈なしでは意外に見える決定すべて。
 when_to_use: DR作成, ADR作成, 技術決定, アーキテクチャ決定, decision record
-allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(git:*) Bash(gh pr:*) Bash(gh repo view:*) Bash(cat:*)
 model: opus
 argument-hint: "[decision title]"
 ---
@@ -36,6 +36,18 @@ argument-hint: "[decision title]"
 | 5    | Challenge | 既存 DR の原則に例外を作る、または既存 DR を supersede する場合だけ `/challenge` を通し、verdict と成立条件を More Information に 1 行で残す                         |
 | 6    | Validate  | ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE" を実行する。exit 0 なら合格。落ちた項目は `errors[]` に入り、`warnings[]` は参考                               |
 | 7    | Index     | ${CLAUDE_SKILL_DIR}/scripts/update-index.ts を実行し、`dr_dir/README.md` を再生成する                                                                                |
+| 8    | Publish   | ${CLAUDE_SKILL_DIR}/../_lib/publish.md を読み、§ 公開の値を渡して draft PR にする                                                                                    |
+
+## 公開の値
+
+Publish で publish.md に渡す値は下表のとおり。採用ゲートで DR を作らなかったときはプロセスに入らないので、公開もしない。
+
+| 値       | 中身                                                                                                              |
+| -------- | ----------------------------------------------------------------------------------------------------------------- |
+| branch   | `docs/dr-<filename>`。`<filename>` は Pre-Check の `filename` から `.md` を除いたもの。proposed の DR を編集するときは Pre-Check を実行しないので、編集した DR のファイル名から `.md` を除いたもの |
+| 件名     | `[Docs] DR-<番号> <DR の H1>`                                                                                     |
+| 本文     | Decision Outcome の「Chosen option」の段落、置き換えた DR の番号、DR ファイルの repo 相対パス                     |
+| ファイル | DR のファイル、再生成した `README.md`、status を変えた旧 DR、同じ変更で書き直した wiki ページ                     |
 
 ## 決定タイプ
 
@@ -62,13 +74,14 @@ frontmatter は任意。書くなら下表のフィールドを使う。
 
 ## 既存 DR の更新
 
-status が proposed なら本文を直接編集し、Validate と Index を実行する。accepted 以降は次の手順で新しい DR へ置き換える。旧 DR で変えるのは `status` と `date` だけで、決定内容は保持する。
+status が proposed なら本文を直接編集し、Validate、Index、Publish を実行する。accepted 以降は次の手順で新しい DR へ置き換える。旧 DR で変えるのは `status` と `date` だけで、決定内容は保持する。
 
-1. プロセスで新規 DR を作成する。置き換える決定は既に記録済みなので、採用ゲートは通さない
+1. プロセスの Pre-Check から Index までで新規 DR を作成する。置き換える決定は既に記録済みなので、採用ゲートは通さない
 2. 新規 DR の More Information で先行 DR を引用する (例: `Supersedes DR-NNNN`)
 3. 旧 DR の `status:` を `superseded by DR-NNNN` に変更する
 4. 旧 DR の `date:` を当日に更新する
 5. ${CLAUDE_SKILL_DIR}/scripts/update-index.ts を実行してインデックスを更新する
+6. プロセスの Publish で公開する。置き換えの経路で公開するのはこの 1 回だけ
 
 ## エラー処理
 

@@ -2,7 +2,7 @@
 name: dr
 description: Create a Decision Record (DR) in MADR v4 format with automatic numbering. Its subject is not limited to architecture; it covers every decision that is hard to reverse and surprising without context.
 when_to_use: DR作成, ADR作成, 技術決定, アーキテクチャ決定, decision record
-allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) AskUserQuestion Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(git:*) Bash(gh pr:*) Bash(gh repo view:*) Bash(cat:*)
 model: opus
 argument-hint: "[decision title]"
 ---
@@ -36,6 +36,18 @@ Proceed to the process only when all three conditions below hold. When one is mi
 | 5    | Challenge | Only for a DR that carves an exception into an existing DR's principle or supersedes one, run `/challenge` and record the verdict and the condition it holds under as one line in More Information |
 | 6    | Validate  | Run ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE". exit 0 passes. What failed lands in `errors[]`, and `warnings[]` is advisory                                                            |
 | 7    | Index     | Run ${CLAUDE_SKILL_DIR}/scripts/update-index.ts to regenerate `dr_dir/README.md`                                                                                                                   |
+| 8    | Publish   | Read ${CLAUDE_SKILL_DIR}/../_lib/publish.md and open a draft PR with the values in § Publish Values                                                                                                |
+
+## Publish Values
+
+The Publish stage passes publish.md the values below. When the Adoption Gate creates no DR, the process never starts, so nothing is published.
+
+| Value   | Contents                                                                                                            |
+| ------- | ------------------------------------------------------------------------------------------------------------------- |
+| branch  | `docs/dr-<filename>`, where `<filename>` is Pre-Check's `filename` without `.md`. Editing a proposed DR runs no Pre-Check, so `<filename>` is the edited DR's file name without `.md` |
+| subject | `[Docs] DR-<number> <the DR's H1>`                                                                                  |
+| body    | The "Chosen option" paragraph of Decision Outcome, the number of any DR it supersedes, the DR file's repo-relative path |
+| files   | The DR file, the regenerated `README.md`, the old DR whose status changed, wiki pages rewritten in the same change   |
 
 ## Decision Type
 
@@ -62,13 +74,14 @@ The frontmatter is optional. When it is written, it uses the fields below.
 
 ## Updating an Existing DR
 
-When the status is proposed, edit the body directly and run Validate and Index. From accepted onward, replace it with a new DR through the steps below. Only `status` and `date` change in the old DR; the decision content stays.
+When the status is proposed, edit the body directly and run Validate, Index, and Publish. From accepted onward, replace it with a new DR through the steps below. Only `status` and `date` change in the old DR; the decision content stays.
 
-1. Create the new DR through the process. The Adoption Gate does not apply, since the decision it replaces is already on record
+1. Create the new DR through the process from Pre-Check to Index. The Adoption Gate does not apply, since the decision it replaces is already on record
 2. Cite the predecessor in the new DR's More Information (e.g. `Supersedes DR-NNNN`)
 3. In the old DR, change `status:` to `superseded by DR-NNNN`
 4. Update the old DR's `date:` to today
 5. Run ${CLAUDE_SKILL_DIR}/scripts/update-index.ts to refresh the index
+6. Run the process's Publish stage. The superseding path publishes this once only
 
 ## Error Handling
 
