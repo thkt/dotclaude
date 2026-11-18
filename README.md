@@ -9,8 +9,8 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows (22 skills)
-- Specialized AI agents for code review, generation, and analysis (24 agents)
+- Custom slash commands for systematic development workflows (21 skills)
+- Specialized AI agents for code review, generation, and analysis (23 agents)
 - Core AI operation principles and development best practices
 - Six quality pipeline binaries, none of them wired
   command
@@ -26,11 +26,10 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── core/             # Core AI operation principles
 │   ├── conventions/      # Documentation conventions
 │   └── development/      # Development patterns & methodologies
-├── skills/               # Skill-based knowledge modules (22 skills)
-├── agents/               # Specialized AI agents (24 agents)
+├── skills/               # Skill-based knowledge modules (21 skills)
+├── agents/               # Specialized AI agents (23 agents)
 │   ├── critics/          # Finding challengers (devils-advocate)
 │   ├── enhancers/        # Code enhancers & simplifiers
-│   ├── explorers/        # Codebase exploration agents
 │   ├── generators/       # Snapshot generation
 │   └── reviewers/        # Code review agents (16 reviewers)
 ├── docs/                  # Design docs & guides (DRs under decisions/)
@@ -74,8 +73,8 @@ install specific workflow sets:
   workflow to implementation, verification, a draft PR, and CI confirmation.
   Humans invoke /audit and /polish separately on the draft PR.
   Bundles the reviewer and critic agents, the implement / audit / polish / shake
-  / assert / adrift workflows, and /challenge, /research, /sweep, /outcome, /dr,
-  /census, /scribe.
+  / assert / adrift workflows, and /challenge, /sweep, /outcome, /dr, /census,
+  /scribe.
 
 ### Option 2: Manual Installation (Full Configuration)
 
@@ -187,8 +186,8 @@ needs `codegraph init` per repository to create `.codegraph/` before use.
 | Tool        | Required By                           | Purpose                                                      | Install                            |
 | ----------- | ------------------------------------- | ------------------------------------------------------------ | ---------------------------------- |
 | `gh`        | `/scoping`, `/implement`              | GitHub API access                                            | `brew install gh && gh auth login` |
-| `scout`     | `/research`, use-cli-scout skill      | Web search, page fetch, GitHub repo exploration, Slack fetch | `brew install thkt/tap/scout`      |
-| `codegraph` | `/research`, use-cli-codegraph skill  | Symbol-level structure queries (callers, impact)             | `npm i -g @colbymchenry/codegraph` |
+| `scout`     | `/scoping`, use-cli-scout skill       | Web search, page fetch, GitHub repo exploration, Slack fetch | `brew install thkt/tap/scout`      |
+| `codegraph` | use-cli-codegraph skill               | Symbol-level structure queries (callers, impact)             | `npm i -g @colbymchenry/codegraph` |
 
 **Slack reading**: `scout fetch <slack-url>` reads any Slack message/thread URL
 directly. No additional setup needed if scout is configured.

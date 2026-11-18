@@ -1,20 +1,20 @@
 # Verification Procedures
 
-Defines the procedures referenced by /research's Phase 4 and the Phase 5 sweep.
+Defines the procedures referenced by `/scoping`'s Phase 2.
 
-Which one applies is decided by the kind of finding. Use Cross-method verification for exhaustiveness findings and Primary-source verification for external-behavior claims, structurally, with no self-judged exclusion of a finding. Verifying library API behavior applies ${CLAUDE_SKILL_DIR}/../../rules/development/SOURCING.md.
+Which one applies is decided by the kind of claim to be written in the Issue. Use Cross-method verification for exhaustiveness claims and Primary-source verification for external-behavior claims, structurally, with no self-judged exclusion of a claim. Verifying library API behavior applies ${CLAUDE_SKILL_DIR}/../../rules/development/SOURCING.md.
 
 ## Cross-method verification
 
-Apply each trigger structurally; no self-judged exclusion of a finding is allowed. Apply this verification when a finding claiming exhaustiveness drives downstream PR scope or crosses a repo boundary. The targets are claims like "no caller", "X is the only Y", "exhaustive list", and "unused in [repo set]". Verify each with at least 2 of ugrep, bfs, Agent(Explore), and targeted Read. On disagreement, flag the discrepancy and identify the tool error before recording. A single-tool zero result is suspect, not authoritative.
+Apply each trigger structurally; no self-judged exclusion of a claim is allowed. Apply this verification when a claim to be written in the Issue that asserts exhaustiveness drives downstream PR scope or crosses a repo boundary. The targets are claims like "no caller", "X is the only Y", "exhaustive list", and "unused in [repo set]". Verify each with at least 2 of ugrep, bfs, Agent(Explore), and targeted Read. On disagreement, flag the discrepancy and identify the tool error before recording. A single-tool zero result is suspect, not authoritative.
 
 ## Primary-source verification
 
 Verify external-behavior claims against primary sources.
 
-1. Extract findings whose Source references external behavior not executed this session. Typical cases are hook firing timing, action / parser required schema, library API behavior, and cited-paper claims. Limit to findings where the conclusion, a Next Action, or Disconfirmation depends on the claim being correct
+1. Extract the claims to be written in the Issue whose source references external behavior not executed this session. Typical cases are hook firing timing, action / parser required schema, library API behavior, and cited-paper claims. Limit to claims on whose correctness the Issue's scope or done conditions depend
 2. Verify the extracted claims against primary sources in one batch. Use `scout fetch <official docs URL>` for web docs and `scout repo-read` / `scout repo-overview` for sources on GitHub (use-cli-scout is the canonical command reference)
-3. When a primary source is unreachable, such as paywall, no docs, fetch failure, or scout not being installed, keep the finding but mark it `unverified external claim`, and do not use it as Disconfirmation evidence or a Next Action premise
+3. When a primary source is unreachable, such as paywall, no docs, fetch failure, or scout not being installed, keep the claim but mark it `unverified external claim`, and do not use it as a premise of the Issue's scope or done conditions
 
 A repository's README reflects an unreleased main, so it is not a primary source for what the published version does. Confirm what the published version accepts with `npx <pkg>@latest <cmd> --help` and by running it.
 
@@ -30,7 +30,7 @@ A zero-result does not separate "it does not exist" from "the query is shaped wr
 
 ## Same-origin sweep
 
-After a root cause is confirmed in Bug investigation, sweep the artifacts that share its origin for sibling defects.
+For a requirement that fixes existing code returning a result different from what is required, after the root cause is confirmed, sweep the artifacts that share its origin for sibling defects.
 
 1. Locate the commit that introduced the root-cause file via `git log --follow --diff-filter=A`, then enumerate every file in that commit via `git show --stat`
 2. If the commit message or a file header carries a generation marker such as `auto-generated from X` or a template / deploy note, add every file originating from X to the sweep

@@ -3,7 +3,7 @@
 // Python original, replayed from the frozen fixture
 // skills/scribe/tests/fixtures/find-wiki-rule-cases.json (U-001). Reuses the shared
 // runCli/withTempHome/fixture/assertStdoutShape harness from workflows/_lib/tests/_cli-fixture.ts
-// (skills/research/tests/find-prior-research.test.ts carries the sibling pattern), and
+// (skills/scribe/tests/find-prior-research.test.ts carries the sibling pattern), and
 // hooks/_lib/shebang_scope.ts's trackedEntries for the git-index mode check, instead of a
 // standalone statSync or spawn.
 import assert from "node:assert/strict";
@@ -25,7 +25,7 @@ import { globToRegExp, readGlobs } from "../scripts/find_wiki_rule.ts";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "find_wiki_rule.ts");
 // skills/scribe/tests -> skills/scribe -> skills -> repo root, the same climb
-// skills/research/tests/find-prior-research.test.ts's own SCRIPT constant makes.
+// skills/scribe/tests/find-prior-research.test.ts's own SCRIPT constant makes.
 const REPO_ROOT = join(HERE, "..", "..", "..");
 
 // One frozen replay case, shaped like skills/scribe/tests/fixtures/find-wiki-rule-cases.json

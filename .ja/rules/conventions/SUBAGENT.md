@@ -17,7 +17,6 @@ paths:
 | ----------- | -------------------- | ----------------- |
 | critic-     | 反論                 | critic-design     |
 | enhancer-   | コード改善・結果統合 | enhancer-code     |
-| explorer-   | コードベース探索     | explorer-feature  |
 | generator-  | アーティファクト生成 | generator-snapshot |
 | reviewer-   | 検査                 | reviewer-security |
 

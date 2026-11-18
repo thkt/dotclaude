@@ -2,7 +2,7 @@
 name: scribe
 description: Extract recurring patterns from past closed PRs/issues and research findings in the target repository’s docs/research/, verify them against the latest code, and propose them to docs/wiki/ via PR.
 when_to_use: scribe 実行, wiki 抽出, 共通項の蒸留, PR/issue からの知見蓄積, research 成果の蓄積, run scribe, wiki extraction, distill recurring patterns
-allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../research/scripts/*) Read Write Edit LS
+allowed-tools: Bash(git:*) Bash(gh:*) Bash(find:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Read Write Edit LS
 ---
 
 # /scribe - Accumulate PR / issue / research recurring patterns into the wiki
@@ -30,7 +30,7 @@ The patterns worth picking up are procedures that recur as a routine or a conven
 ## Phase 2: Scope
 
 1. Get the mergedAt of the last merged scribe PR with `gh pr list --label scribe --state merged --limit 1 --json mergedAt -q '.[0].mergedAt'`
-2. List originals recursively in all roots with `${CLAUDE_SKILL_DIR}/../research/scripts/find-prior-research.ts --all docs/research research .claude/workspace/research`. Only repository-contained regular files qualify. Read `path`; identical same-relative-name copies share `aliases` and count once. Compare differing same-name originals before using them; versions are not independent evidence. With no mergedAt, include all originals and all results of `gh pr list --state merged --search '-label:scribe'` and `gh issue list --state closed`
+2. List originals recursively in all roots with `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts --all docs/research research .claude/workspace/research`. Only repository-contained regular files qualify. Read `path`; identical same-relative-name copies share `aliases` and count once. Compare differing same-name originals before using them; versions are not independent evidence. With no mergedAt, include all originals and all results of `gh pr list --state merged --search '-label:scribe'` and `gh issue list --state closed`
 3. With mergedAt, keep PR/issue searches bounded by `merged:><mergedAt>` / `closed:><mergedAt>`. Select original paths listed by these commands:
 
    ```sh

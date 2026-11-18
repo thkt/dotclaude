@@ -1,7 +1,7 @@
 /// <reference types="node" />
-// Behavioral parity tests for skills/research/scripts/find-prior-research.ts against the retired
+// Behavioral parity tests for skills/scribe/scripts/find-prior-research.ts against the retired
 // Python original, replayed from the frozen fixture
-// skills/research/tests/fixtures/find-prior-research-cases.json (U-001). Reuses the shared
+// skills/scribe/tests/fixtures/find-prior-research-cases.json (U-001). Reuses the shared
 // runCli/withTempHome/fixture/assertStdoutShape harness from workflows/_lib/tests/_cli-fixture.ts
 // (skills/outcome/tests/validate-outcome.test.ts carries the sibling pattern for
 // skills/outcome/scripts/validate-outcome.ts), and hooks/_lib/shebang_scope.ts's trackedEntries
@@ -23,7 +23,7 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "find-prior-research.ts");
 
-// One frozen replay case, shaped like skills/research/tests/fixtures/find-prior-research-cases.json
+// One frozen replay case, shaped like skills/scribe/tests/fixtures/find-prior-research-cases.json
 // (U-001): `files` writes each entry into a fresh temp dir that becomes the run's cwd -- the
 // python script defaults its search-dir argument to "", which Path("") resolves as the current
 // directory -- and `argv` carries only the slug, the same way every frozen case leaves the
@@ -98,7 +98,7 @@ test(
   "T-182 the script is tracked with mode 100755 in the git index and opens with " +
     "#!/usr/bin/env node",
   () => {
-    const entries = trackedEntries(["skills/research/scripts/find-prior-research.ts"]);
+    const entries = trackedEntries(["skills/scribe/scripts/find-prior-research.ts"]);
     assert.equal(entries.length, 1, "the script is tracked exactly once in the git index");
     const [mode, absolutePath] = entries[0];
     assert.equal(mode, "100755", "git index mode");
