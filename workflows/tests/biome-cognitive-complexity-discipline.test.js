@@ -158,7 +158,6 @@ const PLANNED_FILES_INCLUDES = [
   "!workflows/*.js",
   "!.ja/workflows/*.js",
   "!plugins/**",
-  "!skills/*/test/cases/**",
   "!bridge-spawn",
   "!seed-admin",
 ];
@@ -190,7 +189,7 @@ test("T-005 biome.json keeps noExcessiveCognitiveComplexity at error with maxAll
   );
 });
 
-test("T-006 biome.json's files.includes equals the seven planned entries exactly and the file carries no overrides key", () => {
+test("T-006 biome.json's files.includes equals the six planned entries exactly and the file carries no overrides key", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
   assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
 });

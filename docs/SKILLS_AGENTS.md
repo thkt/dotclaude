@@ -9,21 +9,16 @@ Design intent and usage guidelines for Skills and Agents.
 ```mermaid
 graph LR
     subgraph Skills["Skills (Knowledge)"]
-        S1[use-workflow-tdd-cycle]
-        S2[use-context-reviewer-security]
+        S1[use-cli-scout]
     end
 
     subgraph Agents["Agents (Execution)"]
-        A1[generator-snapshot]
-        A2[reviewer-security]
-        A3[enhancer-integration]
+        A1[critic-design]
     end
 
     subgraph Trigger["Invocation"]
-        CMD[Command] --> S1
-        CMD --> A1
-        CTX[Context] -.-> S2
-        AGENT[Agent Tool] --> A2
+        CTX[Context] -.-> S1
+        AGENT[Agent Tool] --> A1
     end
 ```
 
@@ -51,12 +46,10 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 
 The User-invocable row lists all 7 current Skills.
 
-| Category       | Skills                                                                                                                          | Purpose                          |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| Workflow       | use-workflow-tdd-cycle                                                                                                          | Multi-phase workflow definitions |
-| Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                                                        | Domain knowledge for agents      |
-| CLI wrapper    | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud                                                                | CLI tool integration             |
-| User-invocable | challenge, dr, implement, outcome, scoping, scribe, sweep                                                                       | Slash command entry points       |
+| Category       | Skills                                                           | Purpose                    |
+| -------------- | ---------------------------------------------------------------- | -------------------------- |
+| CLI wrapper    | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud | CLI tool integration       |
+| User-invocable | challenge, dr, implement, outcome, scoping, scribe, sweep        | Slash command entry points |
 
 ### Loading Mechanism
 
@@ -73,11 +66,9 @@ flowchart TD
 
 #### Trigger Examples
 
-| Trigger                 | Skill Loaded                    |
-| ----------------------- | ------------------------------- |
-| "TDD", "test-driven"    | use-workflow-tdd-cycle          |
-| "OWASP", "セキュリティ" | use-context-reviewer-security   |
-| "5 Whys", "root cause"  | use-context-root-cause-analysis |
+| Trigger                       | Skill Loaded  |
+| ----------------------------- | ------------- |
+| "web search", "release notes" | use-cli-scout |
 
 ### File Structure
 
@@ -92,12 +83,10 @@ skills/[skill-name]/
 
 ```yaml
 ---
-name: use-workflow-tdd-cycle
-description: TDD with RGRC cycle and Baby Steps.
-when_to_use: TDD, テスト駆動, Red-Green-Refactor, Baby Steps
-allowed-tools: Read Write Edit Bash(ugrep:*) Bash(bfs:*)
-context: fork # fork or inline
-background: false
+name: use-cli-scout
+description: Web search, page fetch, and GitHub repo exploration via scout CLI.
+when_to_use: web search, page fetch, release notes, 最新ドキュメント
+allowed-tools: Bash(scout:*) Read
 user-invocable: false # Whether invocable as slash command
 ---
 ```
@@ -113,40 +102,16 @@ perform specific analysis or generation tasks.
 
 ```text
 agents/
-├── critics/        # Critical verification (critic-audit, critic-design, critic-evidence)
-├── enhancers/      # Code improvement + synthesis (enhancer-code, enhancer-evidence, enhancer-integration)
-├── generators/     # Generation (generator-snapshot)
-└── reviewers/      # Review (16 specialized reviewers)
+└── critics/        # Critical verification (critic-design)
 ```
-
-### Reviewer Agents (16 types)
-
-| Agent                  | Focus                             |
-| ---------------------- | --------------------------------- |
-| reviewer-accessibility | WCAG 2.2 conformance              |
-| reviewer-causation     | Root cause analysis               |
-| reviewer-coverage      | Test coverage quality             |
-| reviewer-design        | Module depth via deletion test    |
-| reviewer-duplication   | Cross-file DRY analysis           |
-| reviewer-efficiency    | Algorithmic cost, hot paths       |
-| reviewer-operations    | Error boundaries, logging         |
-| reviewer-progressive   | CSS-first, JS reduction           |
-| reviewer-prompt        | LLM prompt definition quality     |
-| reviewer-react-pattern | React design patterns             |
-| reviewer-readability   | Code structure, readability       |
-| reviewer-resilience    | Resilience weakness analysis      |
-| reviewer-rust          | Rust idioms and safety            |
-| reviewer-security      | OWASP Top 10                      |
-| reviewer-silence       | Silent failure detection          |
-| reviewer-testability   | Testable code design              |
 
 ### Invocation via Agent Tool
 
 ```markdown
 Agent tool with:
 
-- subagent_type: "reviewer-security"
-- prompt: "Review the authentication module for vulnerabilities"
+- subagent_type: "critic-design"
+- prompt: "Attack this design proposal for hidden assumptions and costs"
 - model: "sonnet" (optional)
 ```
 

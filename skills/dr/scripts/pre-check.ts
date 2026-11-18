@@ -7,10 +7,10 @@
 // stderr: validation failures, exit 1.
 //
 // TypeScript port of the retired Python pre-check, in the header/entry shape
-// skills/_lib/harness_hash.ts and skills/dr/scripts/dr_common.ts already use: a plain shebang +
-// reference-types + Usage header, named exports for the pieces a test can drive directly, and
-// the CLI's own process.exit(main()) guarded by workflows/_lib/entry-point.ts's isMainModule so
-// importing this module for its exports never runs the CLI as a side effect.
+// skills/dr/scripts/dr_common.ts already uses: a plain shebang + reference-types + Usage header,
+// named exports for the pieces a test can drive directly, and the CLI's own process.exit(main())
+// guarded by workflows/_lib/entry-point.ts's isMainModule so importing this module for its
+// exports never runs the CLI as a side effect.
 //
 // Contract: the retired Python pre-check's similarity, first_heading, and main; OUTPUT_KEYS
 // mirrors its json.dumps key order and is imported by skills/dr/tests/script-contract.test.js.
@@ -41,8 +41,7 @@ export interface SimilarDr {
 
 /** Python's `f"{score:.2f}"`: round-half-even to 2 decimal places, formatted as a fixed
  * 2-decimal string. Built from integer hundredths (not `toFixed` on the rounded float) so a
- * value like 62/100 that has no exact binary representation cannot re-round on the way out,
- * the same reasoning skills/_lib/review_score.ts's round3 documents for round(x, 3). */
+ * value like 62/100 that has no exact binary representation cannot re-round on the way out. */
 export function formatScore(score: number): string {
   const scaled = score * 100;
   const floor = Math.floor(scaled);
@@ -107,7 +106,7 @@ function collectSimilarDrs(title: string, drDir: string, threshold: number): Sim
 }
 
 // Python's main() takes no argv of its own (title comes from sys.argv[1]), so this main(argv)
-// keeps the same process.argv.slice(2) convention harness_hash.ts's main() uses.
+// takes process.argv.slice(2).
 export function main(argv: string[]): number {
   const title = argv[0] ?? "";
   const drDir = resolveDrDir(

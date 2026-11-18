@@ -189,8 +189,8 @@ test("loadAgent gives general-purpose no preamble and the write sandbox", () => 
   assert.deepEqual(loadAgent("general-purpose"), { preamble: "", readOnly: false });
 });
 
-test("loadAgent reads a reviewer definition and marks it read-only", () => {
-  const loaded = loadAgent("reviewer-readability");
+test("loadAgent reads a critic definition and marks it read-only", () => {
+  const loaded = loadAgent("critic-design");
   assert.equal(loaded.missing, undefined);
   assert.ok(loaded.preamble.length > 0);
   assert.equal(loaded.readOnly, true);

@@ -14,7 +14,7 @@ skill は `skills/<name>/SKILL.md` を本体とし、Skill tool が読み込む�
 
 - skill は Skill tool で起動し、workflow は Workflow tool で起動する。両者は別の機構で、skill から workflow を呼ぶ経路は 1 本だけある。`implement` skill が `allowed-tools` の `Workflow` を使い、`Workflow({name: "implement"})` で implement workflow を起動する
 - `user-invocable: false` の skill は `/名前` で呼べない。他の skill か agent が参照する側になる。12 件がこれに当たる
-- `skills/_lib/` は SKILL.md を持たず、skill として起動しない。`review_score.ts` と `review-harness.md` を読むのは reviewer skill の測定手順で、`rules/development/TESTING.md` と `skills/use-context-reviewer-security/test/README.md` がその経路を書く。`publish.md` は `/sweep`、`/dr`、`/outcome` が最後の手順で読み、書いたファイルを draft PR にする
+- `skills/_lib/` は SKILL.md を持たず、skill として起動しない。`publish.md` は `/sweep`、`/dr`、`/outcome` が最後の手順で読み、書いたファイルを draft PR にする
 - skill の scripts は他の skill から `${CLAUDE_SKILL_DIR}/../<skill>/scripts/<file>` で呼べる。実在する経路は 3 本で、`issue/validate-issue-body.ts`、`research/find-prior-research.ts`、`scribe/find_wiki_rule.ts` が呼ばれる側になる
 
 ## 契約
@@ -36,7 +36,6 @@ skill は `skills/<name>/SKILL.md` を本体とし、Skill tool が読み込む�
 
 ## 参照コード
 
-- `skills/_lib/review_score.ts`（reviewer skill の Recall と FP Rate を出す。skill 本体を持たない共有ライブラリ側にある）
 - `skills/scribe/scripts/find_wiki_rule.ts` の `find`（他 skill から `${CLAUDE_SKILL_DIR}/../scribe/scripts/` で呼ばれる側）
 - `.github/workflows/test.yml` の `Python tests`（テストを拾う find の範囲）
 - `.github/workflows/test.yml` の `Node tests`（`skills/**/tests/*.test.js`/`*.test.ts` を明示 glob で拾う側）

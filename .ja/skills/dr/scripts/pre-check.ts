@@ -7,7 +7,7 @@
 // stderr: 検証に落ちた内容。exit 1。
 //
 // 退役した Python 版 pre-check の TypeScript 移植。header/entry の形は
-// skills/_lib/harness_hash.ts と skills/dr/scripts/dr_common.ts が既に使っているものと同じ:
+// skills/dr/scripts/dr_common.ts が既に使っているものと同じ:
 // 素直な shebang + reference-types + Usage ヘッダー、テストが直接動かせる部分は named export
 // にし、CLI 自身の process.exit(main()) は workflows/_lib/entry-point.ts の isMainModule で
 // ガードする。これにより、この module を export 目当てで import しても CLI が副作用として
@@ -43,8 +43,7 @@ export interface SimilarDr {
 /** Python の `f"{score:.2f}"`: 小数第 2 位までの round-half-even を、固定 2 桁の文字列として
  * 表現する。丸めた float に `toFixed` を掛けるのではなく、整数の百分の一単位から組み立てる。
  * 62/100 のように 2 進数で正確に表現できない値が、出力の段になって再度丸まってしまうことが
- * ないようにするためで、skills/_lib/review_score.ts の round3 が round(x, 3) について書いて
- * いるのと同じ理由による。 */
+ * ないようにするため。 */
 export function formatScore(score: number): string {
   const scaled = score * 100;
   const floor = Math.floor(scaled);
@@ -110,7 +109,7 @@ function collectSimilarDrs(title: string, drDir: string, threshold: number): Sim
 }
 
 // Python の main() は自身の argv を取らない (title は sys.argv[1] から来る)。この main(argv)
-// は harness_hash.ts の main() と同じ process.argv.slice(2) の慣習を保つ。
+// は process.argv.slice(2) を受け取る。
 export function main(argv: string[]): number {
   const title = argv[0] ?? "";
   const drDir = resolveDrDir(

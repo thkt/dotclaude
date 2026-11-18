@@ -94,8 +94,7 @@ A document with no runner has no tier 1, and a document with no counterpart has 
 | Hook (`.py` / `.sh`)                     | 1                      | The process starts, and stdin to stdout is observable                                                |
 | Workflow script                          | 1                      | A stubbed run makes phases, stops, and return values visible                                         |
 | A skill's `scripts/`                     | 1                      | It runs as a CLI, stdin to stdout                                                                    |
-| Reviewer skill and reviewer agent bodies | 1                      | The corpus and `review_score.ts` produce Recall and FP Rate                                          |
-| Any other skill body                     | 2                      | Running it depends on an LLM and is non-deterministic. Matching against a counterpart is the ceiling |
+| Skill body                               | 2                      | Running it depends on an LLM and is non-deterministic. Matching against a counterpart is the ceiling |
 | `rules/` and `docs/`                     | 3                      | They have no runner                                                                                  |
 
 Do not cast a net that only a higher tier justifies over a lower tier's claim. One shape of that net is banning a common English word across a whole document to keep a retired notation from returning. A harmless sentence then fails the suite, so target the retired notation's own sequence instead.
@@ -104,17 +103,6 @@ Do not cast a net that only a higher tier justifies over a lower tier's claim. O
 | -------------------------------------------------------------------- | --------------------------------------------- |
 | Writing below the highest tier reachable                             | Find the counterpart or the runner, and go up |
 | Casting a net only a higher tier justifies over a lower tier's claim | Narrow the net to the shape of the claim      |
-
-## When a tier 1 run fires
-
-The reviewer accuracy measurement does not run in CI. A person runs it, and what CI checks is how fresh the record is. A skill with no record at all counts as unmeasured, and the call is whether to run it or retire the corpus with it.
-
-| Element | Content                                                                                                        |
-| ------- | -------------------------------------------------------------------------------------------------------------- |
-| Trigger | The reviewer definition, the skill body, or the corpus changed                                                 |
-| Run     | Follow the blind procedure in `skills/_lib/review-harness.md` and add one record under `<skill>/test/results/` |
-| Gate    | The newest record carries the content hashes of those three, and they match the current ones                   |
-| Scope   | Every reviewer skill that has a corpus                                                                         |
 
 ## Whether the test swings at nothing
 

@@ -13,12 +13,9 @@ paths:
 
 命名パターンは小文字 + ハイフン `<role>-<scope>` のみ。ファイルは role の複数形サブディレクトリに置く。
 
-| Role 接頭辞 | 用途                 | 例                |
-| ----------- | -------------------- | ----------------- |
-| critic-     | 反論                 | critic-design     |
-| enhancer-   | コード改善・結果統合 | enhancer-code     |
-| generator-  | アーティファクト生成 | generator-snapshot |
-| reviewer-   | 検査                 | reviewer-security |
+| Role 接頭辞 | 用途 | 例            |
+| ----------- | ---- | ------------- |
+| critic-     | 反論 | critic-design |
 
 ## YAML Frontmatter
 
@@ -35,7 +32,7 @@ paths:
 | mcpServers, hooks               | 必要に応じて                                                                                                                                                                                                                                                                        |
 | memory                          | `user`/`project`/`local`。有効化で Read/Write/Edit を自動付与                                                                                                                                                                                                                       |
 | background                      | Boolean。対話セッションでの起動は `false` を書いてもバックグラウンドで走る。workflow と headless はこの既定の外                                                                                                                                                                     |
-| omitClaudeMd                    | Boolean。ユーザー / プロジェクト / ローカルの CLAUDE.md と rules/ を読み込まずに起動する。委譲プロンプトから判定対象を全て受け取るエージェントに付ける。対象リポジトリの規約に照らして判定するエージェント (reviewer-readability) には付けない。v2.1.271 以降 |
+| omitClaudeMd                    | Boolean。ユーザー / プロジェクト / ローカルの CLAUDE.md と rules/ を読み込まずに起動する。委譲プロンプトから判定対象を全て受け取るエージェントに付ける。対象リポジトリの規約に照らして判定するエージェントには付けない。v2.1.271 以降 |
 | effort                          | low/medium/high/xhigh/max。省略時はセッションの effort を引き継ぐ (メイン会話と同じモデルで走る場合)。xhigh と max は品質向上を測定できた場合に限る。思考を減らすときは、プロンプトの指示を足す前に effort を下げる                                                                 |
 | isolation, color, initialPrompt | 必要に応じて                                                                                                                                                                                                                                                                        |
 | observer                        | このエージェントが走るたび background で起動する observer の agent 型名。observer は読み取り専用の活動ダイジェストを受け取り ObserverReport で報告し、タスクには参加しない                                                                                                          |
@@ -44,7 +41,7 @@ paths:
 
 ## fork の判定
 
-`subagent_type` は 1 つの値しか取らない。`"fork"` と `agents/` の型名は排他で、fork を選ぶとエージェント定義は読み込まれない。fork は自分自身の複製であって、別のエージェントではない。critic- と reviewer- は親の結論を攻撃する役なので、fork すると役が成立しなくなる。
+`subagent_type` は 1 つの値しか取らない。`"fork"` と `agents/` の型名は排他で、fork を選ぶとエージェント定義は読み込まれない。fork は自分自身の複製であって、別のエージェントではない。critic- は親の結論を攻撃する役なので、fork すると役が成立しなくなる。
 
 | 起動                                 | fork | 理由                                                                                                           |
 | ------------------------------------ | ---- | -------------------------------------------------------------------------------------------------------------- |
@@ -55,7 +52,7 @@ paths:
 
 memory は次の 3 つをすべて満たすとき付与し、project スコープに実データが貯まらないまま残る場合は外す。
 
-- セッション横断で繰り返し起動される (監査のたびに呼ばれる)
+- セッション横断で繰り返し起動される (`/challenge` と `/scoping` から呼ばれる critic-design)
 - 出力品質がプロジェクト固有の知識に依存する (命名規約、許可パターン)
 - 偽陽性を減らすか一貫性を改善する (既知例外を再報告しなくなる)
 
@@ -75,16 +72,6 @@ memory は次の 3 つをすべて満たすとき付与し、project スコー�
 | Output               | DM ペイロードまたはファイル成果物      |
 | Error Handling       | 復旧の振る舞い                         |
 
-## 指摘の重要度
-
-reviewer- 系は `agents/_lib/finding-schema.md` の Severity (critical/high/medium/low) に従う。何を先に直すかは `agents/_lib/finding-disposition.md` の Disposition が持ち、値の一覧はそこにある。独自のゲート判定を返すエージェント (critic- 系の confirmed/disputed など) は自分の方式に従う。
-
-## 検出項目の追加可否
-
-検出項目を reviewer に持たせるのは、出力を読み流す人がその項目の捉える問題を見落とすときにする。読み流しても同じ問題に行き着くなら持たせない。
-
-この判断は reviewer が何を持つかを決めるもので、項目ごとに 1 回、定義を書く時点でかかる。`agents/_lib/finding-disposition.md` § Calibration Filters は run が出した finding のどれを報告するかを決めるもので、finding ごとに 1 回、reviewer が走る時点でかかる。
-
 ## 参照記法
 
 相対パスの解決先は起動プロジェクトに依存する。agent 本文には dev tree と plugin install の両方で展開される変数が無い。`${CLAUDE_SKILL_DIR}` は skill 専用で、`${CLAUDE_PLUGIN_ROOT}` は plugin install でだけ展開され、dev tree では文字のまま残る。そのため同梱資産は plugin 形式で書き、下の文言どおりの代替文 1 文を導入段落の直後に置く。`tests/live-instructions.test.js` が代替文の有無と、裸の home 起点パスが無いことを検査する。
@@ -94,9 +81,9 @@ reviewer- 系は `agents/_lib/finding-schema.md` の Severity (critical/high/med
 | 形式                                                                          | 用途                   | 理由                                                                 |
 | ----------------------------------------------------------------------------- | ---------------------- | -------------------------------------------------------------------- |
 | `skills: [skill-name]` frontmatter                                            | スキル内容の再利用     | preload 制御として起動時に全文がコンテキストへ注入される             |
-| `${CLAUDE_PLUGIN_ROOT}/agents/_lib/foo.md` を裸で                             | 同梱資産の遅延読み込み | plugin install で展開される。dev tree は代替文が `~/.claude/` へ送る |
+| `${CLAUDE_PLUGIN_ROOT}/skills/use-cli-scout/SKILL.md` を裸で                  | 同梱資産の遅延読み込み | plugin install で展開される。dev tree は代替文が `~/.claude/` へ送る |
 | `~/.claude/settings.json`, `~/.claude/cache/<file>`, `$HOME/.claude/history/` | 実行側のファイル       | 配布資産ではないので plugin でも同じパスが成り立つ                   |
-| `~/.claude/agents/_lib/foo.md` 単独                                           | 禁止                   | dev tree を指す。plugin install は別のコピーを読むか、何も読めない   |
+| `~/.claude/skills/use-cli-scout/SKILL.md` 単独                                | 禁止                   | dev tree を指す。plugin install は別のコピーを読むか、何も読めない   |
 | `skills/<skill>/references/foo.md`                                            | 避ける                 | cwd が `~/.claude` のときしか解決できない                            |
 | `${CLAUDE_SKILL_DIR}`                                                         | 不可                   | スキル本文専用の変数                                                 |
 

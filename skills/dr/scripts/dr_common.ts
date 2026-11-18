@@ -1,14 +1,12 @@
 /// <reference types="node" />
-// TypeScript port of the retired Python dr_common's shared helpers, in the same shape
-// skills/_lib/harness_hash.ts uses (named exports, no default export). This module carries no
-// CLI entry of its own -- pre-check.ts, validate-dr.ts, and update-index.ts each import it -- so
-// it ships shebang-less at mode 100644, unlike the skills-CLI shebang + 100755 the scripts that
-// call it carry.
+// TypeScript port of the retired Python dr_common's shared helpers, as named exports with no
+// default export. This module carries no CLI entry of its own -- pre-check.ts, validate-dr.ts,
+// and update-index.ts each import it -- so it ships shebang-less at mode 100644, unlike the
+// skills-CLI shebang + 100755 the scripts that call it carry.
 //
 // Contract: the retired Python dr_common's fail, resolve_dr_dir, guard_skill_dir, and
 // split_frontmatter, plus gitTopLevel, filesUnder, and localDate. Python's snake_case names
-// carry over as TS camelCase, the same rename harness_hash.py's _digest -> harness_hash.ts's
-// digest already made.
+// carry over as TS camelCase.
 //
 // resolveDrDir is a pure function here, unlike the retired Python resolve_dr_dir, which called
 // fail() itself on a non-zero git exit: env, the CLI argument, and the git-toplevel spawn result

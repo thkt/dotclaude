@@ -1,5 +1,5 @@
 ---
-globs: ["**/tests/**/*", "**/test/**/*"]
+globs: ["**/tests/**/*"]
 scenes: []
 ---
 

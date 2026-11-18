@@ -7,8 +7,8 @@
 // stderr: directory not found etc. with exit 1
 //
 // TypeScript port of the retired Python update-index, in the header/entry shape
-// skills/_lib/harness_hash.ts, skills/dr/scripts/dr_common.ts, skills/dr/scripts/pre-check.ts,
-// and skills/dr/scripts/validate-dr.ts already use: a plain shebang + reference-types + Usage
+// skills/dr/scripts/dr_common.ts, skills/dr/scripts/pre-check.ts, and
+// skills/dr/scripts/validate-dr.ts already use: a plain shebang + reference-types + Usage
 // header, named exports for the pieces a test can drive directly, and the CLI's own
 // process.exit(main()) guarded by workflows/_lib/entry-point.ts's isMainModule so importing
 // this module for its exports never runs the CLI as a side effect.
