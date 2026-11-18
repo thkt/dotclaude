@@ -357,9 +357,18 @@ const isCapture = (v) =>
     isArgv(v.command) &&
     isRepoRelative(v.destination) &&
     typeof v.required === "boolean");
-// 正本は ~/.agents/scripts/shared/target.ts の assertTarget。setup と check は shell 文字列も受け、
-// 文字列は /bin/sh -c に包んで argv にそろえる。
-const CONFIG_KEYS = ["repository", "remote", "baseBranch", "setup", "check", "ciChecks", "capture"];
+// 正本は ~/.agents/scripts/shared/target.ts の assertTarget。setup・check・feedbackCheck は shell 文字列も受け、
+// 文字列は /bin/sh -c に包んで argv にそろえる。feedbackCheck だけは省略できる。
+const CONFIG_KEYS = [
+  "repository",
+  "remote",
+  "baseBranch",
+  "setup",
+  "check",
+  "feedbackCheck",
+  "ciChecks",
+  "capture",
+];
 const isShell = (v) => typeof v === "string" && v.trim() !== "";
 const CONFIG_RULES = [
   [
@@ -380,6 +389,10 @@ const CONFIG_RULES = [
     "setup は shell 文字列か argv 配列の配列にする (不要なら [])",
   ],
   [(c) => isShell(c.check) || isArgv(c.check), "check は shell 文字列か空でない argv 配列にする"],
+  [
+    (c) => c.feedbackCheck === undefined || isShell(c.feedbackCheck) || isArgv(c.feedbackCheck),
+    "feedbackCheck は省くか、shell 文字列か空でない argv 配列にする",
+  ],
   [(c) => isNameList(c.ciChecks), "ciChecks は重複の無い空でない check 名の配列にする"],
   [
     (c) => "capture" in c && isCapture(c.capture),
@@ -548,7 +561,17 @@ const config = {
   ...settings,
   setup: typeof settings.setup === "string" ? [shellArgv(settings.setup)] : settings.setup,
   check: typeof settings.check === "string" ? shellArgv(settings.check) : settings.check,
+  feedbackCheck:
+    typeof settings.feedbackCheck === "string"
+      ? shellArgv(settings.feedbackCheck)
+      : settings.feedbackCheck,
 };
+// 正本は ~/.agents/scripts/implement/feedback.ts の feedbackInstructions。省いたときは実装と修正の指示に何も足さない。
+const FEEDBACK_RULE = config.feedbackCheck
+  ? [
+      `feedbackCheck (担当セッション内の反復用): ${JSON.stringify(config.feedbackCheck)}。作業中の確認には通常このコマンドを使い、対象 repo の方針に従って必要な確認範囲へ広げる。完了前に全体の check が通る状態にする契約は変わらない。host は各修正の後に全体の check を実行する。feedbackCheck の成功を全体の check の成功として扱わない。`,
+    ]
+  : [];
 const capture = config.capture;
 const { repository, remote, baseBranch } = config;
 // 正本は target.ts の readTarget。GH_HOST・remote の取得先と push 先・gh が解決した repo が、すべて repository を指すことを確かめる。
@@ -999,6 +1022,7 @@ const implemented = await actorRun(
     "文書のみの Issue も同じ流れで扱う。テストやコードは合意した要求が必要とするときだけ追加する。変更した文書は既存の独立レビューに含める。",
     REPAIR_RULES,
     `対象の setup/check/capture 契約 (弱めも置き換えもしない): ${JSON.stringify({ setup: config.setup, check: config.check, capture })}`,
+    ...FEEDBACK_RULE,
     "この worktree の外の制御 script や資格情報を編集しない。",
     `Requirements:\n${requirements}`,
     `Issue: ${issue.url}`,
@@ -1516,6 +1540,7 @@ const repairPrompt = (evidence) =>
     "文書の内容の欠陥も修正に戻し、影響する check と独立レビューを更新する。",
     "合意した受け入れ条件と必要な振る舞いの検証を保つ。check を通すために現実的な回帰を隠さない。",
     "診断や修正の確認に必要な的を絞った check だけを実行する。",
+    ...FEEDBACK_RULE,
     REPAIR_RULES,
     `Requirements:\n${requirements}\nFailure evidence:\n${evidence}`,
     revisionContext,
