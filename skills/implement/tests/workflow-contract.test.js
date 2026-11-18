@@ -169,6 +169,54 @@ test("scoping names the three handlings of a step the workflow cannot carry out,
   assert.match(section, /or to an option you offer the human/);
 });
 
+// DR-0094 made the build path require a root cause of a bug plan. DR-0128 retires that path and sends a bug
+// through /scoping (Migration Plan step 2), so one item of sufficiency.md carries the root cause on both sides.
+// Each point is matched inside that item, so moving a point out of it or dropping it on one side fails.
+test("scoping confirms a bug's root cause in the code before agreeing on a fix, on both sides", () => {
+  const sides = [
+    {
+      path: ["skills", "scoping", "references", "sufficiency.md"],
+      from: "## Organizing evidence and direction",
+      to: "## When there is a UI requirement",
+      marker: "confirm the root cause in the code before agreement",
+      points: {
+        trigger: /fixes existing code returning a result different from what is required/,
+        form: /which line of which file returns a different result, for which input, and why/,
+        place: /differs from the place of the cause, write the place of the cause/,
+        unidentified: /cannot identify the root cause, do not agree on a fix/,
+        scope: /investigation of the cause the scope of that Issue/,
+        done: /done condition "the root cause can be written in the form above"/,
+      },
+    },
+    {
+      path: [".ja", "skills", "scoping", "references", "sufficiency.md"],
+      from: "## 根拠と方針の整理",
+      to: "## UI の要求がある場合",
+      marker: "合意の前に根本原因をコードで確かめる",
+      points: {
+        trigger: /既存のコードが要求と違う結果を返すことを直す要求/,
+        form: /どのファイルのどの行が、どの入力でなぜ違う結果を返すか/,
+        place: /症状が出る場所と原因の場所が違うときは、原因の場所を書く/,
+        unidentified: /根本原因を特定できないときは、修正を合意しない/,
+        scope: /原因の調査をその Issue の範囲にし/,
+        done: /完了条件を「根本原因が上の形で書けること」にする/,
+      },
+    },
+  ];
+  for (const { path, from, to, marker, points } of sides) {
+    const text = readFileSync(join(root, ...path), "utf8");
+    // The section ends at the next H2, which must be the UI section, so an item moved under a new heading fails.
+    const start = text.indexOf(from);
+    const end = text.indexOf("\n## ", start + from.length) + 1;
+    assert.ok(start >= 0 && text.startsWith(to, end), `${path.join("/")} lost the section`);
+    const section = text.slice(start, end);
+    const item = section.split("\n").find((line) => /^\d+\. /.test(line) && line.includes(marker));
+    assert.ok(item, `${path.join("/")} has no numbered item that confirms the root cause`);
+    for (const [name, pattern] of Object.entries(points))
+      assert.match(item, pattern, `${path.join("/")} lost the ${name} point of the root-cause item`);
+  }
+});
+
 // The contract takes the check as a shell string or as one argv array. The skill's line read it as an array
 // of argv arrays, which jq rejects for both.
 test("the skill's jq line reads the check in every shape the workflow's contract accepts", () => {
