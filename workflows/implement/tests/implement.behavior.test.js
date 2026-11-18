@@ -1419,6 +1419,61 @@ test("a string setup or check runs through /bin/sh -c, as the Codex target contr
   assert.match(prompts[1], /'\/bin\/sh' '-c' 'bun run check'/);
 });
 
+test("a feedbackCheck reaches the implement and repair agents as their iteration command, and the host still runs the full check", async () => {
+  const settled = (_, { tree }) =>
+    reviewReply(tree, { updates: [{ id: "R1-1", disposition: "fixed", reason: "done" }] });
+  const withFeedback = (feedbackCheck) =>
+    run({
+      target: [
+        () => ({
+          ...makeStubsTarget(),
+          config_text: JSON.stringify(
+            feedbackCheck === undefined ? CONFIG : { ...CONFIG, feedbackCheck },
+          ),
+        }),
+      ],
+      review: [(_, { tree }) => reviewReply(tree, { newItems: [finding()] }), settled],
+    });
+  const promptsOf = ({ calls, kinds }, kind) =>
+    calls.agent.filter((_, i) => kinds[i] === kind).map((c) => String(c.prompt));
+  for (const [feedbackCheck, shown] of [
+    ["bun run check:feedback", '["/bin/sh","-c","bun run check:feedback"]'],
+    [["bun", "run", "check:feedback"], '["bun","run","check:feedback"]'],
+  ]) {
+    const ran = await withFeedback(feedbackCheck);
+    assert.equal(ran.result.status, "verified_local", JSON.stringify(feedbackCheck));
+    for (const kind of ["implement", "repair"]) {
+      const prompts = promptsOf(ran, kind);
+      assert.equal(prompts.length, 1, kind);
+      assert.ok(prompts[0].includes(`feedbackCheck (for iterating inside this session): ${shown}`), kind);
+    }
+    const checks = promptsOf(ran, "check");
+    assert.equal(checks.length, ran.result.check_runs);
+    for (const prompt of checks) {
+      assert.match(prompt, /'bun' 'run' 'check'/);
+      assert.ok(!prompt.includes("check:feedback"));
+    }
+  }
+  const without = await withFeedback(undefined);
+  assert.equal(without.result.status, "verified_local");
+  for (const kind of ["implement", "repair"]) {
+    for (const prompt of promptsOf(without, kind)) assert.ok(!prompt.includes("feedbackCheck"), kind);
+  }
+});
+
+test("a feedbackCheck that is empty, blank, an empty argv, an argv with a blank executable, or not a command stops at Target", async () => {
+  for (const feedbackCheck of ["", "  ", [], [""], [" ", "x"], null, 1, { command: "x" }]) {
+    const { result, kinds } = await run({
+      target: [
+        () => ({ ...makeStubsTarget(), config_text: JSON.stringify({ ...CONFIG, feedbackCheck }) }),
+      ],
+    });
+    assert.equal(result.stopped, "invalid-config", JSON.stringify(feedbackCheck));
+    assert.match(result.why, /feedbackCheck/);
+    assert.ok(!kinds.includes("prepare"));
+  }
+});
+
 test("a remote pointing at another repository, a non-github.com GH_HOST, or a publish run without ciChecks or push permission stops at Target", async () => {
   const target = (patch) => [() => ({ ...makeStubsTarget(), ...patch })];
   const cases = [

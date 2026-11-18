@@ -374,9 +374,18 @@ const isCapture = (v) =>
     isArgv(v.command) &&
     isRepoRelative(v.destination) &&
     typeof v.required === "boolean");
-// Canonical source: assertTarget in ~/.agents/scripts/shared/target.ts. setup and check also take a
-// shell string, which is wrapped in /bin/sh -c to become argv.
-const CONFIG_KEYS = ["repository", "remote", "baseBranch", "setup", "check", "ciChecks", "capture"];
+// Canonical source: assertTarget in ~/.agents/scripts/shared/target.ts. setup, check, and feedbackCheck
+// also take a shell string, which is wrapped in /bin/sh -c to become argv. Only feedbackCheck may be omitted.
+const CONFIG_KEYS = [
+  "repository",
+  "remote",
+  "baseBranch",
+  "setup",
+  "check",
+  "feedbackCheck",
+  "ciChecks",
+  "capture",
+];
 const isShell = (v) => typeof v === "string" && v.trim() !== "";
 const CONFIG_RULES = [
   [
@@ -402,6 +411,10 @@ const CONFIG_RULES = [
   [
     (c) => isShell(c.check) || isArgv(c.check),
     "check must be a shell string or a non-empty argv array",
+  ],
+  [
+    (c) => c.feedbackCheck === undefined || isShell(c.feedbackCheck) || isArgv(c.feedbackCheck),
+    "feedbackCheck must be omitted, a shell string, or a non-empty argv array",
   ],
   [(c) => isNameList(c.ciChecks), "ciChecks must be an array of unique non-empty check names"],
   [
@@ -574,7 +587,17 @@ const config = {
   ...settings,
   setup: typeof settings.setup === "string" ? [shellArgv(settings.setup)] : settings.setup,
   check: typeof settings.check === "string" ? shellArgv(settings.check) : settings.check,
+  feedbackCheck:
+    typeof settings.feedbackCheck === "string"
+      ? shellArgv(settings.feedbackCheck)
+      : settings.feedbackCheck,
 };
+// Canonical source: feedbackInstructions in ~/.agents/scripts/implement/feedback.ts. When omitted, nothing is added to the implement and repair prompts.
+const FEEDBACK_RULE = config.feedbackCheck
+  ? [
+      `feedbackCheck (for iterating inside this session): ${JSON.stringify(config.feedbackCheck)}. Use it for routine checks while working, and widen the scope as the target repository's policy requires. The contract that the full check passes before you finish does not change. The host runs the full check after each repair. Do not treat a feedbackCheck pass as a full check pass.`,
+    ]
+  : [];
 const capture = config.capture;
 const { repository, remote, baseBranch } = config;
 // Canonical source: readTarget in target.ts. GH_HOST, the remote's fetch and push URLs, and the repo gh resolved all point at repository.
@@ -1028,6 +1051,7 @@ const implemented = await actorRun(
     "Documentation-only Issues use the same flow; add tests or code only when the agreed requirements need them. Include changed documents in the existing independent review.",
     REPAIR_RULES,
     `Target setup/check/capture contract (do not weaken or replace): ${JSON.stringify({ setup: config.setup, check: config.check, capture })}`,
+    ...FEEDBACK_RULE,
     "Do not edit control scripts or credentials outside this worktree.",
     `Requirements:\n${requirements}`,
     `Issue: ${issue.url}`,
@@ -1555,6 +1579,7 @@ const repairPrompt = (evidence) =>
     "Return document content defects to repair and renew affected checks and independent review.",
     "Preserve agreed acceptance criteria and verification of required behavior; never hide realistic regressions to make checks pass.",
     "Run only targeted checks needed to diagnose or validate your repair.",
+    ...FEEDBACK_RULE,
     REPAIR_RULES,
     `Requirements:\n${requirements}\nFailure evidence:\n${evidence}`,
     revisionContext,
