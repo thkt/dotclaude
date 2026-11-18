@@ -1478,8 +1478,16 @@ const runBodyStep = async (writers) => {
 // stopped the run before publication. The read-back agent's first command reads the body out of
 // that agent's own prompt, which Claude Code keeps as the first line of its transcript. The test
 // runs the command exactly as the agent receives it, with HOME pointing at a tree that holds this
-// repository's workflows directory and one stored transcript.
-test("the read-back command, run as the agent receives it, writes the body from the transcript holding the agent's own prompt, and no copy is asked for", async () => {
+// repository's workflows directory and one stored transcript. The command gets no RELAY_PROJECTS from the caller: the
+// claude-run.ts host sets it for every relay step, the check among them, and the command would then look there and
+// not under HOME (#808). The test sets one that names no directory, so a command that inherits it fails here.
+test("the read-back command, run as the agent receives it, writes the body from the transcript holding the agent's own prompt, and no copy is asked for", async (t) => {
+  const before = process.env.RELAY_PROJECTS;
+  process.env.RELAY_PROJECTS = join(tmpdir(), "implement-no-such-projects");
+  t.after(() => {
+    if (before === undefined) delete process.env.RELAY_PROJECTS;
+    else process.env.RELAY_PROJECTS = before;
+  });
   const { result, rows, kinds } = await runBodyStep(({ dir, sh }) => ({
     read: [
       (prompt) => {
@@ -1497,7 +1505,8 @@ test("the read-back command, run as the agent receives it, writes the body from 
         const data = prompt.slice(prompt.indexOf("PR_BODY_B64_BEGIN"));
         assert.match(data, /^[\x20-\x7e\n]+$/);
         assert.ok(!data.includes("base64 -d"));
-        const extract_out = sh(stepCommand(prompt, 1), { ...process.env, HOME: home });
+        const { RELAY_PROJECTS: _inherited, ...callerEnv } = process.env;
+        const extract_out = sh(stepCommand(prompt, 1), { ...callerEnv, HOME: home });
         assert.equal(JSON.parse(extract_out).ok, true);
         return { extract_exit: 0, extract_out, body_digest: sh(stepCommand(prompt, 2)).trim() };
       },

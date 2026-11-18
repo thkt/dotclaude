@@ -235,6 +235,26 @@ test("a relay's command finds the prompt of its own call through the scan the he
   assert.equal(reply.seen, "1 本文 one");
 });
 
+// The relay's steps include the target's check. A host that set RELAY_PROJECTS in its own environment passed it to
+// every process it started afterwards, and a test in the check that ran a command under another HOME read the host's
+// directory instead (#808).
+test("a relay's step reads RELAY_PROJECTS as the host's projects directory, and the host's own environment keeps its value", async () => {
+  const before = process.env.RELAY_PROJECTS;
+  process.env.RELAY_PROJECTS = "/the/caller/projects";
+  try {
+    const { agent, dir } = host();
+    const reply = await agent(
+      relayPrompt({ defaults: { seen: "" }, steps: [{ sh: 'printf %s "$RELAY_PROJECTS"', set: { seen: "out" } }] }),
+      relayOpts("projects"),
+    );
+    assert.equal(reply.seen, join(dir, "projects"));
+    assert.equal(process.env.RELAY_PROJECTS, "/the/caller/projects");
+  } finally {
+    if (before === undefined) delete process.env.RELAY_PROJECTS;
+    else process.env.RELAY_PROJECTS = before;
+  }
+});
+
 // Prompts and command output can carry a token, such as a remote URL with credentials.
 test("the state file and what is kept beside it are readable by their owner alone, and a label with a slash names a file", async () => {
   const { agent, dir, state } = host([replied({ is_error: false, structured_output: { ok: true } })]);
