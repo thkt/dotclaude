@@ -48,9 +48,10 @@ The plan-based path was stronger on one point in task 1. It handled a character 
 - Bad, because a run costs about 1.5 to 2 times as much
 - Bad, because a bug in one file takes an agreed Issue and a whole run, where `/fix` changed it in the session
 - Good, because a branch name, a commit subject, and a PR body each have one shape, the one `workflows/implement.js` builds
-- Bad, because a change with no Issue (a DR, a configuration file, a page under `docs/`) takes an agreed Issue and a whole run, where `/commit` and `/pr` published it from the session
+- Bad, because a change with no Issue (a configuration file, a page under `docs/`) takes an agreed Issue and a whole run, where `/commit` and `/pr` published it from the session
 - Bad, because what `/pr` did for a PR opened by hand is not replaced: finding the base branch from the reflog, the prose review of the body, the screenshot attached through `use-workflow-pageshot`, and the prompt log. `/implement` writes its own body and takes media through `capture`
-- Bad, because `/dr`, `/outcome`, `/sweep`, and `/research` write files in the session, and no skill carries those files to a PR. Until each starts from an Issue, they are committed with plain `git` and `gh` under no rule of this repository
+- Neutral, because `/sweep`, `/dr`, and `/outcome` write files in the session and carry them to a draft PR themselves, by one shared procedure. They are the changes that do not start from an Issue, with `/scribe`, which already opens its own PR
+- Bad, because an investigation that leads to no change has no skill. `/research` goes, and `/scoping` investigates what an Issue needs. The report template and the advisor pass that argued against a synthesis are not replaced
 - Bad, because a run asks a human 1 to 2 decisions where the build workflow asked none
 - Bad, because a target repository needs a committed `.dotagents.json` (repository, remote, baseBranch, setup, check, ciChecks, capture) before its first run
 - Bad, because the per-unit Red confirmed by script (`workflows/code.js`) and the per-unit commit carrying plan trailers (DR-0088) are not replaced. `/implement` checks the configured check's exit code in script, and whether the added tests are enough rests on the independent review of the whole diff. A change that adds no test still exits 0 on the existing suite
@@ -88,9 +89,13 @@ Later the same day thkt decided that `/commit`, `/checkout`, and `/pr` go as wel
 
 The three also carried rules that `workflows/implement.js` does not follow. It commits with the subject `<Issue title> (#<number>)`, where `/commit` requires `<type>(<scope>): <subject>`, and it builds its PR body from the review, where `/pr` fills a template. With the skills gone, the shapes `implement.js` builds are the only ones defined.
 
+thkt also decided that `/research` goes and that `/sweep`, `/dr`, and `/outcome` publish their own draft PR. Since 2026-10-01 `/research` was called in 4 sessions and `/scoping` in 52. `/scoping` already checks the facts a decision rests on, keeps reusable evidence under `docs/research/` (DR-0119 stays), and runs small experiments. Two parts of `/research` have no counterpart there and move: the verification rules (`references/verification.md`) and the search of earlier reports.
+
 ### Deprecation Target
 
-`/research` and `/challenge` stay, because each is called before an Issue is agreed.
+`/challenge` stays, because it is called before an Issue is agreed. `/sweep`, `/dr`, `/outcome`, and `/scribe` stay and publish what they write.
+
+`/research` goes after two of its parts move. `scripts/find-prior-research.ts` moves to `skills/scribe/scripts/`, because `/scribe` calls it. `references/verification.md` moves to `skills/scoping/references/`, and `/scoping` gains the search of earlier reports.
 
 `/commit`, `/checkout`, and `/pr` go, with `use-workflow-pageshot`, which `/pr` alone calls. A change that has no Issue gets one through `/scoping` and goes through `/implement`.
 
@@ -104,6 +109,8 @@ The three also carried rules that `workflows/implement.js` does not follow. It c
 | `skills/commit`, `skills/checkout`, `skills/pr`, `skills/use-workflow-pageshot` | `.ja/` mirrors, references, templates, scripts, tests, and `tests/manual-lane.test.ts` |
 | `agents/reviewers/reviewer-conformance.md`, `agents/reviewers/reviewer-reuse.md` | `.ja/` mirrors. The build workflow is their one workflow caller |
 | `agents/generators/generator-test.md`, `agents/resolvers/resolver-build.md` | `.ja/` mirrors. `/fix` is their one caller |
+| `skills/research` | `.ja/` mirror, the references and template that do not move, tests |
+| `agents/explorers/explorer-feature.md` | `.ja/` mirror. `/research` is its one caller |
 | `hooks/pre-bash/issue_body_gate.ts` | Its tests. It reads `skills/issue`'s validator and templates and is registered nowhere (DR-0123) |
 
 Files that stay and name the removed path are rewritten in the removal change.
@@ -125,6 +132,8 @@ Two things the removal leaves as they are.
 3. Carry every open Issue that holds a `## Plan` through the build workflow, or agree it again through `/scoping`, in each repository that used the path. `/implement` returns an Issue with no recorded agreement to `/scoping`
 4. Remove the workflows and the skills in one change, so no skill that stays hands work to a route that is gone. `/research` and `use-workflow-tdd-cycle` name `/fix` and are rewritten in it. `/commit`, `/checkout`, `/pr`, and `use-workflow-pageshot` go in the same change
 5. In the change that removes the code a DR governs, mark that DR superseded by this one and rewrite the wiki pages that derive from it. The DRs are DR-0084, DR-0085, DR-0087, DR-0088, DR-0089, DR-0094, DR-0102, and DR-0103, and for `/fix` DR-0002, DR-0050, and DR-0099. DR-0083 stays while the plugin keeps its name. DR-0071 keeps its part about `assert`
+6. Give `/sweep`, `/dr`, and `/outcome` the shared procedure that opens a draft PR before `/commit` and `/pr` are removed. The commit subject and the PR title open with the prefix an Issue title uses, as in `[Docs] DR-0129 <title>`, so the history keeps the one shape `implement.js` writes
+7. Remove `/research` after the removal in step 4, in a change that first moves the script and the verification rules
 
 ### Rollback Plan
 
@@ -136,4 +145,5 @@ The removal is one revert per change. An Issue written by `/scoping` carries no 
 - The cost of a run rises above twice the measured $10.97 on a task of the same size
 - A repository cannot commit a `.dotagents.json` and has work to carry to a PR
 - A PR that `/implement` published is merged with no test for a behavior its Issue lists as a done condition
-- A PR opened by hand, outside `/implement`, is merged after `/commit` and `/pr` are removed
+- A PR opened by hand, outside `/implement`, `/sweep`, `/dr`, `/outcome`, and `/scribe`, is merged after `/commit` and `/pr` are removed
+- A report is saved under `docs/research/` by hand, for an investigation that led to no Issue
