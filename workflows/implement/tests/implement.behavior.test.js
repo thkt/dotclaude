@@ -706,19 +706,49 @@ const withTitle = (title, overrides = {}) =>
     ...overrides,
   });
 
-test("a title with fewer than two ASCII words takes a 2-4 word description from the naming agent, and an untyped title defaults to feat", async () => {
+test("a title with fewer than two ASCII words takes a 2-4 word description from the naming agent", async () => {
   const { result, kinds } = await withTitle("[Feature] 商品一覧の一致部分を <mark> で強調する", {
     name: [{ description: "highlight-search-match" }],
   });
   assert.equal(result.branch, "feat/12-highlight-search-match");
   assert.ok(kinds.indexOf("name") < kinds.indexOf("prepare"));
-  const untyped = await withTitle("ログイン修正", { name: [{ description: "fix-login" }] });
-  assert.equal(untyped.result.branch, "feat/12-fix-login");
+});
+
+// Before #801 an untyped title fell back to feat, so an Issue whose type nobody had decided was published on feat/.
+test("a title without one of the four type prefixes stops as issue-untyped before any worktree or branch exists, in a fresh run and in a revision", async () => {
+  const untypedIssue = (title) => ({ issue_json: JSON.stringify({ ...ISSUE, title }) });
+  const fresh = (title) => () => withTitle(title);
+  const cases = [
+    ["no prefix", fresh("ログイン修正")],
+    ["another prefix", fresh("[Refactor] Fix login crash")],
+    ["an Object property name", fresh("[constructor] Fix login crash")],
+    ["a revision", () => revise({ target: revisionTarget(untypedIssue("Fix login crash on Safari")) })],
+  ];
+  for (const [label, launch] of cases) {
+    const { result, kinds } = await launch();
+    assert.equal(result.stopped, "issue-untyped", label);
+    assert.match(result.why, /\/scoping/, `${label}: the stop sends the Issue back to /scoping`);
+    for (const kind of ["name", "prepare", "reprepare", "implement", "push"])
+      assert.ok(!kinds.includes(kind), `${label}: ${kind} must not run`);
+  }
+});
+
+test("each of the four type prefixes names its branch type", async () => {
+  const cases = [
+    ["[Bug] Fix login crash", "fix/12-fix-login-crash"],
+    ["[Feature] Highlight search match", "feat/12-highlight-search-match"],
+    ["[Docs] Explain login flow", "docs/12-explain-login-flow"],
+    ["[Chore] Remove unused config", "chore/12-remove-unused-config"],
+  ];
+  for (const [title, branch] of cases) {
+    const { result } = await withTitle(title);
+    assert.equal(result.branch, branch, title);
+  }
 });
 
 test("a naming reply outside the 2-4 lowercase word shape falls back to the title's own words", async () => {
   const cases = [
-    ["ログイン修正", "Fix Login!", "feat/12-issue"],
+    ["[Feature] ログイン修正", "Fix Login!", "feat/12-issue"],
     ["[Feature] <mark> で強調する", "one", "feat/12-mark"],
     ["[Feature] <mark> で強調する", "a-b-c-d-e", "feat/12-mark"],
   ];

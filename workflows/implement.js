@@ -522,6 +522,18 @@ if (issue.state !== "OPEN") {
     `Issue #${issueNumber} is ${issue.state}. Relaunch with an agreed, OPEN Issue.`,
   );
 }
+// The branch type comes only from the type prefix /scoping puts on the title. An Issue without one gets no default type.
+// The canonical set of prefixes is the table in skills/scoping/references/issue.md.
+const TYPE_BY_PREFIX = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
+const titlePrefix = ((/^\[(\w+)\]/.exec(issue.title) || [])[1] || "").toLowerCase();
+const typePrefixes = Object.keys(TYPE_BY_PREFIX).map((key) => `[${key[0].toUpperCase()}${key.slice(1)}]`);
+if (!Object.hasOwn(TYPE_BY_PREFIX, titlePrefix)) {
+  return await stop(
+    "issue-untyped",
+    `The title of Issue #${issueNumber} starts with none of ${typePrefixes.join(", ")}. Return to /scoping, put the type prefix on the title, then relaunch.`,
+  );
+}
+const branchType = TYPE_BY_PREFIX[titlePrefix];
 const actor = String(target.user || "").trim();
 if (!actor) {
   return await stop(
@@ -659,11 +671,8 @@ if (revising && (!prHeld(parseJsonText(target.revision_pr)) || !DIGEST_SHAPE.tes
 // ---- Prepare: cut an isolated worktree and branch from the base, then run setup ----
 phase("Prepare");
 // The branch name is skills/checkout/references/branch-naming.md's <type>/<scope>-<description>.
-// The type comes from the Issue title's prefix, and the description is built deterministically
-// from the title's alphanumeric words.
-const TYPE_BY_PREFIX = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
-const titlePrefix = (/^\[(\w+)\]/.exec(issue.title) || [])[1] || "";
-const branchType = TYPE_BY_PREFIX[titlePrefix.toLowerCase()] || "feat";
+// The type comes from the Issue title's prefix checked at Target, and the description is built
+// deterministically from the title's alphanumeric words.
 const titleWords = issue.title
   .replace(/^\[\w+\]\s*/, "")
   .toLowerCase()

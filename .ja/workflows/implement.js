@@ -496,6 +496,18 @@ if (issue.state !== "OPEN") {
     `Issue #${issueNumber} は ${issue.state}。合意済みの OPEN な Issue で再実行する。`,
   );
 }
+// branch の type は、/scoping が title に付けた種別の接頭辞だけから決める。接頭辞のない Issue に既定の type は当てない。
+// 接頭辞の集合の正本は skills/scoping/references/issue.md の表。
+const TYPE_BY_PREFIX = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
+const titlePrefix = ((/^\[(\w+)\]/.exec(issue.title) || [])[1] || "").toLowerCase();
+const typePrefixes = Object.keys(TYPE_BY_PREFIX).map((key) => `[${key[0].toUpperCase()}${key.slice(1)}]`);
+if (!Object.hasOwn(TYPE_BY_PREFIX, titlePrefix)) {
+  return await stop(
+    "issue-untyped",
+    `Issue #${issueNumber} の title が ${typePrefixes.join("・")} のどれでも始まらない。/scoping に戻って title に種別の接頭辞を付け、再実行する。`,
+  );
+}
+const branchType = TYPE_BY_PREFIX[titlePrefix];
 const actor = String(target.user || "").trim();
 if (!actor) {
   return await stop(
@@ -632,10 +644,7 @@ if (revising && (!prHeld(parseJsonText(target.revision_pr)) || !DIGEST_SHAPE.tes
 // ---- Prepare: base から隔離 worktree と branch を作り、setup を実行する ----
 phase("Prepare");
 // branch 名は skills/checkout/references/branch-naming.md の <type>/<scope>-<description>。
-// type は Issue title の接頭辞から、description は title の英数字語から決定論的に作る。
-const TYPE_BY_PREFIX = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
-const titlePrefix = (/^\[(\w+)\]/.exec(issue.title) || [])[1] || "";
-const branchType = TYPE_BY_PREFIX[titlePrefix.toLowerCase()] || "feat";
+// type は Target で確かめた Issue title の接頭辞から、description は title の英数字語から決定論的に作る。
 const titleWords = issue.title
   .replace(/^\[\w+\]\s*/, "")
   .toLowerCase()

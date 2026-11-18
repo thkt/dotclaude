@@ -6,7 +6,7 @@
 2. `gh issue list --repo OWNER/REPO --state all --search '関連語'` と候補本文で重複を調べる。指定された Issue は `gh issue view NUMBER --repo OWNER/REPO --json title,body,state,url` で読む。重複候補の範囲が異なれば統合しない。
 3. 目的、今回の範囲、完了条件、対象 repo 固有のセットアップ・検証方法・必要媒体と保存先、合意の根拠を Markdown 下書きへまとめる。必要媒体と保存先は、`${CLAUDE_SKILL_DIR}/../implement/references/capture.md` の表で `capture` の設定に合わせて書く。未解決事項と次の判断を残し、重要な判断を先送りするなら理由・再判断の条件・判断する人を記す。先送りできるのは、draft PR の公開より後に決めれば足りる判断だけ。実装・検証・PR 本文の作成の間に答えが要る判断は、公開の前に人と合意して本文に決定として書く。「実装時に確認する」とは書かない。`/implement` の workflow は走り出すと人に問えず、未決の判断に当たると止まり、実装をやり直すことになる。sufficiency.md § 対象 repo の方針が課す手順で列挙した手順とその判定、workflow が実行できない手順の扱いも書く。扱いは同じ文書の 3 つの名前をそのまま使い、引き継ぐ手順には担当と時期を添える。扱いの欄に、実行の中の誰かが代わりに行う手順を書き足さない。実装方法の細部や試行管理を要求へ混ぜず、未合意事項を合意済みと書かない。
 4. 下書きを要求・合意・根拠と照合し、抜け・矛盾・曖昧さを解消する。必要な独立評価と人の合意へつなぐ。
-5. 公開直前に対象と gh の主体・権限を再照合する。新規なら `gh issue create --repo OWNER/REPO --title '要求を表すタイトル' --body-file PATH` で作成する。既存 Issue の更新が依頼範囲なら最新本文を読み、既存要求・他担当の内容を保持して `gh issue edit NUMBER --repo OWNER/REPO --body-file PATH` で反映する。
+5. 公開直前に対象と gh の主体・権限を再照合する。title は 4 つの種別の接頭辞のどれか 1 つで始める (§ title の種別の接頭辞)。新規なら `gh issue create --repo OWNER/REPO --title '[種別] 要求を表すタイトル' --body-file PATH` で作成する。既存 Issue の更新が依頼範囲なら最新本文を読み、既存要求・他担当の内容を保持して `gh issue edit NUMBER --repo OWNER/REPO --body-file PATH` で反映する。その Issue の title に接頭辞がなければ、`gh issue edit NUMBER --repo OWNER/REPO --title '[種別] 今のタイトル'` で付ける。
 6. `gh issue view NUMBER --repo OWNER/REPO --json title,body,state,url` で読み戻し、対象 repo・本文・URL、決定・合意範囲・根拠・未解決事項を確認する。
 
 通信断などで結果が不明なら、一覧と本文から GitHub 上の実状態を確認してから再試行する。確認できない間は公開完了とせず、本文・判明した状態・残る確認を引き継ぐ。権限不足なら本文を保持して、必要な対応を伝える。
@@ -14,3 +14,14 @@
 本文の不足・不一致は要求・合意・根拠と照合して修正し、再度読み戻す。判断を左右する不足は sufficiency.md に戻す。
 
 Issue URL と合意範囲を報告し、session.md § 調査成果の引き継ぎに従って報告の版・共有状態・未完了の操作を渡す。変更前の確認を、報告の改訂や Issue の更新に流用しない。
+
+## title の種別の接頭辞
+
+`/implement` は title の接頭辞だけから branch の type を決め、接頭辞のない Issue では `issue-untyped` で止まる。種別は次の表で 1 つ選ぶ。
+
+| 接頭辞      | 使うとき                                               |
+| ----------- | ------------------------------------------------------ |
+| `[Bug]`     | 既存のコードが要求と違う結果を返すことを直す           |
+| `[Feature]` | 利用者か AI agent から見た振る舞いを足す、または変える |
+| `[Docs]`    | 文書だけを変える                                       |
+| `[Chore]`   | 設定、依存、削除、保守。振る舞いを足さない             |
