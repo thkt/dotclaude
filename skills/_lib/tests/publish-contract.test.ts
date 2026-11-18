@@ -49,7 +49,7 @@ test("publish.md opens a draft PR only after check passes, and never stages ever
     assert.ok(check.n < commit.n && check.n < push.n, `${rel}: check runs before commit and push`);
     assert.match(
       check.text,
-      /commit|push/,
+      /push|commit/,
       `${rel}: a failing check stops before commit and push`,
     );
     const addAll = stepNaming(doc, "git add -A");

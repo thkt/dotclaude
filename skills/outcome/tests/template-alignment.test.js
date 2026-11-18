@@ -129,7 +129,7 @@ test("SKILL.md branches on validate-outcome.ts and runs it through the validatio
 
 // The instruction to drop an optional block that was never collected, paired with the side that
 // rejects a {...} left behind. With the instruction alone, a placeholder stays in
-// .claude/OUTCOME.md and assert's digest reads it as Behavior.
+// .claude/OUTCOME.md and reads as Behavior.
 test("the generate steps drop the optional block and the script rejects a leftover placeholder", () => {
   assert.match(
     readFileSync(skills.ja, "utf8"),

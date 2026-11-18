@@ -1,14 +1,12 @@
 /// <reference types="node" />
-// history を記録する CLI (workflows/build/record.ts、workflows/assert/record.ts) が共有する、
-// stdin payload の parse/guard の組と history-path/timestamp の helper。それぞれの script は
-// この流れを自前でコピーして持っていた。この module はそれに 1 つの置き場所を与える。
-// workflows/_lib/entry-point.ts と同じ形 (小さく、独立してテストでき、named export) で。
+// history を記録する CLI (workflows/implement/record.ts) が使う、stdin payload の parse/guard
+// の組と history-path/timestamp の helper。workflows/_lib/entry-point.ts と同じ形 (小さく、
+// 独立してテストでき、named export) で置く。
 //
 // parsePayload は生の stdin テキストを受け取り、parse できた object か、呼び出し側が stderr に
 // 書き込む message のどちらかを返す -- stdin や stderr そのものには一切触れない。fd 0 を読み、
-// parsePayload を呼び、失敗時に stderr へ message を書く薄い関数は、この CLI が後続の unit で
-// この module に移植されたときに workflows/build/record.ts の `main` が呼ぶ wrapper になる。
-// ここではまだ export していない。ここから import する側が無いためである。
+// parsePayload を呼び、失敗時に stderr へ message を書くのは、workflows/implement/record.ts の
+// `main` 自身である。
 //
 // historyPath は `home` を process.env.HOME や node:os から読む代わりに明示引数として受け取る。
 // そうすることでテスト (や U-006 のような harness) が process.env.HOME に触れずに temp
@@ -35,7 +33,7 @@ export function parseJson(text: string): { value: unknown } | { error: string } 
   }
 }
 
-/** `text` を JSON object として parse する。workflows/build/record.ts の `main` が置き換え元の
+/** `text` を JSON object として parse する。history を記録する CLI が置き換え元の
  * Python recorder から移植した 2 つの検査をそのまま踏襲する: parse できないテキスト、次に
  * parse はできるが plain object でない値 (array, スカラー, null)。message の文言と接頭辞は
  * Python 版 recorder のものと一致させ、この module へ切り替える呼び出し側の stderr 契約を
@@ -68,8 +66,7 @@ export function historyPath(home: string, name: string): string {
 }
 
 /** `date` を秒精度 (ミリ秒なし) の UTC ISO-8601 timestamp にする。既定値は現在時刻で、
- * workflows/build/record.ts と workflows/assert/record.ts の両方が書く `generated_at`
- * フィールドと一致する。 */
+ * workflows/implement/record.ts が書く `generated_at` フィールドと一致する。 */
 export function isoTimestamp(date: Date = new Date()): string {
   return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }

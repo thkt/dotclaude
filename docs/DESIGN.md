@@ -143,18 +143,10 @@ User-facing commands and workflow system.
 
 ```mermaid
 flowchart LR
-    subgraph Quick["Quick Fix"]
-        F["/fix"]
-    end
-    subgraph Investigate["Investigation"]
-        R1["/research"] --> F2["/fix"]
-    end
-    subgraph Feature["Feature Development"]
-        R2["/research"] --> T["/think"] --> I["/issue"] --> B["build workflow"] --> A["/audit · /polish"]
-    end
+    S["/scoping"] --> I["Agreed Issue"] --> M["/implement"] --> PR["draft PR"]
 ```
 
-The Feature Development detail (build's 7 stages, stop conditions, governing DRs) lives in [COMMANDS](./COMMANDS.md).
+The implement workflow's phases and governing DRs live in [COMMANDS](./COMMANDS.md).
 
 ## Underlying Philosophy
 
@@ -175,12 +167,12 @@ Built on the premise that "**AI makes mistakes**":
 
 Refer to:
 
-| Document                            | Content                                                      |
-| ----------------------------------- | ------------------------------------------------------------ |
-| [COMMANDS](./COMMANDS.md)           | Commands, workflows, and the build-centered development flow |
-| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage                             |
-| [HOOKS](./HOOKS.md)                 | Hook system and Quality Pipeline                             |
-| [GLOSSARY](./GLOSSARY.md)           | Ubiquitous language dictionary                               |
+| Document                            | Content                                                                             |
+| ----------------------------------- | ----------------------------------------------------------------------------------- |
+| [COMMANDS](./COMMANDS.md)           | Commands, workflows, and the development flow centered on `/scoping` → `/implement` |
+| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage                                                    |
+| [HOOKS](./HOOKS.md)                 | Hook system and Quality Pipeline                                                    |
+| [GLOSSARY](./GLOSSARY.md)           | Ubiquitous language dictionary                                                      |
 
 ---
 

@@ -341,7 +341,7 @@ export function createHost({
     }
     return value;
   };
-  // 別の script を入れ子で呼ぶ script (build.js は code を呼ぶ) は、同じ host の上でそれを実行する。
+  // 別の script を入れ子で呼ぶ script は、同じ host の上でそれを実行する。
   stubs.workflow = async (name: string, wfArgs: JsonValue) => {
     onLog(`[workflow] ${name}`);
     const nested = await runWorkflow(resolveWorkflowPath(name), {

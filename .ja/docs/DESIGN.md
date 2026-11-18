@@ -142,18 +142,10 @@ Contextual (SOLID / Law of Demeter / TIDYINGS ほか)
 
 ```mermaid
 flowchart LR
-    subgraph Quick["Quick Fix"]
-        F["/fix"]
-    end
-    subgraph Investigate["Investigation"]
-        R1["/research"] --> F2["/fix"]
-    end
-    subgraph Feature["Feature Development"]
-        R2["/research"] --> T["/think"] --> I["/issue"] --> B["build workflow"] --> A["/audit · /polish"]
-    end
+    S["/scoping"] --> I["Agreed Issue"] --> M["/implement"] --> PR["draft PR"]
 ```
 
-Feature Development の詳細 (build の 7 つの stage、停止条件、統治 DR) は[COMMANDS](./COMMANDS.md)が持つ。
+implement workflow の phase と統治 DR は[COMMANDS](./COMMANDS.md)が持つ。
 
 ## 根底の哲学
 
@@ -172,12 +164,12 @@ Feature Development の詳細 (build の 7 つの stage、停止条件、統治 
 
 ## 詳細ドキュメント
 
-| ドキュメント                        | 内容                                               |
-| ----------------------------------- | -------------------------------------------------- |
-| [COMMANDS](./COMMANDS.md)           | コマンドと workflow の関係、build 中心の開発フロー |
-| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent の仕組みと利用                         |
-| [HOOKS](./HOOKS.md)                 | Hook システムと Quality Pipeline                   |
-| [GLOSSARY](./GLOSSARY.md)           | ユビキタス言語辞書                                 |
+| ドキュメント                        | 内容                                                                         |
+| ----------------------------------- | ---------------------------------------------------------------------------- |
+| [COMMANDS](./COMMANDS.md)           | コマンドと workflow の関係、`/scoping` → `/implement` を中心とした開発フロー |
+| [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent の仕組みと利用                                                   |
+| [HOOKS](./HOOKS.md)                 | Hook システムと Quality Pipeline                                             |
+| [GLOSSARY](./GLOSSARY.md)           | ユビキタス言語辞書                                                           |
 
 ---
 

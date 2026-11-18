@@ -2,37 +2,28 @@
 
 ## 1. 基本コマンド
 
-| コマンド    | 利用シーン                      |
-| ----------- | ------------------------------- |
-| `/fix`      | 小さなバグ、1〜3 ファイルの修正 |
-| `/research` | 着手前に調査                    |
-| `/think`    | 4 ファイル以上か新機能の計画    |
-| `/issue`    | 計画を issue の Plan 節へ起票   |
-| `/audit`    | コード品質レビュー              |
-| `/commit`   | コミットメッセージを作成        |
+| コマンド     | 利用シーン                                                 |
+| ------------ | ---------------------------------------------------------- |
+| `/scoping`   | 機能もバグも、要求と完了条件を整理して合意済みの Issue にする |
+| `/implement` | 合意済みの Issue を実装し、draft PR まで進める             |
 
 ## 2. 判断フロー
 
 ```text
-即時修正か → /fix
-先に理解が必要か → /research → /fix
-機能を作るか → /research → /think → /issue → build workflow → /audit
+機能もバグも → /scoping → /implement
 ```
 
 ## 3. セッション例
 
 ```bash
-# 即時バグ修正
-> /fix the login button is not working
+# バグ修正
+> /scoping the login button is not working
 
 # 機能開発
-> /research how does auth work in this codebase?
-> /think add logout functionality
-> /issue
+> /scoping add logout functionality
 
-# 起票した番号を build workflow へ渡し、draft PR ができてから
-> /audit
-> /commit
+# 合意した Issue の番号を渡すと、draft PR まで進む
+> /implement 123
 ```
 
 ## 4. キーポイント

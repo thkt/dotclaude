@@ -13,10 +13,10 @@ test(
     "content names the retired path",
   () => {
     const retiredNeedle = "_lib/legacy-helper.py";
-    const files = ["docs/decisions/DR-0100-example.md", "workflows/build/record.ts"];
+    const files = ["docs/decisions/DR-0100-example.md", "workflows/implement/record.ts"];
     const contents: Record<string, string> = {
       "docs/decisions/DR-0100-example.md": `kept as history: ${retiredNeedle}`,
-      "workflows/build/record.ts": `still calls ${retiredNeedle}`,
+      "workflows/implement/record.ts": `still calls ${retiredNeedle}`,
     };
     const read = (path: string): string => contents[path];
     const matches = (content: string): boolean => content.includes(retiredNeedle);
@@ -25,7 +25,7 @@ test(
 
     assert.deepEqual(
       offenders,
-      ["workflows/build/record.ts"],
+      ["workflows/implement/record.ts"],
       "the docs/decisions/ file must be excluded and the live file must still be caught",
     );
   },
@@ -41,10 +41,10 @@ test(
     // its own predicate.
     const retiredNeedle = "_lib/legacy-tool.py";
     const excluded = "docs/wiki/supply-list-single-source.md";
-    const files = [excluded, "workflows/build/record.ts"];
+    const files = [excluded, "workflows/implement/record.ts"];
     const contents: Record<string, string> = {
       [excluded]: `basis line quoting ${retiredNeedle}`,
-      "workflows/build/record.ts": `invokes ${retiredNeedle}`,
+      "workflows/implement/record.ts": `invokes ${retiredNeedle}`,
     };
     const read = (path: string): string => contents[path];
     const matches = (content: string): boolean => content.includes(retiredNeedle);
@@ -53,7 +53,7 @@ test(
 
     assert.deepEqual(
       offenders,
-      ["workflows/build/record.ts"],
+      ["workflows/implement/record.ts"],
       "the caller's extra exclusion must be skipped and the other matching path must still be caught",
     );
   },

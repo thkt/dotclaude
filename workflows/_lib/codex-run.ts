@@ -16,8 +16,8 @@ import type { RunWorkflowStubs } from "./run-workflow.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-// The subset of JSON Schema the workflow scripts write (workflows/build.js's obj(required,
-// properties) and its siblings). Anything else is carried through untouched.
+// The subset of JSON Schema the workflow scripts write (workflows/implement.js's
+// obj(required, properties) and its siblings). Anything else is carried through untouched.
 interface JsonSchema {
   type?: string | string[];
   properties?: Record<string, JsonSchema>;
@@ -41,8 +41,9 @@ type AgentOptions = {
   schema?: JsonSchema;
 };
 
-// build.js and code.js name only haiku and sonnet. The three tiers line up with Codex's
-// current-generation coding models; one CODEX_MODEL_<TIER> variable overrides one entry.
+// Workflow scripts name a model by the tier haiku, sonnet or opus. The three tiers line up
+// with Codex's current-generation coding models; one CODEX_MODEL_<TIER> variable overrides one
+// entry.
 export const MODEL_MAP: Record<string, string> = {
   haiku: process.env.CODEX_MODEL_HAIKU || "gpt-5.6-luna",
   sonnet: process.env.CODEX_MODEL_SONNET || "gpt-5.6-terra",
@@ -209,8 +210,8 @@ function findObjectViolation(
 
 // Strict mode makes every property required and nullable, so the API is free to answer null
 // where the original schema requires a value. A null reaching the script is not the absence
-// the script branches on: build.js's oversizedUnits reads u.files.length, and a null there
-// throws inside the vm as a run failure rather than a recorded degradation. This walks the
+// the script branches on: a script that reads .length from an array field gets a null there,
+// which throws inside the vm as a run failure rather than a recorded degradation. This walks the
 // original schema and names the first such spot, which the caller turns into a retry.
 export function findSchemaViolation(
   value: JsonValue,
@@ -469,7 +470,7 @@ export const makeSlots = (limit: number) => {
 };
 
 // stubs.workflow and runOnCodex both need the path a name resolves to, and the same missing-name
-// message build.js's sibling() matches on, so both go through this rather than repeating either.
+// message, so both go through this rather than repeating either.
 export const resolveWorkflowPath = (name: string): string => {
   const path = join(ROOT, "workflows", `${name}.js`);
   if (!existsSync(path)) throw new Error(`workflow('${name}'): no workflow with that name`);
@@ -568,7 +569,7 @@ interface CreateStubsOptions {
 }
 
 // The pool belongs to one createStubs call. stubs.workflow hands the same stubs object to the
-// nested run, so build and the code workflow it nests share one pool; two concurrent
+// nested run, so a script and the workflow it nests share one pool; two concurrent
 // runOnCodex calls would each hold their own and the cap would apply twice.
 export function createStubs({
   repo,
@@ -588,8 +589,8 @@ export function createStubs({
       return runAgentAttempts(config, repo, runOnce, onLog);
     });
 
-  // build.js's sibling() falls back to the plugin namespace only when the message matches this
-  // shape, so an unresolved name throws it verbatim rather than returning undefined.
+  // An unresolved name throws the fixed missing-name message rather than returning undefined,
+  // so a calling script can tell a missing workflow from one that returned nothing.
   stubs.workflow = async (name: string, wfArgs: JsonValue) => {
     const path = resolveWorkflowPath(name);
     onLog(`[workflow] ${name}`);

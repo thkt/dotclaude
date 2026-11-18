@@ -72,7 +72,6 @@ A hook that stops a call goes through `hook_payload.deny` and emits the same env
 | PreToolUse        | `Bash`             | `security/rm_to_trash.ts`                       | none               | 15      |
 | PreToolUse        | `Bash`             | `security/git_sandbox_guard.ts`                 | none               | 15      |
 | PreToolUse        | `Bash`             | `pre-bash/body_proofread.ts`                    | none               | 60      |
-| PreToolUse        | `Bash`             | `pre-bash/issue_body_gate.ts`                   | none               | 30      |
 | PreToolUse        | `Bash`             | `pre-bash/client_identifier_gate.ts`            | none               | 30      |
 | PreToolUse        | `Write\|Edit`      | `edit/rust_pre_edit.ts`                         | `**/*.rs`          | 60      |
 | PostToolUse       | `Write\|Edit`      | `edit/rust_post_edit.ts`                        | `**/*.rs`          | 30      |
@@ -96,7 +95,6 @@ fail-close refuses input it cannot judge, advisory always decides allow and retu
 | `git_sandbox_guard.ts`          | Bash                    | Denies a tree-rewriting git call running sandboxed                | fail-close   |
 | `package_manager_rewrite.ts`    | Bash                    | Rewrites a package manager command into its ni equivalent, always deciding allow | advisory |
 | `body_proofread.ts`             | Bash                    | Proofreads a gh filing or commit body and returns it as additionalContext | advisory |
-| `issue_body_gate.ts`            | Bash                    | Matches a `gh issue create` body against its title's template, denying both a divergence and a state it cannot compare | fail-close |
 | `client_identifier_gate.ts`     | Bash                    | Denies a commit in this repository whose staged diff adds a term from the identifier list kept outside it | fail-close |
 | `rust_pre_edit.ts`              | Write / Edit (`*.rs`)   | Injects clippy findings as additionalContext                      | advisory     |
 | `rust_post_edit.ts`             | Write / Edit (`*.rs`)   | Runs `cargo fmt`, then clippy again, and returns the findings     | advisory     |
@@ -133,7 +131,7 @@ The frontmatter of `SKILL.md` decides when a skill starts and what it may touch.
 | `model`         | The model the skill runs on                                   | The session model          |
 | `argument-hint` | The argument shape shown to the user                          | No arguments               |
 | `context`       | `fork` runs it in a separate context, leaving this one clean   | This context              |
-| `agent`         | The matching agent name, carried by the reviewer skills       | None                       |
+| `agent`         | The matching agent name                                       | None                       |
 | `user-invocable`| `false` keeps it out of the slash-command list                | `true`                     |
 
 ### Supporting assets
@@ -153,33 +151,12 @@ A skill marked "no" under user-invocable is a knowledge module the model loads f
 
 | Skill                              | Model   | User-invocable | Artifact or side effect                             |
 | ---------------------------------- | ------- | -------------- | --------------------------------------------------- |
-| `census`                           | opus    | yes            | Candidate list of decisions with no DR              |
-| `challenge`                        | inherit | yes            | A GO / NO-GO verdict with its counterarguments      |
-| `checkout`                         | haiku   | yes            | A new git branch                                    |
-| `commit`                           | haiku   | yes            | A git commit                                        |
 | `dr`                               | inherit | yes            | A MADR v4 file under `docs/decisions/`              |
-| `fix`                              | opus    | yes            | Edits confined to 1 to 3 files                      |
-| `issue`                            | opus    | yes            | A GitHub issue                                      |
 | `outcome`                          | inherit | yes            | `.claude/OUTCOME.md` created or updated             |
-| `pr`                               | opus    | yes            | A draft pull request                                |
-| `preview`                          | opus    | yes            | The match between a PR diff and its Plan            |
-| `qualify`                          | opus    | yes            | build-ready / needs-plan / needs-fix / needs-split  |
-| `research`                         | opus    | yes            | Findings, produced in a fork context                |
 | `scribe`                           | inherit | yes            | A PR proposing entries under `docs/wiki/`           |
-| `slice`                            | opus    | yes            | GitHub issues filed in dependency order             |
-| `think`                            | opus    | yes            | A structured plan with units and test_command       |
-| `transcribe`                       | inherit | yes            | A spreadsheet converted to Markdown                 |
-| `use-cli-codegraph`                | inherit | no             | Knowledge of how to call codegraph                  |
 | `use-cli-gcloud`                   | inherit | no             | Knowledge of how to call gsheet and gdoc            |
 | `use-cli-recall`                   | inherit | no             | Knowledge of how to call recall                     |
 | `use-cli-scout`                    | inherit | no             | Knowledge of how to call scout                      |
-| `use-context-reviewer-readability` | inherit | no             | Starts `reviewer-readability` in a fork             |
-| `use-context-reviewer-security`    | inherit | no             | Starts `reviewer-security` in a fork                |
-| `use-context-reviewer-silence`     | inherit | no             | Starts `reviewer-silence` in a fork                 |
-| `use-context-reviewer-testability` | inherit | no             | Starts `reviewer-testability` in a fork             |
-| `use-context-root-cause-analysis`  | inherit | no             | The procedure for root cause analysis by elimination |
-| `use-workflow-pageshot`            | opus    | no             | The path to a screenshot or a video                 |
-| `use-workflow-tdd-cycle`           | inherit | no             | The RGRC cycle procedure                            |
 
 ## Agent contract
 
@@ -194,94 +171,25 @@ An agent always runs in a fork and carries none of the caller's conversation. On
 | `tools`       | The tools permitted                              |
 | `model`       | The model it runs on                             |
 
-An agent that returns findings follows the Base Fields in `agents/_lib/finding-schema.md`. The Agent row is filled by the caller, so a reviewer never writes its own name.
-
-| Field          | Contents                                      |
-| -------------- | --------------------------------------------- |
-| `Severity`     | critical / high / medium / low                |
-| `Category`     | Domain-specific category                      |
-| `Location`     | `file:line`                                   |
-| `Evidence`     | Code snippet or observation                   |
-| `Trigger`      | A reproducible firing condition               |
-| `Reasoning`    | Why it is a problem                           |
-| `Fix`          | Suggested fix                                 |
-| `Verification` | Check type and question                       |
-
 ### Catalog
 
-There are 18 reviewers. The ROUTING table in `audit` picks 15 of them by file extension, and `causation`, `readability`, and `conformance` are called from a skill or from `build` directly. `agents/_lib/` holds no agent: it carries the finding format (`finding-schema.md`) and the severity calibration examples (`calibration-examples.md`).
-
-| Category   | Agent                                                                                                                   | Model                        |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| critics    | `critic-audit`, `critic-design`, `critic-evidence`                                                                      | opus                         |
-| enhancers  | `enhancer-code`, `enhancer-evidence`, `enhancer-integration`                                                            | opus                         |
-| explorers  | `explorer-feature`                                                                                                      | opus                         |
-| generators | `generator-snapshot`, `generator-test`                                                                                  | sonnet / opus                |
-| resolvers  | `resolver-build`                                                                                                        | opus                         |
-| reviewers  | `reviewer-accessibility`, `reviewer-causation`, `reviewer-conformance`, `reviewer-coverage`, `reviewer-design`, `reviewer-duplication`, `reviewer-readability`, `reviewer-react-pattern`, `reviewer-rust`, `reviewer-security`, `reviewer-silence`, `reviewer-testability` | opus |
-| reviewers  | `reviewer-efficiency`, `reviewer-operations`, `reviewer-progressive`, `reviewer-prompt`, `reviewer-resilience`, `reviewer-reuse` | sonnet |
+| Category | Agent           | Model |
+| -------- | --------------- | ----- |
+| critics  | `critic-design` | opus  |
 
 ## Workflow contract
 
 ### Invocation and arguments
 
-A workflow starts as `Workflow({name, args})`. args arrives as an object, a JSON string, or a bare string, and each script's `parseArgs` normalizes it to one shape. A bare string is the per-workflow shorthand: scope for `audit`, `polish`, and `assert`, and a DR directory or id list for `adrift`.
+A workflow starts as `Workflow({name, args})`. args arrives as an object, a JSON string, or a bare string, and the script normalizes it to one shape. A bare string is the per-workflow shorthand, and `implement` reads it as the Issue.
 
 `repo` is required by every workflow. A call without an absolute path returns `{stopped: "no-repo"}`, so none of them run against the wrong repository.
 
-| Workflow | args                                                     | Phases                                                              | stopped                                                        |
-| -------- | -------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `build`  | `{issue, repo, base?}`                                   | Load / Revalidate / Branch / Code / Cleanup / Verify / Ship         | 14 codes (table below)                                         |
-| `code`   | `{plan, repo, model?, commit?, issue?, untracked_baseline?}` | Implement / Verify                                               | `no-plan`, `no-repo`                                           |
-| `audit`  | `{scope?, focus?, repo, noLimit?, skipPreflight?}`        | Pre-flight / Route / Review / Challenge / Verify / Integrate / Snapshot | `no-repo`                                                  |
-| `polish` | `{scope?, repo, mode?, base?}`                           | Review / Challenge / Fix / Rejudge / Cleanup                        | `no-repo`                                                      |
-| `assert` | `{scope?, base?, repo}`                                  | Bootstrap / Evidence / Challenge / Triage / Synthesize / Cleanup    | `no-repo`, `no-changes`, `codex-missing`                       |
-| `shake`  | `{scope?, base?, repo}`                                  | Route / Shake / Fix                                                 | `no-repo`, `no-targets`                                        |
-| `adrift` | `{dir?, repo, focus?}`                                   | Detect / Scan / Report                                              | `no-repo`, `no-drs`, `no-matching-drs`                         |
-
-The stop codes of `build` split in two by whether a better `## Plan` on the issue would have prevented the stop. The script holds that split as `PLAN_QUALITY` and records one jsonl row per run.
-
-| Group                          | Codes                                                                                        |
-| ------------------------------ | --------------------------------------------------------------------------------------------- |
-| A better Plan prevents it      | `no-plan`, `extraction-failed`, `invalid-plan`, `extraction-mismatch`, `oversized-unit`, `plan-drift` |
-| Unrelated to the Plan          | `no-issue`, `no-repo`, `invalid-base`, `no-issue-body`, `dirty-branch-point`, `revalidate-failed`, `revalidate-incomplete`, `code-failed` |
+The one workflow is `implement`. Its phases are in the implement workflow section of [COMMANDS.md](./COMMANDS.md).
 
 ### Return values
 
 The return value is the only primary channel the caller reads. Even a workflow that writes a report file puts the numbers needed for a decision here.
-
-| Workflow | Main keys                                                                                         |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| `build`  | `pr_url`, `committed`, `unstaged`, `conformance_status`, `conformance_high`, `missing_tests`, `untouched_plan_files`, `backlog_candidates` |
-| `code`   | `completed`, `skipped`, `anomalies`, `commits`, `verification`, `tests_pass`, `gates_pass`        |
-| `audit`  | `findings`, `survivors`, `needs_context`, `tally`, `assignments`, `zero_reviewer_files`, `snapshot` |
-| `polish` | `findings`, `survivors`, `fixed`, `reopened`, `needs_context`, `cleanup`                          |
-| `assert` | `gate`, `gate_reason`, `build`, `tests`, `issues`, `root_causes`, `outcome_ref`, `report`         |
-| `shake`  | `ecosystem`, `runs_per_dimension`, `targets`, `dropped`, `blockers`                               |
-| `adrift` | `report_path`, `report_written`, `findings`, `priorities`, `unverifiable`, `external_refs`, `followup_candidates` |
-
-### What the script decides
-
-The OUTCOME statement about moving quality assurance off LLM discretion and onto a deterministic layer becomes concrete in this column. None of these judgments is reported by an agent; the script computes each one.
-
-| Workflow | Judgment the script owns                                                                |
-| -------- | ---------------------------------------------------------------------------------------- |
-| `audit`  | The file-glob to reviewer assignment table                                              |
-| `polish` | The confirmed / disputed / downgraded / needs_context triage, and the post-fix rejudge  |
-| `shake`  | 10 runs per each of 4 dimensions, and the confirmed-flaky / latent-flaky / stable verdict |
-| `assert` | The Ready / Ready (caveat) / NotReady gate, computed from build, tests, and issues       |
-| `adrift` | Exhaustive per-DR listing, reviewer routing, and the file:line merge                    |
-| `build`  | Validation of the extracted plan, the id cross-check, and the stop code                 |
-| `code`   | The Red confirmation per unit, and routing a test-less unit to direct implementation    |
-
-### Nesting
-
-A workflow can nest another one level deep. That is how a routing table is reused instead of copied. Heavy assurance (`audit`, `polish`) is started by a person against the draft PR.
-
-| Caller     | Nested workflow  | Purpose                                    |
-| ---------- | ---------------- | ------------------------------------------ |
-| `build`    | `code`           | TDD implementation per unit                |
-| `assert`   | `audit`          | Collection of static evidence              |
 
 ## Quality gates
 
@@ -326,7 +234,6 @@ The lint targets and thresholds live in configuration files. This document does 
 | -------------------------- | --------------------------------------------------------------- |
 | `decision-records.test.js` | No duplicate DR number, and a title heading matching its filename |
 | `live-instructions.test.js`| Wording in instructions: the retired name ADR, home-anchored paths, un-narrowed Bash grants, a workspace path missing `.claude/` |
-| `manual-lane.test.js`      | Each manual-lane skill maps to a build stage, and a shared rule names both readers |
 | `phase-handoff.test.js`    | A Phase that hands something forward is named back by the receiving Phase |
 | `prose-language.test.js`   | Test names on the English side are not Japanese                 |
 | `skill-h1.test.js`         | A wrapper skill's H1 is its own name, and a user-invocable skill's H1 opens with its slash command |

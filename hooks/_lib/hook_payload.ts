@@ -55,7 +55,7 @@ export function field(container: unknown, key: string): unknown {
 }
 
 /** The envelope notify writes. Split from the write so a test reads the shape without
- * capturing stdout, the way gate.ts keeps classifyObservation apart from the stdout write. */
+ * capturing stdout. */
 export function notification(message: string, hookEventName: string): Record<string, unknown> {
   return {
     systemMessage: message,

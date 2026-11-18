@@ -3,9 +3,7 @@
 // Python original, replayed from the frozen fixture
 // skills/outcome/tests/fixtures/validate-outcome-cases.json (U-001). Reuses the shared
 // runCli/withTempHome/fixture/assertStdoutShape harness from workflows/_lib/tests/_cli-fixture.ts
-// instead of hand-rolling a second CLI-replay loop (skills/_lib/tests/harness-hash-cli.test.ts
-// carries the sibling pattern for skills/_lib/harness_hash.ts, minted before this shared harness
-// existed), and hooks/_lib/shebang_scope.ts's trackedEntries for the git-index mode check (T-179)
+// instead of hand-rolling a second CLI-replay loop, and hooks/_lib/shebang_scope.ts's trackedEntries for the git-index mode check (T-179)
 // instead of a standalone statSync or spawn.
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

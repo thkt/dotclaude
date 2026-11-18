@@ -1,6 +1,6 @@
 // A Phase that names a later Phase and is never named back has handed a value nowhere. PR #289
-// was that shape between /qualify's Phase 2 and Phase 4, and build's conformance caught it while
-// no test did (#290).
+// was that shape between two Phases of one skill, and a review caught it while no test did
+// (#290).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";

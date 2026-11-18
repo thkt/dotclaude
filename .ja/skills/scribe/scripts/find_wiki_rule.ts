@@ -46,8 +46,8 @@ export interface Report {
   scenes: string[];
 }
 
-// workflows/code.js の globToRegExp が受ける部分集合と同じ。`**/` はディレクトリを跨ぎ、`*` は
-// 1 階層で止まる。片側だけ広げると、ページが届く実装と routing の届く実装が食い違う。
+// wiki ページの `globs` が使う glob の部分集合を受ける。`**/` はディレクトリを跨ぎ、`*` は
+// 1 階層で止まる。
 const SEGMENT = /(\*\*\/|\*)/;
 const ESCAPE = /[.+^${}()|[\]\\]/g;
 
@@ -184,8 +184,7 @@ export function main(argv: readonly string[]): number {
     return 2;
   }
 
-  // --scene が無いときに 2 key の形を保つのは、既存の呼び出し元 (skills/think, skills/fix) を
-  // この軸の追加でバイト単位まで無傷に保つため。
+  // --scene が無いときは、scene の軸を足す前と同じ matched と related の 2 key だけを出す。
   const output: Record<string, unknown> = { matched: report.matched, related: report.related };
   if (scene !== undefined) {
     output.scenes = report.scenes;

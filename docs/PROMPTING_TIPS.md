@@ -30,7 +30,7 @@ Effective prompting techniques for Claude Code.
 
 ## Workflow
 
-| Technique                                             | Effect                          |
-| ----------------------------------------------------- | ------------------------------- |
-| `/think` → review with separate Claude session        | Improve plan quality            |
-| Switch to `/think` the moment something goes sideways | Avoid wasting time on bad paths |
+| Technique                                               | Effect                          |
+| ------------------------------------------------------- | ------------------------------- |
+| `/scoping` → review with separate Claude session        | Improve Issue quality           |
+| Switch to `/scoping` the moment something goes sideways | Avoid wasting time on bad paths |

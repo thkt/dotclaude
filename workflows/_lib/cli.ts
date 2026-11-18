@@ -1,14 +1,12 @@
 /// <reference types="node" />
-// The stdin-payload parse/guard pair and the history-path/timestamp helpers shared by the
-// history-recording CLIs (workflows/build/record.ts, workflows/assert/record.ts). Each of
-// those scripts wrote its own copy of this flow; this module gives it one home, in the same
-// shape as workflows/_lib/entry-point.ts (small, independently testable, named exports).
+// The stdin-payload parse/guard pair and the history-path/timestamp helpers the
+// history-recording CLI (workflows/implement/record.ts) uses, in the same shape as
+// workflows/_lib/entry-point.ts (small, independently testable, named exports).
 //
 // parsePayload takes the raw stdin text and returns either the parsed object or the message
-// the caller writes to stderr -- it never touches stdin or stderr itself. The thin function
-// that reads fd 0, calls parsePayload, and writes the message to stderr on failure is the
-// wrapper workflows/build/record.ts's `main` will call once that CLI is ported onto this
-// module in a later unit; it is not exported yet because nothing here imports it.
+// the caller writes to stderr -- it never touches stdin or stderr itself. Reading fd 0,
+// calling parsePayload, and writing the message to stderr on failure stay in
+// workflows/implement/record.ts's own `main`.
 //
 // historyPath takes `home` as an explicit argument rather than reading it from
 // process.env.HOME or node:os itself, so a test (or a harness like U-006's) can point it at a
@@ -35,7 +33,7 @@ export function parseJson(text: string): { value: unknown } | { error: string } 
   }
 }
 
-/** Parse `text` as a JSON object. Mirrors the two checks workflows/build/record.ts's `main`
+/** Parse `text` as a JSON object. Mirrors the two checks the history-recording CLI
  * ported from the Python recorder it replaces: unparseable text, then a value that parses but
  * is not a plain object (an array, a scalar, or null). The message text and prefix match the
  * Python recorder's so a caller switching to this module changes no stderr contract. The
@@ -68,8 +66,8 @@ export function historyPath(home: string, name: string): string {
 }
 
 /** `date` as a UTC ISO-8601 timestamp with second precision (no milliseconds). Defaults to
- * the current time, matching the `generated_at` field workflows/build/record.ts and
- * workflows/assert/record.ts both write. */
+ * the current time, matching the `generated_at` field workflows/implement/record.ts
+ * writes. */
 export function isoTimestamp(date: Date = new Date()): string {
   return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }

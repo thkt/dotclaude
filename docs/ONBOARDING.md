@@ -2,23 +2,15 @@
 
 ## How We Use Claude
 
-Measured on 2026-08-17, by counting `<command-name>` occurrences across the 6018 session logs touched in the last 30 days.
+Measured on 2026-08-17, by counting `<command-name>` occurrences across the 6018 session logs touched in the last 30 days. Commands removed since then are left out.
 
 ```text
 Top Skills & Commands
 /clear ████████████████████ 111
-/build █████░░░░░░░░░░░░░░░ 28
-/qualify ████░░░░░░░░░░░░░░░░ 23
-/polish ████░░░░░░░░░░░░░░░░ 21
 /model ███░░░░░░░░░░░░░░░░░ 14
 /compact ███░░░░░░░░░░░░░░░░░ 14
 /exit ██░░░░░░░░░░░░░░░░░░ 10
-/issue ██░░░░░░░░░░░░░░░░░░ 9
-/think █░░░░░░░░░░░░░░░░░░░ 8
 /code-review █░░░░░░░░░░░░░░░░░░░ 6
-/audit █░░░░░░░░░░░░░░░░░░░ 6
-/assert █░░░░░░░░░░░░░░░░░░░ 6
-/adrift █░░░░░░░░░░░░░░░░░░░ 6
 ```
 
 MCP Servers: zero calls over the same window.
@@ -45,16 +37,8 @@ MCP Servers: zero calls over the same window.
 
 ### Skills to Know About
 
-- `/build` - Implements a plan-backed issue end-to-end and opens a draft PR. The most-used entry point.
-- `/qualify` - Checks whether an issue is ready to hand to build. Run it before launching build.
-- `/polish` - External-lens (Codex) review and cleanup. Use after a feature lands to catch slop.
-- `/issue` - Files a GitHub Issue with a structured title and body; transfers a plan into the `## Plan` section when one exists.
-- `/think` - Design exploration that produces a plan (transferred to the issue's Plan section). Entry point for any non-trivial new feature.
-- `/audit` - Fans specialized reviewers (security, type safety, silent failures, etc.) out over a diff.
-- `/assert` - Independent merge-readiness verdict, running Codex in an isolated worktree.
-- `/adrift` - Scans for drift between DRs and the current code.
-- `/commit` - Generates a Conventional Commits message from the staged diff. Run after edits instead of writing them manually.
-- `/challenge` - Devil's advocate pass on a proposal, design, or plan. Use before committing to an architecture decision.
+- `/scoping` - Settles requirements, done conditions, and verification methods, and turns the agreed scope into a GitHub Issue. Entry point for any feature or bug.
+- `/implement` - Carries an agreed Issue through the implement workflow to a draft PR.
 - `/compact` - Summarizes and compresses context when usage approaches 70%. Run proactively on long sessions.
 
 ## Team Tips

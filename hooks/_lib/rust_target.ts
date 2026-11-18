@@ -22,8 +22,7 @@ export const MAX_FINDINGS = 40;
 // documented in the child_process guide); a workspace-wide `cargo clippy` run can print past
 // that well before MAX_FINDINGS gets a chance to trim it, which would silently drop findings
 // on a large workspace. Bounded rather than unbounded so a runaway process still can't exhaust
-// memory -- the same reasoning workflows/_lib/gate.ts's observeCommand documents for its own
-// maxBuffer choice.
+// memory.
 const MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 
 /** Splits on "\n" the way Python's str.splitlines() does for "\n"-only text: a trailing
