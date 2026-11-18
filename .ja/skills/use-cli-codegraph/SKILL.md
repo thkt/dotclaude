@@ -1,7 +1,7 @@
 ---
 name: use-cli-codegraph
 description: codegraph CLI 経由でシンボル単位のコード構造を問い合わせる。呼び出し元、呼び出し先、変更の波及範囲、シンボルの定義元をたどる。
-when_to_use: who calls this, what breaks if I change X, impact analysis, callers, callees, call graph, symbol definition, code structure navigation, 影響範囲, 呼び出し元, 呼び出し先, 構造把握, 変更波及, dependency trace, 誰が呼んでいる
+when_to_use: シンボルの呼び出し元、呼び出し先、定義、変更の影響についての問い。callers, callees, impact analysis.
 allowed-tools: Bash(codegraph:*) Read
 user-invocable: false
 ---

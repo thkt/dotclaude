@@ -3,7 +3,6 @@ name: challenge
 description: Two-phase challenge that judges whether a discovered problem is real and whether a proposed idea is usable. Phase 1 loops verification and advisor judgment over OUTCOME.md and the gathered evidence to self-resolve design-tree branches. It asks the user only the irreversible branches that remain and proceeds on stated assumptions for the rest. Phase 2 spawns two critic-design subagents (internal attack / OUTCOME.md attack) as devil's advocate input. The verdict leads the output as a simple GO / NO-GO.
 when_to_use: devils advocate, 反論, チャレンジ, challenge, 叩いて, 穴探し, grill me, 壁打ち
 allowed-tools: Read LS Agent AskUserQuestion
-model: opus
 argument-hint: "[proposal file | description]"
 ---
 

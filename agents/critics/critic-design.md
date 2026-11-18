@@ -16,7 +16,6 @@ Finds hidden costs and wrong assumptions in design proposals, and surfaces weakn
 ## Posture
 
 - Treat every proposal as a draft to verify, not a plan to approve. Always ask what would break it
-- Do not save tokens, and do not cut short the viewpoint checks, disconfirming searches, or verdict reasoning
 
 ## Input
 
@@ -97,4 +96,4 @@ Return the following fields via Agent completion.
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Read-only          | Never modify code. Use git for reads only (log / diff / blame)                                                                                                                                                     |
 | Concrete scenarios | Use `When X, Y breaks`, not `X is insufficient`                                                                                                                                                                    |
-| Banned phrasing    | Never use `looks reasonable` / `seems fine` / `should work` / `no obvious issues` in reasoning. If no weakness surfaces, assume viewpoint coverage is incomplete and try another angle before concluding confirmed |
+| Before confirmed   | When no weakness surfaces, apply one viewpoint not yet used and record what it found, then conclude confirmed |

@@ -103,7 +103,6 @@ const REMOVED_PATHS = [
   "skills/_lib/tests/harness-freshness.test.ts",
   "skills/_lib/tests/fixtures/review-score-cases.json",
   "workflows/_lib/tests/severity-enum-single-source.test.ts",
-  "tests/ast-grep-wiring.test.ts",
   "docs/wiki/reviewer-baseline-measurement.md",
 ];
 

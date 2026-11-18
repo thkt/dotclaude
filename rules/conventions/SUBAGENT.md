@@ -74,7 +74,7 @@ Grant memory when all three below hold, and remove it when the project scope sta
 
 ## Reference notation
 
-Where a relative path resolves depends on the launching project. An agent body has no variable that expands in both the dev tree and a plugin install: `${CLAUDE_SKILL_DIR}` is skill-only, and `${CLAUDE_PLUGIN_ROOT}` expands under a plugin install alone and stays literal in the dev tree. So a bundled asset takes the plugin form plus one fallback sentence, placed right after the intro paragraph, worded exactly as below. `tests/live-instructions.test.js` checks both the sentence and the absence of a bare home-anchored path.
+Where a relative path resolves depends on the launching project. An agent body has no variable that expands in both the dev tree and a plugin install: `${CLAUDE_SKILL_DIR}` is skill-only, and `${CLAUDE_PLUGIN_ROOT}` expands under a plugin install alone and stays literal in the dev tree. So a bundled asset takes the plugin form plus one fallback sentence, placed right after the intro paragraph, worded exactly as below. `tests/live-instructions.test.ts` checks both the sentence and the absence of a bare home-anchored path.
 
 > When a path below still begins with `${`, the harness left the variable unexpanded; read the same path under `~/.claude/` instead.
 

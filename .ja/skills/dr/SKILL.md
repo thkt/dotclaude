@@ -3,7 +3,6 @@ name: dr
 description: MADR v4 形式で Decision Record (DR) を自動採番付きで作成する。対象はアーキテクチャに限らず、覆しにくく文脈なしでは意外に見える決定すべて。
 when_to_use: DR作成, ADR作成, 技術決定, アーキテクチャ決定, decision record
 allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(git:*) Bash(gh pr:*) Bash(gh repo view:*) Bash(cat:*)
-model: opus
 argument-hint: "[decision title]"
 ---
 
@@ -51,7 +50,7 @@ Publish で publish.md に渡す値は下表のとおり。採用ゲートで DR
 
 ## 決定タイプ
 
-決定タイプの違いが影響するのは、More Information に置く推奨トピックの選択のみ。分量は全タイプ共通で、Context は 3 行、Options は各 3〜5 行、Consequences は箇条書き 2〜3 項目とする。Reassessment Triggers はタイプを問わず More Information に置く。新規 DR は必ず More Information を持つので h3 になる。既存構造の削除や統合を提案する側がこの節を読んで判定するので、欠けると判定材料が無い。
+決定タイプの違いが影響するのは、More Information に置く推奨トピックの選択のみ。書く内容は全タイプ共通で、Context は問題と、決める必要があった理由を述べる。各 Option は他の案との違いになる点を書く。Consequences は、この決定が受け入れる損失を全て挙げる。Reassessment Triggers はタイプを問わず More Information に置く。新規 DR は必ず More Information を持つので h3 になる。既存構造の削除や統合を提案する側がこの節を読んで判定するので、欠けると判定材料が無い。
 
 | 決定タイプ           | ユースケース                   | 推奨トピック                                                                  |
 | -------------------- | ------------------------------ | ----------------------------------------------------------------------------- |

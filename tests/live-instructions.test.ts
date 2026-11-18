@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -146,5 +147,94 @@ test("no live instruction or convention names a workspace/ without .claude/", as
   for (const { lang, rel, full } of files) {
     const text = await readFile(full, "utf8");
     assert.doesNotMatch(text, BARE_WORKSPACE, `${lang}: ${rel} names a bare workspace/`);
+  }
+});
+
+// A model key in a skill's frontmatter switches the session to that model for as long as the skill
+// runs. The thinking from before the switch is dropped and the prompt cache is rebuilt, and a skill
+// that settles requirements can end up a tier below the session it was called from.
+const frontmatter = (text: string) => text.match(/^---\n([\s\S]*?)\n---\n/)?.[1] ?? "";
+const pinsModel = (text: string) => /^model:/m.test(frontmatter(text));
+
+test("no skill pins a model in its frontmatter", async () => {
+  // Literal fixtures (docs/wiki/absence-test-positive-control-fixture.md): one value per kind a
+  // pin takes, and the same file without the line, and a model line in the body alone.
+  assert.equal(pinsModel("---\nname: x\nmodel: opus\n---\n# x\n"), true, "an opus pin is detected");
+  assert.equal(pinsModel("---\nname: x\nmodel: fable\n---\n# x\n"), true, "a fable pin is detected");
+  assert.equal(pinsModel("---\nname: x\n---\n# x\n"), false, "no pin once the line is gone");
+  assert.equal(pinsModel("---\nname: x\n---\nmodel: opus\n"), false, "a body line is not a pin");
+
+  const files = instructionFiles().filter((f) => /^skills\/[^/]+\/SKILL\.md$/.test(f.rel));
+  assert.ok(files.length >= 20, `the number scanned (${files.length})`);
+  for (const { lang, rel, full } of files) {
+    const text = await readFile(full, "utf8");
+    assert.ok(frontmatter(text), `${lang}: ${rel} has a readable frontmatter`);
+    assert.equal(pinsModel(text), false, `${lang}: ${rel} pins a model`);
+  }
+});
+
+// A comma list of trigger words matches only the words a user types, so a request phrased any
+// other way misses the skill. These three state the intent as a sentence instead.
+const SENTENCE_END = /[。.]$/;
+const whenToUse = (text: string) => frontmatter(text).match(/^when_to_use: (.*)$/m)?.[1] ?? "";
+
+test("the when_to_use of use-cli-scout, use-cli-codegraph, and sweep is a sentence, not a list of phrases", async () => {
+  const oldList = "総点検, 全体を見直して, ホットパス, sweep, codebase scan";
+  assert.doesNotMatch(oldList, SENTENCE_END, "a comma list of phrases is rejected");
+  assert.match("A request to sweep the codebase.", SENTENCE_END, "a sentence is accepted");
+
+  for (const skill of ["use-cli-scout", "use-cli-codegraph", "sweep"]) {
+    for (const prefix of ["", ".ja/"]) {
+      const rel = `${prefix}skills/${skill}/SKILL.md`;
+      const value = whenToUse(await readFile(join(root, rel), "utf8"));
+      assert.ok(value, `${rel} carries when_to_use`);
+      assert.match(value, SENTENCE_END, `${rel}: when_to_use ends as a sentence`);
+    }
+  }
+});
+
+// critic-design runs at effort medium under a probe budget, so a line telling it never to save
+// tokens contradicts both. The phrase ban gave way to a row naming the one step taken before
+// confirmed: apply an unused viewpoint and record what it found.
+test("critic-design asks for one more viewpoint before confirmed, with no token or phrase ban", async () => {
+  const removed = {
+    en: [/Do not save tokens/, /^\| Banned phrasing /m],
+    ".ja": [/トークンを節約しない/, /^\| Banned phrasing /m],
+  };
+  const kept = { en: /^\| Before confirmed +\| /m, ".ja": /^\| confirmed の前 +\| /m };
+  // Literal copies of the removed lines, so a mistyped pattern fails here first.
+  const oldLines = {
+    en: "- Do not save tokens, and do not cut short the viewpoint checks\n| Banned phrasing    | Never use `looks reasonable` |",
+    ".ja": "- トークンを節約しない。視点の確認を削らない\n| Banned phrasing    | 推論内で `looks reasonable` を禁止 |",
+  };
+  for (const lang of ["en", ".ja"] as const) {
+    for (const pattern of removed[lang]) {
+      assert.match(oldLines[lang], pattern, `${lang}: ${pattern} detects the old line`);
+    }
+    const rel = `${lang === "en" ? "" : ".ja/"}agents/critics/critic-design.md`;
+    const doc = await readFile(join(root, rel), "utf8");
+    for (const pattern of removed[lang]) {
+      assert.doesNotMatch(doc, pattern, `${rel} still carries ${pattern}`);
+    }
+    assert.match(doc, kept[lang], `${rel} carries the row asking for one more viewpoint`);
+  }
+});
+
+// A convention naming a test file that does not exist sends the reader to nothing, and the check
+// it describes may not run at all.
+const namedTestPaths = (text: string) =>
+  [...text.matchAll(/`(tests\/[^`\s*]+\.(?:ts|js))`/g)].map((m) => m[1]);
+
+test("every tests/ path rules/conventions/SUBAGENT.md names exists", async () => {
+  const stale = namedTestPaths("`tests/live-instructions.test.js` checks it.");
+  assert.deepEqual(stale, ["tests/live-instructions.test.js"], "a named path is extracted");
+  assert.equal(existsSync(join(root, stale[0])), false, "the retired .js name is reported missing");
+
+  for (const rel of ["rules/conventions/SUBAGENT.md", ".ja/rules/conventions/SUBAGENT.md"]) {
+    const named = namedTestPaths(await readFile(join(root, rel), "utf8"));
+    assert.ok(named.length > 0, `${rel} names a tests/ path`);
+    for (const path of named) {
+      assert.ok(existsSync(join(root, path)), `${rel} names ${path}, which does not exist`);
+    }
   }
 });

@@ -154,13 +154,13 @@ skill ディレクトリの下位ディレクトリは名前で役割が決ま�
 | skill                              | model | ユーザー起動 | 成果物または副作用                                  |
 | ---------------------------------- | ----- | ------------ | --------------------------------------------------- |
 | `census`                           | opus  | 可           | DR 未記録の判断の候補一覧                           |
-| `challenge`                        | opus  | 可           | GO / NO-GO の判定と反証                             |
+| `challenge`                        | 継承  | 可           | GO / NO-GO の判定と反証                             |
 | `checkout`                         | haiku | 可           | git ブランチの作成                                  |
 | `commit`                           | haiku | 可           | git commit の実行                                   |
-| `dr`                               | opus  | 可           | `docs/decisions/` への MADR v4 ファイル追加         |
+| `dr`                               | 継承  | 可           | `docs/decisions/` への MADR v4 ファイル追加         |
 | `fix`                              | opus  | 可           | 1 から 3 ファイルの修正                             |
 | `issue`                            | opus  | 可           | GitHub Issue の作成                                 |
-| `outcome`                          | opus  | 可           | `.claude/OUTCOME.md` の生成と更新                   |
+| `outcome`                          | 継承  | 可           | `.claude/OUTCOME.md` の生成と更新                   |
 | `pr`                               | opus  | 可           | draft PR の作成                                     |
 | `preview`                          | opus  | 可           | PR 差分と Plan の突合結果                           |
 | `qualify`                          | opus  | 可           | build-ready / needs-plan / needs-fix / needs-split  |

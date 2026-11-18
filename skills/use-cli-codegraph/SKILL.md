@@ -1,7 +1,7 @@
 ---
 name: use-cli-codegraph
 description: Symbol-level code structure queries via codegraph CLI. Callers, callees, change impact, and symbol source trails.
-when_to_use: who calls this, what breaks if I change X, impact analysis, callers, callees, call graph, symbol definition, code structure navigation, 影響範囲, 呼び出し元, 呼び出し先, 構造把握, 変更波及, dependency trace, 誰が呼んでいる
+when_to_use: A question about a symbol's callers, callees, definition, or the impact of changing it. 呼び出し元や変更の影響を知りたいとき。
 allowed-tools: Bash(codegraph:*) Read
 user-invocable: false
 ---

@@ -3,7 +3,6 @@ name: outcome
 description: Generates and updates .claude/OUTCOME.md interactively. When the file is absent or empty (Behavior blank or TBD only), collects content via AskUserQuestion and writes the stub; when present, shows the current state and applies updates.
 when_to_use: OUTCOME作って, OUTCOME更新, アウトカム定義, create outcome, update outcome
 allowed-tools: Read Write Edit AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(git:*) Bash(gh pr:*) Bash(gh repo view:*) Bash(cat:*)
-model: opus
 argument-hint: "[--no-publish]"
 ---
 

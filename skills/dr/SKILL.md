@@ -3,7 +3,6 @@ name: dr
 description: Create a Decision Record (DR) in MADR v4 format with automatic numbering. Its subject is not limited to architecture; it covers every decision that is hard to reverse and surprising without context.
 when_to_use: DR作成, ADR作成, 技術決定, アーキテクチャ決定, decision record
 allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(git:*) Bash(gh pr:*) Bash(gh repo view:*) Bash(cat:*)
-model: opus
 argument-hint: "[decision title]"
 ---
 
@@ -51,7 +50,7 @@ The Publish stage passes publish.md the values below. When the Adoption Gate cre
 
 ## Decision Type
 
-The decision type only affects which recommended More Information topics to include. Per-section guidance is common to all types: Context 3 lines, Options 3-5 lines each, Consequences 2-3 bullets. Reassessment Triggers goes into More Information whatever the type, which makes it an h3 in a new DR. Whoever proposes removing or merging existing structure reads that section to judge, so a missing one leaves that judgment nothing to read.
+The decision type only affects which recommended More Information topics to include. Per-section guidance is common to all types: Context states the problem and why it had to be decided, each option carries what separates it from the others, and Consequences lists every loss the decision accepts. Reassessment Triggers goes into More Information whatever the type, which makes it an h3 in a new DR. Whoever proposes removing or merging existing structure reads that section to judge, so a missing one leaves that judgment nothing to read.
 
 | Decision type        | Use Case                   | Recommended topics                                                            |
 | -------------------- | -------------------------- | ----------------------------------------------------------------------------- |

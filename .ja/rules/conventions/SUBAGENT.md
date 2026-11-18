@@ -74,7 +74,7 @@ memory は次の 3 つをすべて満たすとき付与し、project スコー�
 
 ## 参照記法
 
-相対パスの解決先は起動プロジェクトに依存する。agent 本文には dev tree と plugin install の両方で展開される変数が無い。`${CLAUDE_SKILL_DIR}` は skill 専用で、`${CLAUDE_PLUGIN_ROOT}` は plugin install でだけ展開され、dev tree では文字のまま残る。そのため同梱資産は plugin 形式で書き、下の文言どおりの代替文 1 文を導入段落の直後に置く。`tests/live-instructions.test.js` が代替文の有無と、裸の home 起点パスが無いことを検査する。
+相対パスの解決先は起動プロジェクトに依存する。agent 本文には dev tree と plugin install の両方で展開される変数が無い。`${CLAUDE_SKILL_DIR}` は skill 専用で、`${CLAUDE_PLUGIN_ROOT}` は plugin install でだけ展開され、dev tree では文字のまま残る。そのため同梱資産は plugin 形式で書き、下の文言どおりの代替文 1 文を導入段落の直後に置く。`tests/live-instructions.test.ts` が代替文の有無と、裸の home 起点パスが無いことを検査する。
 
 > 下のパスが `${` のまま始まっているときは harness が変数を展開していないので、代わりに `~/.claude/` 配下の同じパスを読む。
 
