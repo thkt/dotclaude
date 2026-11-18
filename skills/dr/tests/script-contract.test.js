@@ -116,6 +116,20 @@ test("the process Steps run without a gap and every cited stage has a row", () =
   });
 });
 
+// The Critique stage spawns critic-design itself. A row naming an agent that has no file, or an
+// allowed-tools without Agent, leaves the stage with nothing it can call.
+test("the Critique stage calls the critic-design agent that agents/ defines, and allowed-tools grants Agent", async () => {
+  const agent = await readFile(join(root, "agents", "critics", "critic-design.md"), "utf8");
+  assert.match(agent, /^name: critic-design$/m, "agents/critics/critic-design.md defines critic-design");
+  await eachLanguage(skills, (doc, lang) => {
+    const row = doc.split("\n").find((line) => /^\| \d+ {4}\| Critique /.test(line));
+    assert.ok(row, `${lang}: the process table carries a Critique row`);
+    assert.match(row, /critic-design/, `${lang}: the Critique row names critic-design`);
+    const grant = doc.match(/^allowed-tools:.*$/m)?.[0] ?? "";
+    assert.match(grant, /(^|\s)Agent(\s|$)/, `${lang}: allowed-tools grants Agent`);
+  });
+});
+
 // A step citing a section the file no longer carries sends the reader nowhere.
 test("every section a step cites exists", () =>
   eachLanguage(skills, (doc, lang) => {

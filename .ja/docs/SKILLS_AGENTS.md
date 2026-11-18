@@ -42,12 +42,12 @@ Skills は「ナレッジモジュール」。AI がタスク実行時にドメ�
 
 ### カテゴリ
 
-User-invocable Skills は下表の 7 件。
+User-invocable Skills は下表の 6 件。
 
-| カテゴリ       | Skills                                                           | 用途                     |
-| -------------- | ---------------------------------------------------------------- | ------------------------ |
-| CLI ラッパー   | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud | CLI ツール統合           |
-| User-invocable | challenge, dr, implement, outcome, scoping, scribe, sweep        | スラッシュコマンドの入口 |
+| カテゴリ       | Skills                                         | 用途                     |
+| -------------- | ---------------------------------------------- | ------------------------ |
+| CLI ラッパー   | use-cli-recall, use-cli-scout, use-cli-gcloud  | CLI ツール統合           |
+| User-invocable | dr, implement, outcome, scoping, scribe, sweep | スラッシュコマンドの入口 |
 
 ### ロード機構
 

@@ -8,7 +8,9 @@
 // used (#805), and the audit, assert, polish, shake and adrift workflows with workflows/_lib/gate.ts
 // and the tests that read only them (#806), then the reviewer, enhancer and generator agents,
 // critic-audit, critic-evidence, agents/_lib, the six skills those agents preload, and the reviewer
-// measurement harness under skills/_lib (#807). This file guards the removal: the removed paths stay gone on
+// measurement harness under skills/_lib (#807). #823 then removes /challenge, whose attack
+// critic-design runs when /scoping or /dr calls it, and the use-cli-ast-grep and use-cli-codegraph
+// wrappers, whose commands run without them (DR-0056's criterion). This file guards the removal: the removed paths stay gone on
 // both trees, and the skill, agent, rule, plugin, README and catalog prose hands no work to a
 // removed name.
 //
@@ -104,6 +106,9 @@ const REMOVED_PATHS = [
   "skills/_lib/tests/fixtures/review-score-cases.json",
   "workflows/_lib/tests/severity-enum-single-source.test.ts",
   "docs/wiki/reviewer-baseline-measurement.md",
+  "skills/challenge",
+  "skills/use-cli-ast-grep",
+  "skills/use-cli-codegraph",
 ];
 
 test("no path the build-path retirement removed exists on the English side or under .ja/", () => {
@@ -126,7 +131,7 @@ const SCANNED_FILE =
 // `../research/name.md` and the import `node:assert/strict` stay out, and `gh issue` /
 // `git commit` / `assert.equal` carry no slash at all.
 const RETIRED_COMMAND =
-  /(^|[\s`"([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr|research|ablate|census|transcribe|audit|assert|polish|shake|adrift)(?![A-Za-z0-9/-])/m;
+  /(^|[\s`"([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr|research|ablate|census|transcribe|audit|assert|polish|shake|adrift|challenge)(?![A-Za-z0-9/-])/m;
 
 const RETIRED_NAMES = [
   "use-workflow-pageshot",
@@ -158,6 +163,9 @@ const RETIRED_NAMES = [
   "review-harness",
   "review_score",
   "harness_hash",
+  "skills/challenge",
+  "use-cli-ast-grep",
+  "use-cli-codegraph",
 ];
 
 function namesRetiredRoute(content: string): boolean {
@@ -224,6 +232,12 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "Follow the blind procedure in skills/_lib/review-harness.md.",
     "Score the run with skills/_lib/review_score.ts.",
     "Write the harness_hash output into the record.",
+    "Attack the proposal with /challenge first.",
+    "Run `/challenge` before the DR.",
+    "提案は「/challenge」で叩く。",
+    "Read skills/challenge/SKILL.md for the verdict.",
+    "Load use-cli-ast-grep for a structural rewrite.",
+    "呼び出し元は use-cli-codegraph で調べる。",
   ];
   const replaced = [
     "Plan it with /scoping first.",
@@ -282,6 +296,12 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "Follow the blind procedure in skills/_lib/publish.md.",
     "Score the run with skills/scribe/scripts/find_wiki_rule.ts.",
     "Write the digest output into the record.",
+    "Attack the proposal with /scoping first.",
+    "Run `/dr` before the DR.",
+    "提案は「/scoping」で叩く。",
+    "Read skills/scoping/SKILL.md for the verdict.",
+    "Load use-cli-recall for a structural rewrite.",
+    "呼び出し元は use-cli-recall で調べる。",
   ];
   for (const line of flagged) {
     assert.equal(namesRetiredRoute(line), true, `flagged: ${line}`);
@@ -310,6 +330,10 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "assert.equal(actual, expected);",
     "Write the report under docs/audit/ in the target repo.",
     "the /polish-x flag",
+    "the /challenge-x flag",
+    "critic-design challenges the proposal.",
+    "Run ast-grep with a pattern.",
+    "codegraph init creates .codegraph/.",
   ]) {
     assert.equal(namesRetiredRoute(line), false, `not a slash command: ${line}`);
   }

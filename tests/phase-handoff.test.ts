@@ -14,7 +14,6 @@ const skillsDir = join(root, ".ja", "skills");
 // Reviewed once and judged to hand nothing forward. Removing an entry is how a fixed handoff
 // gets its guard back, so keep the reason specific enough to re-judge without re-reading.
 const CONTROL_ONLY = new Map([
-  ["challenge 1->2", "Phase 1 names Phase 2 as the stage that runs after self-resolution, a route"],
   ["scribe 1->6", "Phase 1 says the write happens inside Phase 6's worktree, a location"],
   ["scribe 2->3", "Phase 2 says an empty candidates file still advances to Phase 3, a route"],
   ["scribe 5->6", "Phase 5 says the change is prepared for Phase 6 to write, a location"],

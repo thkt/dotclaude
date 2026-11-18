@@ -20,9 +20,9 @@ const rules = {
 // The script is an identical copy on both sides, so one path covers the pair.
 const script = join(root, "skills", "outcome", "scripts", "validate-outcome.ts");
 
-// challenge names the headings of a generated OUTCOME.md as their digest
-// targets. A wobbling spelling returns an empty digest and downstream treats the outcome as
-// absent.
+// validate-outcome.ts finds the sections of a generated OUTCOME.md by these headings. A wobbling
+// spelling of a required section makes the script report missing_section and exit 1, and one of
+// Indicators reports the table as omitted.
 const HEADINGS = [
   /^## Outcome state$/m,
   /^### Behavior$/m,
@@ -88,27 +88,14 @@ test("the emptiness word is TBD across the template, SKILL.md, and the script", 
   );
 });
 
-// The words naming the digest targets. challenge and validate-outcome.ts's required sections
-// both name the same three. Reverting one to a parent section name such as Outcome state
-// mixes the opening sentence's aspirational wording into the digest.
-test("the digest targets are Behavior, Non-goals, and Constraints everywhere", () => {
-  const challenge = {
-    ja: join(root, ".ja", "skills", "challenge", "SKILL.md"),
-    en: join(root, "skills", "challenge", "SKILL.md"),
-  };
-  for (const [lang, path] of Object.entries(challenge)) {
-    const doc = readFileSync(path, "utf8");
-    assert.match(doc, /Behavior \/ Non-goals \/ Constraints/, `${lang}: challenge's outcome_ref`);
-    assert.doesNotMatch(
-      doc,
-      /Outcome state \/ Non-goals/,
-      `${lang}: a parent section name is not made a digest target`,
-    );
-  }
+// The sections the fill check reads. The fixture in validate-outcome-cases.json fails when a parent
+// section name such as Outcome state takes Behavior's place, but still passes when one of the
+// three is dropped, so this line pins the list.
+test("validate-outcome.ts's fill check looks at Behavior, Non-goals, and Constraints", () => {
   assert.match(
     readFileSync(script, "utf8"),
     /FILLED_SECTIONS = \["Behavior", "Non-goals", "Constraints"\]/,
-    "the script's fill check looks at the same three sections",
+    "the script's fill check looks at the three sections",
   );
 });
 

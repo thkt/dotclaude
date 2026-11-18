@@ -52,7 +52,7 @@ Subagents are spawned via the Agent tool, not auto-loaded. AskUserQuestion / Ent
 
 Grant memory when all three below hold, and remove it when the project scope stays empty of real data afterward.
 
-- Spawned repeatedly across sessions (critic-design, called from `/challenge` and `/scoping`)
+- Spawned repeatedly across sessions (critic-design, called from `/dr` and `/scoping`)
 - Output quality depends on project-specific knowledge (naming conventions, allowed patterns)
 - It reduces false positives or improves consistency (stops re-reporting known exceptions)
 
