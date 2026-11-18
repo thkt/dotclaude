@@ -217,6 +217,28 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
   }
 });
 
+// The workflow stops as issue-untyped on a title whose prefix is not a key of TYPE_BY_PREFIX, so a prefix
+// scoping lists without a key, or a key scoping never writes, sends an agreed Issue back on every launch.
+test("the type prefixes scoping puts on a title are the keys the workflow maps to a branch type, on both sides", () => {
+  const keysIn = (path) => {
+    const body = /const TYPE_BY_PREFIX = \{([^}]*)\};/.exec(readFileSync(join(root, ...path), "utf8"))?.[1];
+    assert.ok(body, `${path.join("/")} lost TYPE_BY_PREFIX`);
+    return [...body.matchAll(/(\w+):/g)].map((m) => m[1]).sort();
+  };
+  const prefixesIn = (path) => {
+    const text = readFileSync(join(root, ...path), "utf8");
+    return [...text.matchAll(/^\| `\[(\w+)\]` +\|/gm)].map((m) => m[1].toLowerCase()).sort();
+  };
+  const keys = keysIn(["workflows", "implement.js"]);
+  assert.ok(keys.length > 0, "no key extracted from TYPE_BY_PREFIX");
+  assert.deepEqual(keysIn([".ja", "workflows", "implement.js"]), keys, ".ja/workflows/implement.js");
+  for (const path of [
+    ["skills", "scoping", "references", "issue.md"],
+    [".ja", "skills", "scoping", "references", "issue.md"],
+  ])
+    assert.deepEqual(prefixesIn(path), keys, path.join("/"));
+});
+
 // The contract takes the check as a shell string or as one argv array. The skill's line read it as an array
 // of argv arrays, which jq rejects for both.
 test("the skill's jq line reads the check in every shape the workflow's contract accepts", () => {
