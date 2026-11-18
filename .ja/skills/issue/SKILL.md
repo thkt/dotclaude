@@ -23,7 +23,7 @@ issue 番号または URL だけを受け取った場合は、起票済み issue
 
 ## Phase 1: 起草
 
-1. `.claude/OUTCOME.md` を読み、なければ `/outcome` で stub を生成する。issue が outcome state の範囲内にあるか確認する。範囲外の場合は、非ゴールを再定義するか、別タスクとして切り分けるかを AskUserQuestion で確認する
+1. `.claude/OUTCOME.md` を読み、なければ `/outcome --no-publish` で stub を生成する。issue が outcome state の範囲内にあるか確認する。範囲外の場合は、非ゴールを再定義するか、別タスクとして切り分けるかを AskUserQuestion で確認する
 2. 説明から種別を検出する
 3. bug なら軽微かを判定し、軽微なら起票せず `/fix` で直す選択肢を出す
 4. feature または bug で、説明から Why を読み取れない場合は、${CLAUDE_SKILL_DIR}/references/why-wall-bouncing.md の手順に従って明確にする

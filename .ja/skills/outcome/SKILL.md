@@ -2,8 +2,9 @@
 name: outcome
 description: .claude/OUTCOME.md を対話的に生成 / 更新する。不在や空 (Behavior が空か TBD のみ) なら AskUserQuestion で収集して stub を生成し、既存なら現状を提示して更新する。
 when_to_use: OUTCOME作って, OUTCOME更新, アウトカム定義, create outcome, update outcome
-allowed-tools: Read Write Edit AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*)
+allowed-tools: Read Write Edit AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(git:*) Bash(gh pr:*) Bash(gh repo view:*) Bash(cat:*)
 model: opus
+argument-hint: "[--no-publish]"
 ---
 
 # /outcome - OUTCOME.md 生成 / 更新
@@ -27,6 +28,7 @@ ${CLAUDE_SKILL_DIR}/scripts/validate-outcome.ts .claude/OUTCOME.md を実行し�
 3. 各 Behavior をアウトカムテストに通す。fail なら書き直してユーザーに再提示する
 4. テンプレートに流し込み、`.claude/OUTCOME.md` を Write。冒頭文と Indicators はどちらも収集しない。冒頭文を書かず、Indicators はセクションごと落とす
 5. validate-outcome.ts を再実行し、`errors` が空になるまで直す。`placeholder_left` はプレースホルダの残り、`missing_section` は見出しの欠落
+6. 公開する (§ 公開)
 
 ## 更新
 
@@ -35,3 +37,15 @@ ${CLAUDE_SKILL_DIR}/scripts/validate-outcome.ts .claude/OUTCOME.md を実行し�
 3. 変更後の Behavior をアウトカムテストに通してから Edit する
 4. validate-outcome.ts を再実行し、`errors` が空であることを確認する
 5. `warnings` に `missing_indicator` があれば、その指標を足すかをユーザーに確認する。Indicators セクションを持ちながら Time/Error rate/Value のどれかを欠く状態を指す
+6. 公開する (§ 公開)
+
+## 公開
+
+`$ARGUMENTS` に `--no-publish` があれば公開しない。`.claude/OUTCOME.md` が未 commit であることと、PR にするには `/outcome` を直接呼ぶことを伝えて終える。他の skill や手順は stub を作るときにこの引数を付けて呼ぶ。ここで公開すると branch が `docs/outcome` に切り替わり、呼び出し元の変更がその PR に混ざるため。変えた節が無いときは公開しない。それ以外は ${CLAUDE_SKILL_DIR}/../_lib/publish.md を読み、下表の値を渡して draft PR にする。
+
+| 値       | 中身                                                                     |
+| -------- | ------------------------------------------------------------------------ |
+| branch   | `docs/outcome`                                                           |
+| 件名     | `[Docs] <題>`。題は OUTCOME.md を作ったか更新したか                      |
+| 本文     | 変えた節の名前と、変更後の内容                                           |
+| ファイル | `.claude/OUTCOME.md`                                                     |

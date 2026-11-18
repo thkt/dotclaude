@@ -23,7 +23,7 @@ Follow `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`: check relevan
 
 ## Phase 1: Drafting
 
-1. Read `.claude/OUTCOME.md`, and generate the stub via `/outcome` when it is absent. Confirm the issue sits inside the outcome state. When it sits outside, ask via AskUserQuestion whether to redefine the non-goal or split it off as its own task
+1. Read `.claude/OUTCOME.md`, and generate the stub via `/outcome --no-publish` when it is absent. Confirm the issue sits inside the outcome state. When it sits outside, ask via AskUserQuestion whether to redefine the non-goal or split it off as its own task
 2. Detect the type from the description
 3. For a bug, judge whether it is minor, and offer fixing it with `/fix` instead of filing when it is
 4. For a feature or a bug whose Why the description does not carry, pin the Why down per ${CLAUDE_SKILL_DIR}/references/why-wall-bouncing.md
