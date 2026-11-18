@@ -185,9 +185,9 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
         place: /differs from the place of the cause, write the place of the cause/,
         unidentified: /cannot identify the root cause, do not agree on a fix/,
         scope: /investigation of the cause the scope of that Issue/,
-        report: /result of the investigation under the target repo's `docs\/research\/`/,
-        done: /done condition "the root cause is written as which line of which file returns a different result, for which input, and why"/,
-        handover: /hand it over to the person who reviews the PR with "Hand it over to a named owner"/,
+        report: /Write into that Issue's scope that the result of the investigation is written under the target repo's `docs\/research\/`/,
+        done: /`check` does not confirm whether the result states the root cause [^.]*, so do not put it in the done conditions/,
+        handover: /Write it as a handover to the person who reviews the PR with "Hand it over to a named owner"/,
       },
     },
     {
@@ -201,9 +201,9 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
         place: /症状が出る場所と原因の場所が違うときは、原因の場所を書く/,
         unidentified: /根本原因を特定できないときは、修正を合意しない/,
         scope: /原因の調査をその Issue の範囲にする/,
-        report: /調査の結果は対象 repo の `docs\/research\/` に書き/,
-        done: /完了条件を「根本原因を、どのファイルのどの行が、どの入力でなぜ違う結果を返すかとして書いてある」にする/,
-        handover: /「担当を決めて引き継ぐ」で、PR をレビューする人に引き継ぐ/,
+        report: /調査の結果を対象 repo の `docs\/research\/` に書くことを、その Issue の範囲に書く/,
+        done: /結果が根本原因を[^。]*として述べているかは、`check` が確かめないので完了条件に入れない/,
+        handover: /「担当を決めて引き継ぐ」で、PR をレビューする人への引き継ぎとして書く/,
       },
     },
   ];
@@ -224,7 +224,13 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
 // DR-0128 retires /research after moving two of its parts: the search of earlier reports (now under
 // skills/scribe/scripts/) and the verification rules (now skills/scoping/references/verification.md).
 // A path left pointing at the removed skill, or a section dropped in the move, leaves /scoping without them.
+// The sweep runs only when Phase 2 sends a confirmed root cause to it (#815), so the step naming the sweep
+// must also carry the root-cause trigger.
 test("scoping's Phase 2 points at the earlier-report search and the verification rules, and both files exist, on both sides", () => {
+  const sweepTrigger = {
+    skills: /fixes existing code returning a result different from what is required, once you confirm the root cause/,
+    ".ja": /既存のコードが要求と違う結果を返すことを直す要求で根本原因を確かめたとき/,
+  };
   const sections = {
     skills: ["## Cross-method verification", "## Primary-source verification", "## Reading a zero-result", "## Same-origin sweep"],
     ".ja": ["## Cross-method 検証", "## 一次ソース検証", "## 0 件の解釈", "## Same-origin sweep"],
@@ -238,9 +244,31 @@ test("scoping's Phase 2 points at the earlier-report search and the verification
       assert.ok(phase2.includes(`\${CLAUDE_SKILL_DIR}${ref}`), `${side}: Phase 2 does not name ${ref}`);
       assert.ok(existsSync(join(skillDir, ref)), `${side}: ${ref} resolves to no file`);
     }
+    const sweepStep = phase2.split("\n").find((line) => /^\d+\. /.test(line) && line.includes("/references/verification.md` § Same-origin sweep"));
+    assert.ok(sweepStep, `${side}: no Phase 2 step sends work to § Same-origin sweep`);
+    assert.match(sweepStep, sweepTrigger[side], `${side}: the Same-origin sweep step lost its root-cause trigger`);
     const verification = readFileSync(join(skillDir, "references", "verification.md"), "utf8");
     for (const heading of sections[side])
       assert.match(verification, new RegExp(`^${heading}$`, "m"), `${side}: verification.md lost "${heading}"`);
+  }
+});
+
+// rules/conventions/SKILLS.md caps a SKILL.md body and a reference file at 100 lines. #815 grew the
+// SKILL.md and sufficiency.md of /scoping, and publish-contract.test.ts counts only the publishing skills.
+test("scoping keeps its SKILL.md body and sufficiency.md within 100 lines, on both sides", () => {
+  const body = (doc) => {
+    assert.ok(doc.startsWith("---\n"), "SKILL.md opens with frontmatter");
+    return doc.slice(doc.indexOf("\n---\n", 4) + "\n---\n".length);
+  };
+  for (const prefix of [[], [".ja"]]) {
+    const skillDir = join(root, ...prefix, "skills", "scoping");
+    for (const [rel, text] of [
+      ["SKILL.md", body(readFileSync(join(skillDir, "SKILL.md"), "utf8"))],
+      ["references/sufficiency.md", readFileSync(join(skillDir, "references", "sufficiency.md"), "utf8")],
+    ]) {
+      const lines = text.trimEnd().split("\n").length;
+      assert.ok(lines <= 100, `${[...prefix, "skills/scoping", rel].join("/")} is ${lines} lines`);
+    }
   }
 });
 
