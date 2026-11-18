@@ -77,7 +77,7 @@ Write into `docs/audit/`, naming the file with the output of `date -u +%Y-%m-%d-
 
 ## Handoff
 
-- File `keep` via `/dr`, or fold them into a single tracking issue via `/issue`
+- File `keep` via `/dr`, or fold them into a single tracking Issue via `/scoping`
 - List `downgrade` as comment-strengthening tasks
 - Record `drop` in the report with nothing following
 - The drift scan against existing DRs goes to `/adrift`. In a repository that already has DRs, run it first and use this skill for the gaps drift cannot reach

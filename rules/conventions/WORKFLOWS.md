@@ -98,4 +98,4 @@ A script is evaluated as one function body, so it cannot carry an `import` state
 
 ## Script resolution timing
 
-`Workflow({name})` runs the script as it stood at session start, so running a version you just fixed takes `Workflow({scriptPath})`. scriptPath reaches the top-level call alone; a nested call inside a script (`build.js` calling code) resolves by name. When the script you fixed runs nested, run it directly from the top level.
+`Workflow({name})` runs the script as it stood at session start, so running a version you just fixed takes `Workflow({scriptPath})`. scriptPath reaches the top-level call alone; a nested call inside a script (`assert.js` calling audit) resolves by name. When the script you fixed runs nested, run it directly from the top level.

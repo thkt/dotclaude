@@ -1,6 +1,6 @@
 # Feature-Driven TDD
 
-`/code` が新機能開発で TDD をどう使うか。${CLAUDE_SKILL_DIR}/SKILL.md の RGRC サイクルと Baby Steps を基盤とする。
+新機能開発で TDD をどう使うか。${CLAUDE_SKILL_DIR}/SKILL.md の RGRC サイクルと Baby Steps を基盤とする。
 
 ## 文脈
 

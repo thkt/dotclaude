@@ -15,10 +15,10 @@ Name a skill after the operation it performs. Replace generic names like helper,
 
 | user-invocable | Binding    | Pattern               | Examples                                      |
 | -------------- | ---------- | --------------------- | --------------------------------------------- |
-| true           | -          | Short name            | commit, fix, audit                            |
+| true           | -          | Short name            | scoping, implement, dr                        |
 | false          | CLI wrap   | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                 |
 | false          | Agent-only | `use-context-<agent>` | use-context-reviewer-security                 |
-| false          | Workflow   | `use-workflow-<noun>` | use-workflow-tdd-cycle, use-workflow-pageshot |
+| false          | Workflow   | `use-workflow-<noun>` | use-workflow-tdd-cycle                        |
 
 ## H1
 
@@ -26,7 +26,7 @@ The H1 tells a reader which kind of skill they opened: one a person types, or a 
 
 | user-invocable | H1                   | Example                              |
 | -------------- | -------------------- | ------------------------------------ |
-| true (default) | Opens with `/<name>` | `# /issue - GitHub Issue Generation` |
+| true (default) | Opens with `/<name>` | `# /scoping - Settling requirements and implementation scope` |
 | false          | The skill's own name | `# use-cli-scout`                    |
 
 ## Directory structure

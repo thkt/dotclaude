@@ -1,8 +1,8 @@
 /// <reference types="node" />
 // pr-body.py (workflows/build/pr-body.py, .ja/workflows/build/pr-body.py) is retired in favor of
 // pr-body.ts (established by the preceding units U-002/U-003). This file guards the retirement
-// itself: no tracked file still names pr-body.py, and the EN / .ja build.js Ship prompts invoke
-// pr-body.ts through node rather than pr-body.py through python3.
+// itself: no tracked file still names pr-body.py. pr-body.ts and the build workflow that ran it
+// were removed later (DR-0128), so only the absence scan remains.
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and the wiki in one
 // change, then confirm zero residual references across git ls-files. A mention under
@@ -59,48 +59,5 @@ test(
       "no tracked file outside docs/decisions/, docs/research/ and " +
         `docs/wiki/pr-tail-translate-prose-only.md references pr-body.py\n${offenders.join(", ")}`,
     );
-  },
-);
-
-// Same extraction intent as record-retirement.test.ts's extractRecorderInvocation: read the
-// source text and pull out what the Ship prompt actually invokes, never a copied-in literal
-// (docs/wiki/workflow-const-source-text-check.md). Unlike the recorder invocation, the Ship
-// prompt's `&&` chain nests two more template literals inside itself (the --base and --title
-// ternaries), which put raw, unescaped backticks between the escaped pair that opens and closes
-// the whole chain. The capture below tolerates those raw backticks instead of excluding them, so
-// it still reaches the escaped closing backtick past the nested pairs.
-function extractShipInvocation(source: string): string | null {
-  const m = source.match(/\\`([^\n]*?\bpr-body\.(?:ts|py)\b[^\n]*?)\\`/);
-  return m ? m[1] : null;
-}
-
-interface ShipPromptSource {
-  label: string;
-  path: string;
-}
-
-const SHIP_PROMPT_SOURCES: ShipPromptSource[] = [
-  { label: "workflows/build.js", path: "workflows/build.js" },
-  { label: ".ja/workflows/build.js", path: ".ja/workflows/build.js" },
-];
-
-test(
-  "T-130 the EN and .ja build.js ship prompts each invoke pr-body.ts through node and none " +
-    "still invokes python3, read from source text rather than a copied literal",
-  () => {
-    for (const { label, path } of SHIP_PROMPT_SOURCES) {
-      const source = readFileSync(join(REPO_ROOT, path), "utf8");
-      const invocation = extractShipInvocation(source);
-      assert.ok(invocation, `${label} ship prompt's invocation is extractable from source`);
-      // One fixed line per source, carrying no offender list, so a --require-output anchor on
-      // the Red gate can seal on exactly one line rather than on a set that could reorder.
-      assert.ok(
-        invocation !== null &&
-          invocation.includes("node ") &&
-          invocation.includes("pr-body.ts") &&
-          !invocation.includes("python3"),
-        `${label} ship prompt still invokes python3`,
-      );
-    }
   },
 );

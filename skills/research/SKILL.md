@@ -1,6 +1,6 @@
 ---
 name: research
-description: Probe project and technical questions. Findings are positions to be challenged with explicit sources, not conclusions. Phase 6 advisor pass argues against the synthesis before it lands. Do NOT use for design planning or plan generation (use /think instead).
+description: Probe project and technical questions. Findings are positions to be challenged with explicit sources, not conclusions. Phase 6 advisor pass argues against the synthesis before it lands. Do NOT use to settle requirements for a change (use /scoping instead).
 when_to_use: 調査して, 調べて, リサーチ, investigate, 分析して, issueやろう, issue見て, 横並びチェック, 類似パターン検出, refactor 横展開
 allowed-tools: Bash(tree:*) Bash(git log:*) Bash(git diff:*) Bash(git show:*) Bash(wc:*) Bash(scout:*) Read LS Agent AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(codegraph:*) Bash(node:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*)
 model: opus
@@ -80,7 +80,7 @@ Skip the invocation only when all conditions hold, and record the skip reason in
 
 Generate the report following the skeleton in ${CLAUDE_SKILL_DIR}/templates/research.md, fill in `${CLAUDE_SESSION_ID}`, and save to `docs/research/YYYY-MM-DD-<slug>.md`.
 
-After saving, propose the destination from the template's Next Steps table in the conversation, and run none of them. Attach the saved report's path and the words the slug came from, verbatim. `/think` builds its slug from those words and pulls this report with the same script, so a word that drifts leaves the report unreachable.
+After saving, propose the destination from the template's Next Steps table in the conversation, and run none of them. Attach the saved report's path and the words the slug came from, verbatim.
 
 ## Completion Criteria
 

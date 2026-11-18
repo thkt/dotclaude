@@ -31,6 +31,6 @@ enhancer-evidence が返す `report` 文字列はこの形に従う。issue が 
 | evidence_types   | [static, outcome, adversarial]                                   |
 | five_whys        | [why/answer pairs]                                               |
 | action           | unified fix description                                          |
-| suggested_action | `/fix` / `/issue` + build workflow (route that resolves this RC) |
+| suggested_action | `/scoping` (route that resolves this RC) |
 | effort           | 5min / 15min / 30min / 1h / manual                               |
 ```

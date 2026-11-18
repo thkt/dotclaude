@@ -332,14 +332,14 @@ class SkillContract(unittest.TestCase):
             for needle in ("templates/page.md", "_candidates.md", repairs[lang]):
                 self.assertIn(needle, step, f"{lang}: {needle}")
 
-    def test_the_page_reaches_a_plan_through_thinks_finder(self) -> None:
-        """The page a run writes reaches an implementation only by think citing it. No index and
-        no lookup at implementation time stand between the two, so this is the whole path."""
+    def test_the_page_reaches_an_implementation_through_the_finder(self) -> None:
+        """The page a run writes reaches an implementation only by /implement selecting it with
+        the finder before launch. No index stands between the two, so this is the whole path."""
         finder = ROOT / "skills" / "scribe" / "scripts" / "find_wiki_rule.ts"
         self.assertTrue(finder.exists(), "the finder scribe owns exists")
         for lang in LANGS:
-            think = at(lang, "skills", "think", "SKILL.md").read_text(encoding="utf-8")
-            self.assertIn("find_wiki_rule.ts", think, f"{lang}: think runs the finder")
+            implement = at(lang, "skills", "implement", "SKILL.md").read_text(encoding="utf-8")
+            self.assertIn("find_wiki_rule.ts", implement, f"{lang}: implement runs the finder")
 
     def phase_6(self, lang: str) -> str:
         doc = skill(lang)

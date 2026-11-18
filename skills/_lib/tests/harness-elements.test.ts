@@ -88,12 +88,12 @@ test("T-353 a key whose next line does not start with a dash yields an empty lis
 
 test("T-491 A references file whose sibling SKILL.md names it by its CLAUDE_SKILL_DIR path classifies as skill-reference", () => {
   const root = writeTree("harness-elements-skill-reference-named", {
-    "skills/checkout/SKILL.md":
-      "---\nname: checkout\n---\nAssemble the name per ${CLAUDE_SKILL_DIR}/references/branch-naming.md.\n",
-    "skills/checkout/references/branch-naming.md": "# Branch naming\n",
+    "skills/sample/SKILL.md":
+      "---\nname: sample\n---\nAssemble the name per ${CLAUDE_SKILL_DIR}/references/naming.md.\n",
+    "skills/sample/references/naming.md": "# Branch naming\n",
   });
   try {
-    const actual = classify(join(root, "skills/checkout/references/branch-naming.md"));
+    const actual = classify(join(root, "skills/sample/references/naming.md"));
     assert.equal(actual, SKILL_REFERENCE);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -102,11 +102,11 @@ test("T-491 A references file whose sibling SKILL.md names it by its CLAUDE_SKIL
 
 test("T-492 A references file whose sibling SKILL.md does not name it classifies as non-prompt", () => {
   const root = writeTree("harness-elements-skill-reference-unnamed", {
-    "skills/checkout/SKILL.md": "---\nname: checkout\n---\nNo reference to the naming page here.\n",
-    "skills/checkout/references/branch-naming.md": "# Branch naming\n",
+    "skills/sample/SKILL.md": "---\nname: sample\n---\nNo reference to the naming page here.\n",
+    "skills/sample/references/naming.md": "# Branch naming\n",
   });
   try {
-    const actual = classify(join(root, "skills/checkout/references/branch-naming.md"));
+    const actual = classify(join(root, "skills/sample/references/naming.md"));
     assert.equal(actual, NON_PROMPT);
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -117,9 +117,9 @@ test("T-493 A rules file keeps its always-loaded or path-triggered classificatio
   const root = writeTree("harness-elements-skill-reference-alongside-rules", {
     "rules/PRINCIPLES.md": "# Principles\n",
     "rules/development/TESTING.md": '---\npaths:\n  - "**/*.test.ts"\n---\n# Testing\n',
-    "skills/checkout/SKILL.md":
-      "---\nname: checkout\n---\nAssemble the name per ${CLAUDE_SKILL_DIR}/references/branch-naming.md.\n",
-    "skills/checkout/references/branch-naming.md": "# Branch naming\n",
+    "skills/sample/SKILL.md":
+      "---\nname: sample\n---\nAssemble the name per ${CLAUDE_SKILL_DIR}/references/naming.md.\n",
+    "skills/sample/references/naming.md": "# Branch naming\n",
   });
   try {
     assert.equal(classify(join(root, "rules/PRINCIPLES.md")), "always-loaded");

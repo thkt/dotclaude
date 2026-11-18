@@ -4,8 +4,8 @@
 // triage.ts / verify_run.ts / structure_page.ts ports U-002/U-003/U-004/U-005 established. This
 // file guards the retirement itself, in the same shape
 // workflows/_lib/tests/record-retirement.test.ts uses for its own retired build-run recorder: no
-// tracked file still names one of the four scripts by its retired filename, and the six SKILL.md
-// files (EN + .ja for scribe, think, fix) that used to invoke them through `python3 ... .py` now
+// tracked file still names one of the four scripts by its retired filename, and the EN and .ja
+// scribe SKILL.md that used to invoke them through `python3 ... .py` now
 // invoke the `.ts` port directly by path.
 //
 // Full-tree scan per docs/wiki/retire-rename-procedure.md: update both trees and docs in one
@@ -72,10 +72,6 @@ test(
 const SKILL_MD_SOURCES: { label: string; path: string }[] = [
   { label: "skills/scribe/SKILL.md", path: "skills/scribe/SKILL.md" },
   { label: ".ja/skills/scribe/SKILL.md", path: ".ja/skills/scribe/SKILL.md" },
-  { label: "skills/think/SKILL.md", path: "skills/think/SKILL.md" },
-  { label: ".ja/skills/think/SKILL.md", path: ".ja/skills/think/SKILL.md" },
-  { label: "skills/fix/SKILL.md", path: "skills/fix/SKILL.md" },
-  { label: ".ja/skills/fix/SKILL.md", path: ".ja/skills/fix/SKILL.md" },
 ];
 
 // A backtick-quoted invocation naming one of the four scripts (SKILL.md is Markdown, so inline
@@ -105,7 +101,7 @@ function scribeScriptInvocations(source: string): string[] {
 }
 
 test(
-  "T-232 the EN and .ja scribe, think and fix SKILL.md invoke the scribe scripts as .ts by " +
+  "T-232 the EN and .ja scribe SKILL.md invoke the scribe scripts as .ts by " +
     "path and none still invokes python3, read from source text rather than a copied literal",
   () => {
     for (const { label, path } of SKILL_MD_SOURCES) {

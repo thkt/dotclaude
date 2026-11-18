@@ -13,9 +13,6 @@ const at = (lang, ...parts) => join(root, ...(lang === "ja" ? [".ja"] : []), ...
 const skillPath = (lang) => at(lang, "skills", "research", "SKILL.md");
 const templatePath = (lang) => at(lang, "skills", "research", "templates", "research.md");
 const verificationPath = (lang) => at(lang, "skills", "research", "references", "verification.md");
-// The table naming the report's parts lives here. A check aimed at the skill body would find
-// only the line that delegates.
-const thinkPath = (lang) => at(lang, "skills", "think", "references", "research-report-intake.md");
 
 function read(path) {
   assert.ok(existsSync(path), `${path} exists`);
@@ -58,18 +55,17 @@ test("every Phase number the template cites exists as a heading in SKILL.md", ()
   }
 });
 
-// /think drops a finding whose next action is "record only" from the plan scope. Without the same
-// wording across all three files, think picks up a finding research marked record-only and the
-// scope swells.
+// Phase 7 triages a finding to the record-only Next Action, and the template's findings comment
+// names the same value. Without the same wording in both files, the report carries a value the
+// skill never assigns.
 const TRIAGE_LITERAL = { ja: "記録のみ", en: "record only" };
 
-test("triage's record-only literal matches across research SKILL, the template, and think SKILL", () => {
+test("triage's record-only literal matches across research SKILL and the template", () => {
   for (const lang of LANGS) {
     const needle = TRIAGE_LITERAL[lang];
     const sites = [
       ["research SKILL.md", skillPath(lang)],
       ["the research template", templatePath(lang)],
-      ["think SKILL.md", thinkPath(lang)],
     ];
     for (const [name, path] of sites) {
       assert.ok(read(path).includes(needle), `${lang}: ${name} writes ${needle}`);
@@ -77,40 +73,8 @@ test("triage's record-only literal matches across research SKILL, the template, 
   }
 });
 
-// think decides plan scope by these section names. Renaming one in the template leaves think's
-// table pointing at a section no report carries, and a report section with no entry in that table
-// is not plan material, so the part goes unread with nothing failing.
-const CONSUMED_SECTIONS = {
-  ja: ["制約", "仮説ログ", "Same-origin Sweep", "カバレッジ注記"],
-  en: ["Constraints", "Hypotheses Log", "Same-origin Sweep", "Coverage Notes"],
-};
-
-test("every report section think reads exists as a heading in the template", () => {
-  for (const lang of LANGS) {
-    const template = read(templatePath(lang));
-    // Phase 1 names the Hypotheses Log in the skill body while the rest of the parts sit in the
-    // reference, so what think reads spans the two files.
-    const think = read(at(lang, "skills", "think", "SKILL.md")) + read(thinkPath(lang));
-    for (const section of CONSUMED_SECTIONS[lang]) {
-      // \b takes an ASCII word character on one side, which a Japanese heading never offers.
-      assert.match(
-        template,
-        new RegExp(`^## ${section}( |$)`, "m"),
-        `${lang}: the template carries the ${section} section`,
-      );
-      // Anchored to the row, not the word: several of these names also appear in surrounding
-      // prose, so a whole-file search stays green on a table that dropped the row.
-      const named =
-        think.split("\n").some((line) => line.startsWith(`| ${section}`)) ||
-        think.includes(`\`${section}\``);
-      assert.ok(named, `${lang}: think takes ${section} in a row or names it as a literal`);
-    }
-  }
-});
-
-// think pulls the report by a slug it builds from the task's words. Handing the report over without
-// those words leaves think deriving its own, and a report the slug misses reads as no research at
-// all. The destinations live in the template alone, so the body points at that table.
+// The report is handed over with the words its slug came from, so the next step can find it by
+// the same words. The destinations live in the template alone, so the body points at that table.
 const HANDOFF_WORDS = { ja: /slug の元になった語/, en: /the words the slug came from/ };
 
 test("the output phase hands the report over through the template's Next Steps table", () => {
@@ -125,46 +89,7 @@ test("the output phase hands the report over through the template's Next Steps t
     assert.match(phase8, HANDOFF_WORDS[lang], `${lang}: it attaches the words the slug came from`);
     const template = read(templatePath(lang));
     const nextSteps = template.slice(template.indexOf("## Next Steps"));
-    assert.ok(nextSteps.includes("/think"), `${lang}: the Next Steps table routes to /think`);
-  }
-});
-
-// A finding research could not verify carries this source. Without the same wording on both sides,
-// think grounds a plan on it as though it were confirmed.
-const UNVERIFIED_LITERAL = "unknown, requires";
-
-test("the unverified-source literal matches across research SKILL and think SKILL", () => {
-  for (const lang of LANGS) {
-    for (const [name, path] of [
-      ["research SKILL.md", skillPath(lang)],
-      ["think SKILL.md", thinkPath(lang)],
-    ]) {
-      assert.ok(
-        read(path).includes(UNVERIFIED_LITERAL),
-        `${lang}: ${name} writes ${UNVERIFIED_LITERAL}`,
-      );
-    }
-  }
-});
-
-// think locating the report by eye and research locating one by script are the same judgement, and
-// only the script one is repeatable. A grant that does not cover the path leaves the call refused.
-test("think runs research's finder script and is granted the path it names", () => {
-  for (const lang of LANGS) {
-    // The call and the grant sit in the skill body, not in the reference the table moved to.
-    const think = read(at(lang, "skills", "think", "SKILL.md"));
-    const call = think.match(/\$\{CLAUDE_SKILL_DIR\}\/\.\.\/research\/scripts\/([\w.-]+\.ts)/);
-    assert.ok(call, `${lang}: think names research's script under \${CLAUDE_SKILL_DIR}`);
-    assert.ok(
-      existsSync(join(dirname(skillPath(lang)), "scripts", call[1])),
-      `${lang}: the named script exists under research`,
-    );
-    const allowed = think.match(/^allowed-tools:\s*(.+)$/m)?.[1] ?? "";
-    assert.match(
-      allowed,
-      /Bash\(\$\{CLAUDE_SKILL_DIR\}\/\.\.\/research\/scripts\/\*\)/,
-      `${lang}: allowed-tools grants running it by the same path`,
-    );
+    assert.ok(nextSteps.includes("/scoping"), `${lang}: the Next Steps table routes to /scoping`);
   }
 });
 

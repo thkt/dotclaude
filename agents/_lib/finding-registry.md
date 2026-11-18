@@ -1,6 +1,6 @@
 # Finding Registry
 
-The prefix each reviewer stamps on its finding ids, and the extra material each reviewer folds into the base fields. The base fields live in `finding-schema.md`. A reviewer with its own output format, such as reviewer-conformance, is left out here by design.
+The prefix each reviewer stamps on its finding ids, and the extra material each reviewer folds into the base fields. The base fields live in `finding-schema.md`.
 
 ## Domain-Specific Extensions
 
@@ -16,7 +16,6 @@ The caller's schema carries no extra keys, so each reviewer writes its extra mat
 | reviewer-security      | entry_points                                      | opt     | Written into the verification text as file:line                |
 | reviewer-resilience    | blast_radius, failure, hypothesis                 | req     | blast_radius is the severity; failure, hypothesis → reasoning  |
 | reviewer-duplication   | multi_location_evidence                           | req     | Evidence lists all source locations                            |
-| reviewer-reuse         | existing_code                                     | req     | Evidence pairs new code with existing alternative              |
 | reviewer-efficiency    | path_frequency                                    | opt     | hot/warm/cold → reasoning note                                 |
 
 ## ID Prefix Registry
@@ -34,7 +33,6 @@ The caller's schema carries no extra keys, so each reviewer writes its extra mat
 | TC     | reviewer-coverage                         |
 | A11Y   | reviewer-accessibility                    |
 | DRY    | reviewer-duplication                      |
-| REUSE  | reviewer-reuse                            |
 | EFF    | reviewer-efficiency                       |
 | OPS    | reviewer-operations                       |
 | PQ     | reviewer-prompt                           |

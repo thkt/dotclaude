@@ -23,8 +23,8 @@ const REPO_ROOT = join(HERE, "..", "..", "..");
 const WIKI = join(REPO_ROOT, "docs", "wiki");
 const WORKFLOW_YML = join(REPO_ROOT, ".github", "workflows", "test.yml");
 
-// The one structure page whose 契約/要求 name workflows/*.js machinery. T-229 cross-checks this
-// page against the workflow script it describes, so the page is fixed rather than discovered.
+// The one structure page whose 内容/契約 name workflows/*.js machinery. T-230 cross-checks this
+// page against the workflow scripts it describes, so the page is fixed rather than discovered.
 const PAGE = join(WIKI, "workflow-structure.md");
 
 // Spelled out here rather than imported from structure_page.ts: the scan below exists to reach
@@ -115,48 +115,6 @@ test("T-228 the boundary bullets and the contract and requirement table rows com
       `${page}: 境界 and 契約 come back separately`,
     );
   }
-});
-
-function extractUnitCaps(source: string): { files: number; tests: number } | null {
-  const match = source.match(/UNIT_CAPS\s*=\s*\{\s*files:\s*(\d+),\s*tests:\s*(\d+)\s*\}/);
-  if (match === null) return null;
-  return { files: Number(match[1]), tests: Number(match[2]) };
-}
-
-/** The file a 参照コード bullet names beside the given constant/function name, read from the
- * bullet's own text rather than assumed. `- \`<path>\` の \`<name>\`` is the section's own
- * format, checked separately by T-228. */
-function referencedPath(claims: Record<string, string[]>, name: string): string {
-  const bullet = claims["参照コード"].find((row) => row.includes(name));
-  assert.ok(bullet, `参照コード names ${name}`);
-  const match = (bullet as string).match(new RegExp("`([^`]+)` の `" + name + "`"));
-  assert.ok(match, `参照コード names ${name} without a \`<path>\` の \`${name}\` bullet`);
-  return join(REPO_ROOT, (match as RegExpMatchArray)[1]);
-}
-
-test("T-229 the unit caps workflow-structure.md states equal build.js's UNIT_CAPS, and a copy of build.js with the constant renamed makes the extraction fail", () => {
-  const claims = readClaims(PAGE);
-  const row = claims["要求"].find((r) => r.includes("`build` の unit"));
-  assert.ok(row, "要求 states build's unit caps");
-  const match = (row as string).match(/files (\d+) \/ tests (\d+)/);
-  assert.ok(match, `要求 states build's unit caps as 'files N / tests N': ${row}`);
-  const pageCaps = {
-    files: Number((match as RegExpMatchArray)[1]),
-    tests: Number((match as RegExpMatchArray)[2]),
-  };
-
-  const scriptPath = referencedPath(claims, "UNIT_CAPS");
-  const scriptSource = readFileSync(scriptPath, "utf8");
-  const scriptCaps = extractUnitCaps(scriptSource);
-  assert.ok(scriptCaps !== null, `${scriptPath} carries a UNIT_CAPS constant`);
-  assert.deepEqual(pageCaps, scriptCaps);
-
-  const renamed = scriptSource.replaceAll("UNIT_CAPS", "UNIT_CAPS_RENAMED");
-  assert.equal(
-    extractUnitCaps(renamed),
-    null,
-    "renaming the constant the page's 参照コード names makes the check unable to find it",
-  );
 });
 
 /** Every quoted glob token the Node tests step's `run:` block lists in test.yml, read from the

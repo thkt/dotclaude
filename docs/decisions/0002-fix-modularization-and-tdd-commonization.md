@@ -1,6 +1,6 @@
 ---
-status: "accepted"
-date: 2025-12-24
+status: "superseded by DR-0128"
+date: "2026-11-18"
 ---
 
 # ADR 0002: /fix モジュール化とTDD共通化

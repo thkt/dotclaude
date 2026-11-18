@@ -31,8 +31,6 @@ const NAMED_WORKFLOWS = [
   "adrift",
   "assert",
   "audit",
-  "build",
-  "code",
   "implement",
   "polish",
   "shake",

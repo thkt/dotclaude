@@ -1,5 +1,5 @@
 ---
-globs: ["**/workflows/build/**/*"]
+globs: []
 scenes: ["pr-create"]
 ---
 

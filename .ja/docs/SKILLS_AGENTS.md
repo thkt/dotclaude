@@ -14,7 +14,7 @@ graph LR
     end
 
     subgraph Agents["Agents (Execution)"]
-        A1[generator-test]
+        A1[generator-snapshot]
         A2[reviewer-security]
         A3[enhancer-integration]
     end
@@ -29,7 +29,7 @@ graph LR
 
 ## Skills と Agents
 
-`dr` は DR file と index を Write/Edit で生成し、`commit` は `git commit` を実行する。そのため Skill の状態と出力は許可ツールと手順に依存する。
+`dr` は DR file と index を Write/Edit で生成し、`implement` は implement workflow を起動する。そのため Skill の状態と出力は許可ツールと手順に依存する。
 
 | 観点         | Skills                              | Agents           |
 | ------------ | ----------------------------------- | ---------------- |
@@ -47,14 +47,14 @@ Skills は「ナレッジモジュール」。AI がタスク実行時にドメ�
 
 ### カテゴリ
 
-`/code`、`/audit`、`/polish` は `workflows/*.js` の Workflow であり、Skill ではない。User-invocable Skills は下表の 17 件。
+`/audit`、`/polish` は `workflows/*.js` の Workflow であり、Skill ではない。User-invocable Skills は下表の 11 件。
 
 | カテゴリ       | Skills                                                                                                                          | 用途                         |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| Workflow       | use-workflow-tdd-cycle, use-workflow-pageshot                                                                                   | 多段ワークフロー定義         |
+| Workflow       | use-workflow-tdd-cycle                                                                                                          | 多段ワークフロー定義         |
 | Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                                                        | エージェント向けドメイン知識 |
 | CLI ラッパー   | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud                                                                | CLI ツール統合               |
-| User-invocable | census, challenge, checkout, commit, dr, fix, issue, outcome, pr, preview, qualify, research, scribe, slice, think, transcribe | スラッシュコマンドの入口     |
+| User-invocable | ablate, census, challenge, dr, implement, outcome, research, scoping, scribe, sweep, transcribe                                 | スラッシュコマンドの入口     |
 
 ### ロード機構
 
@@ -113,18 +113,16 @@ agents/
 ├── critics/        # 反論検証 (critic-audit, critic-design, critic-evidence)
 ├── enhancers/      # コード改善・結果統合 (enhancer-code, enhancer-evidence, enhancer-integration)
 ├── explorers/      # 探索 (explorer-feature)
-├── generators/     # 生成 (generator-test, generator-snapshot)
-├── resolvers/      # 問題解決 (resolver-build)
-└── reviewers/      # レビュー (18 種の専門 reviewer)
+├── generators/     # 生成 (generator-snapshot)
+└── reviewers/      # レビュー (16 種の専門 reviewer)
 ```
 
-### Reviewer Agents (18 種)
+### Reviewer Agents (16 種)
 
 | Agent                  | 焦点                              |
 | ---------------------- | --------------------------------- |
 | reviewer-accessibility | WCAG 2.2 適合                     |
 | reviewer-causation     | 根本原因分析                      |
-| reviewer-conformance   | diff と spec の適合性             |
 | reviewer-coverage      | テストカバレッジ品質              |
 | reviewer-design        | deletion test による module depth |
 | reviewer-duplication   | クロスファイル DRY 分析           |
@@ -135,7 +133,6 @@ agents/
 | reviewer-react-pattern | React 設計パターン                |
 | reviewer-readability   | コード構造、可読性                |
 | reviewer-resilience    | 耐障害性の弱点分析                |
-| reviewer-reuse         | 既存コードの再利用機会            |
 | reviewer-rust          | Rust idiom と安全性               |
 | reviewer-security      | OWASP Top 10                      |
 | reviewer-silence       | サイレント失敗の検出              |
@@ -172,6 +169,6 @@ SKILL.md → reference.md (1 階層のみ)
 
 ## 関連
 
-- [COMMANDS.md](./COMMANDS.md). コマンドと workflow の関係、build 中心の開発フロー
+- [COMMANDS.md](./COMMANDS.md). コマンドと workflow の関係、`/scoping` → `/implement` 中心の開発フロー
 - [SKILLS](../rules/conventions/SKILLS.md). Skill 定義書式
 - [SUBAGENT](../rules/conventions/SUBAGENT.md). サブエージェント定義書式
