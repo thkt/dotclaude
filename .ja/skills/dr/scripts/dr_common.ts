@@ -1,13 +1,11 @@
 /// <reference types="node" />
-// 退役した Python 版 dr_common の共有ヘルパーを TypeScript に移植したもの。形は
-// skills/_lib/harness_hash.ts と同じ (named export のみ、default export は持たない)。この
-// module 自身は CLI の入口を持たない -- pre-check.ts、validate-dr.ts、update-index.ts が
+// 退役した Python 版 dr_common の共有ヘルパーを TypeScript に移植したもの。named export
+// のみで、default export は持たない。この module 自身は CLI の入口を持たない -- pre-check.ts、validate-dr.ts、update-index.ts が
 // それぞれこれを import する -- そのため呼び出す側の script が持つ skills-CLI の
 // shebang + 100755 とは違い、shebang 無しの mode 100644 で置く。
 //
 // Contract: 退役した Python 版 dr_common の fail / resolve_dr_dir / guard_skill_dir /
 // split_frontmatter。加えて gitTopLevel / filesUnder / localDate。Python の snake_case な名前は TS 側では camelCase になる。
-// harness_hash.py の _digest -> harness_hash.ts の digest で既に行ったのと同じリネームである。
 //
 // resolveDrDir はここでは純関数であり、git の exit が非 0 のときに自分で fail() を呼ぶ
 // 退役した Python 版 resolve_dr_dir とは違う。env、CLI 引数、git-toplevel の spawn 結

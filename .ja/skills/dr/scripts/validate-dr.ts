@@ -6,9 +6,8 @@
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
 // 退役した Python 版 validate-dr の TypeScript 移植。header/entry の形は
-// skills/_lib/harness_hash.ts、skills/dr/scripts/dr_common.ts、skills/dr/scripts/pre-check.ts
-// が既に使っているものと同じ: 素直な shebang + reference-types + Usage ヘッダー、テストが
-// 直接動かせる部分は named export にし、CLI 自身の process.exit(main()) は
+// skills/dr/scripts/dr_common.ts、skills/dr/scripts/pre-check.ts が既に使っているものと同じ:
+// 素直な shebang + reference-types + Usage ヘッダー、テストが直接動かせる部分は named export にし、CLI 自身の process.exit(main()) は
 // workflows/_lib/entry-point.ts の isMainModule でガードする。これにより、この module を
 // export 目当てで import しても CLI が副作用として動くことはない。
 //

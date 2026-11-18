@@ -18,24 +18,7 @@ const SKIPPED = new Set(["docs/decisions", "docs/research"]);
 // MARKDOWN.md's row exempts a conclusion the table derives, and no regex separates one from an
 // explanation. Each key carries the opening sentence, so rewriting the conclusion asks for the
 // judgement again. Removing an entry is how a paragraph that stopped being one gets its guard back.
-const DERIVED_CONCLUSIONS = new Map([
-  [
-    "skills/use-context-root-cause-analysis/references/hypothesis-examples.md :: The root cause is the fetch-everything on mount.",
-    "the elimination table above it is what derives this; leading with it makes the table decorative",
-  ],
-  [
-    "skills/use-context-root-cause-analysis/references/hypothesis-examples.md :: The root cause is the second click landing before the state update.",
-    "same worked-example shape as the dashboard case",
-  ],
-  [
-    ".ja/skills/use-context-root-cause-analysis/references/hypothesis-examples.md :: Root cause は mount 時の一括取得。",
-    "上の消去表が導いた結論。前に出すと表が飾りになる",
-  ],
-  [
-    ".ja/skills/use-context-root-cause-analysis/references/hypothesis-examples.md :: Root cause は state が反映される前に 2 回目を受けること。",
-    "ダッシュボードの例と同じ、例題としての導出",
-  ],
-]);
+const DERIVED_CONCLUSIONS = new Map<string, string>();
 
 // An ordered list is not a paragraph, and reading `1. foo` as one fails a file that carries steps.
 const CONTINUES_A_BLOCK = /^(?:[|#>*-]|\d+[.)]\s)/;

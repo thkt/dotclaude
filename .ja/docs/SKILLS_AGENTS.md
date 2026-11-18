@@ -9,21 +9,16 @@ Skill とエージェントの設計意図と利用ガイドライン。
 ```mermaid
 graph LR
     subgraph Skills["Skills (Knowledge)"]
-        S1[use-workflow-tdd-cycle]
-        S2[use-context-reviewer-security]
+        S1[use-cli-scout]
     end
 
     subgraph Agents["Agents (Execution)"]
-        A1[generator-snapshot]
-        A2[reviewer-security]
-        A3[enhancer-integration]
+        A1[critic-design]
     end
 
     subgraph Trigger["Invocation"]
-        CMD[Command] --> S1
-        CMD --> A1
-        CTX[Context] -.-> S2
-        AGENT[Agent Tool] --> A2
+        CTX[Context] -.-> S1
+        AGENT[Agent Tool] --> A1
     end
 ```
 
@@ -49,12 +44,10 @@ Skills は「ナレッジモジュール」。AI がタスク実行時にドメ�
 
 User-invocable Skills は下表の 7 件。
 
-| カテゴリ       | Skills                                                                                                                          | 用途                         |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| Workflow       | use-workflow-tdd-cycle                                                                                                          | 多段ワークフロー定義         |
-| Context        | use-context-reviewer-\*, use-context-root-cause-analysis                                                                        | エージェント向けドメイン知識 |
-| CLI ラッパー   | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud                                                                | CLI ツール統合               |
-| User-invocable | challenge, dr, implement, outcome, scoping, scribe, sweep                                                                       | スラッシュコマンドの入口     |
+| カテゴリ       | Skills                                                           | 用途                     |
+| -------------- | ---------------------------------------------------------------- | ------------------------ |
+| CLI ラッパー   | use-cli-codegraph, use-cli-recall, use-cli-scout, use-cli-gcloud | CLI ツール統合           |
+| User-invocable | challenge, dr, implement, outcome, scoping, scribe, sweep        | スラッシュコマンドの入口 |
 
 ### ロード機構
 
@@ -71,11 +64,9 @@ flowchart TD
 
 #### トリガー例
 
-| トリガー                | ロードされる Skill              |
-| ----------------------- | ------------------------------- |
-| "TDD", "test-driven"    | use-workflow-tdd-cycle          |
-| "OWASP", "セキュリティ" | use-context-reviewer-security   |
-| "5 Whys", "root cause"  | use-context-root-cause-analysis |
+| トリガー                      | ロードされる Skill |
+| ----------------------------- | ------------------ |
+| "web search", "release notes" | use-cli-scout      |
 
 ### ファイル構造
 
@@ -90,12 +81,10 @@ skills/[skill-name]/
 
 ```yaml
 ---
-name: use-workflow-tdd-cycle
-description: TDD with RGRC cycle and Baby Steps.
-when_to_use: TDD, テスト駆動, Red-Green-Refactor, Baby Steps
-allowed-tools: Read Write Edit Bash(ugrep:*) Bash(bfs:*)
-context: fork # fork または inline
-background: false
+name: use-cli-scout
+description: Web search, page fetch, and GitHub repo exploration via scout CLI.
+when_to_use: web search, page fetch, release notes, 最新ドキュメント
+allowed-tools: Bash(scout:*) Read
 user-invocable: false # スラッシュコマンドとして起動可能か
 ---
 ```
@@ -110,40 +99,16 @@ user-invocable: false # スラッシュコマンドとして起動可能か
 
 ```text
 agents/
-├── critics/        # 反論検証 (critic-audit, critic-design, critic-evidence)
-├── enhancers/      # コード改善・結果統合 (enhancer-code, enhancer-evidence, enhancer-integration)
-├── generators/     # 生成 (generator-snapshot)
-└── reviewers/      # レビュー (16 種の専門 reviewer)
+└── critics/        # 反論検証 (critic-design)
 ```
-
-### Reviewer Agents (16 種)
-
-| Agent                  | 焦点                              |
-| ---------------------- | --------------------------------- |
-| reviewer-accessibility | WCAG 2.2 適合                     |
-| reviewer-causation     | 根本原因分析                      |
-| reviewer-coverage      | テストカバレッジ品質              |
-| reviewer-design        | deletion test による module depth |
-| reviewer-duplication   | クロスファイル DRY 分析           |
-| reviewer-efficiency    | アルゴリズムコスト、ホットパス    |
-| reviewer-operations    | エラー境界、ロギング              |
-| reviewer-progressive   | CSS-first、JS 削減                |
-| reviewer-prompt        | LLM プロンプト定義の品質          |
-| reviewer-react-pattern | React 設計パターン                |
-| reviewer-readability   | コード構造、可読性                |
-| reviewer-resilience    | 耐障害性の弱点分析                |
-| reviewer-rust          | Rust idiom と安全性               |
-| reviewer-security      | OWASP Top 10                      |
-| reviewer-silence       | サイレント失敗の検出              |
-| reviewer-testability   | テスト可能なコード設計            |
 
 ### Agent ツールでの起動
 
 ```markdown
 Agent tool で:
 
-- subagent_type: "reviewer-security"
-- prompt: "Review the authentication module for vulnerabilities"
+- subagent_type: "critic-design"
+- prompt: "Attack this design proposal for hidden assumptions and costs"
 - model: "sonnet" (任意)
 ```
 

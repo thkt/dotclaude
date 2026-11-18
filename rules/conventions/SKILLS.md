@@ -13,12 +13,10 @@ Conventions for skill files under `skills/`.
 
 Name a skill after the operation it performs. Replace generic names like helper, utils, tools with the operation name.
 
-| user-invocable | Binding    | Pattern               | Examples                                      |
-| -------------- | ---------- | --------------------- | --------------------------------------------- |
-| true           | -          | Short name            | scoping, implement, dr                        |
-| false          | CLI wrap   | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                 |
-| false          | Agent-only | `use-context-<agent>` | use-context-reviewer-security                 |
-| false          | Workflow   | `use-workflow-<noun>` | use-workflow-tdd-cycle                        |
+| user-invocable | Binding  | Pattern         | Examples                      |
+| -------------- | -------- | --------------- | ----------------------------- |
+| true           | -        | Short name      | scoping, implement, dr        |
+| false          | CLI wrap | `use-cli-<cli>` | use-cli-recall, use-cli-scout |
 
 ## H1
 

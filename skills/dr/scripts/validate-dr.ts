@@ -6,11 +6,10 @@
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
 // TypeScript port of the retired Python validate-dr, in the header/entry shape
-// skills/_lib/harness_hash.ts, skills/dr/scripts/dr_common.ts, and skills/dr/scripts/pre-check.ts
-// already use: a plain shebang + reference-types + Usage header, named exports for the pieces a
-// test can drive directly, and the CLI's own process.exit(main()) guarded by
-// workflows/_lib/entry-point.ts's isMainModule so importing this module for its exports never
-// runs the CLI as a side effect.
+// skills/dr/scripts/dr_common.ts and skills/dr/scripts/pre-check.ts already use: a plain shebang +
+// reference-types + Usage header, named exports for the pieces a test can drive directly, and
+// the CLI's own process.exit(main()) guarded by workflows/_lib/entry-point.ts's isMainModule so
+// importing this module for its exports never runs the CLI as a side effect.
 //
 // Contract: the retired Python validate-dr's REQUIRED_SECTIONS, RECOMMENDED_SECTIONS,
 // STATUS_VALUES, count_options, lint_check, and main. REQUIRED_SECTIONS/RECOMMENDED_SECTIONS/

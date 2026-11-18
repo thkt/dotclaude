@@ -56,7 +56,7 @@ This directory contains important decisions about the project.
 | [0048](0048-standardize-generator-skill-structure.md) | Adopt unified SKILL.md template for generator-class workflows | accepted | 2026-04-21 |
 | [0049](0049-consolidate-skill-to-skill-wrapper-pairs.md) | ADR-0049: Consolidate skill-to-skill wrapper pairs | accepted | 2026-04-21 |
 | [0050](0050-consolidate-fix-via-skill-delegation.md) | ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md | superseded by DR-0128 | 2026-11-18 |
-| [0051](0051-consolidate-formatting-audits-into-sow-spec-reviewer.md) | ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent | accepted | 2026-04-23 |
+| [0051](0051-consolidate-formatting-audits-into-sow-spec-reviewer.md) | ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent | superseded by DR-0129 | 2026-11-18 |
 | [0052](0052-unify-skill-naming-with-use-prefix-for-cli-wrappers.md) | ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills | superseded by DR-0055 | 2026-04-23 |
 | [0053](0053-adopt-ctx-prefix-for-agent-only-skills.md) | Adopt ctx- prefix for agent-only skills | superseded by DR-0055 | 2026-04-24 |
 | [0054](0054-adopt-workflow-prefix-for-workflow-skills.md) | Adopt workflow- prefix for workflow skills | superseded by DR-0055 | 2026-04-24 |
@@ -68,7 +68,7 @@ This directory contains important decisions about the project.
 | [0060](0060-adopt-agent-friendly-cli-design-principles.md) | Adopt Agent-Friendly CLI Design Principles | accepted | 2026-05-03 |
 | [0061](0061-adopt-meta-edit-declaration-pattern-as-a-new-sentinel.md) | Adopt meta-edit declaration pattern as a new sentinel | accepted | 2026-05-03 |
 | [0062](0062-replace-absolute-coverage-thresholds-with-delta-based-gate.md) | Replace absolute coverage thresholds with delta-based gate | accepted | 2026-05-06 |
-| [0063](0063-split-reviewer-design-into-deletion-test-and-react-pattern.md) | Split reviewer-design into deletion test and react-pattern | accepted | 2026-05-07 |
+| [0063](0063-split-reviewer-design-into-deletion-test-and-react-pattern.md) | Split reviewer-design into deletion test and react-pattern | superseded by DR-0129 | 2026-11-18 |
 | [0064](0064-adopt-always-rerun-pre-commit-gate-for-silent-commit-prevention.md) | Adopt always-rerun pre-commit gate for silent commit prevention | proposed | 2026-05-07 |
 | [0065](0065-scout-json-output-schema-and-sysexits-exit-code-policy.md) | scout JSON output schema and sysexits exit code policy | accepted | 2026-05-07 |
 | [0066](0066-cli-exit-code-policy-grouped-by-error-topology.md) | CLI exit code policy grouped by error topology | accepted | 2026-05-13 |
@@ -83,7 +83,7 @@ This directory contains important decisions about the project.
 | [0075](0075-rename-adr-audit-skills-to-adrift-and-census.md) | ADR-0075: Rename audit-adr-drift to adrift and audit-adr-gaps to census | superseded by DR-0129 | 2026-11-18 |
 | [0076](0076-adopt-source-driven-discipline-for-framework-code.md) | ADR-0076: framework コードの source-driven discipline 採用 | accepted | 2026-06-18 |
 | [0077](0077-finding-id-routing-and-audit-fix-loop-closure.md) | ADR-0077: fix の finding ID routing を severity で gate し audit→fix ループを閉じる | superseded by DR-0099 | 2026-08-18 |
-| [0078](0078-align-finding-atom-family-on-audit-finding-schema.md) | ADR-0078: finding atom family を audit finding-schema の共通コアに揃える | accepted | 2026-06-19 |
+| [0078](0078-align-finding-atom-family-on-audit-finding-schema.md) | ADR-0078: finding atom family を audit finding-schema の共通コアに揃える | superseded by DR-0129 | 2026-11-18 |
 | [0079](0079-purify-polish-to-external-cli-cleanup-and-fix-audit-boundary.md) | ADR-0079: polish を Codex + cleanup へ純化し audit との境界を確定する | superseded by DR-0129 | 2026-11-18 |
 | [0080](0080-design-workflow-outcome-evaluation-instrument-first.md) | ADR-0080: skill/workflow 成果の評価を instrument-first で設計する | accepted | 2026-06-24 |
 | [0081](0081-move-machinery-fan-out-from-skill-prose-to-deterministic-workflow.md) | ADR-0081: machinery の fan-out を skill prose から決定論 workflow へ移す | accepted | 2026-07-01 |
@@ -113,7 +113,7 @@ This directory contains important decisions about the project.
 | [0105](0105-require-argsrepo-in-every-workflow.md) | Require args.repo in every workflow | accepted | 2026-08-23 |
 | [0106](0106-adopt-the-wiki-as-the-current-state-view-over-immutable-drs.md) | Adopt the wiki as the current-state view over immutable DRs | accepted | 2026-08-24 |
 | [0107](0107-track-research-reports-in-git-while-the-rest-of-the-workspace-stays-untracked.md) | Track research reports in git while the rest of the workspace stays untracked | superseded by DR-0119 | 2026-09-25 |
-| [0108](0108-grant-ast-grep-only-to-write-capable-agents.md) | Grant ast-grep only to write-capable agents | accepted | 2026-08-27 |
+| [0108](0108-grant-ast-grep-only-to-write-capable-agents.md) | Grant ast-grep only to write-capable agents | superseded by DR-0129 | 2026-11-18 |
 | [0109](0109-keep-the-scope-tag-and-retire-the-cluster-promotion-rule.md) | Keep the scope tag and retire the cluster-promotion rule | proposed | 2026-08-27 |
 | [0110](0110-keep-workflow-enums-in-meta-as-derived-copy.md) | Keep workflow enums in meta as a derived copy | accepted | 2026-08-28 |
 | [0111](0111-adopt-apple-container-for-agent-sandbox.md) | Adopt Apple container for agent sandbox | accepted | 2026-08-28 |
@@ -181,7 +181,6 @@ This directory contains important decisions about the project.
 - **0045**: Replace /scout skill with scout-search CLI wrapper, retire scouting-anomalies
 - **0048**: Adopt unified SKILL.md template for generator-class workflows
 - **0049**: ADR-0049: Consolidate skill-to-skill wrapper pairs
-- **0051**: ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent
 - **0055**: ADR-0055: Consolidate user-invocable:false skills under unified use- prefix with role subcategories
 - **0056**: ADR-0056: Remove redundant CLI wrapper skills (use-cli-git/gh/npm)
 - **0058**: Inline single-consumer agent context skills into agents
@@ -189,7 +188,6 @@ This directory contains important decisions about the project.
 - **0060**: Adopt Agent-Friendly CLI Design Principles
 - **0061**: Adopt meta-edit declaration pattern as a new sentinel
 - **0062**: Replace absolute coverage thresholds with delta-based gate
-- **0063**: Split reviewer-design into deletion test and react-pattern
 - **0065**: scout JSON output schema and sysexits exit code policy
 - **0066**: CLI exit code policy grouped by error topology
 - **0069**: Adopt Indirect Prompt Injection Defense Design for yomu
@@ -197,7 +195,6 @@ This directory contains important decisions about the project.
 - **0073**: ADR-0073: .ja を意図の正とするミラー運用への転換
 - **0074**: ADR-0074: ADR テンプレートの単一 MADR テンプレートへの統合
 - **0076**: ADR-0076: framework コードの source-driven discipline 採用
-- **0078**: ADR-0078: finding atom family を audit finding-schema の共通コアに揃える
 - **0080**: ADR-0080: skill/workflow 成果の評価を instrument-first で設計する
 - **0081**: ADR-0081: machinery の fan-out を skill prose から決定論 workflow へ移す
 - **0082**: ADR 0082: generator-e2e エージェントの廃止
@@ -209,7 +206,6 @@ This directory contains important decisions about the project.
 - **0100**: Replace 5 Whys with hypothesis elimination in root cause analysis
 - **0105**: Require args.repo in every workflow
 - **0106**: Adopt the wiki as the current-state view over immutable DRs
-- **0108**: Grant ast-grep only to write-capable agents
 - **0110**: Keep workflow enums in meta as a derived copy
 - **0111**: Adopt Apple container for agent sandbox
 - **0112**: Adopt TypeScript for helper scripts
@@ -252,14 +248,17 @@ This directory contains important decisions about the project.
 - **0046**: Colocate audit assets under skills/audit with references and templates split
 - **0047**: Adopt snapshot as canonical source with rendered Markdown output for audit reports
 - **0050**: ADR-0050: Consolidate /fix via skill delegation; retire fix-workflow.md
+- **0051**: ADR-0051: Consolidate formatting-audits skill into reviewer-spec agent
 - **0052**: ADR-0052: Unify skill naming with `use-*` prefix for CLI wrapper skills
 - **0053**: Adopt ctx- prefix for agent-only skills
 - **0054**: Adopt workflow- prefix for workflow skills
+- **0063**: Split reviewer-design into deletion test and react-pattern
 - **0067**: Define boundary between RULES, ADR, and CLAUDE.md
 - **0070**: ADR-0070: Rename audit-undocumented skill to audit-adr-gaps
 - **0071**: ADR-0071: think と assert の no-source 状態の統一原則と enforcement 非対称
 - **0075**: ADR-0075: Rename audit-adr-drift to adrift and audit-adr-gaps to census
 - **0077**: ADR-0077: fix の finding ID routing を severity で gate し audit→fix ループを閉じる
+- **0078**: ADR-0078: finding atom family を audit finding-schema の共通コアに揃える
 - **0079**: ADR-0079: polish を Codex + cleanup へ純化し audit との境界を確定する
 - **0084**: ADR-0084: issue-gate を廃止し issue フローのオーケストレーションを人間に返す
 - **0085**: ADR-0085: build の audit fan-out を選択ベース検証に置換する
@@ -276,6 +275,7 @@ This directory contains important decisions about the project.
 - **0103**: Carry reference rules in the plan instead of a flat index
 - **0104**: Keep disposition out of audit gates
 - **0107**: Track research reports in git while the rest of the workspace stays untracked
+- **0108**: Grant ast-grep only to write-capable agents
 - **0121**: Narrow the hook trinity to guardrails alone
 
 ### Rejected

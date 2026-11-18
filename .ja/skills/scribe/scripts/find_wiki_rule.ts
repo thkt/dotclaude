@@ -11,10 +11,9 @@
 //         --scene を渡したときは scenes: [page] も加わる
 // exit: 0。引数不足、または未知の --scene 値のときは 2
 //
-// 退役した Python 版の TypeScript 移植。skills/_lib/harness_hash.ts の
-// header と isMainModule(import.meta.url) エントリポイントに倣う。SCENES / NOT_A_RULE /
-// glob_to_regexp / normalize / read_globs / read_scenes / words / find / _split_scene_flag /
-// main を node:* のみで運ぶ。
+// 退役した Python 版の TypeScript 移植。entry point は isMainModule(import.meta.url) で守る。
+// SCENES / NOT_A_RULE / glob_to_regexp / normalize / read_globs / read_scenes / words / find /
+// _split_scene_flag / main を node:* のみで運ぶ。
 //
 // Contract: 退役した Python 版自身の挙動。fixture
 // skills/scribe/tests/fixtures/find-wiki-rule-cases.json (U-001) に固定される。

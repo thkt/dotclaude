@@ -7,8 +7,7 @@
 //   flow:  generate | update
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
-// 退役した Python 版からの TypeScript 移植。skills/_lib/harness_hash.ts 自身の header と
-// isMainModule(import.meta.url) という entry point の形をそのまま踏襲する。
+// 退役した Python 版からの TypeScript 移植。entry point は isMainModule(import.meta.url) で守る。
 // REQUIRED_SECTIONS / FILLED_SECTIONS / INDICATORS /
 // PLACEHOLDER_LINE / PLACEHOLDER_CELL / section_body / is_unfilled / report / main を
 // node:* のみで移植する。

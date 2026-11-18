@@ -123,12 +123,12 @@ test("T-010 .oxlintrc.json keeps max-depth in the workflows override at error wi
 // wins over an override, so an entry added there drops the workflow scripts out of every rule
 // without touching the override T-010 reads; the list is compared as content, not as a count.
 const WORKFLOW_SCRIPT_GLOBS = ["workflows/*.js", ".ja/workflows/*.js"];
-const PLANNED_IGNORE_PATTERNS = ["plugins/**", "node_modules/**", "skills/*/test/cases/**"];
+const PLANNED_IGNORE_PATTERNS = ["plugins/**", "node_modules/**"];
 
 function oxlintHoles(config) {
   const holes = [];
   if (!(config.ignorePatterns ?? []).every((p) => PLANNED_IGNORE_PATTERNS.includes(p))) {
-    holes.push("ignorePatterns carries an entry beyond the planned three");
+    holes.push("ignorePatterns carries an entry beyond the planned two");
   }
   const override = findWorkflowsOverride(config);
   if (!override || !WORKFLOW_SCRIPT_GLOBS.every((g) => override.files.includes(g))) {
@@ -144,7 +144,7 @@ test("T-021 .oxlintrc.json's ignorePatterns and workflows override keep the work
 // T-022's positive controls, one per hole, applied to a copy of the committed config.
 const OXLINT_MUTATIONS = [
   [
-    "ignorePatterns carries an entry beyond the planned three",
+    "ignorePatterns carries an entry beyond the planned two",
     (c) => c.ignorePatterns.push("workflows/**"),
   ],
   [

@@ -7,10 +7,9 @@
 //   flow:  generate | update
 // exit: 0 if no errors (warnings allowed), 1 if errors
 //
-// TypeScript port of the retired Python original, mirroring skills/_lib/harness_hash.ts's own
-// header and its isMainModule(import.meta.url) entry point. Carries the REQUIRED_SECTIONS /
-// FILLED_SECTIONS / INDICATORS / PLACEHOLDER_LINE / PLACEHOLDER_CELL / section_body /
-// is_unfilled / report / main port, in node:* only.
+// TypeScript port of the retired Python original, with an isMainModule(import.meta.url) entry
+// point. Carries the REQUIRED_SECTIONS / FILLED_SECTIONS / INDICATORS / PLACEHOLDER_LINE /
+// PLACEHOLDER_CELL / section_body / is_unfilled / report / main port, in node:* only.
 //
 // Contract: this script's own behavior, pinned by the fixture below. Exercised by
 // skills/outcome/tests/validate-outcome.test.ts, replayed from

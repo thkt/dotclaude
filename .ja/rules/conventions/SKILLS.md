@@ -13,12 +13,10 @@ paths:
 
 スキル名は、そのスキルが行う操作を表す語にする。helper, utils, tools のような汎用名は操作名へ置き換える。
 
-| user-invocable | バインド   | パターン              | 例                                            |
-| -------------- | ---------- | --------------------- | --------------------------------------------- |
-| true           | -          | 短縮名                | scoping, implement, dr                        |
-| false          | CLI ラップ | `use-cli-<cli>`       | use-cli-recall, use-cli-scout                 |
-| false          | Agent 専用 | `use-context-<agent>` | use-context-reviewer-security                 |
-| false          | Workflow   | `use-workflow-<noun>` | use-workflow-tdd-cycle                        |
+| user-invocable | バインド   | パターン        | 例                            |
+| -------------- | ---------- | --------------- | ----------------------------- |
+| true           | -          | 短縮名          | scoping, implement, dr        |
+| false          | CLI ラップ | `use-cli-<cli>` | use-cli-recall, use-cli-scout |
 
 ## H1
 

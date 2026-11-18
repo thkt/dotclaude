@@ -9,8 +9,8 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows (18 skills)
-- Specialized AI agents for code review, generation, and analysis (23 agents)
+- Custom slash commands for systematic development workflows (12 skills)
+- A specialized AI agent that challenges design proposals (1 agent)
 - Core AI operation principles and development best practices
 - Six quality pipeline binaries, none of them wired
   command
@@ -26,12 +26,9 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── core/             # Core AI operation principles
 │   ├── conventions/      # Documentation conventions
 │   └── development/      # Development patterns & methodologies
-├── skills/               # Skill-based knowledge modules (18 skills)
-├── agents/               # Specialized AI agents (23 agents)
-│   ├── critics/          # Finding challengers (devils-advocate)
-│   ├── enhancers/        # Code enhancers & simplifiers
-│   ├── generators/       # Snapshot generation
-│   └── reviewers/        # Code review agents (16 reviewers)
+├── skills/               # Skill-based knowledge modules (12 skills)
+├── agents/               # Specialized AI agents (1 agent)
+│   └── critics/          # Design proposal challenger (critic-design)
 ├── docs/                  # Design docs & guides (DRs under decisions/)
 ├── hooks/                 # Pre/Post tool-use hooks
 ├── output-styles/         # Output style definitions
@@ -71,8 +68,8 @@ install specific workflow sets:
   build: namespace. Settle the requirements into an agreed Issue with /scoping,
   then hand the Issue to /implement, which carries it through the implement
   workflow to implementation, verification, a draft PR, and CI confirmation.
-  Bundles the reviewer and critic agents, the implement workflow, and
-  /challenge, /sweep, /outcome, /dr, /scribe.
+  Bundles the critic-design agent, the implement workflow, and /challenge,
+  /sweep, /outcome, /dr, /scribe.
 
 ### Option 2: Manual Installation (Full Configuration)
 

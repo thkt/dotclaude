@@ -18,9 +18,8 @@ const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".
 /** DR-0114's absolute bun interpreter path. */
 export const SHEBANG: string = "#!/opt/homebrew/bin/bun";
 
-/** The line the hooks/ checks treat as stale. `#!/usr/bin/env node` is not on this list: the two
- * tracked .ts files carrying it, skills/_lib/harness_hash.ts and workflows/_lib/gate.ts, sit
- * outside hooks/ and never enter these checks' subject set. */
+/** The line the hooks/ checks treat as stale. `#!/usr/bin/env node` is not on this list: the
+ * tracked .ts files carrying it sit outside hooks/ and never enter these checks' subject set. */
 export const STALE_SHEBANG: string = "#!/usr/bin/env bun";
 
 const EXEC_MODE = "100755";
