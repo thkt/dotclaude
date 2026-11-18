@@ -1,7 +1,7 @@
-// The ast-grep introduction is reachable only while three pieces stay wired: settings.json grants
-// Bash(ast-grep *), rules/development/TOOLS.md loads in every session to send a search to the
-// skill, and the use-cli-ast-grep skill grants the command it wraps. Each piece can break on its
-// own with nothing reported at run time, so each has its own test.
+// The ast-grep introduction is reachable only while two pieces stay wired: settings.json grants
+// Bash(ast-grep *), and rules/development/TOOLS.md loads in every session to send a search by
+// shape to the command. Each piece can break on its own with nothing reported at run time, so
+// each has its own test.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -30,13 +30,10 @@ test("settings.json grants ast-grep in the space form every other entry in permi
   assert.equal(names[i + 1], "bfs", "ast-grep sorts right before bfs");
 });
 
-test("rules/development/TOOLS.md carries no paths frontmatter, so it loads in every session", async () => {
-  const doc = await readFile(join(root, "rules", "development", "TOOLS.md"), "utf8");
-  assert.ok(!/^paths:/m.test(doc), "TOOLS.md declares no paths: key, so nothing gates its load");
-});
-
-test("the use-cli-ast-grep skill declares Bash(ast-grep:*) in allowed-tools and sets user-invocable to false", async () => {
-  const doc = await readFile(join(root, "skills", "use-cli-ast-grep", "SKILL.md"), "utf8");
-  assert.match(doc, /^allowed-tools:.*Bash\(ast-grep:\*\)/m, "allowed-tools grants Bash(ast-grep:*)");
-  assert.match(doc, /^user-invocable:\s*false\s*$/m, "user-invocable is false");
+test("rules/development/TOOLS.md carries no paths frontmatter on either side, so it loads in every session", async () => {
+  for (const prefix of ["", ".ja"]) {
+    const rel = join(prefix, "rules", "development", "TOOLS.md");
+    const doc = await readFile(join(root, rel), "utf8");
+    assert.ok(!/^paths:/m.test(doc), `${rel} declares no paths: key, so nothing gates its load`);
+  }
 });

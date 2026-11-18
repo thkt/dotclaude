@@ -131,7 +131,7 @@ test("every agent naming a bundled asset pairs the plugin form with the fallback
 // up as a prompt that did not appear.
 test("no skill grants Bash without narrowing it to the commands it names", async () => {
   const files = instructionFiles().filter((f) => f.rel.endsWith("/SKILL.md"));
-  assert.ok(files.length >= 20, `the number scanned (${files.length})`);
+  assert.ok(files.length >= 10, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
     const grant = (await readFile(full, "utf8")).match(/^allowed-tools:.*$/m)?.[0] ?? "";
     assert.doesNotMatch(grant, /(^|\s)Bash(\s|$)/, `${lang}: ${rel} grants Bash unnarrowed`);
@@ -165,7 +165,7 @@ test("no skill pins a model in its frontmatter", async () => {
   assert.equal(pinsModel("---\nname: x\n---\nmodel: opus\n"), false, "a body line is not a pin");
 
   const files = instructionFiles().filter((f) => /^skills\/[^/]+\/SKILL\.md$/.test(f.rel));
-  assert.ok(files.length >= 20, `the number scanned (${files.length})`);
+  assert.ok(files.length >= 10, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
     const text = await readFile(full, "utf8");
     assert.ok(frontmatter(text), `${lang}: ${rel} has a readable frontmatter`);
@@ -174,16 +174,16 @@ test("no skill pins a model in its frontmatter", async () => {
 });
 
 // A comma list of trigger words matches only the words a user types, so a request phrased any
-// other way misses the skill. These three state the intent as a sentence instead.
+// other way misses the skill. These two state the intent as a sentence instead.
 const SENTENCE_END = /[。.]$/;
 const whenToUse = (text: string) => frontmatter(text).match(/^when_to_use: (.*)$/m)?.[1] ?? "";
 
-test("the when_to_use of use-cli-scout, use-cli-codegraph, and sweep is a sentence, not a list of phrases", async () => {
+test("the when_to_use of use-cli-scout and sweep is a sentence, not a list of phrases", async () => {
   const oldList = "総点検, 全体を見直して, ホットパス, sweep, codebase scan";
   assert.doesNotMatch(oldList, SENTENCE_END, "a comma list of phrases is rejected");
   assert.match("A request to sweep the codebase.", SENTENCE_END, "a sentence is accepted");
 
-  for (const skill of ["use-cli-scout", "use-cli-codegraph", "sweep"]) {
+  for (const skill of ["use-cli-scout", "sweep"]) {
     for (const prefix of ["", ".ja/"]) {
       const rel = `${prefix}skills/${skill}/SKILL.md`;
       const value = whenToUse(await readFile(join(root, rel), "utf8"));

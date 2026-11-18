@@ -4,19 +4,18 @@ CLI tool > built-in equivalent. For web fetch and search, reach for the `use-cli
 
 ## Code search
 
-The two skills carry the parsers and the two Bash tools carry the text. Reaching for `ugrep` on a question about shape returns lines that read alike and miss the ones written differently, and reaching for `use-cli-ast-grep` on a string search parses files to find what a literal match already had.
+`ast-grep` carries the parser and the two text tools carry the text. Reaching for `ugrep` on a question about shape returns lines that read alike and miss the ones written differently, and reaching for `ast-grep` on a string search parses files to find what a literal match already had.
 
-| Task                                            | Use                       | When                                        |
-| ----------------------------------------------- | ------------------------- | ------------------------------------------- |
-| Match or rewrite by AST shape, syntax-tree unit | `use-cli-ast-grep` skill  | A language ast-grep parses                  |
-| Callers, callees, change impact for a symbol    | `use-cli-codegraph` skill | A language codegraph indexes                |
-| Literal string or regex content search          | `ugrep` (Bash)            | Any language, and any file the parsers miss |
-| File or directory lookup by name                | `bfs` (Bash)              | Any tree                                    |
-| Past session search                             | `use-cli-recall` skill    | Any language                                |
+| Task                                            | Use                    | When                                         |
+| ----------------------------------------------- | ---------------------- | -------------------------------------------- |
+| Match or rewrite by AST shape, syntax-tree unit | `ast-grep` (Bash)      | A language ast-grep parses                   |
+| Literal string or regex content search          | `ugrep` (Bash)         | Any language, and any file the parser misses |
+| File or directory lookup by name                | `bfs` (Bash)           | Any tree                                     |
+| Past session search                             | `use-cli-recall` skill | Any language                                 |
 
-## Parallel execution
+## First contact
 
-On first contact with a module or when starting a BACKLOG task, run `use-cli-codegraph` and `use-cli-recall` in parallel. See each skill for details.
+On first contact with a module or when starting a BACKLOG task, run `use-cli-recall`. See the skill for details.
 
 ## Why this file has no frontmatter
 

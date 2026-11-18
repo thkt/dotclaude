@@ -8,7 +8,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 
 このリポジトリは Claude AI のパーソナル設定を含み、以下を提供する。
 
-- 体系的な開発ワークフローのためのカスタムスラッシュコマンド (12 skills)
+- 体系的な開発ワークフローのためのカスタムスラッシュコマンド (9 skills)
 - 設計案に反論する専門 AI エージェント (1 agent)
 - AI 動作のコア原則と開発のベストプラクティス
 - 品質パイプラインバイナリ 6 本。いずれも未配線
@@ -24,7 +24,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 │   ├── core/             # AI 動作のコア原則
 │   ├── conventions/      # ドキュメント規約
 │   └── development/      # 開発パターン・方法論
-├── skills/               # スキルベースのナレッジモジュール (12 skills)
+├── skills/               # スキルベースのナレッジモジュール (9 skills)
 ├── agents/               # 専門 AI エージェント (1 agent)
 │   └── critics/          # 設計案への反論 (critic-design)
 ├── docs/                 # 設計ドキュメント・ガイド (decisions/ に DR)
@@ -60,7 +60,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 
 #### 利用可能なプラグイン
 
-- build: 自己完結の開発ワークフロー一式。install 時にリポジトリ全体を一度 clone し、全 skill/agent/workflow を build: namespace でロードする。`/scoping` で要求を整理して Issue に合意し、その Issue を `/implement` に渡す。`/implement` は implement workflow で実装から検証を経て draft PR と CI 確認まで進める。同梱対象は critic-design エージェントと implement workflow。`/challenge` `/sweep` `/outcome` `/dr` `/scribe` の 5 skill も含む。
+- build: 自己完結の開発ワークフロー一式。install 時にリポジトリ全体を一度 clone し、全 skill/agent/workflow を build: namespace でロードする。`/scoping` で要求を整理して Issue に合意し、その Issue を `/implement` に渡す。`/implement` は implement workflow で実装から検証を経て draft PR と CI 確認まで進める。同梱対象は critic-design エージェントと implement workflow。`/sweep` `/outcome` `/dr` `/scribe` の 4 skill も含む。
 
 ### Option 2: 手動インストール (フル設定)
 
@@ -157,13 +157,12 @@ brew tap thkt/tap
 
 ### 外部 CLI ツール (任意)
 
-一部のコマンドはデータソース連携のために外部 CLI を使う。codegraph はリポジトリごとに `codegraph init` で `.codegraph/` を作ってから使う。
+一部のコマンドはデータソース連携のために外部 CLI を使う。
 
 | ツール      | 利用コマンド                          | 用途                                                              | インストール                       |
 | ----------- | ------------------------------------- | ----------------------------------------------------------------- | ---------------------------------- |
 | `gh`        | `/scoping`, `/implement`              | GitHub API アクセス                                               | `brew install gh && gh auth login` |
 | `scout`     | `/scoping`, use-cli-scout skill       | Web 検索、ページ取得、GitHub リポジトリ探索、Slack メッセージ取得 | `brew install thkt/tap/scout`      |
-| `codegraph` | use-cli-codegraph skill               | シンボル単位の構造クエリ (呼び出し元、影響範囲)                   | `npm i -g @colbymchenry/codegraph` |
 
 Slack 読み込み: `scout fetch <slack-url>` で任意の Slack メッセージ/スレッド URL を直接読み込む。scout が設定済みなら追加設定は不要。
 

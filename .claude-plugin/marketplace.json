@@ -15,7 +15,7 @@
     {
       "name": "build",
       "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping (optionally after /challenge), then hand the Issue to /implement, which carries it through the implement workflow to implementation, verification, a draft PR, and CI confirmation. Bundles the critic-design agent, the implement workflow, and /sweep, /outcome, /dr, /scribe.",
+      "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping, then hand the Issue to /implement, which carries it through the implement workflow to implementation, verification, a draft PR, and CI confirmation. Bundles the critic-design agent, the implement workflow, and /sweep, /outcome, /dr, /scribe.",
       "version": "4.1.0",
       "author": {
         "name": "thkt",

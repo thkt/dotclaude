@@ -2,7 +2,7 @@
 name: dr
 description: Create a Decision Record (DR) in MADR v4 format with automatic numbering. Its subject is not limited to architecture; it covers every decision that is hard to reverse and surprising without context.
 when_to_use: DR作成, ADR作成, 技術決定, アーキテクチャ決定, decision record
-allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(git:*) Bash(gh pr:*) Bash(gh repo view:*) Bash(cat:*)
+allowed-tools: Read Write Edit LS Bash(mkdir:*) Bash(${CLAUDE_SKILL_DIR}/scripts/*) Agent AskUserQuestion Bash(ugrep:*) Bash(bfs:*) Bash(git:*) Bash(gh pr:*) Bash(gh repo view:*) Bash(cat:*)
 argument-hint: "[decision title]"
 ---
 
@@ -32,7 +32,7 @@ Proceed to the process only when all three conditions below hold. When one is mi
 | 2    | Type      | Determine the decision type by the decision's intent and pick its recommended topics (§ Decision Type)                                                                                             |
 | 3    | Sources   | Gather project docs, issues, external resources                                                                                                                                                    |
 | 4    | Draft     | Copy ${CLAUDE_SKILL_DIR}/templates/madr-template.md into `dr_dir` under the name `filename` and fill it from what was gathered (§ YAML Frontmatter)                                                |
-| 5    | Challenge | Only for a DR that carves an exception into an existing DR's principle or supersedes one, run `/challenge` and record the verdict and the condition it holds under as one line in More Information |
+| 5    | Critique  | Only for a DR that carves an exception into an existing DR's principle or supersedes one, call the critic-design agent with the draft and record the verdict and the condition it holds under as one line in More Information |
 | 6    | Validate  | Run ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE". exit 0 passes. What failed lands in `errors[]`, and `warnings[]` is advisory                                                            |
 | 7    | Index     | Run ${CLAUDE_SKILL_DIR}/scripts/update-index.ts to regenerate `dr_dir/README.md`                                                                                                                   |
 | 8    | Publish   | Read ${CLAUDE_SKILL_DIR}/../_lib/publish.md and open a draft PR with the values in § Publish Values                                                                                                |

@@ -9,7 +9,7 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows (12 skills)
+- Custom slash commands for systematic development workflows (9 skills)
 - A specialized AI agent that challenges design proposals (1 agent)
 - Core AI operation principles and development best practices
 - Six quality pipeline binaries, none of them wired
@@ -26,7 +26,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── core/             # Core AI operation principles
 │   ├── conventions/      # Documentation conventions
 │   └── development/      # Development patterns & methodologies
-├── skills/               # Skill-based knowledge modules (12 skills)
+├── skills/               # Skill-based knowledge modules (9 skills)
 ├── agents/               # Specialized AI agents (1 agent)
 │   └── critics/          # Design proposal challenger (critic-design)
 ├── docs/                  # Design docs & guides (DRs under decisions/)
@@ -68,8 +68,8 @@ install specific workflow sets:
   build: namespace. Settle the requirements into an agreed Issue with /scoping,
   then hand the Issue to /implement, which carries it through the implement
   workflow to implementation, verification, a draft PR, and CI confirmation.
-  Bundles the critic-design agent, the implement workflow, and /challenge,
-  /sweep, /outcome, /dr, /scribe.
+  Bundles the critic-design agent, the implement workflow, and /sweep,
+  /outcome, /dr, /scribe.
 
 ### Option 2: Manual Installation (Full Configuration)
 
@@ -175,14 +175,12 @@ See [thkt/tap](https://github.com/thkt/homebrew-tap) for details.
 
 ### External CLI Tools (Optional)
 
-Some commands use external CLI tools for data source integration. codegraph
-needs `codegraph init` per repository to create `.codegraph/` before use.
+Some commands use external CLI tools for data source integration.
 
 | Tool        | Required By                           | Purpose                                                      | Install                            |
 | ----------- | ------------------------------------- | ------------------------------------------------------------ | ---------------------------------- |
 | `gh`        | `/scoping`, `/implement`              | GitHub API access                                            | `brew install gh && gh auth login` |
 | `scout`     | `/scoping`, use-cli-scout skill       | Web search, page fetch, GitHub repo exploration, Slack fetch | `brew install thkt/tap/scout`      |
-| `codegraph` | use-cli-codegraph skill               | Symbol-level structure queries (callers, impact)             | `npm i -g @colbymchenry/codegraph` |
 
 **Slack reading**: `scout fetch <slack-url>` reads any Slack message/thread URL
 directly. No additional setup needed if scout is configured.
