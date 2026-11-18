@@ -262,10 +262,12 @@ export function createHost({
   const withSlot = makeSlots(concurrency);
   // A relay's command can read data from the prompt of the agent that runs it (write-body.ts reads
   // the PR body that way, DR-0125). There is no agent here, so the prompt is stored where such a
-  // command looks: as the first line of a transcript under the directory RELAY_PROJECTS names.
-  const transcripts = join(beside, "projects", "claude-run", "host", "subagents");
+  // command looks: as the first line of a transcript under the directory RELAY_PROJECTS names. Only the relay's
+  // steps get RELAY_PROJECTS. Set in this process's environment, it reached the child sessions and a test's command
+  // run under another HOME, and that command no longer looked under the HOME (#808).
+  const projects = join(beside, "projects");
+  const transcripts = join(projects, "claude-run", "host", "subagents");
   mkdirSync(transcripts, PRIVATE_DIR);
-  process.env.RELAY_PROJECTS = join(beside, "projects");
   const sessions = join(beside, "sessions");
   mkdirSync(sessions, PRIVATE_DIR);
   // A resumed run numbers its files after the ones the stopped run left.
@@ -285,7 +287,7 @@ export function createHost({
       PRIVATE_FILE,
     );
     const started = Date.now();
-    const { fields } = await runSpec(spec);
+    const { fields } = await runSpec(spec, 0, { ...spec.defaults }, undefined, undefined, { RELAY_PROJECTS: projects });
     const shown = publicFields(fields);
     summary.relays += 1;
     summary.relay_ms += Date.now() - started;

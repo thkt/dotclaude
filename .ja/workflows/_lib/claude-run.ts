@@ -257,10 +257,11 @@ export function createHost({
   const withSlot = makeSlots(concurrency);
   // 中継のコマンドは、それを実行する agent の prompt からデータを読むことがある (write-body.ts は PR 本文を
   // そう読む、DR-0125)。ここには agent がいないので、そのコマンドが探す場所に prompt を置く。RELAY_PROJECTS が
-  // 指すディレクトリの下の、transcript の最初の行である。
-  const transcripts = join(beside, "projects", "claude-run", "host", "subagents");
+  // 指すディレクトリの下の、transcript の最初の行である。RELAY_PROJECTS は中継の step にだけ渡す。このプロセスの環境に
+  // 置くと、子 session と、別の HOME を渡すテストのコマンドまで受け継ぎ、そのコマンドが HOME の下を探さなくなる (#808)。
+  const projects = join(beside, "projects");
+  const transcripts = join(projects, "claude-run", "host", "subagents");
   mkdirSync(transcripts, PRIVATE_DIR);
-  process.env.RELAY_PROJECTS = join(beside, "projects");
   const sessions = join(beside, "sessions");
   mkdirSync(sessions, PRIVATE_DIR);
   // 再開した実行は、止まった実行が残したファイルの続きから番号を振る。
@@ -280,7 +281,7 @@ export function createHost({
       PRIVATE_FILE,
     );
     const started = Date.now();
-    const { fields } = await runSpec(spec);
+    const { fields } = await runSpec(spec, 0, { ...spec.defaults }, undefined, undefined, { RELAY_PROJECTS: projects });
     const shown = publicFields(fields);
     summary.relays += 1;
     summary.relay_ms += Date.now() - started;

@@ -124,9 +124,13 @@ const endGroupOnSignal = () => {
   }
 };
 
-const runStep = (step: Step): Promise<Ran> =>
+const runStep = (step: Step, env: Record<string, string>): Promise<Ran> =>
   new Promise((resolve) => {
-    const child = spawn("/bin/sh", ["-c", step.sh], { cwd: step.cwd, detached: true });
+    const child = spawn("/bin/sh", ["-c", step.sh], {
+      cwd: step.cwd,
+      detached: true,
+      env: { ...process.env, ...env },
+    });
     const group = child.pid ?? 0;
     if (group) runningGroups.add(group);
     const ran: Ran = { exit: -1, timedOut: false, stdout: "", combined: "" };
@@ -178,20 +182,21 @@ const holds = (when: Fields | undefined, fields: Fields): boolean =>
   !when || Object.entries(when).every(([key, value]) => fields[key] === value);
 
 // from 番目の step から実行して欄を返す。fits が「呼び出し側の残り時間に収まらないかもしれない」と答えた step の
-// 手前で止まり、その番号を返す。
+// 手前で止まり、その番号を返す。env は、各 step のプロセスが受け継ぐ環境に足す変数。host のプロセスの環境は書き換えない。
 export const runSpec = async (
   spec: Spec,
   from = 0,
   seed: Fields = { ...spec.defaults },
   fits: (step: Step, index: number) => boolean = () => true,
   ran: (next: number, fields: Fields) => void = () => {},
+  env: Record<string, string> = {},
 ): Promise<{ fields: Fields; next: number }> => {
   const fields = { ...seed };
   for (let index = from; index < spec.steps.length; index += 1) {
     const step = spec.steps[index];
     if (!holds(step.when, fields)) continue;
     if (!fits(step, index)) return { fields, next: index };
-    const result = await runStep(step);
+    const result = await runStep(step, env);
     for (const [field, source] of Object.entries(step.set ?? {})) fields[field] = pick(result, source);
     for (const [field, source] of Object.entries(step.append ?? {}))
       fields[field] = [...((fields[field] as number[] | undefined) ?? []), pick(result, source) as number];
