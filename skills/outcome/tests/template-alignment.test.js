@@ -17,14 +17,10 @@ const rules = {
   ja: join(root, ".ja", "rules", "core", "OUTCOME.md"),
   en: join(root, "rules", "core", "OUTCOME.md"),
 };
-const asserts = {
-  ja: join(root, ".ja", "workflows", "assert.js"),
-  en: join(root, "workflows", "assert.js"),
-};
 // The script is an identical copy on both sides, so one path covers the pair.
 const script = join(root, "skills", "outcome", "scripts", "validate-outcome.ts");
 
-// assert's bootstrap and challenge name the headings of a generated OUTCOME.md as their digest
+// challenge names the headings of a generated OUTCOME.md as their digest
 // targets. A wobbling spelling returns an empty digest and downstream treats the outcome as
 // absent.
 const HEADINGS = [
@@ -92,44 +88,14 @@ test("the emptiness word is TBD across the template, SKILL.md, and the script", 
   );
 });
 
-// The wiring that leaves assert's emptiness check to the script. Reverting the prompt to eyeing
-// TBD itself would split /outcome's criteria from assert's.
-test("assert.js decides whether an outcome exists from validate-outcome.ts's state", () => {
-  for (const [lang, path] of Object.entries(asserts)) {
-    const src = readFileSync(path, "utf8");
-    // It is assembled through bundled(), so the match runs on the relative path argument rather
-    // than a literal path. Resolving under both the dev tree and a plugin distribution is
-    // bundled's responsibility.
-    assert.match(
-      src,
-      /OUTCOME_VALIDATOR = bundled\("skills\/outcome\/scripts\/validate-outcome\.ts"\)/,
-      `${lang}: it carries the script path`,
-    );
-    assert.match(src, /\$\{OUTCOME_VALIDATOR\}/, `${lang}: the bootstrap prompt runs the script`);
-    assert.doesNotMatch(
-      src,
-      /all items are TBD|全項 TBD/,
-      `${lang}: no eyeball check for TBD remains`,
-    );
-  }
-});
-
-// The words naming the digest targets. assert.js, challenge, and validate-outcome.ts's required
-// sections all name the same three. Reverting one to a parent section name such as Outcome state
+// The words naming the digest targets. challenge and validate-outcome.ts's required sections
+// both name the same three. Reverting one to a parent section name such as Outcome state
 // mixes the opening sentence's aspirational wording into the digest.
 test("the digest targets are Behavior, Non-goals, and Constraints everywhere", () => {
   const challenge = {
     ja: join(root, ".ja", "skills", "challenge", "SKILL.md"),
     en: join(root, "skills", "challenge", "SKILL.md"),
   };
-  for (const [lang, path] of Object.entries(asserts)) {
-    const src = readFileSync(path, "utf8");
-    assert.match(
-      src,
-      /Behavior \/ Non-goals \/ Constraints/,
-      `${lang}: assert.js's digest wording`,
-    );
-  }
   for (const [lang, path] of Object.entries(challenge)) {
     const doc = readFileSync(path, "utf8");
     assert.match(doc, /Behavior \/ Non-goals \/ Constraints/, `${lang}: challenge's outcome_ref`);

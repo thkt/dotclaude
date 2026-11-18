@@ -1,5 +1,6 @@
 ---
-status: "accepted"
+status: "superseded by DR-0129"
+date: "2026-11-18"
 ---
 
 # ADR-0012: Flatten Audit Pipeline - Remove Compound Reviewers

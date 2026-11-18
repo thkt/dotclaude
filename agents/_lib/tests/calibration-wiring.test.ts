@@ -107,34 +107,3 @@ test("the code examples match between ja and en", () => {
     ja.forEach((block: string, i: number) => assert.equal(block, en[i], `${file}: code block ${i + 1} matches`));
   }
 });
-
-// A routed reviewer's findings are validated against audit.js's findingsSchema, whose severity
-// enum is the one finding-schema.md § Base Fields names (#426). A reviewer outside ROUTING
-// answers to another caller's schema, so the rule does not reach it. Where the row sits goes
-// unchecked: conformance carries it in its output template rather than an Output table.
-const routedReviewers = () => {
-  const source = readFileSync(join(root, "workflows", "audit.js"), "utf8");
-  const block = source.match(/const ROUTING = \{([\s\S]*?)\n\};/);
-  assert.ok(block, "audit.js declares a ROUTING table");
-  return new Set([...block[1].matchAll(/"([a-z-]+)"/g)].map((m) => m[1]));
-};
-
-// reviewer-resilience takes its severity from blast radius scoring, so either names the scale.
-const SEVERITY_ROW = /^\|\s*(Severity|blast_radius)\s*\|/m;
-
-test("every reviewer audit routes to states the severity scale it answers on", () => {
-  const offenders = [];
-  const routed = routedReviewers();
-  for (const lang of Object.keys(sides)) {
-    for (const name of routed) {
-      const file = join(sides[lang as keyof typeof sides].rev, `reviewer-${name}.md`);
-      const doc = readFileSync(file, "utf8");
-      if (!SEVERITY_ROW.test(doc)) offenders.push(`${lang}: reviewer-${name}`);
-    }
-  }
-  assert.deepEqual(
-    offenders,
-    [],
-    `a routed reviewer must name its severity scale:\n${offenders.join("\n")}`,
-  );
-});

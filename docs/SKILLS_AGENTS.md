@@ -49,8 +49,7 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 
 ### Categories
 
-`/audit` and `/polish` are workflows under `workflows/*.js`, not Skills. The
-User-invocable row lists all 7 current Skills.
+The User-invocable row lists all 7 current Skills.
 
 | Category       | Skills                                                                                                                          | Purpose                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |

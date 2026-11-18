@@ -1,6 +1,6 @@
 ---
 name: sweep
-description: Sweep the whole codebase through one lens, fix what is certain, and return the rest as a file:line list. Do NOT use to review a diff (use audit or polish).
+description: Sweep the whole codebase through one lens, fix what is certain, and return the rest as a file:line list.
 when_to_use: 総点検, 全体を見直して, ホットパス, 暗黙の状態機械, モジュールを深く, 過剰な防御, 不要なコード, テストの整理, sweep, codebase scan
 argument-hint: "<lens: async | state | modules | defense | dead | tests> [target path]"
 ---

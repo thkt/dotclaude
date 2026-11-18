@@ -5,8 +5,7 @@
 // the .ts port now lives under skills/scribe/scripts/, DR-0128) are retired in favor of their
 // .ts ports (established by the preceding units). This file guards the retirement
 // itself: no tracked file still names either as a word, the EN / .ja outcome and scribe
-// SKILL.md and the EN / .ja assert.js invoke the .ts script by path, and no SKILL.md grants
-// Bash(python3:*).
+// SKILL.md invoke the .ts script by path, and no SKILL.md grants Bash(python3:*).
 //
 // Same shape as workflows/_lib/tests/record-retirement.test.ts, which guards its own
 // retirement: offendersAmong/trackedFiles/assertDetectsAndMisses from
@@ -76,11 +75,6 @@ function extractPathToken(source: string, tokenPattern: RegExp): string | null {
   return m ? m[0] : null;
 }
 
-function extractBundledArg(source: string): string | null {
-  const m = source.match(/bundled\("(skills\/outcome\/scripts\/validate-outcome\.(?:ts|py))"\)/);
-  return m ? m[1] : null;
-}
-
 interface ScriptInvocationSource {
   label: string;
   path: string;
@@ -112,17 +106,11 @@ const SCRIPT_INVOCATION_SOURCES: ScriptInvocationSource[] = [
     extract: (s) =>
       extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/find-prior-research\.(?:ts|py)/),
   },
-  { label: "workflows/assert.js", path: "workflows/assert.js", extract: extractBundledArg },
-  {
-    label: ".ja/workflows/assert.js",
-    path: ".ja/workflows/assert.js",
-    extract: extractBundledArg,
-  },
 ];
 
 test(
-  "T-188 the EN and .ja outcome and scribe SKILL.md and the EN and .ja " +
-    "assert.js each invoke the .ts script by path and none names the .py, read from source text",
+  "T-188 the EN and .ja outcome and scribe SKILL.md each invoke the .ts script by path " +
+    "and none names the .py, read from source text",
   () => {
     for (const { label, path, extract } of SCRIPT_INVOCATION_SOURCES) {
       const source = readFileSync(join(REPO_ROOT, path), "utf8");

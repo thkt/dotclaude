@@ -5,7 +5,8 @@
 // becomes /scoping then /implement. /research and explorer-feature, its one caller's agent, go in a
 // later change (#803) after the earlier-report search moves to /scribe and the verification rules to
 // /scoping. DR-0129 then retires /ablate, /census and /transcribe with the _lib helpers only /ablate
-// used (#805). This file guards the removal: the removed paths stay gone on
+// used (#805), and the audit, assert, polish, shake and adrift workflows with workflows/_lib/gate.ts
+// and the tests that read only them (#806). This file guards the removal: the removed paths stay gone on
 // both trees, and the skill, agent, rule, plugin, README and catalog prose hands no work to a
 // removed name.
 //
@@ -57,6 +58,25 @@ const REMOVED_PATHS = [
   "skills/_lib/tests/_tree-fixture.ts",
   "skills/_lib/tests/fixtures/harness-elements-cases.json",
   "workflows/_lib/tests/transcribe-retirement.test.ts",
+  "workflows/audit.js",
+  "workflows/audit",
+  "workflows/assert.js",
+  "workflows/assert",
+  "workflows/polish.js",
+  "workflows/polish",
+  "workflows/shake.js",
+  "workflows/shake",
+  "workflows/adrift.js",
+  "workflows/adrift",
+  "workflows/_lib/gate.ts",
+  "workflows/_lib/tests/gate.test.ts",
+  "workflows/_lib/tests/gate-exports.test.ts",
+  "workflows/_lib/tests/gate-retirement.test.ts",
+  "workflows/_lib/tests/assert-scripts-retirement.test.ts",
+  "workflows/_lib/tests/snapshot-retirement.test.ts",
+  "workflows/_lib/tests/record-retirement.test.ts",
+  "workflows/tests/gate-flags-ssot.test.js",
+  "docs/wiki/gate-checks-read-whole-output.md",
 ];
 
 test("no path the build-path retirement removed exists on the English side or under .ja/", () => {
@@ -74,11 +94,12 @@ const SCANNED_FILE =
 // A slash command counts only after a line start, whitespace, a backtick or an opening bracket,
 // and only when no letter, digit, slash or hyphen follows. The brackets include the full-width
 // ones .ja/ prose uses, such as `（/think）`, `「/fix」` and `【/pr】`, and `[` for a Markdown link
-// `[/pr](...)`. So `PR/issue`, `actions/checkout`, `skills/fix/`, `/preview-x`, the directory
-// `docs/research/` and the link `../research/name.md` stay out, and `gh issue` / `git commit` carry
-// no slash at all.
+// `[/pr](...)`, and `"` for a quoted label such as the Mermaid node `A["/audit"]`. So `PR/issue`,
+// `actions/checkout`, `skills/fix/`, `/preview-x`, the directory `docs/research/`, the link
+// `../research/name.md` and the import `node:assert/strict` stay out, and `gh issue` /
+// `git commit` / `assert.equal` carry no slash at all.
 const RETIRED_COMMAND =
-  /(^|[\s`([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr|research|ablate|census|transcribe)(?![A-Za-z0-9/-])/m;
+  /(^|[\s`"([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr|research|ablate|census|transcribe|audit|assert|polish|shake|adrift)(?![A-Za-z0-9/-])/m;
 
 const RETIRED_NAMES = [
   "use-workflow-pageshot",
@@ -93,6 +114,12 @@ const RETIRED_NAMES = [
   "skills/ablate",
   "skills/census",
   "skills/transcribe",
+  "audit workflow",
+  "workflows/audit",
+  "workflows/assert",
+  "workflows/polish",
+  "workflows/shake",
+  "workflows/adrift",
 ];
 
 function namesRetiredRoute(content: string): boolean {
@@ -136,6 +163,18 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "Read skills/ablate/SKILL.md for the arms.",
     "Read skills/census/SKILL.md for the criteria.",
     "Read skills/transcribe/SKILL.md for the converter.",
+    "Review the draft with /audit.",
+    "Run `/assert` before merging.",
+    "Clean it up (/polish) afterward.",
+    "Find the flaky test with /shake.",
+    "「/adrift」で DR との乖離を見る。",
+    'PR["draft PR"] --> A["/audit · /polish"]',
+    "Use the audit workflow for code review findings.",
+    "Edit workflows/audit.js to add a reviewer.",
+    "Read workflows/assert.js for the verdict.",
+    "Run workflows/polish.js on the diff.",
+    "Read workflows/shake.js for the run counts.",
+    "Read workflows/adrift.js for the routing.",
   ];
   const replaced = [
     "Plan it with /scoping first.",
@@ -171,6 +210,18 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "Read skills/scoping/SKILL.md for the arms.",
     "Read skills/scoping/SKILL.md for the criteria.",
     "Read skills/scoping/SKILL.md for the converter.",
+    "Review the draft with /implement.",
+    "Run `/implement` before merging.",
+    "Clean it up (/implement) afterward.",
+    "Find the flaky test with /implement.",
+    "「/implement」で DR との乖離を見る。",
+    'PR["draft PR"] --> A["/implement"]',
+    "Use the implement workflow for code review findings.",
+    "Edit workflows/implement.js to add a reviewer.",
+    "Read workflows/implement.js for the verdict.",
+    "Run workflows/implement.js on the diff.",
+    "Read workflows/implement.js for the run counts.",
+    "Read workflows/implement.js for the routing.",
   ];
   for (const line of flagged) {
     assert.equal(namesRetiredRoute(line), true, `flagged: ${line}`);
@@ -195,12 +246,16 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "`docs/research/` に置く。",
     "Do not transcribe each question or create a separate canonical source.",
     "the /census-x flag",
+    'import assert from "node:assert/strict";',
+    "assert.equal(actual, expected);",
+    "Write the report under docs/audit/ in the target repo.",
+    "the /polish-x flag",
   ]) {
     assert.equal(namesRetiredRoute(line), false, `not a slash command: ${line}`);
   }
 });
 
-test("no skill, agent, rule, plugin manifest, README or catalog names a retired command, agent, hook, skill path or the build workflow", () => {
+test("no skill, agent, rule, plugin manifest, README or catalog names a retired command, agent, hook, skill path or workflow", () => {
   const scanned = trackedFiles(REPO_ROOT).filter((path) => SCANNED_FILE.test(path));
   assert.ok(scanned.includes("README.md"), "the scan reaches README.md");
   assert.ok(scanned.includes(".ja/docs/COMMANDS.md"), "the scan reaches the .ja catalog");
@@ -246,6 +301,34 @@ test("each DR the build-path retirement replaces carries the status superseded b
       /^status: "?([^"\n]*)"?$/m,
     )?.[1];
     assert.equal(status, "superseded by DR-0128", `DR-${number} status`);
+  }
+});
+
+const SUPERSEDED_BY_DR_0129 = [
+  "0011",
+  "0012",
+  "0035",
+  "0043",
+  "0046",
+  "0047",
+  "0071",
+  "0075",
+  "0079",
+  "0095",
+  "0096",
+  "0104",
+];
+
+test("each DR the workflow retirement replaces carries the status superseded by DR-0129", () => {
+  const decisions = join(REPO_ROOT, "docs", "decisions");
+  const names = readdirSync(decisions);
+  for (const number of SUPERSEDED_BY_DR_0129) {
+    const file = names.find((name) => name.startsWith(`${number}-`));
+    assert.ok(file, `DR-${number} exists`);
+    const status = readFileSync(join(decisions, file as string), "utf8").match(
+      /^status: "?([^"\n]*)"?$/m,
+    )?.[1];
+    assert.equal(status, "superseded by DR-0129", `DR-${number} status`);
   }
 });
 

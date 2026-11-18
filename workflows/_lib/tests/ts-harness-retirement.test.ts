@@ -1,13 +1,13 @@
 /// <reference types="node" />
 // run-workflow.js, codex-run.js and tests/_brace.js are retired once their TypeScript
 // replacements (run-workflow.ts, codex-run.ts, tests/_brace.ts) carry the harness. This file
-// guards the retirement itself, the same way workflows/_lib/tests/gate-retirement.test.ts guards
-// gate.py's: no tracked file outside docs/decisions/ and docs/research/ (kept as
+// guards the retirement itself, the same way workflows/_lib/tests/pr-body-retirement.test.ts guards
+// its own retired script: no tracked file outside docs/decisions/ and docs/research/ (kept as
 // historical record, per docs/wiki/retire-rename-procedure.md) still names a retired path. The
 // walk and the historical-directory exclusions are assertNoResidualReferences
-// (workflows/_lib/tests/_retirement.ts), shared with gate-retirement.test.ts and
-// record-retirement.test.ts, as are the tracked-file list and the positive control; this file
-// keeps only its retired paths and their predicate.
+// (workflows/_lib/tests/_retirement.ts), whose tracked-file list and positive control
+// pr-body-retirement.test.ts shares too; this file keeps only its retired paths and their
+// predicate.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -18,7 +18,7 @@ import { assertDetectsAndMisses, assertNoResidualReferences } from "./_retiremen
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
-const GATE_RETIREMENT_PATH = join(REPO_ROOT, "workflows", "_lib", "tests", "gate-retirement.test.ts");
+const PR_BODY_RETIREMENT_PATH = join(REPO_ROOT, "workflows", "_lib", "tests", "pr-body-retirement.test.ts");
 
 // The three retired paths T-042 and T-043 used to check as two separate tests (one path, then a
 // loop of two); T-053, T-430 and T-432 drive all three through this one list instead.
@@ -60,23 +60,25 @@ test(
   () => {
     const read = (path: string): string => readFileSync(join(REPO_ROOT, path), "utf8");
 
-    // gate-retirement.test.ts's own scenario, replayed here through the shared helper under its
-    // own self-exclusion: must stay clean. Built from parts rather than written as one literal
-    // substring, or T-014's own scan (this file is outside its exclusion list) would flag this
+    // pr-body-retirement.test.ts's own scenario, replayed here through the shared helper under
+    // its own exclusions: must stay clean. The name is built from parts rather than written as
+    // one literal, or T-129's own scan (this file is outside its exclusion list) would flag this
     // file as a new offender.
-    const gateRetiredPath = ["_lib", "gate.py"].join("/");
-    const gateSelfPath = "workflows/_lib/tests/gate-retirement.test.ts";
+    const prBodyRetiredName = ["pr-body", "py"].join(".");
+    const prBodyPattern = new RegExp(`(^|[^\\w.-])${prBodyRetiredName.replace(".", "\\.")}\\b`);
+    const prBodySelfPath = "workflows/_lib/tests/pr-body-retirement.test.ts";
+    const prBodyHistoricalFile = "docs/wiki/pr-tail-translate-prose-only.md";
     assert.doesNotThrow(
       () =>
         assertNoResidualReferences(
           REPO_ROOT,
           read,
-          (content) => content.includes(gateRetiredPath),
-          gateRetiredPath,
-          [gateSelfPath],
+          (content) => prBodyPattern.test(content),
+          prBodyRetiredName,
+          [prBodySelfPath, prBodyHistoricalFile],
         ),
-      "gate-retirement.test.ts's own retirement scan, driven through the shared helper, must " +
-        "stay clean under its own self-exclusion",
+      "pr-body-retirement.test.ts's own retirement scan, driven through the shared helper, must " +
+        "stay clean under its own exclusions",
     );
 
     // ts-harness-retirement.test.ts's own scenario for each of the three retired paths this
@@ -97,19 +99,19 @@ test(
     }
 
     // Each call's exclusion list is its own: substituting ts-harness-retirement.test.ts's
-    // self-exclusion into gate-retirement.test.ts's scenario must surface gate-retirement.test.ts
-    // itself as an offender, because that file still names gateRetiredPath in its own source and
-    // is no longer the excluded path.
+    // self-exclusion into pr-body-retirement.test.ts's scenario must surface
+    // pr-body-retirement.test.ts itself as an offender, because that file still names the retired
+    // name in its own source and is no longer the excluded path.
     assert.throws(
       () =>
         assertNoResidualReferences(
           REPO_ROOT,
           read,
-          (content) => content.includes(gateRetiredPath),
-          gateRetiredPath,
-          [SELF_PATH],
+          (content) => prBodyPattern.test(content),
+          prBodyRetiredName,
+          [SELF_PATH, prBodyHistoricalFile],
         ),
-      "gate-retirement.test.ts's own self-exclusion must not be substitutable by another " +
+      "pr-body-retirement.test.ts's own self-exclusion must not be substitutable by another " +
         "file's, or the two retirement tests are not really keeping their own exclusions",
     );
   },
@@ -120,7 +122,7 @@ test(
     "built from a literal rather than from the searched constant",
   () => {
     const ownSource = readFileSync(fileURLToPath(import.meta.url), "utf8");
-    const gateSource = readFileSync(GATE_RETIREMENT_PATH, "utf8");
+    const prBodySource = readFileSync(PR_BODY_RETIREMENT_PATH, "utf8");
 
     // assertDetectsAndMisses's 2nd argument builds the positive-control fixture
     // (docs/wiki/absence-test-positive-control-fixture.md item 4). When that argument is a bare
@@ -130,7 +132,7 @@ test(
     // citation names. The fixture argument must instead be a hand-typed literal, independent of
     // that constant.
     for (const [label, source] of [
-      ["gate-retirement.test.ts", gateSource],
+      ["pr-body-retirement.test.ts", prBodySource],
       ["ts-harness-retirement.test.ts", ownSource],
     ] as const) {
       // A genuine call site has "assertDetectsAndMisses(" in code position, not quoted inside a

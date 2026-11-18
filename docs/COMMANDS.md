@@ -6,7 +6,7 @@ How commands and workflows relate, and the development flow centered on `/scopin
 
 ## The Development Flow
 
-Humans settle the requirements and done conditions with `/scoping` until an Issue is agreed, the implement workflow implements it headlessly, and heavy assurance is human-invoked on the draft PR. A feature and a bug fix take the same path.
+Humans settle the requirements and done conditions with `/scoping` until an Issue is agreed, and the implement workflow implements it headlessly up to a draft PR. A feature and a bug fix take the same path.
 
 ```mermaid
 flowchart LR
@@ -16,11 +16,8 @@ flowchart LR
     subgraph Build["Implement (headless)"]
         M["/implement"] --> W["implement workflow"]
     end
-    subgraph Assure["Assure (human-invoked)"]
-        PR["draft PR"] --> A["/audit · /polish"]
-    end
     I --> M
-    W --> PR
+    W --> PR["draft PR"]
 ```
 
 A change with no Issue is published up to a draft PR by `/sweep`, `/dr`, `/outcome`, or `/scribe` themselves.
@@ -49,16 +46,9 @@ A change with no Issue is published up to a draft PR by `/sweep`, `/dr`, `/outco
 
 ## Workflow Roster
 
-The one nesting is assert calling audit. The others launch standalone.
-
 | Workflow  | Role                                                                | Main nested agents                                               |
 | --------- | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | implement | From an agreed Issue's implementation to a draft PR and CI          | `claude -p` sessions for implementing, reviewing, repairing, naming |
-| audit     | Adversarial review fan-out over a diff                              | File-routed reviewers, critic-audit, critic-evidence             |
-| polish    | External-lens (Codex) review + cleanup                              | critic-audit, enhancer-code                                      |
-| assert    | Independent merge-readiness verdict (Codex in an isolated worktree) | codex, critic layer                                              |
-| shake     | 4-dimension flaky-test detection and root-cause fix                 | Runner agents, static smell scan                                 |
-| adrift    | Drift scan between DRs and current code                             | Manifest-routed reviewers                                        |
 
 ## Command → Implementation Mapping
 
@@ -68,8 +58,6 @@ A skill executes its SKILL.md procedure in the conversation context; a workflow'
 | ------------ | --------------------------- | ------------------------------------------ |
 | `/scoping`   | `skills/scoping/SKILL.md`   | Skill (turns the agreed scope into an Issue) |
 | `/implement` | `skills/implement/SKILL.md` | Skill (launches the implement workflow)    |
-| `/audit`     | `workflows/audit.js`        | Workflow                                   |
-| `/polish`    | `workflows/polish.js`       | Workflow                                   |
 
 ## Related
 
