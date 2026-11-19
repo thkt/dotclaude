@@ -214,3 +214,13 @@ test("every status value has a section in update-index and a row in madr-format"
     }
   });
 });
+
+// pre-check.ts falls back to the local maximum plus one when it cannot reach the open pull
+// requests, so a Pre-Check row without the manual check hands the agent a number that may
+// collide with an unmerged DR.
+test("the Pre-Check stage tells the agent to check open pull requests by hand when pre-check could not", () =>
+  eachLanguage(skills, (doc, lang) => {
+    const row = doc.split("\n").find((line) => /^\| 1 {4}\| Pre-Check /.test(line));
+    assert.ok(row, `${lang}: the process table carries a Pre-Check row`);
+    assert.match(row, /`gh pr list --state open`/, `${lang}: the Pre-Check row names the manual check`);
+  }));

@@ -5,6 +5,8 @@
 // stdout: OUTPUT_KEYS が宣言する順 (status, number, filename, slug, date, dr_dir,
 // similar_drs) のキーを持つ JSON (indent 2)。
 // stderr: 検証に落ちた内容。exit 1。
+// open な PR が使う番号を避けて番号を進めたとき、または open な PR を確認できなかったときも、
+// その旨を 1 行書く。どちらも exit 0。
 //
 // 退役した Python 版 pre-check の TypeScript 移植。header/entry の形は
 // skills/dr/scripts/dr_common.ts が既に使っているものと同じ:
@@ -16,6 +18,7 @@
 // Contract: 退役した Python 版 pre-check の similarity / first_heading / main。OUTPUT_KEYS は
 // json.dumps のキー順に対応し、skills/dr/tests/script-contract.test.js が import する。
 // skills/dr/tests/pre-check.test.ts が検証する。
+import { spawnSync } from "node:child_process";
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { fail, filesUnder, gitTopLevel, guardSkillDir, localDate, resolveDrDir } from "./dr_common.ts";
@@ -108,6 +111,118 @@ function collectSimilarDrs(title: string, drDir: string, threshold: number): Sim
   return similarDrs;
 }
 
+/** DR の番号 NNNN を、名前が `NNNN-` で始まるファイルから読む。それ以外は null。 */
+function drNumber(name: string): number | null {
+  const match = /^(\d{4})-/.exec(name);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+/** open な PR を確認できなかった理由を運ぶ。main() はこれだけを捕まえ、ほかの例外は通す。 */
+class OpenPrCheckUnavailable extends Error {}
+
+/** bin を cwd で走らせて stdout を返す。起動できない、または 0 以外で終わったときは
+ * OpenPrCheckUnavailable を投げる。stderr は 1 行に収めるため最初の行だけを理由に入れる。 */
+function runOrUnavailable(bin: string, args: string[], cwd: string): string {
+  const result = spawnSync(bin, args, { cwd, encoding: "utf8" });
+  if (result.error) {
+    throw new OpenPrCheckUnavailable(`${bin} could not run: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    const detail = (result.stderr ?? "").trim().split("\n")[0];
+    throw new OpenPrCheckUnavailable(
+      `${bin} ${args.slice(0, 2).join(" ")} exited ${result.status}${detail ? `: ${detail}` : ""}`,
+    );
+  }
+  return result.stdout;
+}
+
+/** `gh pr list --json number` の出力から PR の番号を取り出す。JSON でない、または整数の
+ * number を持つオブジェクトの配列でないときは OpenPrCheckUnavailable を投げる。 */
+function parsePrNumbers(listed: string): number[] {
+  let prs: unknown;
+  try {
+    prs = JSON.parse(listed);
+  } catch {
+    throw new OpenPrCheckUnavailable("gh pr list printed output that is not JSON");
+  }
+  if (!Array.isArray(prs) || !prs.every((pr) => Number.isInteger((pr as { number?: unknown })?.number))) {
+    throw new OpenPrCheckUnavailable("gh pr list printed JSON that is not a list of PR numbers");
+  }
+  return prs.map((pr: { number: number }) => pr.number);
+}
+
+interface OpenPrDrUse {
+  pr: number;
+  number: number;
+}
+
+/** drDir を含む repo の open な PR が、drDir の直下に置くファイルの DR 番号。
+ * readdirSync(drDir) が直下だけを数えるので、PR 側も直下だけを数える。
+ * `gh pr diff --name-only` は追加以外の変更も返すが、変更や削除の対象はローカルにもある
+ * 番号なので、ローカルの最大値を超えるのは main を追い越した変更だけになる。
+ * drDir が git の work tree の外にあるときは gh を呼ばない。 */
+function openPrDrUses(drDir: string): OpenPrDrUse[] {
+  // --show-prefix で比べる。macOS の tmpdir は /var を git が /private/var と返すので、
+  // toplevel から path.relative を取ると drDir の外を指す。
+  const [inside, topLevel, prefix = ""] = runOrUnavailable(
+    "git",
+    ["rev-parse", "--is-inside-work-tree", "--show-toplevel", "--show-prefix"],
+    drDir,
+  ).split("\n");
+  if (inside !== "true") {
+    throw new OpenPrCheckUnavailable(`${drDir} is not inside a git work tree`);
+  }
+  const gh = process.env.CLAUDE_GH_BIN || "gh";
+  // gh pr list の既定は 30 件なので、それを超える open な PR を落とさないよう上限を上げる。
+  const prs = parsePrNumbers(
+    runOrUnavailable(
+      gh,
+      ["pr", "list", "--state", "open", "--json", "number", "--limit", "1000"],
+      topLevel,
+    ),
+  );
+  const uses: OpenPrDrUse[] = [];
+  for (const pr of prs) {
+    // gh pr list --json files は 1 PR あたり 100 件で切れるので、全件を返す gh pr diff で読む。
+    const names = runOrUnavailable(gh, ["pr", "diff", String(pr), "--name-only"], topLevel);
+    for (const path of names.split("\n")) {
+      if (!path.startsWith(prefix)) continue;
+      const rest = path.slice(prefix.length);
+      if (rest.includes("/")) continue;
+      const number = drNumber(rest);
+      if (number !== null) uses.push({ pr, number });
+    }
+  }
+  return uses;
+}
+
+const pad = (n: number): string => String(n).padStart(4, "0");
+
+/** ローカルの最大値と、open な PR が使う番号の最大値のうち大きい方。open な PR を確認でき
+ * なかったときはローカルの最大値。空いている番号を詰めては使わない。 */
+function highestUsedNumber(drDir: string, localMax: number): number {
+  let uses: OpenPrDrUse[];
+  try {
+    uses = openPrDrUses(drDir);
+  } catch (error) {
+    if (!(error instanceof OpenPrCheckUnavailable)) throw error;
+    process.stderr.write(
+      `pre-check: could not check open pull requests (${error.message});` +
+        ` returning ${pad(localMax + 1)}, the local maximum plus one\n`,
+    );
+    return localMax;
+  }
+  const ahead = uses.filter((use) => use.number > localMax).sort((a, b) => a.number - b.number);
+  if (ahead.length === 0) return localMax;
+  const highest = ahead[ahead.length - 1].number;
+  const used = ahead.map((use) => `${pad(use.number)} (#${use.pr})`).join(", ");
+  process.stderr.write(
+    `pre-check: open pull requests already use ${used};` +
+      ` returning ${pad(highest + 1)} instead of ${pad(localMax + 1)}\n`,
+  );
+  return highest;
+}
+
 // Python の main() は自身の argv を取らない (title は sys.argv[1] から来る)。この main(argv)
 // は process.argv.slice(2) を受け取る。
 export function main(argv: string[]): number {
@@ -143,12 +258,11 @@ export function main(argv: string[]): number {
     fail(`Error: no write permission: ${drDir}`);
   }
 
-  let maxNumber = 0;
+  let localMax = 0;
   for (const entry of readdirSync(drDir)) {
-    const match = /^(\d{4})-/.exec(entry);
-    if (match) maxNumber = Math.max(maxNumber, parseInt(match[1], 10));
+    localMax = Math.max(localMax, drNumber(entry) ?? 0);
   }
-  const nextNumber = String(maxNumber + 1).padStart(4, "0");
+  const nextNumber = pad(highestUsedNumber(drDir, localMax) + 1);
 
   const slug = title
     .toLowerCase()

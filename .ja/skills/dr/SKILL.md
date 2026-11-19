@@ -28,7 +28,7 @@ argument-hint: "[decision title]"
 
 | Step | 工程      | 内容                                                                                                                                                                 |
 | ---- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Pre-Check | ${CLAUDE_SKILL_DIR}/scripts/pre-check.ts "$TITLE" を実行する。返り値から使うのは `dr_dir` と `filename` (書き込み先)、`date` (frontmatter)、`similar_drs` (重複判定) |
+| 1    | Pre-Check | ${CLAUDE_SKILL_DIR}/scripts/pre-check.ts "$TITLE" を実行する。返り値から使うのは `dr_dir` と `filename` (書き込み先)、`date` (frontmatter)、`similar_drs` (重複判定)。stderr が open な PR を確認できなかったと述べたときは、`gh pr list --state open` で DR を足す PR がないことを確かめてから番号を使う |
 | 2    | Type      | 決定の意図で決定タイプを判定し、推奨トピックを選ぶ (§ 決定タイプ)                                                                                                    |
 | 3    | Sources   | プロジェクトドキュメント、issue、外部リソースを収集する                                                                                                              |
 | 4    | Draft     | ${CLAUDE_SKILL_DIR}/templates/madr-template.md を `dr_dir` 配下に `filename` で写し、収集した内容で埋める (§ YAML Frontmatter)                                       |
