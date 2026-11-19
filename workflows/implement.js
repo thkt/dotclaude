@@ -267,15 +267,15 @@ if (!issueNumber) {
 if (!repo) {
   return await stop("no-repo", "Pass the target repository as an absolute path.");
 }
-// References pinned to the start commit (research reports, wiki pages, decision records). Canonical
+// References pinned to the start commit (research reports, decision records). Canonical
 // source: assertReportReferences in input.ts and research-handoff.ts. References need a start commit,
-// and each must be Markdown under docs/research, docs/wiki, or docs/decisions.
+// and each must be Markdown under docs/research or docs/decisions.
 const startCommit = typeof input.startCommit === "string" ? input.startCommit.trim() : "";
 const reports = input.reports === undefined ? [] : input.reports;
 const COMMIT_ID = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const isReportPath = (p) =>
   typeof p === "string" &&
-  /^docs\/(?:research|wiki|decisions)\/.+\.md$/.test(p) &&
+  /^docs\/(?:research|decisions)\/.+\.md$/.test(p) &&
   !p.split("/").includes("..");
 const referenceProblem = () => {
   if (!Array.isArray(reports)) return "Pass references as an array of {path, blob}";
@@ -284,7 +284,7 @@ const referenceProblem = () => {
   if (reports.length && !startCommit) return "References need a start commit";
   const bad = reports.find((r) => !r || !isReportPath(r.path) || !COMMIT_ID.test(String(r.blob)));
   if (bad)
-    return `A reference must be Markdown under docs/research, docs/wiki, or docs/decisions with its reviewed blob ID: ${JSON.stringify(bad)}`;
+    return `A reference must be Markdown under docs/research or docs/decisions with its reviewed blob ID: ${JSON.stringify(bad)}`;
   const paths = reports.map((r) => r.path);
   return new Set(paths).size === paths.length ? "" : "Duplicate reference path";
 };
@@ -1028,8 +1028,8 @@ const referenceContext = [
   "Trace each decision-relevant rule or finding to its source, version, applicability and agreement status. Distinguish observed facts, agreed rules and hypotheses. Do not apply evidence from another scope or promote an unagreed proposal to a requirement.",
   "If missing, stale or contradictory references affect a decision, identify the source, the affected decision and what must be investigated or agreed again. Resolve factual gaps through investigation; return requirement, scope or authorization changes to the human. Do not silently replace a reviewed reference with a newer ID.",
 ].join("\n");
-// Canonical source: the documentation update in skills/implement/SKILL.md. Effects on wiki pages and decision records are checked through DOCUMENTS.md once the diff is ready.
-const DOCUMENTS_RULE = `Once the diff is ready, run \`cat ${bundled("rules/conventions/DOCUMENTS.md")}\` and follow its Read and retain section: check the explanations the next task will need and the effect on existing wiki pages and decision records. Include required updates in this change and in the independent review. Do not create a page on every run.`;
+// Canonical source: the documentation update in skills/implement/SKILL.md. Effects on decision records are checked through DOCUMENTS.md once the diff is ready.
+const DOCUMENTS_RULE = `Once the diff is ready, run \`cat ${bundled("rules/conventions/DOCUMENTS.md")}\` and follow its Read and retain section: check the explanations the next task will need and the effect on existing decision records and \`rules/\`. Include required updates in this change and in the independent review.`;
 // Canonical source: revisionContext in revision.ts. The revision request is canonical alongside the agreed Issue, and the whole PR meets both.
 const revisionContext = revising
   ? [

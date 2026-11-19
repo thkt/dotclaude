@@ -96,9 +96,9 @@ test("T-541 notification returns the envelope shape hooks/edit/rumdl_check.ts's 
 // happens not to spawn a process would pass whether or not the driver were still here.
 //
 // The needles are assembled from fragments rather than written whole, so this file's own
-// assertion does not match itself. That is the opposite problem from
-// docs/wiki/absence-test-positive-control-fixture.md's rule against building a fixture from the
-// constant under search, so the positive control below is built from the same fragments the
+// assertion does not match itself. That is the opposite problem from the rule against building a
+// fixture from the constant under search (rules/development/TESTING.md § Whether the test swings
+// at nothing), so the positive control below is built from the same fragments the
 // predicate uses and would catch a fragment typo by failing to detect.
 const FORBIDDEN = [`${"child"}_process`, `${"spawn"}Sync`, `${"py"}thon3`];
 

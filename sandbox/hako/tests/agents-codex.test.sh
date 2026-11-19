@@ -30,8 +30,7 @@ test_the_domain_set_entering_ipset_for_codex_differs_from_the_one_for_claude() {
   claude_list="$("$AGENTS" allowlist claude 2>/dev/null)" || true
   codex_list="$("$AGENTS" allowlist codex 2>/dev/null)" || true
   # Checked first: an empty codex_list "differs from claude's" too, so the divergence assert
-  # alone passes on the very state it exists to catch
-  # (docs/wiki/zero-hit-positive-control.md).
+  # alone passes on the very state it exists to catch.
   assert_contains "codex resolves an allowlist at all" "registry.npmjs.org" "$codex_list"
   # init-firewall.sh (U-002) resolves this exact string into the ipset it builds, so a
   # divergence here is what puts a different domain set into the guest's ipset.

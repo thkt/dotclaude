@@ -40,7 +40,7 @@ test(
     // sits outside T-113's exclusion list) would make this fixture a false-positive offender of
     // its own predicate.
     const retiredNeedle = "_lib/legacy-tool.py";
-    const excluded = "docs/wiki/supply-list-single-source.md";
+    const excluded = "docs/notes/supply-list-single-source.md";
     const files = [excluded, "workflows/implement/record.ts"];
     const contents: Record<string, string> = {
       [excluded]: `basis line quoting ${retiredNeedle}`,
@@ -93,7 +93,7 @@ test("migrated research remains historical while current documentation still rej
     "docs/research/2026-09-24-original.md",
     "research/2026-09-24-original.md",
     ".claude/workspace/research/original.md",
-    "docs/wiki/live.md",
+    "docs/notes/live.md",
   ];
   assert.deepEqual(
     offendersAmong(
@@ -101,6 +101,6 @@ test("migrated research remains historical while current documentation still rej
       () => "legacy symbol",
       (text) => text.includes("legacy symbol"),
     ),
-    ["docs/wiki/live.md"],
+    ["docs/notes/live.md"],
   );
 });

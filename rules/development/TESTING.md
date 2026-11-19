@@ -113,6 +113,8 @@ Break a test the moment it is written and confirm it fails. Choose a break that 
 | Input built from the artifact   | Assembling the body from the skeleton and comparing it back. A rename changes both sides, so every rename passes         |
 | A missing premise returns empty | Parsing fails, the required set becomes zero, the comparison loses its other side, and everything passes                 |
 | A different test fails          | The file broken is another test's fixture. That one fails while the target still passes, so read the failing test's name |
+| An absence check with no positive control | A check that confirms "zero hits" passes even when the searched term is mistyped or the verdict is dropped. Keep a permanent fixture that holds a violation, and also confirm that a copy of that fixture with the cue removed goes undetected. Write the fixture as a literal instead of building it from the constants the check searches for. A check that judges by a list of patterns also tries a violation whose shape is not on the list |
+| Counts compared after the same filter | Filtering two sets by the same condition and then comparing their counts keeps the counts equal when an element goes missing, because both sides shrink together. Compare the elements themselves, and confirm the check fails when one element is dropped from one side |
 
 ## Test double preference
 

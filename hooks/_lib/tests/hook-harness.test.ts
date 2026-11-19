@@ -5,7 +5,7 @@
 // module retired alongside it, so this file is the harness's only implementation now.
 //
 // Each scenario below drives a small positive-control fixture under fixtures/harness/
-// (docs/wiki/absence-test-positive-control-fixture.md) rather than a real hook, so the
+// (rules/development/TESTING.md § Whether the test swings at nothing) rather than a real hook, so the
 // assertion is about `checked`/`run`'s own behavior and not about what a particular hook does.
 import assert from "node:assert/strict";
 import path from "node:path";

@@ -2,8 +2,7 @@
 // Guards the retirement of skills/dr/scripts' 4 Python scripts (dr_common.py, pre-check.py,
 // validate-dr.py, update-index.py) and their .ja mirror, the same way
 // workflows/_lib/tests/ts-harness-retirement.test.ts guards run-workflow.js's: no tracked file
-// outside docs/decisions/ and docs/research/ (kept as historical record, per
-// docs/wiki/retire-rename-procedure.md) still names one, /dr's SKILL.md invokes the .ts scripts
+// outside docs/decisions/ and docs/research/ (kept as historical record) still names one, /dr's SKILL.md invokes the .ts scripts
 // by path instead, and the .ts scripts themselves keep the shebang/mode convention
 // hooks/_lib/shebang_scope.ts already checks for hooks/.
 //

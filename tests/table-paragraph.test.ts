@@ -94,9 +94,9 @@ test("the scan reaches the files it names", () => {
   assert.ok(Math.min(...counts) > 0, `every scanned directory holds markdown: ${counts}`);
 });
 
-test("historical originals are excluded while current wiki pages remain scanned", () => {
+test("historical originals are excluded while current docs pages remain scanned", () => {
   const files = markdownUnder(join(root, "docs")).map((path) => relative(root, path));
-  assert.ok(files.some((path) => path.startsWith("docs/wiki/")));
+  assert.ok(files.includes("docs/HOOKS.md"));
   assert.ok(!files.some((path) => path.startsWith("docs/research/")));
 });
 

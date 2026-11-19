@@ -2,8 +2,6 @@
   "extraPaths": [
     "skills/dr/scripts",
     ".ja/skills/dr/scripts",
-    "skills/scribe/scripts",
-    ".ja/skills/scribe/scripts",
     "skills/_lib",
     ".ja/skills/_lib"
   ],

@@ -25,8 +25,8 @@ const BUN_GLOBAL = `export function readConfig() {
 }
 `;
 
-// T-002: BUN_GLOBAL with its only `Bun` clue removed, per
-// docs/wiki/absence-test-positive-control-fixture.md's copy-minus-clue step. A non-zero exit on
+// T-002: BUN_GLOBAL with its only `Bun` clue removed, per the copy-minus-clue step of
+// rules/development/TESTING.md § Whether the test swings at nothing. A non-zero exit on
 // BUN_GLOBAL is credited to the `Bun` reference only if this shape stays at zero.
 const BUN_GLOBAL_REMOVED = `const config = { file: (name) => name };
 

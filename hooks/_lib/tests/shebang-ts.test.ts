@@ -3,7 +3,7 @@
 // side (DR-0114). Each check takes its subject and expected value as arguments, so the same call
 // scans hooks/'s real .ts files and, separately, a positive-control fixture under
 // fixtures/shebang/ that carries the violation on purpose
-// (docs/wiki/absence-test-positive-control-fixture.md). The fixture half is what shows each
+// (rules/development/TESTING.md § Whether the test swings at nothing). The fixture half is what shows each
 // check is alive, since a clean real tree reports nothing either way.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";

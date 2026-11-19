@@ -24,7 +24,7 @@ export const STALE_SHEBANG: string = "#!/usr/bin/env bun";
 
 const EXEC_MODE = "100755";
 
-/** Where the positive-control fixtures live (docs/wiki/absence-test-positive-control-fixture.md).
+/** Where the positive-control fixtures live (rules/development/TESTING.md § Whether the test swings at nothing).
  * They carry the violations on purpose, so a scan over real hooks/ files passes
  * FIXTURES_EXCLUDE alongside its pathspec; a scan that names a fixture path directly does not. */
 export const FIXTURES_ROOT = "hooks/_lib/tests/fixtures";

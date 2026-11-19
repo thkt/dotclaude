@@ -13,8 +13,8 @@
 // T-299 compared the hook's output against the Python module's convert() through a python3
 // spawn while both sides ran. That module retires in this same slice, so the comparison is
 // frozen instead: FROZEN_CONVERSIONS holds what convert() answered for each command, read off
-// the Python original at the branch point before it was deleted
-// (docs/wiki/fixture-freeze-before-port.md). The values move only when the conversion itself is
+// the Python original at the branch point before it was deleted, so the port is held to what the
+// original actually answered rather than to expectations written by hand. The values move only when the conversion itself is
 // meant to move.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";

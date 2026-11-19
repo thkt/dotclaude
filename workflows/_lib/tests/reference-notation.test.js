@@ -78,7 +78,7 @@ test("T-046 the scan lists the same set of workflow script names under workflows
 
 // The .ja tree passes both checks today, so the Red for the two-tree scan has to come from a
 // fixture: a script carrying the bare path is reported, and the same script rewritten through
-// bundled() is not (docs/wiki/absence-test-positive-control-fixture.md).
+// bundled() is not (rules/development/TESTING.md § Whether the test swings at nothing).
 test("T-047 the scan reports a fixture script carrying a bare $HOME/.claude asset path, and reports nothing once that path is rewritten through bundled()", () => {
   const dir = mkdtempSync(join(tmpdir(), "reference-notation-fixture-"));
   try {

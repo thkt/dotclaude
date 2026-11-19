@@ -2,7 +2,7 @@
 name: implement
 description: 合意済み GitHub Issue を implement workflow で実装・検証・draft PR 公開・CI 確認まで進め、公開本文の照合と ready 切替を行う。要求整理には使わない (/scoping)。レビューのみの依頼には使わない。
 when_to_use: 合意済みIssueを実装, Issueから実装, PR作成まで進める, 既存PRの修正, implement issue
-allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
 argument-hint: "[issue number or URL] [--no-publish]"
 ---
 
@@ -20,7 +20,7 @@ argument-hint: "[issue number or URL] [--no-publish]"
 2. `git rev-parse --show-toplevel` で対象 repo の絶対パスを決める。
 3. `.dotagents.json` が commit 済みであることを確認する。workflow は repository・remote・baseBranch・setup・check・ciChecks・capture を持つ Codex の対象契約で検査する。無ければ package.json の scripts や CI 定義から内容を仮説付きで AskUserQuestion に出し、合意した内容をユーザーの判断で commit してから進める。未 commit の差分があれば stash や移植をせず、扱いを尋ねる。Issue の必要媒体を `${CLAUDE_SKILL_DIR}/references/capture.md` の表で `capture` の設定と照合し、食い違えば起動せず `/scoping` へ戻す。Issue の扱いが「check か撮影に入れる」の手順は、commit 済みの `check` か `capture` が実行することを確かめ、実行しなければ起動せず `/scoping` へ戻す。
 4. sandbox を観測する。${CLAUDE_SKILL_DIR}/scripts/sandbox_probe.ts を実行し、出力を控える。`local_binding` と `sandboxed` がどちらも false なら起動せず、bind を拒んでいるものを人に尋ねる。出力の残りは、agent 経由で起動するときに § sandbox の観測の表で扱う。設定ファイルからは推測しない。起動時の flag や管理設定で変わった sandbox は、設定ファイルに現れない。
-5. 固定する参照を選ぶ。`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain に従い、関連する wiki と判断記録を選ぶ。wiki は `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <Issue の語> <触れそうなパス> --scene implement` の `matched` と `scenes` のページを読む。選んだページと判断記録を、Issue と現行コードに照合する。`${CLAUDE_SKILL_DIR}/../scoping/references/session.md` § 調査成果の引き継ぎに従い、Issue が参照する調査報告も加える。参照に使えるのは `docs/research/`・`docs/wiki/`・`docs/decisions/` 配下の Markdown だけ。各参照の blob を `git rev-parse HEAD:<path>` で、開始 commit を `git rev-parse HEAD` で記録する。必要な報告が HEAD に commit されていなければ、引き継ぎ未完了として止める。
+5. 固定する参照を選ぶ。`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain に従い、関連する判断記録を選ぶ。選んだ判断記録を、Issue と現行コードに照合する。`${CLAUDE_SKILL_DIR}/../scoping/references/session.md` § 調査成果の引き継ぎに従い、Issue が参照する調査報告も加える。参照に使えるのは `docs/research/`・`docs/decisions/` 配下の Markdown だけ。各参照の blob を `git rev-parse HEAD:<path>` で、開始 commit を `git rev-parse HEAD` で記録する。必要な報告が HEAD に commit されていなければ、引き継ぎ未完了として止める。
 6. 既存 PR を直す依頼なら、この Phase を離れて § 既存 PR の修正へ回す。
 
 ## Phase 2: workflow の起動
@@ -96,7 +96,7 @@ state は、起動時のまとめの行にあるファイルである。起動�
 2. Phase 1 の手順 2〜5 を行う。参照を固定するときの開始 commit は、PR 全体の基点 (最初に公開した実行の開始 commit) にする。
 3. Phase 2 の手順 1 から 6 で起動する。args には、今の Issue の番号を `issue` に入れ、`revision: {pr: "<PR の URL>", request: "<採用した指摘・期待する結果・許可範囲>"}` を足す。workflow は前回の worktree を公開した head で再利用し、PR 全体を Issue と修正依頼の両方に対して評価する。公開した head の上に commit して push し、本文を作り直して CI を待つ。新しい PR は作らない。
 4. 結果は Phase 3 と同じ表で扱う。
-5. 採用した指摘の原因と再発性を確かめ、必要な場合だけ `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従って既存の wiki・判断記録・テスト・lint へつなぐ。今回の合意範囲を超える改善を、既存 PR の完了条件に加えない。
+5. 採用した指摘の原因と再発性を確かめ、必要な場合だけ `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従って既存の判断記録・テスト・lint へつなぐ。今回の合意範囲を超える改善を、既存 PR の完了条件に加えない。
 
 ## 停止条件
 
