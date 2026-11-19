@@ -1,0 +1,29 @@
+id: no-comment-sh
+language: Bash
+severity: error
+message: >-
+  Delete this comment and carry its intent in names and test names. To keep it, make it one line starting with "# why-not: " or "# source: " and get thkt's permission in the PR.
+rule:
+  kind: comment
+  not:
+    any:
+      - all:
+          - regex: '^#!'
+          - nthChild: 1
+          - inside:
+              kind: program
+      - regex: '^# shellcheck\s'
+      - regex: '^# why-not: \S'
+      - regex: '^# source: https?://'
+files:
+  - '**/*.sh'
+ignores:
+  - '**/fixtures/**'
+  - 'hooks/**'
+  - 'workflows/**'
+  - '.ja/workflows/**'
+  - 'skills/**'
+  - '.ja/skills/**'
+  - 'mods/**'
+  - '.ja/mods/**'
+  - 'sandbox/**'

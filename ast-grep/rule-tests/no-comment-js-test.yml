@@ -1,0 +1,51 @@
+id: no-comment-js
+valid:
+  - const url = "http://example.com/*x";
+  - const url = 'http://example.com/*x';
+  - const label = `a // b /* c`;
+  - |
+    const marker = /[//*]/g;
+  - |
+    function f(s) { return /[//*]/.test(s); }
+  - |
+    /// <reference types="node" />
+    const a = 1;
+  - "// biome-ignore lint/x\x3A y\nconst a = 1;"
+  - |
+    // oxlint-disable-next-line x
+    const a = 1;
+  - |
+    // why-not: x
+    const a = 1;
+  - |
+    // source: https://example.com/a
+    const a = 1;
+invalid:
+  - |
+    // keeps the cache warm
+    const a = 1;
+  - const a = 1; // trailing
+  - const a = /* inline */ 1;
+  - |
+    /**
+     * one
+     */
+    const a = 1;
+  - |
+    // biome-ignored format
+    const a = 1;
+  - |
+    // see oxlint-disable
+    const a = 1;
+  - |
+    // why-not:
+    const a = 1;
+  - |
+    // why-not-really x
+    const a = 1;
+  - |
+    // source: see the docs
+    const a = 1;
+  - |
+    /* why-not: x */
+    const a = 1;
