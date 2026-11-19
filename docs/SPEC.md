@@ -249,7 +249,7 @@ The lint targets and thresholds live in configuration files. This document does 
 | -------------- | --------------------------- |
 | Marketplace    | `thkt-development-workflows`|
 | Plugin         | `build` only                |
-| version        | 4.1.0                       |
+| version        | Not set. The source commit is the version |
 | source         | github `thkt/dotclaude`     |
 
 ## Mirror contract

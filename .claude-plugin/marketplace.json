@@ -7,7 +7,6 @@
   },
   "metadata": {
     "description": "Autonomous development workflow toolkit distributed as one self-contained plugin. Installing build clones the whole repository once, so every skill, agent, and workflow loads under the build: namespace with no cross-plugin duplication.",
-    "version": "4.1.0",
     "architecture": "single-plugin",
     "adr": "docs/decisions/0083-collapse-marketplace-to-single-build-plugin.md"
   },
@@ -16,7 +15,6 @@
       "name": "build",
       "source": { "source": "github", "repo": "thkt/dotclaude" },
       "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping, then hand the Issue to /implement, which carries it through the implement workflow to implementation, verification, a draft PR, and CI confirmation. Bundles the critic-design agent, the implement workflow, and /sweep, /outcome, /dr.",
-      "version": "4.1.0",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
