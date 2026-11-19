@@ -96,3 +96,41 @@ test("T-603 commands splits the next line as a command after a blank line or a l
     assert.deepEqual([...commands(input)], expected, JSON.stringify(input));
   }
 });
+
+test("T-606 commands skips a reserved word at the head of a command, in any order with env assignments and wrappers, and keeps one in argument position", () => {
+  const cases: Array<[string, string[][]]> = [
+    ["if true; then git push; fi", [["true"], ["git", "push"], ["fi"]]],
+    ["if git push; then echo ok; fi", [["git", "push"], ["echo", "ok"], ["fi"]]],
+    ["for r in a; do git push; done", [["for", "r", "in", "a"], ["git", "push"], ["done"]]],
+    ["while true; do git push; done", [["true"], ["git", "push"], ["done"]]],
+    ["until false; do git push; done", [["false"], ["git", "push"], ["done"]]],
+    ["! git push", [["git", "push"]]],
+    ["{ git push; }", [["git", "push"], ["}"]]],
+    [
+      "if x; then\ngit push\nelse\ngit push -f\nfi",
+      [["x"], ["git", "push"], ["git", "push", "-f"], ["fi"]],
+    ],
+    [
+      "if x; then echo a; elif y; then git push; fi",
+      [["x"], ["echo", "a"], ["y"], ["git", "push"], ["fi"]],
+    ],
+    ["echo a | { git push; }", [["echo", "a"], ["git", "push"], ["}"]]],
+    ["then sudo git push", [["git", "push"]]],
+    ["echo then git push", [["echo", "then", "git", "push"]]],
+    ["do-something git push", [["do-something", "git", "push"]]],
+  ];
+  for (const [input, expected] of cases) {
+    assert.deepEqual([...commands(input)], expected, JSON.stringify(input));
+  }
+});
+
+test("T-607 commands keeps a subshell and a function definition as one command headed by the opening token", () => {
+  const cases: Array<[string, string[][]]> = [
+    ["(git push)", [["(", "git", "push", ")"]]],
+    ["(cd x && git push)", [["(", "cd", "x"], ["git", "push", ")"]]],
+    ["f() { git push; }; f", [["f", "()", "{", "git", "push"], ["}"], ["f"]]],
+  ];
+  for (const [input, expected] of cases) {
+    assert.deepEqual([...commands(input)], expected, JSON.stringify(input));
+  }
+});

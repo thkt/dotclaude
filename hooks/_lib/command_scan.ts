@@ -12,6 +12,18 @@ export const WRAPPERS: ReadonlySet<string> = new Set([
   "nohup",
 ]);
 
+export const RESERVED_WORDS: ReadonlySet<string> = new Set([
+  "if",
+  "then",
+  "else",
+  "elif",
+  "while",
+  "until",
+  "do",
+  "!",
+  "{",
+]);
+
 export const VALUED_WRAPPER_FLAGS: ReadonlySet<string> = new Set([
   "-u",
   "-g",
@@ -373,7 +385,7 @@ function _skipToCommand(tokens: readonly string[]): [Record<string, string>, num
       index += 1;
     } else if (WRAPPERS.has(basename(token))) {
       index += 1 + _wrapperFlagSpan(tokens, index + 1);
-    } else if (EXEC_FLAGS.has(token)) {
+    } else if (EXEC_FLAGS.has(token) || RESERVED_WORDS.has(token)) {
       index += 1;
     } else {
       break;

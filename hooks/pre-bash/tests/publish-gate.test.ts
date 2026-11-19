@@ -352,3 +352,31 @@ test("T-605 in mode enforce with no passing check a git push after a line ending
     assert.equal(output.hookSpecificOutput.permissionDecision, "deny", JSON.stringify(input));
   }
 });
+
+test("T-608 a git push after then or do appends one line naming git push", () => {
+  for (const input of ["if true; then git push; fi", "for r in a; do git push; done"]) {
+    const dir = gatedRepo();
+    assert.equal(bash(input, dir).stdout, "", input);
+    const lines = logLines(dir);
+    assert.equal(lines.length, 1, input);
+    assert.equal(lines[0].command, "git push", input);
+  }
+});
+
+test("T-609 in mode enforce with no passing check a git push after then or do is denied", () => {
+  for (const input of ["if true; then git push; fi", "for r in a; do git push; done"]) {
+    const dir = gatedRepo("enforce");
+    const output = JSON.parse(bash(input, dir).stdout) as {
+      hookSpecificOutput: { permissionDecision: string };
+    };
+    assert.equal(output.hookSpecificOutput.permissionDecision, "deny", input);
+  }
+});
+
+test("T-610 a cd <dir> inside a brace group judges the git push after it at <dir>, not the event cwd", () => {
+  const plain = repo();
+  const gated = gatedRepo();
+  bash(`{ cd ${gated}; git push; }`, plain);
+  assert.equal(logLines(gated).length, 1);
+  assert.deepEqual(logLines(plain), []);
+});
