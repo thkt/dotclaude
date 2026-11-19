@@ -1,0 +1,43 @@
+id: no-comment-sh
+valid:
+  - |
+    echo "a # b" 'c # d'
+  - |
+    cat <<EOF
+    # body
+    EOF
+  - |
+    echo $#
+  - |
+    echo ${#x}
+  - |
+    echo a#b
+  - |
+    echo $(echo a)#b
+  - |
+    #!/bin/sh
+    echo hi
+  - |
+    # shellcheck disable=SC2086
+    echo $x
+  - |
+    # why-not: x
+    echo hi
+  - |
+    # source: https://example.com/a
+    echo hi
+invalid:
+  - |
+    # leading
+    echo hi
+  - |
+    echo hi # trailing
+  - |
+    echo hi
+    #!/bin/sh
+  - |
+    # why-not:
+    echo hi
+  - |
+    # source: see the docs
+    echo hi

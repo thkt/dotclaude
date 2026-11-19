@@ -1,0 +1,26 @@
+id: no-comment-ts
+language: TypeScript
+severity: error
+message: >-
+  Delete this comment and carry its intent in names and test names. To keep it, make it one line starting with "// why-not: " or "// source: " and get thkt's permission in the PR.
+rule:
+  kind: comment
+  not:
+    any:
+      - regex: '^/// <reference'
+      - regex: '^// biome-ignore[\s-]'
+      - regex: '^// oxlint-disable'
+      - regex: '^// why-not: \S'
+      - regex: '^// source: https?://'
+files:
+  - '**/*.ts'
+ignores:
+  - '**/fixtures/**'
+  - 'hooks/**'
+  - 'workflows/**'
+  - '.ja/workflows/**'
+  - 'skills/**'
+  - '.ja/skills/**'
+  - 'mods/**'
+  - '.ja/mods/**'
+  - 'sandbox/**'

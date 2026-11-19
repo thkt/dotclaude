@@ -99,6 +99,12 @@ jobs:
       - name: biome
         run: npx biome lint --reporter=github
 
+      - name: ast-grep scan
+        run: npx ast-grep scan . .ja
+
+      - name: ast-grep rule tests
+        run: npx ast-grep test --skip-snapshot-tests
+
       # クォートしたまま渡し、glob の展開は textlint 側にさせる。シェルに展開させると
       # globstar の有無で対象ファイル数が変わる。
       - name: textlint

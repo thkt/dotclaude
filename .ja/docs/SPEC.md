@@ -27,7 +27,7 @@
 | hook スクリプト                             | `hooks/**/*.ts`, `hooks/**/*.sh`        | 本リポジトリ                    |
 | skill / agent / workflow 定義               | `skills/`, `agents/`, `workflows/`      | 本リポジトリ                    |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLI                                | `brew install thkt/tap/{tool}`  |
-| `ast-grep`                                  | Rust バイナリ                           | `brew install ast-grep`         |
+| `ast-grep`                                  | Rust バイナリ                           | `brew install ast-grep`。CI の lint は devDependency を `bun install` で入れる |
 | `codegraph`                                 | mise shim 経由のバイナリ                | mise                            |
 | `textlint`, `oxlint`, `oxfmt`, `biome`      | devDependencies                         | `bun install`                   |
 | `ruff`, `rumdl`                             | Python 製 linter                        | pipx (CI は版固定)              |
@@ -207,6 +207,8 @@ workflow は `Workflow({name, args})` で起動する。args はオブジェク�
 | Shell tests   | `find hooks sandbox -name '*.test.sh'` を 1 ファイルずつ bash で実行                          |
 | oxlint        | `npx oxlint --format=github`                                                                  |
 | biome         | `npx biome lint --reporter=github`                                                            |
+| ast-grep scan | `npx ast-grep scan . .ja`                                                                     |
+| ast-grep rule tests | `npx ast-grep test --skip-snapshot-tests`                                               |
 | textlint      | `npx textlint '.ja/**/*.md'`                                                                  |
 | ruff          | `pipx run --spec ruff==0.16.4 ruff check .`                                                   |
 | ruff format   | `pipx run --spec ruff==0.16.4 ruff format --check .`                                          |
@@ -222,6 +224,7 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | `.rumdl.toml`         | Markdown 検査で無効にする規則                                           |
 | `.oxlintrc.json`      | JavaScript の静的検査                                                   |
 | `biome.json`          | 認知的複雑度の上限。規則はこの 1 本だけで、formatter と他の規則は止めている |
+| `sgconfig.yml`        | ast-grep の規則 (`ast-grep/rules/`) と規則のテスト (`ast-grep/rule-tests/`) の置き場。規則は通す形に当たらない `.ts`、`.js`、`.sh` のコメントを報告する |
 | `ruff.toml`           | Python の検査と整形                                                     |
 | `pyrightconfig.json`  | Python の型検査                                                         |
 

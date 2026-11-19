@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const run = promisify(execFile);
 
-// Do not add full-width punctuation: quoted data a test matches against keeps its original language.
+// why-not: Do not add full-width punctuation: quoted data a test matches against keeps its original language.
 const JAPANESE = /[぀-ゟ゠-ヿ一-龯]/;
 
 const trackedTests = async () => {

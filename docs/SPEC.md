@@ -27,7 +27,7 @@ This repository holds scripts and Markdown, nothing else. Most binaries invoked 
 | Hook scripts                                | `hooks/**/*.ts`, `hooks/**/*.sh`        | This repository                 |
 | Skill / agent / workflow definitions        | `skills/`, `agents/`, `workflows/`      | This repository                 |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLIs                               | `brew install thkt/tap/{tool}`  |
-| `ast-grep`                                  | Rust binary                             | `brew install ast-grep`         |
+| `ast-grep`                                  | Rust binary                             | `brew install ast-grep`. The CI lint installs the devDependency through `bun install` |
 | `codegraph`                                 | Binary behind a mise shim               | mise                            |
 | `textlint`, `oxlint`, `oxfmt`, `biome`      | devDependencies                         | `bun install`                   |
 | `ruff`, `rumdl`                             | Python linters                          | pipx (CI pins the versions)     |
@@ -207,6 +207,8 @@ The only check before a write is `rust_pre_edit.ts`'s clippy, which takes `.rs`.
 | Shell tests   | `find hooks sandbox -name '*.test.sh'`, one file per bash invocation                          |
 | oxlint        | `npx oxlint --format=github`                                                                  |
 | biome         | `npx biome lint --reporter=github`                                                            |
+| ast-grep scan | `npx ast-grep scan . .ja`                                                                     |
+| ast-grep rule tests | `npx ast-grep test --skip-snapshot-tests`                                               |
 | textlint      | `npx textlint '.ja/**/*.md'`                                                                  |
 | ruff          | `pipx run --spec ruff==0.16.4 ruff check .`                                                   |
 | ruff format   | `pipx run --spec ruff==0.16.4 ruff format --check .`                                          |
@@ -222,6 +224,7 @@ The lint targets and thresholds live in configuration files. This document does 
 | `.rumdl.toml`         | Which Markdown rules are disabled                                       |
 | `.oxlintrc.json`      | JavaScript static checks                                                |
 | `biome.json`          | The cognitive-complexity cap. That one rule only; the formatter and every other rule are off |
+| `sgconfig.yml`        | Where the ast-grep rules (`ast-grep/rules/`) and their tests (`ast-grep/rule-tests/`) live. The rules report a comment in `.ts`, `.js`, or `.sh` that matches none of the permitted forms |
 | `ruff.toml`           | Python checks and formatting                                            |
 | `pyrightconfig.json`  | Python type checking                                                    |
 
