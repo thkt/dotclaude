@@ -1,20 +1,31 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
 import { spawnSync } from "node:child_process";
-import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  appendFileSync,
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import {
   CHECK_FILE,
   CONFIG_FILE,
   type CheckCommand,
   type CheckRecord,
-  checkCommand,
   type Evaluation,
   evaluate,
-  type GateConfig,
+  gateConfig,
+  git,
   type GateLocation,
   type GateMode,
   gateLocation,
+  RED_FILE,
+  type RedRecord,
   readJson,
   STOP_LOG_FILE,
   STREAK_FILE,
@@ -23,7 +34,8 @@ import {
   verdictText,
 } from "../_lib/gate_record.ts";
 
-const USAGE = "usage: done_gate.ts on [--mode enforce] | off | check | status | stop";
+const USAGE =
+  "usage: done_gate.ts on [--mode enforce] [--require red] | off | check | red | status | stop";
 const STREAK_LIMIT = 8;
 
 function fail(message: string): number {
@@ -31,21 +43,37 @@ function fail(message: string): number {
   return 2;
 }
 
-function modeFrom(args: string[]): GateMode | null {
-  if (args.length === 0) {
-    return "record";
+interface OnOptions {
+  mode: GateMode;
+  requireRed: boolean;
+}
+
+function onOptions(args: string[]): OnOptions | null {
+  const options: OnOptions = { mode: "record", requireRed: false };
+  const seen = new Set<string>();
+  for (let index = 0; index < args.length; index += 2) {
+    const [flag, value] = [args[index], args[index + 1]];
+    if (seen.has(flag)) {
+      return null;
+    }
+    seen.add(flag);
+    if (flag === "--mode" && (value === "record" || value === "enforce")) {
+      options.mode = value;
+    } else if (flag === "--require" && value === "red") {
+      options.requireRed = true;
+    } else {
+      return null;
+    }
   }
-  if (args.length === 2 && args[0] === "--mode" && (args[1] === "record" || args[1] === "enforce")) {
-    return args[1];
-  }
-  return null;
+  return options;
 }
 
 function on(gate: GateLocation, args: string[]): number {
-  const mode = modeFrom(args);
-  if (mode === null) {
-    return fail(`on takes only --mode record|enforce, got: ${args.join(" ")}`);
+  const options = onOptions(args);
+  if (options === null) {
+    return fail(`on takes only --mode record|enforce and --require red, got: ${args.join(" ")}`);
   }
+  const { mode, requireRed } = options;
   let text: string;
   try {
     text = readFileSync(join(gate.root, ".dotagents.json"), "utf8");
@@ -58,18 +86,17 @@ function on(gate: GateLocation, args: string[]): number {
   } catch {
     return fail(".dotagents.json is not valid JSON");
   }
-  const check =
-    typeof parsed === "object" && parsed !== null
-      ? checkCommand((parsed as Record<string, unknown>).check)
-      : null;
-  if (check === null) {
+  const fields: Record<string, unknown> =
+    typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {};
+  const config = gateConfig(fields, mode, requireRed);
+  if (config === null) {
     return fail(".dotagents.json check must be a non-empty shell string or a non-empty argv array");
   }
-  const config: GateConfig = { check, mode };
   mkdirSync(gate.dir, { recursive: true });
   rmSync(join(gate.dir, CHECK_FILE), { force: true });
+  rmSync(join(gate.dir, RED_FILE), { force: true });
   writeFileSync(join(gate.dir, CONFIG_FILE), `${JSON.stringify(config, null, 2)}\n`);
-  process.stdout.write(`done_gate: on (mode ${mode})\n`);
+  process.stdout.write(`done_gate: on (mode ${mode}${requireRed ? ", require red" : ""})\n`);
   return 0;
 }
 
@@ -78,10 +105,15 @@ function off(gate: GateLocation): number {
   return 0;
 }
 
-function runCommand(command: CheckCommand, cwd: string): number {
+function runCommand(
+  command: CheckCommand,
+  cwd: string,
+  stdout: "inherit" | 2 = "inherit",
+  env: NodeJS.ProcessEnv = process.env,
+): number {
   const [file, args] =
     typeof command === "string" ? ["/bin/sh", ["-c", command]] : [command[0], command.slice(1)];
-  const result = spawnSync(file, args, { cwd, stdio: "inherit" });
+  const result = spawnSync(file, args, { cwd, env, stdio: ["inherit", stdout, "inherit"] });
   if (result.error) {
     process.stderr.write(`done_gate: could not start the check: ${result.error.message}\n`);
   }
@@ -110,11 +142,135 @@ function check(gate: GateLocation): number {
   return exitCode;
 }
 
-function status(gate: GateLocation): number {
-  if (storedConfig(gate) === null) {
+const TEST_DIRECTORIES: ReadonlySet<string> = new Set(["tests", "test", "__tests__"]);
+
+function isTestFile(path: string): boolean {
+  const segments = path.split("/");
+  const name = segments[segments.length - 1];
+  return (
+    segments.slice(0, -1).some((segment) => TEST_DIRECTORIES.has(segment)) ||
+    /\.(test|spec)\./.test(name) ||
+    /_test\./.test(name)
+  );
+}
+
+const REPOSITORY_ENV_KEYS = [
+  "GIT_DIR",
+  "GIT_INDEX_FILE",
+  "GIT_WORK_TREE",
+  "GIT_OBJECT_DIRECTORY",
+  "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+  "GIT_COMMON_DIR",
+  "GIT_PREFIX",
+];
+
+function cloneEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  for (const key of REPOSITORY_ENV_KEYS) {
+    delete env[key];
+  }
+  return env;
+}
+
+function changedTestFiles(root: string, base: string, tree: string): string[] | null {
+  const output = git(
+    ["diff-tree", "-r", "-z", "--no-renames", "--name-only", "--diff-filter=d", base, tree],
+    root,
+  );
+  if (output === null) {
+    return null;
+  }
+  return output.split("\0").filter((path) => path !== "" && isTestFile(path));
+}
+
+function runInBaseClone(
+  gate: GateLocation,
+  base: string,
+  tests: string[],
+  check: CheckCommand,
+  setup: CheckCommand | undefined,
+): number | string {
+  const scratch = mkdtempSync(join(tmpdir(), "done-gate-red-"));
+  const env = cloneEnv();
+  try {
+    const clone = join(scratch, "repo");
+    if (git(["clone", "-q", "--shared", "--no-checkout", gate.root, clone], scratch, env) === null) {
+      return "could not clone the repository into a temporary directory";
+    }
+    if (git(["checkout", "-q", "--detach", base], clone, env) === null) {
+      return `could not check out base ${base} in the clone`;
+    }
+    for (const path of tests) {
+      mkdirSync(dirname(join(clone, path)), { recursive: true });
+      copyFileSync(join(gate.root, path), join(clone, path));
+    }
+    if (setup !== undefined) {
+      const setupExit = runCommand(setup, clone, 2, env);
+      if (setupExit !== 0) {
+        return `setup exited ${setupExit} in the clone of base ${base}`;
+      }
+    }
+    return runCommand(check, clone, 2, env);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+}
+
+function red(gate: GateLocation): number {
+  const config = storedConfig(gate);
+  if (config === null) {
     return fail("not on in this worktree; run `done_gate.ts on` first");
   }
-  const evaluation = evaluate(gate);
+  const { remote, baseBranch } = config;
+  if (remote === undefined || baseBranch === undefined) {
+    return fail("on did not copy remote and baseBranch from .dotagents.json, so red has no base");
+  }
+  const ref = `refs/remotes/${remote}/${baseBranch}`;
+  if (git(["rev-parse", "--verify", "--quiet", `${ref}^{commit}`], gate.root) === null) {
+    return fail(`base ref ${ref} does not exist`);
+  }
+  const base = git(["merge-base", "HEAD", ref], gate.root);
+  if (!base) {
+    return fail(`no merge base between HEAD and ${ref}`);
+  }
+  const tree = treeHash(gate.root);
+  if (tree === null) {
+    return fail("could not hash the working tree");
+  }
+  const tests = changedTestFiles(gate.root, base, tree);
+  if (tests === null) {
+    return fail(`could not compare the working tree with base ${base}`);
+  }
+  let exitCode: number | null = null;
+  if (tests.length > 0) {
+    const outcome = runInBaseClone(gate, base, tests, config.check, config.setup);
+    if (typeof outcome === "string") {
+      return fail(outcome);
+    }
+    exitCode = outcome;
+  }
+  const record: RedRecord = { tree, base, tests, exitCode, at: new Date().toISOString() };
+  writeFileSync(join(gate.dir, RED_FILE), `${JSON.stringify(record, null, 2)}\n`);
+  if (tests.length === 0) {
+    process.stdout.write(`done_gate: no test files changed against base ${base}.\n`);
+    return 1;
+  }
+  if (exitCode === 0) {
+    process.stdout.write(
+      `done_gate: the ${tests.length} changed test files pass on base ${base} too, so they do not verify this change.\n`,
+    );
+    return 1;
+  }
+  process.stdout.write(`done_gate: the ${tests.length} changed test files fail on base ${base}.\n`);
+  return 0;
+}
+
+function status(gate: GateLocation): number {
+  const config = storedConfig(gate);
+  if (config === null) {
+    return fail("not on in this worktree; run `done_gate.ts on` first");
+  }
+  const evaluation = evaluate(gate, config);
   if (evaluation === null) {
     return fail("could not hash the working tree");
   }
@@ -193,7 +349,7 @@ function stopDecision(event: Record<string, unknown>): StopOutput {
   if (config === null) {
     return {};
   }
-  const evaluation = evaluate(gate);
+  const evaluation = evaluate(gate, config);
   if (evaluation === null) {
     throw new Error("could not hash the working tree");
   }
@@ -228,6 +384,7 @@ function main(argv: string[]): number {
     on: (gate) => on(gate, rest),
     off,
     check,
+    red,
     status,
   };
   if (action === undefined || !Object.hasOwn(actions, action)) {

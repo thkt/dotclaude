@@ -106,7 +106,7 @@ function judge(text: string): void {
   if (config === null) {
     return;
   }
-  const evaluation = evaluate(gate);
+  const evaluation = evaluate(gate, config);
   if (evaluation === null) {
     throw new Error("could not hash the working tree");
   }

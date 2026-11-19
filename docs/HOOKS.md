@@ -109,7 +109,7 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | statusline.sh    | statusLine        | fail-open    | Status line display, and a TTL sweep of its own per-session state   |
 | recall_index.ts  | SessionStart      | fail-open    | Background update of the recall cross-session index. Not wired into SessionStart for now |
 | failure-alert.sh | Stop, StopFailure | fail-open    | Sound a turn that ended badly. Silent on end_turn and in a subagent |
-| done_gate.ts | Stop | fail-open | In a working tree where `done_gate.ts on` has run, judge whether a record shows `check` passed on the current tree. In mode `record`, record the verdict and allow the stop. In mode `enforce`, block the stop while no such record exists |
+| done_gate.ts | Stop | fail-open | In a working tree where `done_gate.ts on` has run, judge whether a record shows `check` passed on the current tree. In mode `record`, record the verdict and allow the stop. In mode `enforce`, block the stop while no such record exists. In a working tree where `on --require red` has run, also require a record that the tests the change added failed on base |
 
 ### integrations/
 
