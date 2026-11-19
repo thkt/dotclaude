@@ -20,11 +20,13 @@ import {
   CONFIG_FILE,
   checkCommand,
   GATE_DIR_NAME,
+  RED_FILE,
   treeHash,
 } from "../../_lib/gate_record.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GATE = path.join(HERE, "..", "done_gate.ts");
+const PUBLISH_GATE = path.join(HERE, "..", "..", "pre-bash", "publish_gate.ts");
 
 function isolatedEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {
@@ -61,9 +63,13 @@ function repo(files: Record<string, string>): string {
 }
 
 function gate(cwd: string, ...args: string[]): SpawnSyncReturns<string> {
+  return gateWithEnv(cwd, {}, ...args);
+}
+
+function gateWithEnv(cwd: string, extra: Record<string, string>, ...args: string[]): SpawnSyncReturns<string> {
   return spawnSync(process.execPath, [GATE, ...args], {
     cwd,
-    env: isolatedEnv(),
+    env: { ...isolatedEnv(), ...extra },
     encoding: "utf8",
     timeout: 60_000,
   });
@@ -471,4 +477,281 @@ test("T-566 when stop cannot write its record, it prints {} and one stderr line 
   assert.equal(result.status, 0);
   assert.equal(result.stdout, "{}\n");
   assert.match(result.stderr, /^[^\n]+\n$/);
+});
+
+const RUN_TESTS = 'for f in tests/*.sh; do sh "$f" || exit 1; done';
+const RED_CONFIG = { remote: "origin", baseBranch: "main", check: RUN_TESTS };
+
+function writeFiles(dir: string, files: Record<string, string>): void {
+  for (const [name, content] of Object.entries(files)) {
+    mkdirSync(path.dirname(path.join(dir, name)), { recursive: true });
+    writeFileSync(path.join(dir, name), content);
+  }
+}
+
+function pushedRepo(dotagents: Record<string, unknown>): string {
+  const bare = realpathSync(mkdtempSync(path.join(tmpdir(), "done-gate-bare-")));
+  git(bare, "init", "-q", "--bare");
+  const dir = realpathSync(mkdtempSync(path.join(tmpdir(), "done-gate-")));
+  git(dir, "init", "-q");
+  writeFiles(dir, {
+    ".dotagents.json": JSON.stringify(dotagents),
+    "src/a.txt": "old\n",
+    "tests/base.sh": "exit 0\n",
+  });
+  git(dir, "add", "-A");
+  git(dir, "commit", "-q", "--no-verify", "-m", "base");
+  git(dir, "remote", "add", "origin", bare);
+  git(dir, "push", "-q", "origin", "HEAD:main");
+  git(dir, "fetch", "-q", "origin");
+  return dir;
+}
+
+function redRepo(dotagents: Record<string, unknown> = RED_CONFIG, ...onArgs: string[]): string {
+  const dir = pushedRepo(dotagents);
+  const on = gate(dir, "on", ...onArgs);
+  assert.equal(on.status, 0, on.stderr);
+  return dir;
+}
+
+function addTestFailingOnBase(dir: string): void {
+  writeFiles(dir, { "src/a.txt": "new\n", "tests/new.sh": "grep -q new src/a.txt\n" });
+}
+
+test("T-581 on copies remote, baseBranch and setup, records --require red in either order with --mode, and still succeeds when the three are absent", () => {
+  const dir = repo({
+    ".dotagents.json": JSON.stringify({
+      remote: "origin",
+      baseBranch: "main",
+      setup: ["sh", "-c", "exit 0"],
+      check: "exit 0",
+    }),
+  });
+  assert.equal(gate(dir, "on", "--require", "red", "--mode", "enforce").status, 0);
+  assert.deepEqual(readRecordFile(dir, CONFIG_FILE), {
+    check: "exit 0",
+    mode: "enforce",
+    remote: "origin",
+    baseBranch: "main",
+    setup: ["sh", "-c", "exit 0"],
+    requireRed: true,
+  });
+  assert.equal(gate(dir, "on", "--mode", "record", "--require", "red").status, 0);
+  assert.equal(readRecordFile(dir, CONFIG_FILE).requireRed, true);
+  assert.equal(gate(dir, "on").status, 0);
+  assert.equal(readRecordFile(dir, CONFIG_FILE).requireRed, undefined);
+
+  const minimal = repo({ ".dotagents.json": '{"check": "exit 0", "setup": []}' });
+  const plain = gate(minimal, "on");
+  assert.equal(plain.status, 0, plain.stderr);
+  assert.deepEqual(readRecordFile(minimal, CONFIG_FILE), { check: "exit 0", mode: "record" });
+
+  for (const args of [["--require", "green"], ["--require"], ["--require", "red", "--require", "red"]]) {
+    assert.equal(gate(minimal, "on", ...args).status, 2, JSON.stringify(args));
+  }
+});
+
+test("T-582 red exits 0 and records a nonzero exit code and the added test when the added test fails on base", () => {
+  const dir = redRepo({ ...RED_CONFIG, check: `echo check-output; ${RUN_TESTS}` });
+  addTestFailingOnBase(dir);
+  const result = gate(dir, "red");
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^done_gate: [^\n]*fail on base[^\n]*\n$/);
+  const record = readRecordFile(dir, RED_FILE);
+  assert.equal(typeof record.exitCode, "number");
+  assert.notEqual(record.exitCode, 0);
+  assert.deepEqual(record.tests, ["tests/new.sh"]);
+  assert.equal(record.tree, treeHash(dir));
+  assert.equal(record.base, git(dir, "rev-parse", "HEAD").trim());
+  assert.equal(typeof record.at, "string");
+});
+
+test("T-583 red exits 1 saying the change is not verified when the added test also passes on base", () => {
+  const dir = redRepo();
+  writeFiles(dir, { "tests/always.sh": "exit 0\n" });
+  const result = gate(dir, "red");
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /do not verify this change/);
+  assert.equal(readRecordFile(dir, RED_FILE).exitCode, 0);
+});
+
+test("T-584 red exits 1 and records an empty list when only a non-test file changed", () => {
+  const dir = redRepo();
+  writeFiles(dir, { "src/a.txt": "new\n" });
+  const result = gate(dir, "red");
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /no test files changed/);
+  assert.deepEqual(readRecordFile(dir, RED_FILE).tests, []);
+});
+
+test("T-585 red selects files under tests, test or __tests__ and named *.test.*, *.spec.* or *_test.*, and no other file", () => {
+  const dir = redRepo();
+  const selected = ["a/tests/x.sh", "a/test/x.sh", "a/__tests__/x.sh", "x.test.sh", "x.spec.sh", "x_test.sh"];
+  writeFiles(
+    dir,
+    Object.fromEntries([...selected, "contest/x.sh", "latest.sh"].map((name) => [name, "exit 0\n"])),
+  );
+  gate(dir, "red");
+  assert.deepEqual([...(readRecordFile(dir, RED_FILE).tests as string[])].sort(), [...selected].sort());
+});
+
+test("T-586 red runs setup in the clone before check, and the file setup creates stays out of the working tree", () => {
+  const dir = redRepo({
+    ...RED_CONFIG,
+    setup: "touch made-by-setup",
+    check: `test -f made-by-setup || exit 7; ${RUN_TESTS}`,
+  });
+  addTestFailingOnBase(dir);
+  const result = gate(dir, "red");
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readRecordFile(dir, RED_FILE).exitCode, 1);
+  assert.equal(existsSync(path.join(dir, "made-by-setup")), false);
+});
+
+test("T-587 red leaves git status --porcelain, the tree hash and the git worktree list line count unchanged", () => {
+  const dir = redRepo();
+  addTestFailingOnBase(dir);
+  git(dir, "add", "src/a.txt");
+  const current = () => ({
+    porcelain: git(dir, "status", "--porcelain"),
+    tree: treeHash(dir),
+    worktrees: git(dir, "worktree", "list").split("\n").length,
+  });
+  const before = current();
+  assert.equal(gate(dir, "red").status, 0);
+  assert.deepEqual(current(), before);
+});
+
+test("T-588 red leaves no clone in the temporary directory", () => {
+  const dir = redRepo();
+  addTestFailingOnBase(dir);
+  const scratch = realpathSync(mkdtempSync(path.join(tmpdir(), "done-gate-tmp-")));
+  const result = gateWithEnv(dir, { TMPDIR: scratch }, "red");
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(readdirSync(scratch), []);
+});
+
+test("T-589 red exits 2 with a one-line reason and writes no red.json before on, without remote, without the base ref, and when setup fails", () => {
+  const cases: Array<[string, string]> = [
+    ["not on", pushedRepo(RED_CONFIG)],
+    ["no remote", redRepo({ baseBranch: "main", check: RUN_TESTS })],
+    ["no base ref", redRepo({ ...RED_CONFIG, baseBranch: "missing" })],
+    ["setup fails", redRepo({ ...RED_CONFIG, setup: "exit 5" })],
+  ];
+  for (const [label, dir] of cases) {
+    addTestFailingOnBase(dir);
+    const result = gate(dir, "red");
+    assert.equal(result.status, 2, `${label}: ${result.stderr}`);
+    assert.match(result.stderr, /^done_gate: [^\n]+\n$/, label);
+    assert.equal(existsSync(path.join(gateDir(dir), RED_FILE)), false, label);
+  }
+});
+
+test("T-590 with --require red, status exits 1 telling to run red after a passing check without a red record, exits 0 once red passes, and exits 1 after a later edit with the check side first", () => {
+  const dir = redRepo(RED_CONFIG, "--require", "red");
+  addTestFailingOnBase(dir);
+  const check = gate(dir, "check");
+  assert.equal(check.status, 0, check.stderr);
+
+  const noRed = gate(dir, "status");
+  assert.equal(noRed.status, 1);
+  assert.match(noRed.stdout, /No red result/);
+  assert.match(noRed.stdout, /done_gate\.ts red/);
+  assert.doesNotMatch(noRed.stdout, /done_gate\.ts check/);
+
+  assert.equal(gate(dir, "red").status, 0);
+  const done = gate(dir, "status");
+  assert.equal(done.status, 0, done.stdout);
+  assert.equal(done.stdout, "done\n");
+
+  writeFiles(dir, { "src/b.txt": "later\n" });
+  const changed = gate(dir, "status");
+  assert.equal(changed.status, 1);
+  const checkAt = changed.stdout.indexOf("done_gate.ts check");
+  const redAt = changed.stdout.indexOf("done_gate.ts red");
+  assert.ok(checkAt >= 0 && redAt > checkAt, changed.stdout);
+});
+
+test("T-591 with --require red, status exits 1 when red.json records a check that passed on base or an empty test list", () => {
+  const passing = redRepo(RED_CONFIG, "--require", "red");
+  writeFiles(passing, { "tests/always.sh": "exit 0\n" });
+  assert.equal(gate(passing, "check").status, 0);
+  assert.equal(gate(passing, "red").status, 1);
+  const passed = gate(passing, "status");
+  assert.equal(passed.status, 1);
+  assert.match(passed.stdout, /do not verify this change/);
+  assert.match(passed.stdout, /done_gate\.ts red/);
+
+  const empty = redRepo(RED_CONFIG, "--require", "red");
+  assert.equal(gate(empty, "check").status, 0);
+  assert.equal(gate(empty, "red").status, 1);
+  const none = gate(empty, "status");
+  assert.equal(none.status, 1);
+  assert.match(none.stdout, /no changed test files/);
+  assert.match(none.stdout, /done_gate\.ts red/);
+});
+
+test("T-592 without --require red, whether red.json exists does not change status", () => {
+  const dir = redRepo();
+  assert.equal(gate(dir, "check").status, 0);
+  const without = gate(dir, "status");
+  assert.equal(gate(dir, "red").status, 1);
+  assert.equal(existsSync(path.join(gateDir(dir), RED_FILE)), true);
+  const withRed = gate(dir, "status");
+  assert.deepEqual([withRed.status, withRed.stdout], [without.status, without.stdout]);
+  assert.equal(withRed.stdout, "done\n");
+});
+
+test("T-593 with --require red in mode enforce, the stop block reason equals the status output and the publish_gate denial contains it", () => {
+  const dir = redRepo(RED_CONFIG, "--mode", "enforce", "--require", "red");
+  assert.equal(gate(dir, "check").status, 0);
+  const status = gate(dir, "status");
+  assert.equal(status.status, 1);
+  const statusText = status.stdout.replace(/\n$/, "");
+  assert.match(statusText, /done_gate\.ts red/);
+
+  assert.deepEqual(stopHook(stopEvent(dir)), { decision: "block", reason: statusText });
+
+  const publish = spawnSync(process.execPath, [PUBLISH_GATE], {
+    input: JSON.stringify({ session_id: "s", tool_name: "Bash", tool_input: { command: "git push" }, cwd: dir }),
+    env: isolatedEnv(),
+    encoding: "utf8",
+    timeout: 60_000,
+  });
+  assert.equal(publish.status, 0, publish.stderr);
+  const reason: unknown = JSON.parse(publish.stdout).hookSpecificOutput.permissionDecisionReason;
+  assert.equal(typeof reason, "string");
+  assert.ok((reason as string).includes(statusText), String(reason));
+});
+
+test("T-594 red with GIT_INDEX_FILE pointing at the repository index leaves git ls-files -s unchanged and checks out base in the clone", () => {
+  const dir = redRepo();
+  addTestFailingOnBase(dir);
+  git(dir, "add", "src/a.txt");
+  const before = git(dir, "ls-files", "-s");
+  const index = git(dir, "rev-parse", "--path-format=absolute", "--git-path", "index").trim();
+  const result = gateWithEnv(dir, { GIT_INDEX_FILE: index }, "red");
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(git(dir, "ls-files", "-s"), before);
+  assert.doesNotMatch(result.stderr, /No such file/);
+  assert.equal(readRecordFile(dir, RED_FILE).exitCode, 1);
+});
+
+test("T-595 running on after red removes red.json", () => {
+  const dir = redRepo();
+  addTestFailingOnBase(dir);
+  assert.equal(gate(dir, "red").status, 0);
+  assert.equal(existsSync(path.join(gateDir(dir), RED_FILE)), true);
+  assert.equal(gate(dir, "on").status, 0);
+  assert.equal(existsSync(path.join(gateDir(dir), RED_FILE)), false);
+});
+
+test("T-596 a setup and a check that print to stdout leave the stdout of red at one line", () => {
+  const dir = redRepo({ ...RED_CONFIG, setup: "echo setup-output", check: `echo check-output; ${RUN_TESTS}` });
+  writeFiles(dir, { "tests/always.sh": "exit 0\n" });
+  const result = gate(dir, "red");
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /^done_gate: [^\n]*do not verify this change[^\n]*\n$/);
+  assert.match(result.stderr, /setup-output/);
+  assert.match(result.stderr, /check-output/);
 });

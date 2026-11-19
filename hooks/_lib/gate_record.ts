@@ -7,6 +7,7 @@ import { join } from "node:path";
 export const GATE_DIR_NAME = "agent-gate";
 export const CONFIG_FILE = "config.json";
 export const CHECK_FILE = "check.json";
+export const RED_FILE = "red.json";
 export const STOP_LOG_FILE = "stop-log.jsonl";
 export const STREAK_FILE = "stop-streak.json";
 export const PUBLISH_LOG_FILE = "publish-log.jsonl";
@@ -17,6 +18,10 @@ export type GateMode = "record" | "enforce";
 export interface GateConfig {
   check: CheckCommand;
   mode: GateMode;
+  remote?: string;
+  baseBranch?: string;
+  setup?: CheckCommand;
+  requireRed?: true;
 }
 
 export interface CheckRecord {
@@ -25,11 +30,26 @@ export interface CheckRecord {
   at: string;
 }
 
-export type Verdict =
-  | { done: true }
-  | { done: false; reason: "no-record" | "nonzero-exit" | "tree-changed"; lines: string[] };
+export interface RedRecord {
+  tree: string;
+  base: string;
+  tests: string[];
+  exitCode: number | null;
+  at: string;
+}
+
+export type NotDoneReason =
+  | "no-record"
+  | "nonzero-exit"
+  | "tree-changed"
+  | "red-no-record"
+  | "red-tree-changed"
+  | "red-not-failing";
+
+export type Verdict = { done: true } | { done: false; reason: NotDoneReason; lines: string[] };
 
 const RUN_CHECK = "Next: run `done_gate.ts check` on the current working tree.";
+const RUN_RED = "Next: run `done_gate.ts red` on the current working tree.";
 
 export function checkCommand(value: unknown): CheckCommand | null {
   if (typeof value === "string") {
@@ -57,7 +77,29 @@ export function checkRecord(value: unknown): CheckRecord | null {
   return { tree, exitCode, at };
 }
 
-export function verdict(record: CheckRecord | null, currentTree: string): Verdict {
+function nonEmptyString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() !== "" ? value : null;
+}
+
+export function redRecord(value: unknown): RedRecord | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+  const { tree, base, tests, exitCode, at } = value as Record<string, unknown>;
+  if (
+    typeof tree !== "string" ||
+    typeof base !== "string" ||
+    !Array.isArray(tests) ||
+    !tests.every((test) => typeof test === "string") ||
+    (typeof exitCode !== "number" && exitCode !== null) ||
+    typeof at !== "string"
+  ) {
+    return null;
+  }
+  return { tree, base, tests, exitCode, at };
+}
+
+function checkVerdict(record: CheckRecord | null, currentTree: string): Verdict {
   if (record === null) {
     return { done: false, reason: "no-record", lines: ["No check result is recorded.", RUN_CHECK] };
   }
@@ -81,7 +123,59 @@ export function verdict(record: CheckRecord | null, currentTree: string): Verdic
   return { done: true };
 }
 
-function git(args: string[], cwd: string, env?: NodeJS.ProcessEnv, input?: string): string | null {
+function redVerdict(record: RedRecord | null, currentTree: string): Verdict {
+  if (record === null) {
+    return { done: false, reason: "red-no-record", lines: ["No red result is recorded.", RUN_RED] };
+  }
+  if (record.tree !== currentTree) {
+    return {
+      done: false,
+      reason: "red-tree-changed",
+      lines: [
+        `The working tree changed after red ran at ${record.at} (recorded ${record.tree}, now ${currentTree}).`,
+        RUN_RED,
+      ],
+    };
+  }
+  if (record.tests.length === 0) {
+    return {
+      done: false,
+      reason: "red-not-failing",
+      lines: [`The red run at ${record.at} found no changed test files against base ${record.base}.`, RUN_RED],
+    };
+  }
+  if (record.exitCode === 0) {
+    return {
+      done: false,
+      reason: "red-not-failing",
+      lines: [
+        `The changed tests passed on base ${record.base} at ${record.at}, so they do not verify this change.`,
+        RUN_RED,
+      ],
+    };
+  }
+  return { done: true };
+}
+
+export function verdict(
+  record: CheckRecord | null,
+  currentTree: string,
+  red?: { record: RedRecord | null },
+): Verdict {
+  const checkSide = checkVerdict(record, currentTree);
+  if (red === undefined) {
+    return checkSide;
+  }
+  const redSide = redVerdict(red.record, currentTree);
+  if (checkSide.done) {
+    return redSide;
+  }
+  return redSide.done
+    ? checkSide
+    : { done: false, reason: checkSide.reason, lines: [...checkSide.lines, ...redSide.lines] };
+}
+
+export function git(args: string[], cwd: string, env?: NodeJS.ProcessEnv, input?: string): string | null {
   const result = spawnSync("git", args, { cwd, env, input, encoding: "utf8" });
   if (result.status !== 0) {
     return null;
@@ -146,12 +240,33 @@ export function storedConfig(gate: GateLocation): GateConfig | null {
     return null;
   }
   const fields = config as Record<string, unknown>;
-  const check = checkCommand(fields.check);
   const mode = fields.mode;
-  if (check === null || (mode !== "record" && mode !== "enforce")) {
+  if (mode !== "record" && mode !== "enforce") {
     return null;
   }
-  return { check, mode };
+  return gateConfig(fields, mode, fields.requireRed === true);
+}
+
+export function gateConfig(
+  fields: Record<string, unknown>,
+  mode: GateMode,
+  requireRed: boolean,
+): GateConfig | null {
+  const check = checkCommand(fields.check);
+  if (check === null) {
+    return null;
+  }
+  const remote = nonEmptyString(fields.remote);
+  const baseBranch = nonEmptyString(fields.baseBranch);
+  const setup = checkCommand(fields.setup);
+  return {
+    check,
+    mode,
+    ...(remote === null ? {} : { remote }),
+    ...(baseBranch === null ? {} : { baseBranch }),
+    ...(setup === null ? {} : { setup }),
+    ...(requireRed ? { requireRed: true as const } : {}),
+  };
 }
 
 export interface Evaluation {
@@ -160,13 +275,15 @@ export interface Evaluation {
   result: Verdict;
 }
 
-export function evaluate(gate: GateLocation): Evaluation | null {
+export function evaluate(gate: GateLocation, config: GateConfig): Evaluation | null {
   const tree = treeHash(gate.root);
   if (tree === null) {
     return null;
   }
   const record = checkRecord(readJson(join(gate.dir, CHECK_FILE)));
-  return { tree, record, result: verdict(record, tree) };
+  const red =
+    config.requireRed === true ? { record: redRecord(readJson(join(gate.dir, RED_FILE))) } : undefined;
+  return { tree, record, result: verdict(record, tree, red) };
 }
 
 export function verdictText(result: Verdict): string {
