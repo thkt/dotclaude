@@ -1,6 +1,6 @@
 # Hooks Design
 
-Hook システムの設計意図と仕組み。実登録は `settings.json` が正で、本書は構造と意図を説明する。`settings.json` が登録する hook は、Stop の `lifecycle/done_gate.ts stop` の 1 つだけである。本書のほかの表は、各スクリプトが最後に持っていた配線の記録である (DR-0123)。statusLine の登録は残る。
+Hook システムの設計意図と仕組み。実登録は `settings.json` が正で、本書は構造と意図を説明する。`settings.json` が登録する hook は 2 つである。Stop の `lifecycle/done_gate.ts stop` と、PreToolUse(Bash) の `pre-bash/publish_gate.ts` である。本書のほかの表は、各スクリプトが最後に持っていた配線の記録である (DR-0123)。statusLine の登録は残る。
 
 ## 実行レイヤー
 
@@ -63,6 +63,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 | -------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
 | package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed | パッケージマネージャーコマンドを ni 系へ変換。マネージャー自身のフラグと bun 内蔵のテストランナーは素通しする |
 | body_proofread.ts          | PreToolUse(Bash) | fail-closed | gh issue/pr create の本文と commit メッセージを校正し、起票には構造チェックを添える (advisory)                |
+| publish_gate.ts | PreToolUse(Bash) | fail-open | `done_gate.ts on` を済ませた作業ツリーで、`git push`、`gh pr create`、`gh pr ready` を見つけ、`check` が今のツリーで通った記録があるかを判定する。mode が `record` のときは判定を記録して実行を許す。`enforce` のときは、記録がない間、実行を拒否する |
 
 ### edit/
 

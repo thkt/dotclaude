@@ -1,6 +1,6 @@
 # Hooks Design
 
-Hook system design intent and mechanism. `settings.json` is the source of truth for actual registration; this document explains structure and intent. The one hook `settings.json` registers is `lifecycle/done_gate.ts stop` on Stop. The other tables in this document record the wiring each script last carried (DR-0123). The statusLine registration remains.
+Hook system design intent and mechanism. `settings.json` is the source of truth for actual registration; this document explains structure and intent. `settings.json` registers two hooks. They are `lifecycle/done_gate.ts stop` on Stop and `pre-bash/publish_gate.ts` on PreToolUse(Bash). The other tables in this document record the wiring each script last carried (DR-0123). The statusLine registration remains.
 
 ## Execution Layers
 
@@ -83,6 +83,7 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | -------------------------- | ---------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed  | Convert package manager commands to the ni family. A manager's own flags, and bun's built-in test runner, pass through unchanged |
 | body_proofread.ts          | PreToolUse(Bash) | fail-closed  | Proofread a gh issue/pr create body and a commit message, with a structure check on the filing (advisory)                        |
+| publish_gate.ts | PreToolUse(Bash) | fail-open | In a working tree where `done_gate.ts on` has run, find `git push`, `gh pr create` and `gh pr ready`, and judge whether a record shows `check` passed on the current tree. In mode `record`, record the verdict and allow the command. In mode `enforce`, deny the command while no such record exists |
 
 ### edit/
 

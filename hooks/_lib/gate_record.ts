@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -9,6 +9,7 @@ export const CONFIG_FILE = "config.json";
 export const CHECK_FILE = "check.json";
 export const STOP_LOG_FILE = "stop-log.jsonl";
 export const STREAK_FILE = "stop-streak.json";
+export const PUBLISH_LOG_FILE = "publish-log.jsonl";
 
 export type CheckCommand = string | string[];
 export type GateMode = "record" | "enforce";
@@ -129,4 +130,45 @@ export function treeHash(root: string): string | null {
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
+}
+
+export function readJson(path: string): unknown {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    return undefined;
+  }
+}
+
+export function storedConfig(gate: GateLocation): GateConfig | null {
+  const config = readJson(join(gate.dir, CONFIG_FILE));
+  if (typeof config !== "object" || config === null) {
+    return null;
+  }
+  const fields = config as Record<string, unknown>;
+  const check = checkCommand(fields.check);
+  const mode = fields.mode;
+  if (check === null || (mode !== "record" && mode !== "enforce")) {
+    return null;
+  }
+  return { check, mode };
+}
+
+export interface Evaluation {
+  tree: string;
+  record: CheckRecord | null;
+  result: Verdict;
+}
+
+export function evaluate(gate: GateLocation): Evaluation | null {
+  const tree = treeHash(gate.root);
+  if (tree === null) {
+    return null;
+  }
+  const record = checkRecord(readJson(join(gate.dir, CHECK_FILE)));
+  return { tree, record, result: verdict(record, tree) };
+}
+
+export function verdictText(result: Verdict): string {
+  return result.done ? "done" : result.lines.join("\n");
 }

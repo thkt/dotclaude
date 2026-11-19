@@ -154,7 +154,8 @@ On macOS with the sandbox enabled, running `gh` inside the sandbox requires `san
 
 `settings.json` wires not one binary in this family, so none of them runs
 automatically (DR-0121, DR-0122). The TypeScript hooks under `hooks/` are not
-wired either, except `lifecycle/done_gate.ts stop` on Stop (DR-0123). CI and
+wired either, except `lifecycle/done_gate.ts stop` on Stop and
+`pre-bash/publish_gate.ts` on PreToolUse(Bash) (DR-0123). CI and
 the workflows carry the quality enforcement.
 Installing them is optional, and the table below
 records what each one carried.
