@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   before_pathspec,
+  commands,
   flag_value,
   git_clean_only_lists,
   git_subcommand,
@@ -60,4 +61,20 @@ test("T-272 git_clean_only_lists is true for a dry-run clean and false once a fo
   assert.equal(git_clean_only_lists(["-fd", "--", "-notes"]), false);
   assert.equal(git_clean_only_lists(["-fd", "--", "-n"]), false);
   assert.equal(git_clean_only_lists(["-n", "--", "-notes"]), true);
+});
+
+test("T-600 commands drops a comment up to its line end, including a line ending in a backslash, and splits the next line as a command", () => {
+  const cases: Array<[string, string[][]]> = [
+    ["# note\ngit push", [["git", "push"]]],
+    ["echo hi # note\ngit push", [["echo", "hi"], ["git", "push"]]],
+    ["echo a;# b\ngit push", [["echo", "a"], ["git", "push"]]],
+    ["git status #x\ngit push", [["git", "status"], ["git", "push"]]],
+    ["# c \\\ngit push", [["git", "push"]]],
+    ["echo a # c \\\ngit push", [["echo", "a"], ["git", "push"]]],
+    ["git push # last", [["git", "push"]]],
+    ["echo 'x # y'\ngit push", [["echo", "x # y"], ["git", "push"]]],
+  ];
+  for (const [input, expected] of cases) {
+    assert.deepEqual([...commands(input)], expected, JSON.stringify(input));
+  }
 });

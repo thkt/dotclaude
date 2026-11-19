@@ -316,3 +316,19 @@ test("T-579 running the hook leaves the tree hash and git status --porcelain unc
   assert.equal(treeHash(dir), hashBefore);
   assert.equal(git(dir, "status", "--porcelain"), statusBefore);
 });
+
+test("T-601 a git push on the line after a comment line appends one line naming git push", () => {
+  const dir = gatedRepo();
+  assert.equal(bash("# note\ngit push", dir).stdout, "");
+  const lines = logLines(dir);
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].command, "git push");
+});
+
+test("T-602 in mode enforce with no passing check a git push on the line after a comment line is denied", () => {
+  const dir = gatedRepo("enforce");
+  const output = JSON.parse(bash("# note\ngit push", dir).stdout) as {
+    hookSpecificOutput: { permissionDecision: string };
+  };
+  assert.equal(output.hookSpecificOutput.permissionDecision, "deny");
+});
