@@ -63,7 +63,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 | -------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
 | package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed | パッケージマネージャーコマンドを ni 系へ変換。マネージャー自身のフラグと bun 内蔵のテストランナーは素通しする |
 | body_proofread.ts          | PreToolUse(Bash) | fail-closed | gh issue/pr create の本文と commit メッセージを校正し、起票には構造チェックを添える (advisory)                |
-| publish_gate.ts | PreToolUse(Bash) | fail-open | `done_gate.ts on` を済ませた作業ツリーで、`git push`、`gh pr create`、`gh pr ready` を見つけ、`check` が今のツリーで通った記録があるかを判定する。mode が `record` のときは判定を記録して実行を許す。`enforce` のときは、記録がない間、実行を拒否する |
+| publish_gate.ts | PreToolUse(Bash) | fail-open | `done_gate.ts on` を済ませた作業ツリーで、`git push`、`gh pr create`、`gh pr ready` を見つけ、`check` が今のツリーで通った記録があるかを判定する。mode が `record` のときは判定を記録して実行を許す。`enforce` のときは、記録がない間、実行を拒否する。行の文字から作業ツリーを決められないときは、判定せず、決められなかったことを記録して実行を許す |
 
 ### edit/
 

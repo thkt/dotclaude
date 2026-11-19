@@ -16,7 +16,7 @@ type PublishKind = "git push" | "gh pr create" | "gh pr ready";
 
 interface PublishTarget {
   kind: PublishKind;
-  dir: string;
+  dir: string | null;
 }
 
 const HELP_FLAGS: ReadonlySet<string> = new Set(["--help", "-h"]);
@@ -61,15 +61,21 @@ function literalDir(arg: string): boolean {
   return arg !== "-" && !arg.startsWith("~") && !/[$`]/.test(arg);
 }
 
-function cdTarget(tokens: readonly string[], current: string): string | null {
-  return tokens.length === 2 && literalDir(tokens[1]) ? path.resolve(current, tokens[1]) : null;
+function applyDir(current: string | null, arg: string): string | null {
+  if (!literalDir(arg)) {
+    return null;
+  }
+  if (path.isAbsolute(arg)) {
+    return path.resolve(arg);
+  }
+  return current === null ? null : path.resolve(current, arg);
 }
 
 function publishTarget(command: string, cwd: string): PublishTarget | null {
-  let current = cwd;
+  let current: string | null = cwd;
   for (const tokens of commands(command)) {
     if (tokens[0] === "cd") {
-      current = cdTarget(tokens, current) ?? cwd;
+      current = tokens.length === 2 ? applyDir(current, tokens[1]) : null;
       continue;
     }
     const kind = publishKind(tokens);
@@ -79,12 +85,31 @@ function publishTarget(command: string, cwd: string): PublishTarget | null {
     let dir = current;
     if (kind === "git push") {
       for (const target of gitDirs(tokens)) {
-        dir = literalDir(target) ? path.resolve(dir, target) : cwd;
+        dir = applyDir(dir, target);
       }
     }
     return { kind, dir };
   }
   return null;
+}
+
+function sessionOf(payload: unknown): string | null {
+  const sessionId = field(payload, "session_id");
+  return typeof sessionId === "string" ? sessionId : null;
+}
+
+function recordUnresolved(payload: unknown, cwd: string, kind: PublishKind): void {
+  const gate = gateLocation(cwd);
+  if (gate === null || storedConfig(gate) === null) {
+    return;
+  }
+  const entry = {
+    at: new Date().toISOString(),
+    session_id: sessionOf(payload),
+    command: kind,
+    unresolved: true,
+  };
+  appendFileSync(path.join(gate.dir, PUBLISH_LOG_FILE), `${JSON.stringify(entry)}\n`);
 }
 
 function judge(text: string): void {
@@ -96,6 +121,10 @@ function judge(text: string): void {
   }
   const target = publishTarget(command, cwd);
   if (target === null) {
+    return;
+  }
+  if (target.dir === null) {
+    recordUnresolved(payload, cwd, target.kind);
     return;
   }
   const gate = gateLocation(target.dir);
@@ -111,10 +140,9 @@ function judge(text: string): void {
     throw new Error("could not hash the working tree");
   }
   const { tree, result } = evaluation;
-  const sessionId = field(payload, "session_id");
   const entry = {
     at: new Date().toISOString(),
-    session_id: typeof sessionId === "string" ? sessionId : null,
+    session_id: sessionOf(payload),
     command: target.kind,
     tree,
     done: result.done,

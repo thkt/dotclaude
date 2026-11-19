@@ -203,10 +203,85 @@ test("T-575 cd <dir> && git push and git -C <dir> push judge the working tree at
   assert.deepEqual(logLines(plain), []);
 });
 
-test("T-576 cd with a variable leaves the judgment on the event cwd", () => {
+test("T-576 in mode record a cd whose target is not literal appends one unresolved line holding exactly at, session_id, command and unresolved", () => {
+  const gated = gatedRepo("record");
+  const result = bash('cd "$X" && git push', gated);
+  assert.equal(result.stdout, "");
+  const lines = logLines(gated);
+  assert.equal(lines.length, 1);
+  const [line] = lines;
+  assert.deepEqual(Object.keys(line).sort(), ["at", "command", "session_id", "unresolved"]);
+  assert.equal(line.unresolved, true);
+  assert.equal(line.command, "git push");
+  assert.equal(line.session_id, "publish-gate-session");
+  assert.equal(typeof line.at, "string");
+});
+
+test("T-580 in mode enforce with no passing check an unresolved target is allowed with an unresolved line, while a plain git push is denied", () => {
+  const gated = gatedRepo("enforce");
+  assert.equal(bash('cd "$X" && git push', gated).stdout, "");
+  const lines = logLines(gated);
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].unresolved, true);
+  const denied = JSON.parse(bash("git push", gated).stdout) as {
+    hookSpecificOutput: { permissionDecision: string };
+  };
+  assert.equal(denied.hookSpecificOutput.permissionDecision, "deny");
+});
+
+test("T-581 every form whose target cannot be read from the line appends one unresolved line", () => {
   const gated = gatedRepo();
+  for (const command of [
+    "cd && git push",
+    "cd - && git push",
+    "cd ~/x && git push",
+    'cd "$X" && git push',
+    'cd "$(pwd)" && git push',
+    "cd a b && git push",
+    'git -C "$X" push',
+    "git -C ~/x push",
+    'cd "$X" && cd sub && git push',
+    'cd "$X" && git -C sub push',
+  ]) {
+    const before = logLines(gated).length;
+    assert.equal(bash(command, gated).stdout, "", command);
+    const lines = logLines(gated);
+    assert.equal(lines.length, before + 1, command);
+    assert.equal(lines[lines.length - 1].unresolved, true, command);
+    assert.equal(lines[lines.length - 1].tree, undefined, command);
+  }
+});
+
+test("T-582 an absolute cd or -C after an unresolved cd judges the working tree at that path", () => {
+  const plain = repo();
+  const gated = gatedRepo();
+  bash(`cd "$X" && cd ${gated} && git push`, plain);
+  bash(`cd "$X" && git -C ${gated} push`, plain);
+  const lines = logLines(gated);
+  assert.equal(lines.length, 2);
+  for (const line of lines) {
+    assert.equal(typeof line.tree, "string");
+    assert.equal(line.unresolved, undefined);
+  }
+  assert.deepEqual(logLines(plain), []);
+});
+
+test("T-583 an unresolved target from a cwd without on or outside git appends no line anywhere and leaves stdout empty", () => {
+  const gated = gatedRepo();
+  const plain = repo();
+  const outside = realpathSync(mkdtempSync(path.join(tmpdir(), "publish-gate-outside-")));
+  assert.equal(bash('cd "$X" && git push', plain).stdout, "");
+  assert.equal(bash('cd "$X" && git push', outside).stdout, "");
+  assert.deepEqual(logLines(plain), []);
+  assert.deepEqual(logLines(gated), []);
+});
+
+test("T-584 an unresolved target leaves git status --porcelain unchanged", () => {
+  const gated = gatedRepo("enforce");
+  writeFileSync(path.join(gated, "untracked.txt"), "dirty\n");
+  const statusBefore = git(gated, "status", "--porcelain");
   bash('cd "$X" && git push', gated);
-  assert.equal(logLines(gated).length, 1);
+  assert.equal(git(gated, "status", "--porcelain"), statusBefore);
 });
 
 test("T-577 a repo without on, a cwd outside git, and stdin that is not a JSON object end with empty stdout and exit 0", () => {
