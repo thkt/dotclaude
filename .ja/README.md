@@ -138,7 +138,7 @@ macOS で sandbox を有効にしている場合、sandbox 内で `gh` を実行
 
 ### Hook ツール (推奨)
 
-このファミリーのバイナリは 1 つも `settings.json` に配線されておらず、自動実行されない (DR-0121, DR-0122)。`hooks/` 配下の TypeScript hook も配線していない (DR-0123)。品質保証は CI と workflow が持つ。インストールは任意で、下表はどのバイナリが何を担っていたかの記録である。
+このファミリーのバイナリは 1 つも `settings.json` に配線されておらず、自動実行されない (DR-0121, DR-0122)。`hooks/` 配下の TypeScript hook も、Stop の `lifecycle/done_gate.ts stop` を除いて配線していない (DR-0123)。品質保証は CI と workflow が持つ。インストールは任意で、下表はどのバイナリが何を担っていたかの記録である。
 
 ```bash
 brew tap thkt/tap
