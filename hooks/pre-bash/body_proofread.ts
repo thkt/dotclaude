@@ -1,26 +1,5 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// PreToolUse hook: proofread the body a gh filing or a commit is about to write. TypeScript
-// side of the retired Python proofreader (unit U-007, following U-006's target-selection
-// primitives). HEREDOC / Mode / FILING / COMMIT / COMMIT_INLINE / COMMIT_FILE / _target /
-// _heredoc_body / _flag / _lint_section / _checklist / main carry the Python side's names and
-// shapes.
-//
-// _lint_section duplicates hooks/_lib/textlint.ts's runner detection and lint logic rather than
-// importing it. That module exists and this is a second call site, so the YAGNI abstraction
-// gate is open and the duplication is one piece of knowledge held twice. The two differ only in
-// where each computes the config path from. Merging them is deferred, not justified.
-//
-// Advisory, same as the Python side: findings ride back as additionalContext and never stop
-// the call.
-//
-// main() ends in an unguarded process.exit(main()) (DR-0114, no isMainModule guard), so an
-// in-process import would exit the test runner's own process the moment the import ran -- the
-// same hazard hooks/pre-bash/tests/client-identifier-gate.test.ts avoids by spawning the hook
-// instead. Both hooks/pre-bash/tests/body-proofread-target.test.ts (converted alongside this
-// unit) and this unit's hooks/pre-bash/tests/body-proofread-notify.test.ts spawn this file
-// through hooks/_lib/tests/_hook-harness.ts's run() for that reason, rather than importing its
-// exports directly the way body-proofread-target.test.ts did before main() existed.
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -31,15 +10,9 @@ import * as ghFiling from "../_lib/gh_filing.ts";
 import { field, notify, parse, readStdin } from "../_lib/hook_payload.ts";
 import { hasJapanese } from "../_lib/japanese.ts";
 
-// The REPO_ROOT / CONFIG pair, computed the same way shebang_scope.ts computes
-// its own REPO: not $HOME/.claude, which names the installed harness alone, but two levels up
-// from this file (hooks/pre-bash -> hooks -> the checkout root), so a checkout run from
-// anywhere else still finds its own config.
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TEXTLINT_CONFIG = join(REPO_ROOT, ".textlintrc.json");
 
-/** bun x, then npx -- the same order hooks/_lib/textlint.ts tries, and null when neither is
- * on PATH. */
 function _textlint_runner(): readonly [string, ...string[]] | null {
   if (spawnSync("which", ["bun"]).status === 0) {
     return ["bun", "x"];
@@ -50,9 +23,6 @@ function _textlint_runner(): readonly [string, ...string[]] | null {
   return null;
 }
 
-/** The findings textlint prints for `path`, empty when textlint found none or could not run
- * (no config, or no runner) -- the caller cannot tell the two apart, and neither leaves it
- * anything to report (the retired Python proofreader's textlint.lint). */
 function _textlint_lint(path: string): string {
   try {
     if (!statSync(TEXTLINT_CONFIG).isFile()) {
@@ -65,9 +35,6 @@ function _textlint_lint(path: string): string {
   if (runner === null) {
     return "";
   }
-  // cwd, not --config alone: textlint resolves its presets from the working directory and
-  // exits 1 from anywhere without node_modules above it, config or no config. That same exit
-  // code is how it reports findings, so the exit status stays unchecked and only stdout is read.
   const result = spawnSync(runner[0], [...runner.slice(1), "textlint", path, "--config", TEXTLINT_CONFIG], {
     cwd: REPO_ROOT,
     encoding: "utf8",
@@ -75,7 +42,6 @@ function _textlint_lint(path: string): string {
   return result.stdout ?? "";
 }
 
-/** A heredoc marker, quoted or bare (the retired Python proofreader's HEREDOC). */
 export const HEREDOC = /<<-?\s*(['"]?)(\w+)\1/;
 
 export interface Mode {
@@ -85,15 +51,11 @@ export interface Mode {
 }
 
 export const FILING: Mode = { label: "body", threshold: null, checklist: true };
-// The checklist asks about an issue's readers, which a commit message has none of.
 export const COMMIT: Mode = { label: "commit message", threshold: 10, checklist: false };
 
-// git commit spells these its own way, and `-F` names --file here where it names --body-file
-// on a gh filing.
 export const COMMIT_INLINE: readonly string[] = ["-m", "--message"];
 export const COMMIT_FILE: readonly string[] = ["-F", "--file"];
 
-/** The body of the first heredoc, or null when its marker never closes. */
 export function _heredoc_body(text: string): string | null {
   const match = HEREDOC.exec(text);
   if (!match) {
@@ -115,7 +77,6 @@ export function _heredoc_body(text: string): string | null {
   return null;
 }
 
-/** The value the tokens carry under any of the given flag spellings. */
 export function _flag(tokens: readonly string[], names: readonly string[]): string | null {
   for (const name of names) {
     const value = commandScan.flag_value(tokens, name);
@@ -137,9 +98,6 @@ function _read(target: string): string | null {
   }
 }
 
-/** The body a gh filing is about to write. A filing names its body through a flag, so a
- * heredoc on the same line is writing some other file, and reading it would proofread that
- * file under the issue's name. */
 function _filing_body(filing: ghFiling.Filing): string | null {
   const inline = ghFiling.flag(filing, ghFiling.BODY_FLAGS);
   if (inline !== null) {
@@ -149,8 +107,6 @@ function _filing_body(filing: ghFiling.Filing): string | null {
   return target !== null ? _read(target) : null;
 }
 
-/** The message a commit is about to write. Its heredoc body is the message itself, and it
- * arrives as the value of an inline flag as well, so it is read before any flag. */
 function _commit_body(command: string, tokens: readonly string[]): string | null {
   const body = _heredoc_body(command);
   if (body !== null) {
@@ -164,16 +120,9 @@ function _commit_body(command: string, tokens: readonly string[]): string | null
   if (path === null) {
     return null;
   }
-  // A relative path stays unread: a commit carries no cd this hook can follow the way a
-  // filing does, so the shell state that would resolve it is not on the command line.
   return isAbsolute(path) ? _read(path) : null;
 }
 
-/** What the command line is about to write, paired with how to label it.
- *
- * Read from tokens rather than from the raw string: a commit message that mentions
- * `gh issue create` would otherwise be taken for a filing, and the body would be looked for
- * in a filing that is not there, so the message reaches no one unproofread. */
 export function _target(command: string): readonly [Mode, string] | null {
   try {
     const filing = ghFiling.find(command);
@@ -188,13 +137,11 @@ export function _target(command: string): readonly [Mode, string] | null {
       }
     }
   } catch {
-    return null; // an unclosed quote hides which command the line runs
+    return null;
   }
   return null;
 }
 
-/** The textlint findings section, empty below the mode's Japanese threshold or once textlint
- * itself has run (the retired Python proofreader's _lint_section). */
 function _lint_section(body: string, mode: Mode): string {
   if (!hasJapanese(body, mode.threshold)) {
     return "";
@@ -208,8 +155,6 @@ function _lint_section(body: string, mode: Mode): string {
       return "";
     }
     const label = mode.label;
-    // textlint prints the path on its own line above the findings, and repeats it inside each
-    // one. Neither reaches a reader who never saw the temp file.
     const kept = output.split("\n").filter((line) => line.trim() !== target);
     const findings = kept.map((line) => line.replaceAll(target, label)).join("\n");
     return `## textlint 校正結果\n\nこの ${label} は作成済み。以下の指摘のうち直す価値があるものを編集で反映する。\n\n${findings}\n\n`;
@@ -218,14 +163,6 @@ function _lint_section(body: string, mode: Mode): string {
   }
 }
 
-/** The structure questions, read from the sibling .md (the retired Python proofreader's _checklist).
- *
- * They live there so they read as prose and textlint reaches them, which it cannot do for a
- * string inside this file. Read from the first level-2 heading down, since the lines above it
- * describe the file to whoever edits it rather than to whoever receives the questions.
- *
- * Empty when the file is gone: the proofreading still has something to say, and a checklist
- * nobody can read adds nothing to it. */
 function _checklist(): string {
   let body: string;
   try {
@@ -241,12 +178,8 @@ function _checklist(): string {
   return `## ${body.slice(at + marker.length)}`.trim();
 }
 
-/** Answer via notify. Not a top-level decision / additionalContext pair: PreToolUse reads
- * context only out of hookSpecificOutput, so findings written at that level reach no one. */
 function main(): number {
   const raw = readStdin();
-  // Cheaper than a scan on a hook that fires for every Bash call. _target decides whether
-  // this really writes a body; this only keeps the work off everything else.
   if (!((raw.includes("gh") && raw.includes("create")) || (raw.includes("git") && raw.includes("commit")))) {
     return 0;
   }

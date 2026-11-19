@@ -1,8 +1,6 @@
 #!/bin/zsh
 set +e
 
-# Failure mode: fail-open (partial display is acceptable)
-
 STATE_TTL_DAYS=7
 
 sep() { [ -n "$RENDERED" ] && printf ' \033[90m│\033[0m '; RENDERED=1; }
@@ -62,8 +60,6 @@ load_state() {
     [[ "$CONTEXT_TOKENS" =~ ^[0-9]+$ ]] || CONTEXT_TOKENS=0
     PREV_TOKENS=0
     CONTEXT_DELTA=0
-    # No session id leaves no delta to carry, and a pid-keyed file would sweep on every such
-    # render while never being read again.
     [ -n "$SESSION_ID" ] || return
 
     local cache_dir="${CLAUDE_STATE_DIR:-$HOME/.claude/cache}"
@@ -74,8 +70,6 @@ load_state() {
         [[ "$PREV_TOKENS" =~ ^[0-9]+$ ]] || PREV_TOKENS=0
     else
         mkdir -p "$cache_dir" 2>/dev/null
-        # Swept on the session's first render, not on every refresh: the line redraws each
-        # minute, and the unconditional write below holds this branch to once per session.
         find "$cache_dir" -name 'context-*.state' -mtime "+$STATE_TTL_DAYS" -delete 2>/dev/null
     fi
 
@@ -168,8 +162,6 @@ render_usage() {
         "$USAGE_5H" "$(reset_eta "$RESET_5H")" "$p7" "$(reset_eta "$RESET_7D")"
 }
 
-# Claude Code supplies the open PR for the current branch as pr.number / pr.url, so
-# no `gh pr view` subprocess or TTL cache is needed here.
 render_pr() {
     [[ "$PR_NUM" =~ ^[0-9]+$ ]] || return
     printf ' \033]8;;%s\033\\\033[93m[PR#%s]\033[0m\033]8;;\033\\' "$PR_URL" "$PR_NUM"
@@ -194,8 +186,6 @@ render_git() {
     [ -z "$branch" ] && return
     printf ' on \033[95m%s\033[0m' "$branch"
 
-    # workspace.git_worktree is populated for any linked worktree, so no git rev-parse
-    # fallback is needed to detect one.
     [ -n "${WS_IS_WORKTREE:-}" ] && printf ' \033[92m[wt]\033[0m'
 
     render_pr
@@ -209,6 +199,5 @@ render_cost
 render_usage
 render_git
 
-# Claude Code hides the status line when the command exits non-zero, and every
-# render_* ends in a conditional whose false branch would leak status 1.
+# why-not: Claude Code hides the status line on a non-zero exit, and a render_* whose last conditional is false leaves status 1.
 exit 0

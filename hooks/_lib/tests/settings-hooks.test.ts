@@ -1,7 +1,4 @@
 /// <reference types="node" />
-// Pins hookCommands() in hooks/_lib/tests/_settings-hooks.ts, the settings.json hook-command
-// reader the retirement tests under hooks/ share: every group's command strings under an event,
-// the optional narrowing to one matcher, and the empty answer for a shape that is not an array.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { hookCommands } from "./_settings-hooks.ts";
@@ -37,7 +34,7 @@ test("T-002 hookCommands with a matcher returns only the groups whose matcher eq
   assert.deepEqual(hookCommands(settings, "PreToolUse", "Bash"), ["a.ts", "d.ts"]);
 });
 
-test("T-003 hookCommands returns an empty list when the event or its groups are not arrays", () => {
+test("T-003 hookCommands returns an empty list when the event or its groups are not arrays, and the commands once one group is an array", () => {
   assert.deepEqual(hookCommands({}, "PreToolUse"), []);
   assert.deepEqual(hookCommands({ hooks: {} }, "PreToolUse"), []);
   assert.deepEqual(hookCommands({ hooks: { PreToolUse: "not-an-array" } }, "PreToolUse"), []);
@@ -46,8 +43,6 @@ test("T-003 hookCommands returns an empty list when the event or its groups are 
     [],
   );
 
-  // Contrast case: the same shape with one real group must come back non-empty, so a stub that
-  // always answers [] fails this test instead of passing it by coincidence.
   const withOneRealGroup = {
     hooks: { PreToolUse: [{ matcher: "Bash", hooks: [{ type: "command", command: "a.ts" }] }] },
   };

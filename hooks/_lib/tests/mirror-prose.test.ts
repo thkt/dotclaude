@@ -1,19 +1,4 @@
 /// <reference types="node" />
-// Ports hooks/_lib/tests/mirror_prose_test.py's TargetSelection / Verdict / EnglishVerdict /
-// MirrorSweep suites to mirror_prose.ts's side (DR-0112, issue #644, unit U-001). `check`'s own
-// determination is the "correspondence" this unit's goal names: a .ja file's prose either still
-// carries a Japanese character or the file went English-only. The twin that goes missing is the
-// Japanese half of that file's own prose, not a second file.
-// `_python_prose` (the retired Python module's lines 44-70) stays out of scope here; unit U-002
-// (mirror-prose-python.test.ts) covers it.
-//
-// MirrorSweep's two full-tree sweeps move here as T-367 and T-368, each against an isolated
-// temp tree. A temp tree keeps the exclusion behavior deterministic, and keeps the test from
-// depending on -- or mutating -- this checkout's actual .ja/ content. node_modules/, projects/,
-// and logs/ replace the retired Python module's __pycache__/.git exclusions.
-//
-// The two live-checkout sweeps at the bottom read trackedFiles instead of that walk, for the
-// reason its own doc gives.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -35,8 +20,6 @@ function writeFixture(root: string, relative: string, content: string): string {
   return absolute;
 }
 
-/** The path hook_payload.ts's editedFile resolves for a Write of `absolutePath`, so a case reads
- * as "this file was just edited" the same way hook-payload-parity.test.ts's T-002 does. */
 function editedPath(absolutePath: string): string {
   const payload = JSON.stringify({ tool_name: "Write", tool_input: { file_path: absolutePath } });
   const resolved = editedFile(payload);
@@ -44,13 +27,8 @@ function editedPath(absolutePath: string): string {
   return resolved;
 }
 
-// .git and __pycache__ carry the retired Python module's own two exclusions; the other three
-// are what this repo's tree grows that its rglob never met. The walk runs over temp trees only,
-// so T-367's fixtures are what exercise these entries.
 const EXCLUDED_DIR_NAMES = new Set(["node_modules", "projects", "logs", ".git", "__pycache__"]);
 
-/** mirror_prose_test.py's MirrorSweep.rglob walk, pruning EXCLUDED_DIR_NAMES during the walk
- * rather than filtering them out afterward, which is what T-367 asserts. */
 function walk(root: string): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -64,22 +42,18 @@ function walk(root: string): string[] {
   return out;
 }
 
-/** mirror_prose_test.py's test_no_mirror_file_lost_its_japanese, over the files given: `walk`
- * for a temp tree, `trackedUnder` for this checkout. Offenders are named against `root`. */
 function jaSweepOffenders(root: string, files: string[]): string[] {
   return files
     .filter((absolute) => check(absolute) !== null)
     .map((absolute) => path.relative(root, absolute));
 }
 
-/** mirror_prose_test.py's test_no_english_side_file_kept_the_japanese_original, the same way. */
 function englishSweepOffenders(root: string, files: string[]): string[] {
   return files
     .filter((absolute) => checkEnglish(absolute) !== null)
     .map((absolute) => path.relative(root, absolute));
 }
 
-/** The files trackedFiles reports under `repo`/`prefix`, as absolute paths. */
 function trackedUnder(repo: string, prefix: string): string[] {
   return trackedFiles(repo)
     .filter((relative) => relative.startsWith(prefix))
@@ -149,10 +123,6 @@ test("T-368 an english-side file that kept the japanese original is reported by 
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
-// The two above run on temp trees, which prove the predicate and the exclusions but never read
-// this checkout. mirror_prose_test.py's MirrorSweep read it, and that is where a mirror going
-// English between edits was actually caught -- the module's own header calls it "every file,
-// including what landed while no hook was watching". These two restore that reading.
 test("no .ja file in this checkout lost its Japanese", () => {
   const mirror = path.join(REPO, ".ja");
   const files = trackedUnder(REPO, ".ja/");

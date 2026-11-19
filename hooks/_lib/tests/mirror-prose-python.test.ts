@@ -1,27 +1,4 @@
 /// <reference types="node" />
-// Ports hooks/_lib/tests/mirror_prose_test.py's ProseExtraction suite's Python-specific cases to
-// mirror_prose.ts's side (DR-0112, issue #644, unit U-002). The retired Python module's lines
-// 44-70, `_python_prose`, walks Python source with `ast` and `tokenize`, which node carries no
-// equivalent for, so this ports the walk as its own string-state scan (triple-quoted / single-
-// quoted / prefixed literals, module / def / class docstrings) instead of reusing a regex --
-// that module's line 45 states a regex cannot tell `# Heading` inside a triple-quoted template
-// from a real comment, which is exactly what mirror_prose_test.py:62's
-// `test_a_heading_inside_a_python_literal_is_not_a_comment` pins.
-//
-// pythonProse itself is not exported: extractProse (mirror_prose.ts) is the one export that
-// dispatches a .py file to it, the same seam mirror_prose_test.py's ProseExtraction suite reads
-// through via extract_prose. T-369 through T-371's expected values were captured by running the
-// pinned, now-retired Python module's own `_python_prose` against the same source, so a Green
-// implementation here stays provably parallel to the Python side rather than merely plausible.
-//
-// T-372 through T-375 (unit U-003) golden-fix four scanner edge cases the ported suite above
-// leaves unpinned -- a two-letter string prefix, an unterminated literal at end of file, a
-// shebang mixed with a real comment, and a backslash-escaped quote -- ahead of splitting
-// pythonProse out of mirror_prose.ts. Their expected values were captured by running this
-// file's own extractProse (mirror_prose.ts, pre-split) rather than the retired Python module, so
-// the split that follows has a same-behavior snapshot to check itself against; the endLine
-// closure and its per-logical-line state (mirror_prose.ts:105-128) are exactly what the split
-// has to carry over unchanged for these four to stay green.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

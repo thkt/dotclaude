@@ -1,11 +1,4 @@
 /// <reference types="node" />
-// Ports 4 of hooks/integrations/tests/amphetamine_agent_session_test.py's argv-dispatch
-// scenarios (T-011..T-024's range) to amphetamine_agent_session.ts's side (unit U-004): main's
-// acquire/release/background branching and session_id's honoring rule. osascript is replaced by
-// the same kind of #!/bin/sh stub the Python suite's STUB_OSASCRIPT uses, logging every command
-// to $OSASCRIPT_LOG and answering `session time remaining` with $STUB_REMAINING -- run through
-// hooks/_lib/tests/_hook-harness.ts's `run`, the way hooks/lifecycle/tests/recall-index.test.ts
-// and hooks/edit/tests/rumdl-check.test.ts already drive a hook that shells out.
 import assert from "node:assert/strict";
 import {
   chmodSync,
@@ -27,12 +20,8 @@ import { sessionId } from "../amphetamine_state.ts";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "amphetamine_agent_session.ts");
 
-// -3 is Amphetamine's own code for "no session running" (the retired amphetamine_agent_session
-// hook's NO_SESSION); the Python suite's tests default run_hook's `remaining` to the same string.
 const NO_SESSION = "-3";
 
-// Mirrors amphetamine_agent_session_test.py's STUB_OSASCRIPT: log every command's argv and
-// answer `session time remaining` with the pinned value.
 const STUB_OSASCRIPT = [
   "#!/bin/sh",
   'printf \'%s\\n\' "$*" >> "$OSASCRIPT_LOG"',
@@ -100,10 +89,9 @@ function markers(f: Fixture, prefix = "session-"): string[] {
   }
 }
 
-test("T-396 the acquire, release and background actions each take the argv shape the python cases record", () => {
+test("T-396 acquire with no session running starts one and leaves one marker, release of the last reference ends it and clears the marker, and a subagent's background call reissues it with a bg marker", () => {
   const f = fixture();
 
-  // T-001: acquire with no session running sends start new session and leaves one marker.
   runHook(f, "acquire", { session_id: "session-a" });
   assert.match(
     sent(f),
@@ -112,7 +100,6 @@ test("T-396 the acquire, release and background actions each take the argv shape
   );
   assert.deepEqual(markers(f), ["session-session-a"], "acquire must leave exactly one marker");
 
-  // T-004: release of the last reference sends end session and clears the marker.
   writeFileSync(f.log, "");
   runHook(f, "release", { session_id: "session-a" }, "1800");
   assert.match(
@@ -122,7 +109,6 @@ test("T-396 the acquire, release and background actions each take the argv shape
   );
   assert.deepEqual(markers(f), [], "release must clear the marker it closed");
 
-  // T-012: a background call from a subagent reissues the session and leaves a bg marker.
   writeFileSync(f.log, "");
   runHook(f, "background", { session_id: "session-b", agent_id: "agent-1" });
   assert.match(
@@ -182,9 +168,6 @@ test("T-399 a repeated background call inside the throttle window returns early 
   );
 });
 
-// The retired suite's T-009. Without it the hook creates the state directory, sweeps it and
-// forks osascript on every UserPromptSubmit, every PostToolUse and every Stop of a machine that
-// has no Amphetamine installed.
 test("a machine without the app gets no marker, no sweep and no osascript", () => {
   const f = fixture();
   const missing = path.join(path.dirname(f.stateDir), "no-such-app.app");

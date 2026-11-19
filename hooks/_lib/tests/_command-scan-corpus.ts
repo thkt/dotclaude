@@ -1,42 +1,11 @@
 /// <reference types="node" />
-// Shared, `_`-prefixed input-list generator for hooks/_lib/tests/fixtures/command-scan-tokens.json,
-// the frozen table command-scan-corpus.test.ts and command-scan-tokens.test.ts both check
-// command_scan.ts's commands_with_env() against. Follows the same `_`-prefix, no-.ja-mirror
-// shape as hooks/_lib/tests/_hook-harness.ts and workflows/_lib/tests/_retirement.ts: a pure
-// helper other test files import from, not a test file of its own.
-//
-// commandScanCorpus() is the one derivation the frozen-behavior test
-// (command-scan-corpus.test.ts) and command-scan-tokens.test.ts both read, so the input list is
-// never hand-enumerated twice. It concatenates three products plus the curated set the
-// unit's contract names:
-//   - lexicalCases(): the 14 special characters `( ) ; < > | & # \ ' " space newline
-//     line-continuation`, each in the 7 placements a shlex-based scanner treats differently
-//     (unquoted / inside single quotes / inside double quotes / right after a backslash / at a
-//     token's head / at a token's tail / next to another punctuation character) -- 98 cases,
-//     plus one extra case putting `#` right after a punct-state token: `#` is never itself a
-//     punctuation character, so the 7-placement product never reaches `_lex`'s separate
-//     punct-state comment branch -- 99 cases.
-//   - heredocCases(): the 5 heredoc marker forms `<<EOF`, `<<-EOF`, `<<'EOF'`, `<<"EOF"`, and a
-//     marker that only looks real inside quotes, each with and without a closing line -- 10
-//     cases.
-//   - resolveCases(): WRAPPERS x 3 forms, EXEC_FLAGS x 3 forms, and 4 env-assignment forms
-//     that _resolve() in command_scan.ts reads -- 40 cases.
-//   - curatedCases(): every command string hooks/_lib/tests/command_scan_test.py and the 3
-//     security hook tests (hooks/security/tests/npm_install_guard_test.py,
-//     hooks/security/tests/rm_to_trash_test.py, hooks/security/tests/git_sandbox_guard_test.py)
-//     assert against, so the frozen table also locks in the cases those suites already cover.
-//     Copied by hand from those four files rather than parsed out of them: the Python source is
-//     canonical, so a command string added to one of those suites needs the same addition here.
 import { EXEC_FLAGS, WRAPPERS } from "../command_scan.ts";
 
-/** One corpus input: a name for the frozen table row, and the raw command text a hook would
- * receive as its Bash tool_input.command. */
 export interface CorpusCase {
   readonly name: string;
   readonly command: string;
 }
 
-/** The 14 special characters the contract names, in the order used to name lexicalCases(). */
 const SPECIAL_CHARACTERS: readonly string[] = [
   "(",
   ")",
@@ -54,7 +23,6 @@ const SPECIAL_CHARACTERS: readonly string[] = [
   "\\\n",
 ];
 
-/** A name-safe label per entry of SPECIAL_CHARACTERS, same order, for lexicalCases() row names. */
 const CHAR_LABELS: readonly string[] = [
   "paren-open",
   "paren-close",
@@ -72,7 +40,6 @@ const CHAR_LABELS: readonly string[] = [
   "line-continuation",
 ];
 
-/** The 7 placements the contract names, in the order used to name lexicalCases(). */
 const PLACEMENTS: readonly string[] = [
   "unquoted",
   "single-quoted",
@@ -83,7 +50,6 @@ const PLACEMENTS: readonly string[] = [
   "adjacent-punctuation",
 ];
 
-/** The 5 heredoc marker forms the contract names, in the order used to name heredocCases(). */
 const HEREDOC_FORMS: readonly string[] = [
   "<<EOF",
   "<<-EOF",
@@ -92,32 +58,20 @@ const HEREDOC_FORMS: readonly string[] = [
   "quoted-fake-marker",
 ];
 
-// One template per placement, building a raw command that puts `char` in that position around
-// filler words ("alpha" / "beta") so a shlex-based scanner reads the surrounding tokens as
-// ordinary text and the placement itself as the thing under test.
 const LEXICAL_TEMPLATES: Readonly<Record<string, (char: string) => string>> = {
   unquoted: (char) => `echo alpha${char}beta`,
-  // A literal quote char cannot sit directly inside its own quoting. Single quotes have no
-  // escape of their own, so the standard shell workaround closes the quote, inserts an
-  // unquoted backslash-quote (a literal quote character), and reopens the quote.
   "single-quoted": (char) =>
     char === "'" ? "echo 'alpha'\\''beta'" : `echo 'alpha${char}beta'`,
-  // Double quotes do recognize backslash-quote as an escape, so the literal quote stays inside
-  // one quoted span instead of needing the close/reopen trick.
   "double-quoted": (char) => (char === '"' ? 'echo "alpha\\"beta"' : `echo "alpha${char}beta"`),
   "after-backslash": (char) => `echo alpha\\${char}beta`,
   "token-head": (char) => `echo ${char}alphabeta`,
   "token-tail": (char) => `echo alphabeta${char}`,
-  // Paired with a different punctuation character (never itself) so the two sit back to back
-  // with nothing separating them.
   "adjacent-punctuation": (char) => {
     const other = char === ";" ? "|" : ";";
     return `echo alpha${char}${other}echo beta`;
   },
 };
 
-/** The special-character x placement product (14 characters x 7 placements = 98 cases), plus
- * one extra case for `#` right after a punct-state token -- 99 cases total. */
 export function lexicalCases(): CorpusCase[] {
   const cases: CorpusCase[] = [];
   SPECIAL_CHARACTERS.forEach((char, charIndex) => {
@@ -129,11 +83,6 @@ export function lexicalCases(): CorpusCase[] {
       });
     }
   });
-  // `#` is never itself a punctuation character (_PUNCTUATION excludes it), so none of the 7
-  // placements above land `#` while `_lex` is already in its "punct" state -- "adjacent-
-  // punctuation" puts `#` right after a word instead, landing in the word-state branch that
-  // "token-tail" already covers. This case puts a real punct token (`;`) first so `#` arrives
-  // in punct state, exercising that branch's own comment handling.
   cases.push({ name: "lexical hash after-punct", command: "echo alpha;#beta" });
   return cases;
 }
@@ -145,10 +94,6 @@ function realHeredoc(marker: string, terminated: boolean): string {
   return lines.join("\n");
 }
 
-// _HEREDOC in command_scan.ts matches `<<` textually, with no quote-awareness, so a line that
-// merely looks like a heredoc opener inside quotes (command_scan_test.py's T-016) still starts
-// the same closing-line search. Terminated here finds a later line that happens to equal the
-// looked-for marker; unterminated does not, so nothing is dropped (T-016's own case).
 function fakeMarkerHeredoc(terminated: boolean): string {
   const lines = ["echo '<< END'", "some content"];
   if (terminated) lines.push("END");
@@ -156,7 +101,6 @@ function fakeMarkerHeredoc(terminated: boolean): string {
   return lines.join("\n");
 }
 
-/** The heredoc-form x terminated/unterminated product: 5 forms x 2 = 10 cases. */
 export function heredocCases(): CorpusCase[] {
   const cases: CorpusCase[] = [];
   for (const form of HEREDOC_FORMS) {
@@ -179,12 +123,8 @@ function wrapperCase(wrapper: string, form: string): string {
     case "bare":
       return `${wrapper} rm -rf /tmp/x`;
     case "with-flag":
-      // -n is in VALUED_WRAPPER_FLAGS: exercises the flag-value skip _resolve() runs before it
-      // reaches the real command.
       return `${wrapper} -n root rm -rf /tmp/x`;
     case "absolute-path":
-      // _resolve() reads Path(tokens[index]).name, so a wrapper written as a full path still
-      // has to resolve by its basename.
       return `/usr/local/bin/${wrapper} rm -rf /tmp/x`;
     default:
       throw new Error(`unknown wrapper form: ${form}`);
@@ -200,8 +140,6 @@ function execFlagCase(flag: string, form: string): string {
     case "plus":
       return `find . ${flag} rm {} +`;
     case "chained":
-      // Two -exec calls on one line: _resolve() recurses into the second rather than returning
-      // the flag name as a command (command_scan_test.py's T-011).
       return `find . ${flag} echo {} \\; ${flag} rm {} \\;`;
     default:
       throw new Error(`unknown exec flag form: ${form}`);
@@ -213,14 +151,10 @@ function envAssignmentCases(): CorpusCase[] {
     { name: "resolve env-assignment single", command: "FOO=1 rm -rf x" },
     { name: "resolve env-assignment multiple", command: "FOO=1 BAR=2 npm install" },
     { name: "resolve env-assignment before-wrapper", command: "FOO=1 sudo rm -rf /tmp/x" },
-    // ENV_ASSIGNMENT requires a leading letter/underscore and no space before `=`; this stays
-    // the command name rather than reading as an assignment (command_scan_test.py's T-022).
     { name: "resolve env-assignment non-assignment-equals", command: "./a=b --flag" },
   ];
 }
 
-/** WRAPPERS x 3 forms, EXEC_FLAGS x 3 forms, and 4 env-assignment forms: 8*3 + 4*3 + 4 = 40
- * cases, covering what _resolve() in command_scan.ts reads ahead of the real command. */
 export function resolveCases(): CorpusCase[] {
   const cases: CorpusCase[] = [];
   for (const wrapper of WRAPPERS) {
@@ -237,10 +171,6 @@ export function resolveCases(): CorpusCase[] {
   return cases;
 }
 
-// Copied by hand from hooks/_lib/tests/command_scan_test.py's TestCommands (self.names() /
-// command_scan.commands() calls only -- TestFlagValue / TestGitSubcommand / TestStartsWith /
-// TestGitCleanOnlyLists take already-tokenized lists, not raw command text, and are the pure
-// command-scan-pure.test.ts territory instead).
 const COMMAND_SCAN_TEST_COMMANDS: readonly string[] = [
   "cd /tmp && rm -rf x",
   "a; b | c",
@@ -278,8 +208,6 @@ const COMMAND_SCAN_TEST_COMMANDS: readonly string[] = [
   "find . -type f \\\n  -exec rm {} \\;",
 ];
 
-// T-028 (command_scan_test.py) asserts a continued and a joined form of these four read alike.
-// The joined forms are derived rather than retyped, so a typo in one copy cannot mismatch it.
 const CONTINUATION_EXAMPLES: readonly string[] = [
   "rm -rf \\\n  /tmp/x",
   'gh issue create --repo r \\\n  --title "[Bug] x"',
@@ -287,15 +215,10 @@ const CONTINUATION_EXAMPLES: readonly string[] = [
   "find . -type f \\\n  -exec rm {} \\;",
 ];
 
-// Mirrors command_scan_test.py's T-028: `continued.replace("\\\n  ", " ").replace("\\\n", "")`.
-// split/join rather than a regex, since the search text carries a backslash that would need
-// escaping to use as a regex literal.
 function joinContinuation(text: string): string {
   return text.split("\\\n  ").join(" ").split("\\\n").join("");
 }
 
-// Copied by hand from hooks/security/tests/npm_install_guard_test.py's assert_denied /
-// assert_allowed / assert_empty calls.
 const NPM_INSTALL_GUARD_TEST_COMMANDS: readonly string[] = [
   "npm install",
   "pnpm add zod",
@@ -321,14 +244,9 @@ const NPM_INSTALL_GUARD_TEST_COMMANDS: readonly string[] = [
   "bun x cowsay",
   "yarn dlx cowsay",
   "npm install zod",
-  // test_project_npmrc_overrides_home builds `cd {project} && npm install zod` against a
-  // temporary directory; a fixed placeholder path stands in for it here.
   "cd /tmp/project && npm install zod",
 ];
 
-// Copied by hand from hooks/security/tests/rm_to_trash_test.py's assert_denied / assert_allowed
-// calls, plus TestPrefilterCoversEveryVerb's `f"{verb} /tmp/x"` for each of VERBS
-// (rm / rmdir / unlink / shred, already present below as the direct-deletion cases).
 const RM_TO_TRASH_TEST_COMMANDS: readonly string[] = [
   "rm -rf /tmp/x",
   "rmdir /tmp/x",
@@ -358,8 +276,6 @@ const RM_TO_TRASH_TEST_COMMANDS: readonly string[] = [
   "FOO=1 BAR=2 rm -rf /tmp/x",
 ];
 
-// Copied by hand from hooks/security/tests/git_sandbox_guard_test.py's assert_denied /
-// assert_allowed calls.
 const GIT_SANDBOX_GUARD_TEST_COMMANDS: readonly string[] = [
   "git checkout main",
   "git checkout -- agents/x.md",
@@ -425,9 +341,6 @@ const GIT_SANDBOX_GUARD_TEST_COMMANDS: readonly string[] = [
   "git write-tree",
   "git update-index --refresh",
   "git filter-branch --force --tree-filter true HEAD",
-  // TestTargetRepository: -C / --git-dir / --work-tree / GIT_DIR / GIT_WORK_TREE carry the call
-  // into the fixture repository from any cwd; its path is a fresh tempdir per test run, so a
-  // fixed placeholder stands in for it here.
   "git -C /tmp/guarded-repo checkout main",
   "git --git-dir=/tmp/guarded-repo/.git --work-tree=/tmp/guarded-repo checkout main",
   "git checkout main && git -C /tmp/guarded-repo checkout main",
@@ -436,8 +349,6 @@ const GIT_SANDBOX_GUARD_TEST_COMMANDS: readonly string[] = [
   "git -C /tmp/missing-repo checkout main",
 ];
 
-/** Every command string command_scan_test.py and the 3 security hook tests assert against,
- * deduplicated by command text (several appear in more than one suite). */
 function curatedCases(): CorpusCase[] {
   const sources: ReadonlyArray<readonly [string, readonly string[]]> = [
     ["command_scan_test", COMMAND_SCAN_TEST_COMMANDS],
@@ -466,8 +377,6 @@ function curatedCases(): CorpusCase[] {
   return [...seen.values()];
 }
 
-/** The one derivation the frozen-behavior table and the differential test both read: the three
- * products the contract names, plus the curated cases the existing suites already cover. */
 export function commandScanCorpus(): CorpusCase[] {
   return [...lexicalCases(), ...heredocCases(), ...resolveCases(), ...curatedCases()];
 }

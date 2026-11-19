@@ -1,11 +1,5 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// SessionStart hook: catch up recall's cross-session index in the background. Ports the retired
-// Python hook's reasoning unchanged: SessionStart over SessionEnd, and why this stays
-// advisory-only.
-//
-// Advisory: never blocks the prompt, and every exit path below is exit 0 -- a hook whose own
-// failure blocks the session would be worse than the indexing it skips.
 import { spawn } from "node:child_process";
 import {
   closeSync,
@@ -19,17 +13,10 @@ import { dirname, join } from "node:path";
 import { isExecutableFile } from "../_lib/executable.ts";
 import { parse, readStdin } from "../_lib/hook_payload.ts";
 
-// The full path, not a PATH lookup: a hook can run without the homebrew prefix, where the
-// lookup would silently skip every session. CLAUDE_RECALL_BIN lets the tests hand over a stub.
 const DEFAULT_RECALL = "/opt/homebrew/bin/recall";
 
-// Worst-case staleness: a session that completes just after a run waits this long to become
-// searchable. recall answers questions about days-old decisions, so hours cost nothing, and
-// the bound is what keeps dozens of session starts a day from each paying for an embed.
 const WINDOW_MINUTES = 180;
 
-/** Read at call time, not at module load: the tests swap HOME to keep this machine's own
- * stamp out of the run. */
 function stampPath(): string {
   return join(homedir(), ".cache", "claude-recall_index.last");
 }
@@ -43,8 +30,6 @@ function recentlyIndexed(stamp: string): boolean {
 }
 
 function main(): number {
-  // A compaction restart brings no newly completed session, and the live transcript is
-  // mid-write. recall searches past sessions, never the live one.
   if (parse(readStdin()).source === "compact") return 0;
 
   const recall = process.env.CLAUDE_RECALL_BIN || DEFAULT_RECALL;
@@ -62,8 +47,6 @@ function main(): number {
     return 0;
   }
 
-  // Detached so the embed never delays the prompt. SQLite WAL serializes concurrent writers,
-  // so parallel session starts need no lock of their own.
   spawn(recall, ["index"], { detached: true, stdio: "ignore" }).unref();
   return 0;
 }

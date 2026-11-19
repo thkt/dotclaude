@@ -1,10 +1,4 @@
 /// <reference types="node" />
-// Ports 3 of the retired npm_install_guard Python hook test's scenarios to npm_install_guard.ts's
-// side. The REASONS prefixes are asserted as literals rather than read off
-// npm_install_guard.ts itself: the module carries a top-level `process.exit(main())` (DR-0114,
-// no isMainModule guard), so importing it in-process would end the test runner's own process
-// the moment the import ran -- exactly the hazard that guard exists for, so only run() (which
-// spawns the hook as a child process) ever touches this file.
 import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -73,8 +67,6 @@ test("T-284 a runner subcommand that fetches and runs is denied while a plain sc
   assert.equal(scriptReason, null, "a plain script run must not be denied");
 });
 
-// The retired Python suite's remaining rows. HOME and the project directory both start without
-// an .npmrc, so a denial here comes from the command's own shape rather than from configuration.
 const UNCONFIGURED_DENIED = [
   "cd /tmp && npm install",
   "npm  install",

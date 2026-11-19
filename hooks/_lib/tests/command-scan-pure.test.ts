@@ -1,9 +1,4 @@
 /// <reference types="node" />
-// Ports the subcommand / git_subcommand / flag_value / starts_with / before_pathspec /
-// git_clean_only_lists cases from hooks/_lib/tests/command_scan_test.py to the .ts side
-// (DR-0112). These six take an already-tokenized command list and never touch a shell lexer, so
-// the input/expected-output table below is all the fixture they need: it was read straight off
-// the retired Python suite's own assertions.
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -16,18 +11,13 @@ import {
 } from "../command_scan.ts";
 
 test("T-269 subcommand and git_subcommand skip the valued flags their tables name and return the first non-flag token with the rest", () => {
-  // git_subcommand cases, from TestGitSubcommand in command_scan_test.py.
   assert.deepEqual(git_subcommand(["git", "clean", "-fd"]), ["clean", ["-fd"]]);
   assert.deepEqual(git_subcommand(["git", "status"]), ["status", []]);
-  // -C takes a value: skipping it wrong makes /tmp the subcommand instead of clean.
   assert.deepEqual(git_subcommand(["git", "-C", "/tmp", "clean"]), ["clean", []]);
   assert.deepEqual(git_subcommand(["git", "--no-pager", "log"]), ["log", []]);
   assert.deepEqual(git_subcommand(["git"]), [null, []]);
   assert.deepEqual(git_subcommand(["git", "-C", "/tmp"]), [null, []]);
 
-  // subcommand() with a non-git valued-flags table, mirroring
-  // hooks/security/npm_install_guard.ts's VALUED_NPM_FLAGS usage: the same skipping has to
-  // work for a table git_subcommand never reads.
   const npmValuedFlags = new Set(["--prefix", "-C", "--registry", "-w", "--workspace"]);
   assert.deepEqual(subcommand(["npm", "install"], npmValuedFlags), ["install", []]);
   assert.deepEqual(
@@ -56,8 +46,6 @@ test("T-271 starts_with matches a prefix by position and before_pathspec cuts th
   assert.equal(starts_with(cmd, ["gh", "pr", "create"]), false);
   assert.equal(starts_with(["gh", "issue"], ["gh", "issue", "create"]), false);
 
-  // before_pathspec: what follows -- is a pathspec, not a flag (the retired Python module's own
-  // `git rm -- -h` / `git clean -fd -- -notes` docstring examples).
   assert.deepEqual(before_pathspec(["-fd", "--", "-notes"]), ["-fd"]);
   assert.deepEqual(before_pathspec(["-h"]), ["-h"]);
   assert.deepEqual(before_pathspec([]), []);
@@ -66,11 +54,9 @@ test("T-271 starts_with matches a prefix by position and before_pathspec cuts th
 test("T-272 git_clean_only_lists is true for a dry-run clean and false once a force flag appears", () => {
   assert.equal(git_clean_only_lists(["--dry-run"]), true);
   assert.equal(git_clean_only_lists(["-n"]), true);
-  // Short flags combine: the dry-run bit arrives inside -nd as well as alone.
   assert.equal(git_clean_only_lists(["-nd"]), true);
   assert.equal(git_clean_only_lists(["-fd"]), false);
   assert.equal(git_clean_only_lists([]), false);
-  // A pathspec shaped like a flag, named past --, never clears the dry-run read.
   assert.equal(git_clean_only_lists(["-fd", "--", "-notes"]), false);
   assert.equal(git_clean_only_lists(["-fd", "--", "-n"]), false);
   assert.equal(git_clean_only_lists(["-n", "--", "-notes"]), true);

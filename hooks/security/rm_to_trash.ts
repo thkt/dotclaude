@@ -1,18 +1,10 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// PreToolUse hook: redirect deletion to `mv ~/.Trash/`. The TypeScript replacement for the
-// retired rm_to_trash Python hook (DR-0112's migration); VERBS / TRIGGERS / REASONS carry the
-// Python side's values character for character.
-//
-// Failure mode: fail-closed (security enforcement).
 import * as command_scan from "../_lib/command_scan.ts";
 import { deny, field, parse, readStdin } from "../_lib/hook_payload.ts";
 
 export const VERBS: ReadonlySet<string> = new Set(["rm", "rmdir", "unlink", "shred"]);
 
-// The words that can reach a denial. Matched anywhere in the payload rather than at a token
-// boundary, since the scan below decides and this only keeps the work off everything else.
-// `-delete` is here because `find . -delete` carries no deletion verb.
 export const TRIGGERS: readonly string[] = ["rm", "unlink", "shred", "-delete"];
 
 export const REASONS: Readonly<Record<string, string>> = {
@@ -29,7 +21,6 @@ export const REASONS: Readonly<Record<string, string>> = {
     "他の sandbox エラーはユーザーに報告する。",
 };
 
-/** Which form of deletion a token list takes, or null when it deletes nothing. */
 export function _deletes(tokens: readonly string[]): string | null {
   if (VERBS.has(tokens[0])) {
     return "verb";
@@ -46,10 +37,6 @@ export function _deletes(tokens: readonly string[]): string | null {
   return null;
 }
 
-/** The first deletion the command line performs.
- *
- * Not a regex over the raw string: it cannot tell where a token sits, so the word inside a
- * sed script reads as a deletion while a wrapped one (sudo, xargs, find -exec) does not. */
 export function kind(command: string): string | null {
   try {
     for (const tokens of command_scan.commands(command)) {
@@ -60,13 +47,12 @@ export function kind(command: string): string | null {
     }
     return null;
   } catch {
-    return "verb"; // an unparsable line hides where its commands are, so it is not cleared
+    return "verb";
   }
 }
 
 function main(): number {
   const raw = readStdin();
-  // `clean` is paired with `git` here rather than listed in TRIGGERS, so `cargo clean` stays off.
   if (
     !(TRIGGERS.some((word) => raw.includes(word)) || (raw.includes("git") && raw.includes("clean")))
   ) {

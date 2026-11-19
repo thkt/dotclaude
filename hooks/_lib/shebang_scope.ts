@@ -1,47 +1,24 @@
 /// <reference types="node" />
-// Shared bun-shebang and git-discovery primitives for hooks/**'s TypeScript shebang checks.
-// Every exec-bit check and every shebang-content check reads the bun path from SHEBANG rather
-// than typing the literal again. hooks/_lib/tests/shebang-ts.test.ts and
-// hooks/_lib/tests/shebang-scope.test.ts hold these to their cases.
-//
-// DR-0114 fixes the interpreter path: settings.json runs hooks on a truncated PATH, so the
-// shebang line has to resolve without a shim, and Homebrew's `#!/opt/homebrew/bin/bun` is the
-// one path stable across machines (bun.sh's installer default `~/.bun/bin/bun` is per-home).
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// hooks/_lib/shebang_scope.ts -> hooks/_lib -> hooks -> repo root.
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-/** DR-0114's absolute bun interpreter path. */
 export const SHEBANG: string = "#!/opt/homebrew/bin/bun";
 
-/** The line the hooks/ checks treat as stale. `#!/usr/bin/env node` is not on this list: the
- * tracked .ts files carrying it sit outside hooks/ and never enter these checks' subject set. */
 export const STALE_SHEBANG: string = "#!/usr/bin/env bun";
 
 const EXEC_MODE = "100755";
 
-/** Where the positive-control fixtures live (rules/development/TESTING.md § Whether the test swings at nothing).
- * They carry the violations on purpose, so a scan over real hooks/ files passes
- * FIXTURES_EXCLUDE alongside its pathspec; a scan that names a fixture path directly does not. */
 export const FIXTURES_ROOT = "hooks/_lib/tests/fixtures";
 export const FIXTURES_EXCLUDE = `:(exclude)${FIXTURES_ROOT}/**`;
 
-/** (git file mode, absolute path) for every tracked file the pathspec matches, read from
- * `git ls-files -s`. git resolves the pathspec, so an
- * include glob and an `:(exclude)` token go in one call; nothing is added or removed here.
- *
- * Wildcards follow git's default matching, where `*` crosses `/`: `hooks/*.ts` reaches every
- * depth, while `hooks/** /*.ts` would skip hooks/'s direct children. */
 export function trackedEntries(
   pathspec: string | readonly string[],
 ): Array<[mode: string, absolutePath: string]> {
   const tokens = typeof pathspec === "string" ? [pathspec] : [...pathspec];
-  // -z: a path with non-ASCII bytes is otherwise C-quoted under core.quotePath and joins to a
-  // path that does not exist.
   const output = execFileSync("git", ["-C", REPO, "ls-files", "-s", "-z", "--", ...tokens], {
     encoding: "utf8",
   });
@@ -55,8 +32,6 @@ export function trackedEntries(
   return entries;
 }
 
-/** An index entry whose file was removed with a plain `rm` is skipped rather than aborting the
- * scan. */
 function readTextOrNull(absolutePath: string): string | null {
   try {
     return readFileSync(absolutePath, "utf8");
@@ -75,8 +50,6 @@ function relative(absolutePath: string): string {
   return path.relative(REPO, absolutePath);
 }
 
-/** The exec-bit and shebang check, taking the pathspec and the expected shebang as arguments,
- * so one call scans hooks/'s real .ts files and another a positive-control fixture. */
 export function executableShebangOffenders(
   pathspec: string | readonly string[],
   shebang: string,
@@ -90,8 +63,6 @@ export function executableShebangOffenders(
   return offenders;
 }
 
-/** The stale-shebang check, taking the pathspec and the stale line as arguments. readFileSync's
- * utf8 decoding never throws on invalid bytes, so no decode-error skip is needed. */
 export function staleShebangOffenders(
   pathspec: string | readonly string[],
   staleLine: string,
@@ -106,8 +77,6 @@ export function staleShebangOffenders(
   return offenders;
 }
 
-/** Every string a settings tree names under a `command` key, collected by walking every array
- * and object recursively regardless of where in the tree it sits. */
 function collectCommandScripts(node: unknown, out: string[]): void {
   if (Array.isArray(node)) {
     for (const item of node) collectCommandScripts(item, out);
@@ -120,8 +89,6 @@ function collectCommandScripts(node: unknown, out: string[]): void {
   }
 }
 
-/** The repo-relative .ts paths a list of hook `command` strings names, read from each command's
- * whitespace-split tokens. */
 function settingsCommandScripts(commands: readonly string[]): string[] {
   const scripts: string[] = [];
   for (const command of commands) {
@@ -134,9 +101,6 @@ function settingsCommandScripts(commands: readonly string[]): string[] {
   return scripts;
 }
 
-/** The settings-command shebang check, taking the settings tree as an argument, so the same
- * call checks the repository's settings.json and a settings-shaped fixture. The mode
- * map covers fixtures too, because the fixture names a path under fixtures/ on purpose. */
 export function settingsCommandShebangOffenders(settings: unknown, shebang: string): string[] {
   const hooksNode =
     settings !== null && typeof settings === "object"
@@ -157,7 +121,6 @@ export function settingsCommandShebangOffenders(settings: unknown, shebang: stri
   return offenders;
 }
 
-/** The check that a library file carries no shebang, taking the pathspec as an argument. */
 export function libHasShebangOffenders(pathspec: string | readonly string[]): string[] {
   const offenders: string[] = [];
   for (const [, absolutePath] of trackedEntries(pathspec)) {

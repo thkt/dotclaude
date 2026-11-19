@@ -1,13 +1,4 @@
 #!/usr/bin/env bash
-# Tests for lifecycle/statusline.sh
-#
-# Only the state sweep is covered. The render_* functions write escape sequences whose
-# assertions would restate the code, but the sweep unlinks files by mtime, and a defect there
-# removes the wrong ones with nothing to restore them from.
-#
-# The state directory is swapped through CLAUDE_STATE_DIR rather than HOME: the script also
-# runs `git rev-parse` against the real tree, and a home the test just created would change
-# what that resolves to.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -24,7 +15,6 @@ run_hook() {
   printf '%s' "$payload" | CLAUDE_STATE_DIR="$state_dir" zsh "$HOOK" >/dev/null 2>&1
 }
 
-# BSD date takes -v, GNU date takes -d. A CI runner has the latter, so try both.
 days_ago() { date -v-"$1"d +%Y%m%d%H%M 2>/dev/null || date -d "$1 days ago" +%Y%m%d%H%M; }
 aged() { touch -t "$(days_ago "$1")" "$2"; }
 

@@ -1,12 +1,5 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// PreToolUse hook: block a package install when ignore-scripts is not configured. The
-// TypeScript replacement for the retired npm_install_guard Python hook (DR-0112's migration);
-// MANAGERS / INSTALLS / NI_INSTALLS / RUNNERS / FETCH_AND_RUN / SUBCOMMANDS / OVERRIDES /
-// VALUED_NPM_FLAGS / TRIGGERS / REASONS and _installs / _target / _setting / _configured /
-// main carry the Python side's names and shapes.
-//
-// Failure mode: fail-closed (security enforcement).
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -24,27 +17,19 @@ export const INSTALLS: ReadonlySet<string> = new Set([
   "upgrade",
 ]);
 
-// What package_manager_rewrite.ts rewrites the managers into (#643 fixes the inclusion).
 export const NI_INSTALLS: ReadonlySet<string> = new Set(["ni", "nci", "nup"]);
 
-// Fetch-and-run: the package and its dependencies are installed before the bin runs
-// (#643 fixes the inclusion).
 export const RUNNERS: ReadonlySet<string> = new Set(["npx", "bunx", "nlx"]);
 
-// The same fetch-and-run written as a subcommand of a manager.
 export const FETCH_AND_RUN: ReadonlySet<string> = new Set(["dlx", "exec", "x"]);
 
 export const SUBCOMMANDS: ReadonlySet<string> = new Set([...INSTALLS, ...FETCH_AND_RUN]);
 
-// Read from the command line, these turn the setting back off, and the command line wins over
-// .npmrc.
 export const OVERRIDES: ReadonlySet<string> = new Set([
   "--no-ignore-scripts",
   "--ignore-scripts=false",
 ]);
 
-// npm options that swallow the token after them, which would otherwise read as the subcommand
-// (`npm --prefix /tmp install` would resolve to /tmp).
 export const VALUED_NPM_FLAGS: ReadonlySet<string> = new Set([
   "--prefix",
   "-C",
@@ -53,9 +38,6 @@ export const VALUED_NPM_FLAGS: ReadonlySet<string> = new Set([
   "--workspace",
 ]);
 
-// Matched anywhere in the payload rather than at its head, since an install written after a
-// `cd` or on a second line installs the same way. `ni` carries its delimiters so the two
-// letters do not match inside another word.
 export const TRIGGERS: readonly string[] = [
   "npm",
   "npx",
@@ -83,7 +65,6 @@ export const REASONS: Readonly<Record<string, string>> = {
     "走らせる先の .npmrc が false で打ち消しているなら、そちらを直す。",
 };
 
-/** Whether a token list installs a package. */
 export function _installs(tokens: readonly string[]): boolean {
   if (NI_INSTALLS.has(tokens[0]) || RUNNERS.has(tokens[0])) {
     return true;
@@ -95,18 +76,10 @@ export function _installs(tokens: readonly string[]): boolean {
   return sub !== null && SUBCOMMANDS.has(sub);
 }
 
-/** Join a `cd` target onto the directory tracked so far, the way pathlib's `/` operator does:
- * an absolute target replaces the directory outright instead of nesting under it. */
 function _cd(directory: string, target: string): string {
   return path.isAbsolute(target) ? target : path.join(directory, target);
 }
 
-/** The verdict for a command line and where it would run, or null when nothing installs.
- *
- * Not the first token of the raw string: `cd /tmp && npm install` reads as `cd`, and the two
- * spaces in `npm  install` leave the subcommand empty. The directory follows every cd ahead
- * of the install, since `cd a && cd b` lands in a/b and the .npmrc there is the one npm will
- * read. */
 export function _target(command: string): [string, string] | null {
   let directory = process.cwd();
   const found: string[][] = [];
@@ -119,7 +92,7 @@ export function _target(command: string): [string, string] | null {
       }
     }
   } catch {
-    return ["unparsable", directory]; // an unclosed quote hides which flags the install carries
+    return ["unparsable", directory];
   }
   if (found.length === 0) {
     return null;
@@ -128,11 +101,6 @@ export function _target(command: string): [string, string] | null {
   return [override ? "override" : "install", directory];
 }
 
-/** What one .npmrc says about ignore-scripts, or null when it says nothing.
- *
- * Whitespace around the `=` is allowed, since npm reads `ignore-scripts = true` as true. A
- * value in any other spelling, `TRUE` among them, is not a boolean to npm either, so it
- * counts as unset here for the same reason. */
 export function _setting(npmrc: string): boolean | null {
   let text: string;
   try {
@@ -154,10 +122,6 @@ export function _setting(npmrc: string): boolean | null {
   return answer;
 }
 
-/** Whether install scripts are off where the command will run.
- *
- * The project's .npmrc wins over the home one, following npm's own order. A home that turns
- * scripts off is undone by a project that turns them back on. */
 export function _configured(directory: string): boolean {
   const project = _setting(path.join(directory, ".npmrc"));
   if (project !== null) {

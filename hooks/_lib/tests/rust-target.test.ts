@@ -1,9 +1,4 @@
 /// <reference types="node" />
-// Unit U-001: rust_target.ts's clippy findings pipeline -- cargo clippy's whole stdout+stderr
-// is collected before MAX_FINDINGS trims it, and a missing cargo binary must read as nothing to
-// say rather than a thrown failure. A stub cargo on PATH plays the same role the retired
-// rust-edit hook tests' STUB_CARGO once did for the Python side: the assertions read what
-// clippyOutput does with the stub's output, not a real crate.
 import assert from "node:assert/strict";
 import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -17,7 +12,6 @@ function makeFixtureRoot(): string {
   return mkdtempSync(path.join(tmpdir(), "rust-target-tests-"));
 }
 
-/** Writes an executable `cargo` stub under root/bin and returns that directory. */
 function installStubCargo(root: string, script: string): string {
   const binDir = path.join(root, "bin");
   mkdirSync(binDir);
@@ -27,10 +21,6 @@ function installStubCargo(root: string, script: string): string {
   return binDir;
 }
 
-/** Runs fn with PATH replaced by exactly binDir -- a replaced (not merged) PATH is what makes
- * "cargo absent" true regardless of whether this machine happens to have a real cargo
- * installed, the same reasoning the retired rust-edit hook tests' setUp once documented for
- * own env replacement. */
 function withOnlyPath<T>(binDir: string, fn: () => T): T {
   const original = process.env.PATH;
   process.env.PATH = binDir;
@@ -52,7 +42,6 @@ test("T-376 a clippy run yielding more than the cap returns exactly the cap, cut
     "#!/bin/sh",
     '[ "$1" = "clippy" ] || exit 0',
     ...fillerEchoes,
-    // The 41st line (past a naive top-MAX_FINDINGS cut) names the edited file.
     "echo 'src/edited.rs:1:1: warning: the edited file, last line of the raw output'",
     "exit 0",
   ].join("\n");
@@ -63,10 +52,6 @@ test("T-376 a clippy run yielding more than the cap returns exactly the cap, cut
   );
 
   assert.ok(result, "clippy produced findings but clippyOutput returned nothing");
-  // clippyOutput returns the JSON.stringify'd hookSpecificOutput envelope, so
-  // additionalContext's embedded newlines are the two literal characters \n, not real line
-  // breaks -- unwrap before splitting, mirroring how the retired rust-edit hook tests once read
-  // the Python side via json.loads(out)["hookSpecificOutput"]["additionalContext"].
   const additionalContext = JSON.parse(result).hookSpecificOutput.additionalContext as string;
   const lines = additionalContext.split("\n");
   assert.equal(
@@ -98,10 +83,7 @@ test("T-377 a missing cargo binary leaves the hook silent instead of reporting a
 
 test("T-378 an output larger than node's default maxBuffer is not truncated", () => {
   const root = makeFixtureRoot();
-  // node:child_process spawnSync's undocumented-by-default cap is 1024 * 1024 bytes; this
-  // stub's filler alone runs past it so a call without an explicit, larger maxBuffer would
-  // truncate (or error) before the edited-file line near the end is ever collected.
-  const lineCount = 20000; // ~20000 * ~113 bytes ~= 2.2MB of stdout
+  const lineCount = 20000;
   const padding = "x".repeat(80);
   const script = [
     "#!/bin/sh",
@@ -117,7 +99,6 @@ test("T-378 an output larger than node's default maxBuffer is not truncated", ()
   );
 
   assert.ok(result, "output past the default maxBuffer must not be dropped as empty");
-  // Unwrap the JSON envelope before splitting -- see the matching comment in T-376 above.
   const additionalContext = JSON.parse(result).hookSpecificOutput.additionalContext as string;
   const firstLine = additionalContext.split("\n")[0];
   assert.match(

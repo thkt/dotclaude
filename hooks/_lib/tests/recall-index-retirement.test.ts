@@ -1,13 +1,4 @@
 /// <reference types="node" />
-// recall_index.py (hooks/lifecycle/recall_index.py) and its test recall_index_test.py
-// (hooks/lifecycle/tests/recall_index_test.py) retire once SessionStart runs
-// hooks/lifecycle/recall_index.ts, the TypeScript replacement the preceding units built
-// (hooks/lifecycle/recall_index.ts, hooks/lifecycle/tests/recall-index.test.ts). This file
-// guards the retirement itself, the same shape as workflows/_lib/tests/gate-retirement.test.ts:
-// no tracked file still names the retired path, and no settings.json SessionStart command
-// names the retired .py. The walk and its historical-directory
-// exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts), reused here rather than
-// re-derived.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -24,9 +15,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
-// Catches recall_index.py and recall_index_test.py as a whole word: the character before
-// "recall_index" must not be a word / dot / hyphen character, so "recall_index.ts" and
-// "recall-index.test.ts" never match, and \b after "py" stops a longer extension from matching.
 const RETIRED_PYTHON = /(^|[^\w.-])recall_index(_test)?\.py\b/;
 
 function referencesRetiredPython(content: string): boolean {
@@ -37,9 +25,6 @@ test("T-247 no tracked file outside docs/decisions/ and docs/research/ reference
   assertDetectsAndMisses(referencesRetiredPython, "recall_index.py");
   assertDetectsAndMisses(referencesRetiredPython, "recall_index_test.py");
 
-  // This test's own file names both retired paths to describe what it checks, so it is
-  // passed as an extra exclusion; the historical directories (docs/decisions/,
-  // docs/research/) are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -54,7 +39,6 @@ test("T-247 no tracked file outside docs/decisions/ and docs/research/ reference
   );
 });
 
-// recall_index.ts is unwired from SessionStart for now, so only the retired .py is guarded here.
 test("T-248 no SessionStart command in settings.json names recall_index.py", () => {
   const settings = JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
   const sessionStartCommandList = hookCommands(settings, "SessionStart");

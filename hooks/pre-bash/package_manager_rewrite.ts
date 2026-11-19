@@ -1,9 +1,5 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
-// PreToolUse hook: rewrite a package manager command into its ni equivalent.
-// TypeScript side of the retired Python rewriter of the same name. MANAGERS / convert
-// / main carry the Python side's names and shapes; convert is exported the way the plan
-// requires.
 import { which } from "../_lib/executable.ts";
 import { field, parse, readStdin } from "../_lib/hook_payload.ts";
 
@@ -41,13 +37,6 @@ function toNup(args: string): string {
   return args ? `nup ${args}` : "nup";
 }
 
-/** Subcommand alias -> the function producing its ni equivalent, keyed on the alias exactly as
- * a manager accepts it (`install` / `i` / `add` share one function, and so on).
- *
- * A `Map` rather than an object literal: `subcmd` comes from the Bash command a user is about
- * to run, and an object literal lookup falls through its prototype chain, so a subcommand
- * literally named `constructor` would resolve to `Object.prototype.constructor` instead of
- * missing. `Map.get` carries no such prototype, so an unlisted subcommand always misses. */
 const SUBCOMMAND_TABLE: ReadonlyMap<string, (args: string) => string> = new Map([
   ["install", toNi],
   ["i", toNi],
@@ -69,7 +58,6 @@ const SUBCOMMAND_TABLE: ReadonlyMap<string, (args: string) => string> = new Map(
   ["upgrade", toNup],
 ]);
 
-/** The ni equivalent of an already-split command, empty for one to leave alone. */
 export function convert(parts: readonly string[]): string {
   const manager = parts[0];
   const rest = parts.slice(1);
@@ -83,12 +71,9 @@ export function convert(parts: readonly string[]): string {
 
   const subcmd = rest[0];
   const args = rest.slice(1).join(" ");
-  // `na --version` answers with ni's own version rather than the manager's, so a flag must
-  // not reach the subcommand table below.
   if (subcmd.startsWith("-")) {
     return "";
   }
-  // bun's built-in test runner, which is not the package.json script `nr test` would run.
   if (manager === "bun" && (subcmd === "test" || subcmd === "t")) {
     return "";
   }
@@ -97,8 +82,6 @@ export function convert(parts: readonly string[]): string {
   if (toRewritten) {
     return toRewritten(args);
   }
-  // na passes the subcommand to the detected agent verbatim, so a manager-specific one such
-  // as `bun pm ls` still reaches the manager that understands it.
   return args ? `na ${subcmd} ${args}` : `na ${subcmd}`;
 }
 

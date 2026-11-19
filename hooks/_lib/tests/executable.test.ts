@@ -1,6 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for hooks/_lib/executable.ts: the executable-file check, the PATH lookup, and
-// the bun-or-node runtime choice that hooks shelling out to a .ts script share.
 import assert from "node:assert/strict";
 import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
