@@ -37,3 +37,13 @@ For a requirement that fixes existing code returning a result different from wha
 3. For each sibling, identify the action / parser / loader that reads it as its consumer, fetch the consumer's required spec inline, and check the sibling against it. The scout procedure is the same as the primary-source verification above
 4. When siblings cross-reference each other's values (a config's keys / block-list vs a form's options), diff the value sets and flag self-defeating alignments (a block-list containing every selectable value, a reference to a value no sibling defines)
 5. Record per sibling: pass / same-kind defect / different-kind defect, with evidence
+
+## Trying premises on the real targets
+
+Before publishing the Issue, try each premise the Issue imposes on the implementation across all of its targets. Do not carry a result confirmed on one target over to the other targets. Write each tried result into the Issue's premises with the commit and the date. For a premise you could not try, write into the Issue that it was not tried and why.
+
+| Premise shape | How to try it |
+| --- | --- |
+| A sentence the Issue requires to be inserted verbatim | Run it through the lint that covers the destination file. For a sentence going into Markdown under `.ja/`, write it to a temporary file and run textlint on it |
+| A premise stating "holds for every target" or "does not fail when removed" | Try it on every target. Apply the deletion or replacement mechanically in a temporary worktree, and run the `check` in `.dotagents.json`. Put the failing tests and lint into the Issue's scope |
+| A requirement to delete or change a file, comment, or name | Search `rules/`, `skills/`, `docs/`, `agents/`, and the tests for text that refers to what is deleted. Put text that would lose its referent into the Issue's scope |
