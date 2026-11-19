@@ -83,7 +83,7 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | -------------------------- | ---------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed  | Convert package manager commands to the ni family. A manager's own flags, and bun's built-in test runner, pass through unchanged |
 | body_proofread.ts          | PreToolUse(Bash) | fail-closed  | Proofread a gh issue/pr create body and a commit message, with a structure check on the filing (advisory)                        |
-| publish_gate.ts | PreToolUse(Bash) | fail-open | In a working tree where `done_gate.ts on` has run, find `git push`, `gh pr create` and `gh pr ready`, and judge whether a record shows `check` passed on the current tree. In mode `record`, record the verdict and allow the command. In mode `enforce`, deny the command while no such record exists |
+| publish_gate.ts | PreToolUse(Bash) | fail-open | In a working tree where `done_gate.ts on` has run, find `git push`, `gh pr create` and `gh pr ready`, and judge whether a record shows `check` passed on the current tree. In mode `record`, record the verdict and allow the command. In mode `enforce`, deny the command while no such record exists. When the text of the line does not determine the working tree, skip the judgment, record that it could not be determined, and allow the command |
 
 ### edit/
 
