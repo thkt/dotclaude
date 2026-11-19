@@ -332,3 +332,23 @@ test("T-602 in mode enforce with no passing check a git push on the line after a
   };
   assert.equal(output.hookSpecificOutput.permissionDecision, "deny");
 });
+
+test("T-604 a git push on the line after a line ending in && or after a blank line appends one line naming git push", () => {
+  for (const input of ["echo a &&\ngit push", "echo a\n\ngit push"]) {
+    const dir = gatedRepo();
+    assert.equal(bash(input, dir).stdout, "", JSON.stringify(input));
+    const lines = logLines(dir);
+    assert.equal(lines.length, 1, JSON.stringify(input));
+    assert.equal(lines[0].command, "git push", JSON.stringify(input));
+  }
+});
+
+test("T-605 in mode enforce with no passing check a git push after a line ending in && or after a blank line is denied", () => {
+  for (const input of ["echo a &&\ngit push", "echo a\n\ngit push"]) {
+    const dir = gatedRepo("enforce");
+    const output = JSON.parse(bash(input, dir).stdout) as {
+      hookSpecificOutput: { permissionDecision: string };
+    };
+    assert.equal(output.hookSpecificOutput.permissionDecision, "deny", JSON.stringify(input));
+  }
+});
