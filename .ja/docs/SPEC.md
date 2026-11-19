@@ -249,7 +249,7 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | -------------- | --------------------------- |
 | marketplace 名 | `thkt-development-workflows`|
 | プラグイン     | `build` のみ                |
-| version        | 4.1.0                       |
+| version        | 設定しない。source の commit が版になる |
 | source         | github の `thkt/dotclaude`  |
 
 ## ミラー契約

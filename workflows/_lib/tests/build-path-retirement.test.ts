@@ -561,6 +561,66 @@ test("marketplace.json parses and every command path it lists exists", () => {
   assert.deepEqual(missing, [], `command paths with no file: ${missing.join(", ")}`);
 });
 
+type Marketplace = {
+  metadata?: Record<string, unknown>;
+  plugins: Record<string, unknown>[];
+};
+
+function versionPins(manifest: Marketplace): string[] {
+  const pins = manifest.plugins
+    .filter((plugin) => Object.hasOwn(plugin, "version"))
+    .map((plugin) => `plugins.${String(plugin.name)}`);
+  return manifest.metadata && Object.hasOwn(manifest.metadata, "version")
+    ? ["metadata", ...pins]
+    : pins;
+}
+
+test("marketplace.json pins no version on metadata or a plugin entry, so an installer receives the source commit", () => {
+  const pinned = JSON.parse(`{
+    "metadata": { "description": "x", "version": "4.1.0" },
+    "plugins": [
+      { "name": "build", "version": "4.1.0", "commands": [] },
+      { "name": "other", "commands": [] }
+    ]
+  }`) as Marketplace;
+  assert.deepEqual(versionPins(pinned), ["metadata", "plugins.build"]);
+  const unpinned = JSON.parse(`{
+    "metadata": { "description": "x" },
+    "plugins": [{ "name": "build", "commands": [] }]
+  }`) as Marketplace;
+  assert.deepEqual(versionPins(unpinned), []);
+
+  const manifest = JSON.parse(
+    readFileSync(join(REPO_ROOT, ".claude-plugin", "marketplace.json"), "utf8"),
+  ) as Marketplace;
+  assert.ok(manifest.metadata, "the manifest has metadata");
+  assert.ok(manifest.plugins.length > 0, "the manifest lists at least one plugin");
+  assert.deepEqual(versionPins(manifest), []);
+});
+
+function firstColumnCells(markdown: string): string[] {
+  return markdown
+    .split("\n")
+    .filter((line) => line.startsWith("|"))
+    .map((line) => line.split("|")[1].trim());
+}
+
+test("PLUGIN.md states the version rule as a table row on the English side and under .ja/", () => {
+  for (const path of ["rules/conventions/PLUGIN.md", ".ja/rules/conventions/PLUGIN.md"]) {
+    const cells = firstColumnCells(readFileSync(join(REPO_ROOT, path), "utf8"));
+    assert.ok(cells.includes("`source`"), `${path} has the rule table`);
+    assert.ok(cells.includes("`version`"), `${path} has a version row`);
+  }
+});
+
+test("SPEC.md keeps its version row and no longer states the pinned 4.1.0 on either side", () => {
+  for (const path of ["docs/SPEC.md", ".ja/docs/SPEC.md"]) {
+    const text = readFileSync(join(REPO_ROOT, path), "utf8");
+    assert.ok(firstColumnCells(text).includes("version"), `${path} has a version row`);
+    assert.ok(!text.includes("4.1.0"), `${path} states 4.1.0`);
+  }
+});
+
 const SUPERSEDED_DRS = [
   "0002",
   "0050",
