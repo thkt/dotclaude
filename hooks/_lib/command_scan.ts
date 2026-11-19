@@ -166,6 +166,16 @@ function _lex(text: string): string[] {
     return ch;
   }
 
+  function skipComment(): void {
+    while (pos < chars.length && chars[pos] !== _NEWLINE && chars[pos] !== _CONTINUATION) {
+      pos += 1;
+    }
+    if (chars[pos] === _CONTINUATION) {
+      pos += 1;
+      pushback.push(_NEWLINE);
+    }
+  }
+
   function onSpace(ch: string | null): string | null | undefined {
     if (ch === null) {
       return null;
@@ -174,8 +184,8 @@ function _lex(text: string): string[] {
       return undefined;
     }
     if (ch === _COMMENTER) {
-      pos = chars.length;
-      return null;
+      skipComment();
+      return undefined;
     }
     if (ch === _ESCAPE) {
       state = "escape";
@@ -238,7 +248,7 @@ function _lex(text: string): string[] {
       return token;
     }
     if (ch === _COMMENTER) {
-      pos = chars.length;
+      skipComment();
       return token;
     }
     if (_WHITESPACE.includes(ch)) {
@@ -257,7 +267,7 @@ function _lex(text: string): string[] {
       return token;
     }
     if (ch === _COMMENTER) {
-      pos = chars.length;
+      skipComment();
       return token;
     }
     if (_WHITESPACE.includes(ch)) {
