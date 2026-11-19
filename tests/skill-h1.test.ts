@@ -1,5 +1,3 @@
-// SKILLS.md § H1 settles the two forms. Nothing enforced them, and some skills drifted to
-// free-form titles while use-cli-* held (#79 #80 #81 #83 #84 #86 #89).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
@@ -11,7 +9,6 @@ const LANGS = ["ja", "en"];
 const at = (lang: string, ...parts: string[]) =>
   join(root, ...(lang === "ja" ? [".ja"] : []), ...parts);
 
-// user-invocable defaults to true, so only an explicit false makes a skill a wrapper.
 const isWrapper = (doc: string) => /^user-invocable:\s*false\s*$/m.test(doc);
 const h1Of = (doc: string) => (doc.match(/^# (.+)$/m) || [])[1] || "";
 
@@ -25,7 +22,6 @@ const skillDocs = async (lang: string) => {
     try {
       out.push({ name, doc: await readFile(join(dir, name, "SKILL.md"), "utf8") });
     } catch {
-      // A directory with no SKILL.md is not a skill; the naming rules do not reach it.
     }
   }
   return out;
@@ -46,12 +42,12 @@ const offendersWhere = async (
   return out;
 };
 
-test("a wrapper skill's H1 is its own name", async () => {
+test("a skill marked user-invocable: false has its own name as its H1", async () => {
   const offenders = await offendersWhere(isWrapper, (h1: string, name: string) => h1 === name);
   assert.deepEqual(offenders, [], `a wrapper's H1 is its bare name:\n${offenders.join("\n")}`);
 });
 
-test("a user-invocable skill's H1 opens with its slash command", async () => {
+test("a skill not marked user-invocable: false opens its H1 with its slash command", async () => {
   const offenders = await offendersWhere(
     (doc: string) => !isWrapper(doc),
     (h1: string, name: string) => h1.startsWith(`/${name}`),

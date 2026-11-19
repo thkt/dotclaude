@@ -15,7 +15,7 @@ A sum of local optima is not a global optimum. Judge a change by its impact on t
 
 ## Readable Code
 
-Write for your later self and one teammate who shares the context. If shrinking the code makes it read easier, that is refinement; pursue it. If shrinking leaves code only you can decode, revert it. Carry intent in names, types, and test names, and treat comments as the last resort for the why and why-not code cannot hold. Review each comment you write against `../conventions/PROSE.md` § Delete the Excess. When a why-not holds, keep that alone rather than pairing it with the why.
+Write for your later self and one teammate who shares the context. If shrinking the code makes it read easier, that is refinement; pursue it. If shrinking leaves code only you can decode, revert it. Carry intent in names, types, and test names. Do not write comments in code. Exactly two exceptions hold. One is a shebang and a directive to a linter or type checker. The other is a comment thkt permitted individually and listed in `tests/permitted-comments.json`. Permission may be asked only for the reason behind a prohibition (why-not) that code, names, and test names cannot state, and for a source URL that `../development/SOURCING.md` requires. In a repo without a permitted list, get a human's permission before adding a comment. Write the history (what was retired, where it moved, DR, Issue, and PR numbers) in the commit and the DR. Write what a test verifies in the test name.
 
 ## DRY
 
@@ -27,7 +27,7 @@ Write for your later self and one teammate who shares the context. If shrinking 
 DRY decides whether two copies are the same knowledge; Single Source of Truth governs copies that a merge cannot eliminate (translation mirrors, generated files, distributed copies).
 
 - Resolve a mergeable copy with DRY, and keep it out of this management
-- When a copy must remain, designate exactly one canonical source and mark the copy with where the canonical lives
+- When a copy must remain, designate exactly one canonical source and guard the correspondence with a test that compares the copy with the canonical
 - Edit the canonical, and let derived copies follow by generation or by mirroring in the same change unit
 
 ## YAGNI Boundary
@@ -69,7 +69,7 @@ Premature interfaces add indirection without value, so consider adding an interf
 Concretizes AI-Assisted Development.
 
 - A bug fix changes the cause site alone, and a small feature runs on the config that already exists
-- Add comments and types to the code you changed, where the logic is non-obvious
+- Add types to the code you changed, where the logic is non-obvious
 - Put validation at system boundaries (user input, external APIs)
 - Create a helper or abstraction once call sites reach 2
 - Return split decisions to the user in the same message as your next action on the parts that do not depend on them, and follow the existing directory structure

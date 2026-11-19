@@ -1,6 +1,3 @@
-// A Phase that names a later Phase and is never named back has handed a value nowhere. PR #289
-// was that shape between two Phases of one skill, and a review caught it while no test did
-// (#290).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
@@ -8,11 +5,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-// .ja is canonical (ADR-0073); the English side mirrors it, so one side is the measurement.
 const skillsDir = join(root, ".ja", "skills");
 
-// Reviewed once and judged to hand nothing forward. Removing an entry is how a fixed handoff
-// gets its guard back, so keep the reason specific enough to re-judge without re-reading.
 const CONTROL_ONLY = new Map<string, string>();
 
 const phaseSections = (doc: string) => {
@@ -48,9 +42,7 @@ const crossReferences = async () => {
   return { refs, pairs: new Set(refs.map((r) => key(r.name, r.from, r.to))) };
 };
 
-// A later Phase citing an earlier one reads a result that already exists, so only a forward
-// reference needs a landing point.
-test("a Phase that hands something forward is named back by the Phase that receives it", async () => {
+test("a Phase in a canonical .ja skill that hands something forward is named back by the Phase that receives it", async () => {
   const { refs, pairs } = await crossReferences();
   const unanswered = [
     ...new Set(
@@ -67,7 +59,6 @@ test("a Phase that hands something forward is named back by the Phase that recei
   );
 });
 
-// An allowlist nobody prunes stops being a record of judgement and becomes noise.
 test("every CONTROL_ONLY entry still names a forward reference that exists", async () => {
   const { pairs } = await crossReferences();
   const stale = [...CONTROL_ONLY.keys()].filter((k) => !pairs.has(k)).sort();

@@ -1,0 +1,6 @@
+[
+  {
+    "path": "tests/prose-language.test.ts",
+    "comment": "Do not add full-width punctuation: quoted data a test matches against keeps its original language."
+  }
+]

@@ -6,9 +6,6 @@ import { fileURLToPath } from "node:url";
 
 const decisions = join(dirname(fileURLToPath(import.meta.url)), "..", "docs", "decisions");
 
-// validate-dr.ts accepts `superseded by DR-NNNN` as a pointer to one decision, and update-index.ts
-// prints the number as the link text. Two files sharing a number make that pointer resolve to
-// either of them, and the generated index shows the number twice with different titles.
 test("no two decision records share a number", async () => {
   const seen = new Map();
   const collisions = [];
@@ -22,10 +19,7 @@ test("no two decision records share a number", async () => {
   assert.deepEqual(collisions, [], "every number belongs to one file");
 });
 
-// A title that carries an ADR-NNNN / DR-NNNN prefix contradicting its filename sends a reader
-// chasing the wrong record. Only the first heading counts: later `# ` lines are shell comments
-// inside code blocks, and one of those holds the literal 0001 in an example.
-test("no title heading claims a number its filename does not carry", async () => {
+test("no record's first heading claims a number its filename does not carry", async () => {
   const mismatched = [];
   for (const entry of await readdir(decisions)) {
     const number = entry.match(/^(\d{4})-.+\.md$/)?.[1];
