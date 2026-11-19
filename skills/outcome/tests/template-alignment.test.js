@@ -17,12 +17,8 @@ const rules = {
   ja: join(root, ".ja", "rules", "core", "OUTCOME.md"),
   en: join(root, "rules", "core", "OUTCOME.md"),
 };
-// The script is an identical copy on both sides, so one path covers the pair.
 const script = join(root, "skills", "outcome", "scripts", "validate-outcome.ts");
 
-// validate-outcome.ts finds the sections of a generated OUTCOME.md by these headings. A wobbling
-// spelling of a required section makes the script report missing_section and exit 1, and one of
-// Indicators reports the table as omitted.
 const HEADINGS = [
   /^## Outcome state$/m,
   /^### Behavior$/m,
@@ -41,11 +37,6 @@ test("the template headings stay English and match across both languages", () =>
   }
 });
 
-// The three Indicators rows are the categories rules/core/OUTCOME.md § Content defines. A dropped
-// row leaves the writer unable to recall the category that vanished from the template.
-//
-// The separator differs per language: textlint closes the spaces around a slash on the .ja side,
-// and a shared string would push that spelling back onto the English prose.
 const indicatorList = { ja: "Time/Error rate/Value", en: "Time / Error rate / Value" };
 
 test("the Indicators categories match between the template and the rules", () => {
@@ -64,10 +55,6 @@ test("the Indicators categories match between the template and the rules", () =>
   }
 });
 
-// The word for the emptiness check. The writer writes TBD per the template's instruction, the
-// script decides emptiness by that word, and SKILL.md's branch table explains the result.
-// Rephrasing just one of them sends an unfilled OUTCOME.md from the generate flow into the update
-// flow.
 test("the emptiness word is TBD across the template, SKILL.md, and the script", () => {
   for (const [lang, path] of Object.entries(templates)) {
     const doc = readFileSync(path, "utf8");
@@ -88,9 +75,6 @@ test("the emptiness word is TBD across the template, SKILL.md, and the script", 
   );
 });
 
-// The sections the fill check reads. The fixture in validate-outcome-cases.json fails when a parent
-// section name such as Outcome state takes Behavior's place, but still passes when one of the
-// three is dropped, so this line pins the list.
 test("validate-outcome.ts's fill check looks at Behavior, Non-goals, and Constraints", () => {
   assert.match(
     readFileSync(script, "utf8"),
@@ -99,8 +83,6 @@ test("validate-outcome.ts's fill check looks at Behavior, Non-goals, and Constra
   );
 });
 
-// The wiring that leaves the branching to the script. Once SKILL.md stops calling it, the
-// decision returns to eyeballing.
 test("SKILL.md branches on validate-outcome.ts and runs it through the validation too", () => {
   for (const [lang, path] of Object.entries(skills)) {
     const doc = readFileSync(path, "utf8");
@@ -117,7 +99,6 @@ test("SKILL.md branches on validate-outcome.ts and runs it through the validatio
       /Bash\(\$\{CLAUDE_SKILL_DIR\}\/scripts\/\*\)/,
       `${lang}: allowed-tools grants running the script`,
     );
-    // A home-anchored grant names the dev tree, which a plugin copy of the skill never matches.
     assert.doesNotMatch(doc.split("---")[1], /\$HOME|~\//, `${lang}: no hardcoded home path`);
     const validateSteps = doc.match(/validate-outcome\.ts/g) || [];
     assert.ok(
@@ -127,9 +108,6 @@ test("SKILL.md branches on validate-outcome.ts and runs it through the validatio
   }
 });
 
-// The instruction to drop an optional block that was never collected, paired with the side that
-// rejects a {...} left behind. With the instruction alone, a placeholder stays in
-// .claude/OUTCOME.md and reads as Behavior.
 test("the generate steps drop the optional block and the script rejects a leftover placeholder", () => {
   assert.match(
     readFileSync(skills.ja, "utf8"),
@@ -155,9 +133,6 @@ test("the generate steps drop the optional block and the script rejects a leftov
   );
 });
 
-// The generate flow drops the opening prose and Indicators, and nothing else writes them. Without
-// the update flow naming both, the template carries two sections no path ever fills, and the
-// missing_indicator warning has no step that reads it.
 test("the update flow can add what generate dropped, and reads the indicator warning", () => {
   for (const [lang, path] of Object.entries(skills)) {
     const doc = readFileSync(path, "utf8");

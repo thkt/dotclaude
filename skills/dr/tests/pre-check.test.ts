@@ -1,15 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for skills/dr/scripts/pre-check.ts: the TS port of the retired Python
-// pre-check's validation, numbering, slug, and similar_drs logic.
-// skills/dr/tests/fixtures/pre-check-cases.json (built by U-001) freezes the retired Python
-// pre-check's own argv/env -> exit/stdout, so T-200 replays it through
-// workflows/_lib/tests/_cli-fixture.ts's runCli rather than hand-writing cases that could drift
-// from the Python script it must match. T-201..T-203 isolate the numbering and formatScore
-// pieces the fixture cases only cover indirectly.
-//
-// This unit is still Red (see pre-check.ts's own header): every scenario below fails on its
-// planned assertion against the scaffold's "not implemented" stub, not on a module/parse/type
-// error.
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -21,8 +10,6 @@ import { withTempRepo } from "../../../workflows/_lib/tests/_git-repo.ts";
 import { formatScore, OUTPUT_KEYS } from "../scripts/pre-check.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-// skills/dr/tests -> skills/dr -> skills -> repo root, the same climb
-// skills/_lib/tests/harness-hash-cli.test.ts's REPO_ROOT makes from the same starting point.
 const TS_SCRIPT = join(HERE, "..", "scripts", "pre-check.ts");
 
 interface FixtureCase {
@@ -41,9 +28,6 @@ const CASES = JSON.parse(
 
 const DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Creates a fresh temp directory, writes `setup`'s files under it (each key a path relative
- * to the directory), runs `fn` against it, and removes it afterward whether `fn` returns or
- * throws -- so a case's leftover files never bleed into the next case. */
 function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): T {
   const dir = mkdtempSync(join(tmpdir(), "pre-check-case-"));
   try {
@@ -66,11 +50,6 @@ test("T-200 every frozen case in pre-check-cases.json reproduces the python scri
       assertStdoutShape(
         run.stdout,
         entry.stdout,
-        // resolveDrDir returns DR_DIR verbatim (the retired Python pre-check's
-        // Path(os.environ["DR_DIR"]) never resolves against cwd either), so every case's dr_dir
-        // field is the literal env value -- confirmed against a real `DR_DIR=archive` run of
-        // the retired Python pre-check script, whose stdout carried "archive", not a
-        // cwd-joined path.
         { "<dr-dir>": entry.env.DR_DIR },
         { "<date>": DATE_SHAPE },
         entry.name,
@@ -82,8 +61,6 @@ test("T-200 every frozen case in pre-check-cases.json reproduces the python scri
           [...OUTPUT_KEYS],
           `${entry.name}: stdout key order matches OUTPUT_KEYS`,
         );
-        // JSON.stringify(parsed, null, 2) round-trips to the same text only when the original
-        // stdout was already indented by 2 -- indent 4 or a single line would diverge here.
         assert.equal(
           run.stdout,
           `${JSON.stringify(parsed, null, 2)}\n`,
@@ -141,8 +118,6 @@ test("T-202 a title outside 5 to 64 characters or carrying a forbidden character
 });
 
 test("T-203 formatScore renders an exact tie such as 0.625 as 0.62 the way python's .2f does, and renders 0.375 as 0.38", () => {
-  // Verified against python3 -c "print(format(0.625, '.2f')); print(format(0.375, '.2f'))",
-  // which prints 0.62 then 0.38 -- both ties land on the even digit, not the digit above.
   assert.equal(formatScore(0.625), "0.62");
   assert.equal(formatScore(0.375), "0.38");
 });

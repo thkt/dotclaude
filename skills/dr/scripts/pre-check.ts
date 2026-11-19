@@ -1,29 +1,12 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: pre-check.ts "DR Title"
-//
-// stdout: JSON (indent 2) with the keys OUTPUT_KEYS declares, in that order --
-// status, number, filename, slug, date, dr_dir, similar_drs.
-// stderr: validation failures, exit 1.
-//
-// TypeScript port of the retired Python pre-check, in the header/entry shape
-// skills/dr/scripts/dr_common.ts already uses: a plain shebang + reference-types + Usage header,
-// named exports for the pieces a test can drive directly, and the CLI's own process.exit(main())
-// guarded by workflows/_lib/entry-point.ts's isMainModule so importing this module for its
-// exports never runs the CLI as a side effect.
-//
-// Contract: the retired Python pre-check's similarity, first_heading, and main; OUTPUT_KEYS
-// mirrors its json.dumps key order and is imported by skills/dr/tests/script-contract.test.js.
-// Exercised by skills/dr/tests/pre-check.test.ts.
+// why-not: the /// <reference> line alone counts as a comment with no Japanese on the .ja twin, so "no .ja file in this checkout lost its Japanese" fails
 import { spawnSync } from "node:child_process";
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { fail, filesUnder, gitTopLevel, guardSkillDir, localDate, resolveDrDir } from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
-/** The stdout object's key order, and the retired Python pre-check's json.dumps key order it
- * mirrors. The source of truth OUTPUT_KEYS-importing tests (this unit's T-200, and
- * script-contract.test.js) check the CLI's stdout against. */
 export const OUTPUT_KEYS = [
   "status",
   "number",
@@ -40,9 +23,6 @@ export interface SimilarDr {
   title: string;
 }
 
-/** Python's `f"{score:.2f}"`: round-half-even to 2 decimal places, formatted as a fixed
- * 2-decimal string. Built from integer hundredths (not `toFixed` on the rounded float) so a
- * value like 62/100 that has no exact binary representation cannot re-round on the way out. */
 export function formatScore(score: number): string {
   const scaled = score * 100;
   const floor = Math.floor(scaled);
@@ -56,10 +36,6 @@ export function formatScore(score: number): string {
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
 }
 
-/** The retired Python pre-check's similarity(): the overlap between title_a and title_b's word
- * sets, divided by title_a's own word COUNT (not the intersection or union size) -- a repeated
- * word in title_a inflates the denominator the same way Python's `len(words_a)` does, so a long
- * existing title (title_b) alone can never dilute the score. */
 export function similarity(titleA: string, titleB: string): number {
   const wordsA = splitWords(titleA.toLowerCase());
   if (wordsA.length === 0) return 0.0;
@@ -72,16 +48,11 @@ export function similarity(titleA: string, titleB: string): number {
   return overlap / wordsA.length;
 }
 
-/** Python's `str.split()` with no argument: splits on runs of whitespace, dropping empty
- * strings from leading/trailing/repeated whitespace instead of `String.split(" ")`'s single
- * space and empty-string artifacts. */
 function splitWords(text: string): string[] {
   const trimmed = text.trim();
   return trimmed === "" ? [] : trimmed.split(/\s+/);
 }
 
-/** The retired Python pre-check's first_heading(): the first `# `-prefixed line's text, or ""
- * when the file carries no top-level heading. */
 export function firstHeading(path: string): string {
   const lines = readFileSync(path, "utf8").split("\n");
   for (const line of lines) {
@@ -90,9 +61,6 @@ export function firstHeading(path: string): string {
   return "";
 }
 
-/** Every existing DR under drDir (sorted) whose first heading scores >=
- * threshold against title, paired with formatScore(score) and the existing heading text --
- * empty when drDir carries no *.md file scoring at or above threshold. Called from main(). */
 function collectSimilarDrs(title: string, drDir: string, threshold: number): SimilarDr[] {
   const similarDrs: SimilarDr[] = [];
   for (const drFile of filesUnder(drDir, (name) => name.endsWith(".md")).sort()) {
@@ -203,8 +171,6 @@ function highestUsedNumber(drDir: string, localMax: number): number {
   return highest;
 }
 
-// Python's main() takes no argv of its own (title comes from sys.argv[1]), so this main(argv)
-// takes process.argv.slice(2).
 export function main(argv: string[]): number {
   const title = argv[0] ?? "";
   const drDir = resolveDrDir(

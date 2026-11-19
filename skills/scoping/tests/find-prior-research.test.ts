@@ -1,11 +1,4 @@
 /// <reference types="node" />
-// Behavioral parity tests for skills/scoping/scripts/find-prior-research.ts against the retired
-// Python original, replayed from the frozen fixture
-// skills/scoping/tests/fixtures/find-prior-research-cases.json (U-001). Reuses the shared
-// runCli/withTempHome/fixture/assertStdoutShape harness from workflows/_lib/tests/_cli-fixture.ts
-// (skills/outcome/tests/validate-outcome.test.ts carries the sibling pattern for
-// skills/outcome/scripts/validate-outcome.ts), and hooks/_lib/shebang_scope.ts's trackedEntries
-// for the git-index mode check (T-182) instead of a standalone statSync or spawn.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -23,11 +16,6 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "find-prior-research.ts");
 
-// One frozen replay case, shaped like skills/scoping/tests/fixtures/find-prior-research-cases.json
-// (U-001): `files` writes each entry into a fresh temp dir that becomes the run's cwd -- the
-// python script defaults its search-dir argument to "", which Path("") resolves as the current
-// directory -- and `argv` carries only the slug, the same way every frozen case leaves the
-// search-dir argument off.
 interface FindPriorResearchCase {
   name: string;
   files: Record<string, string>;
@@ -40,8 +28,6 @@ const CASES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "find-prior-research-cases.json"), "utf8"),
 ) as FindPriorResearchCase[];
 
-/** Runs one fixture case: writes its `files` under a fresh temp dir, runs the CLI with that dir
- * as cwd, and asserts the CLI's exit code and stdout against the case. */
 function runCase(testCase: FindPriorResearchCase, home: string): void {
   const workDir = mkdtempSync(join(tmpdir(), "find-prior-research-case-"));
   try {
@@ -73,10 +59,6 @@ test("T-181 two candidates sharing the same count come back in file name order",
   withTempHome((home) => {
     const workDir = mkdtempSync(join(tmpdir(), "find-prior-research-tie-"));
     try {
-      // "apple-only" shares {apple} with the slug "apple-banana", and "banana-only" shares
-      // {banana}: both count 1, so a shared-descending sort alone leaves the tie unresolved.
-      // Writing "banana-only.md" first checks that the file-ascending tiebreak, not directory
-      // arrival order, decides the order.
       writeFileSync(join(workDir, "banana-only.md"), "");
       writeFileSync(join(workDir, "apple-only.md"), "");
       const run = runCli(SCRIPT, home, "", ["apple-banana"], { cwd: workDir });
@@ -108,8 +90,6 @@ test(
 );
 
 test("T-262 a broken symlink ending in .md is skipped and the real candidates are still reported", () => {
-  // Python's Path.is_file() answers False for a broken symlink, so the scan walks past it.
-  // statSync throws instead, which took the whole run down with a stack trace and exit 1.
   withTempHome((home) => {
     const workDir = mkdtempSync(join(tmpdir(), "find-prior-research-broken-link-"));
     try {

@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# Unit tests for sandbox/hako/agents.sh's codex row (#490).
-# T-021 runs the whole hako.sh -> container -> entrypoint.sh -> init-firewall.sh -> agents.sh
-# chain with a codex stub in place of the claude one, so the assertion reads whether codex,
-# not claude, is what finally execs.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -14,9 +10,6 @@ AGENT_NAME="codex"
 
 test_codex_resolves_an_exec_command_an_auth_directory_and_an_allowlist() {
   echo "T-019: codex resolves an exec command, an auth directory, and an allowlist"
-  # The exact flags on codex's exec command are an implementation choice the contract does
-  # not pin (unlike auth-dir, which it names literally), so this only requires the command
-  # to actually name the codex CLI rather than pinning a full string.
   assert_contains "exec command names the codex CLI" "codex" "$("$AGENTS" exec codex)"
   assert_eq "auth directory" "/home/node/.codex" "$("$AGENTS" auth-dir codex)"
   assert_contains "allowlist resolves" "github.com" "$("$AGENTS" allowlist codex)"
@@ -25,32 +18,22 @@ test_codex_resolves_an_exec_command_an_auth_directory_and_an_allowlist() {
 test_the_domain_set_entering_ipset_for_codex_differs_from_the_one_for_claude() {
   echo "T-020: the domain set entering ipset for codex differs from the one for claude"
   local claude_list codex_list
-  # Guarded with `|| true`: an unknown agent name would otherwise trip `set -e` and abort
-  # the script before any assertion below can report it.
   claude_list="$("$AGENTS" allowlist claude 2>/dev/null)" || true
   codex_list="$("$AGENTS" allowlist codex 2>/dev/null)" || true
-  # Checked first: an empty codex_list "differs from claude's" too, so the divergence assert
-  # alone passes on the very state it exists to catch.
   assert_contains "codex resolves an allowlist at all" "registry.npmjs.org" "$codex_list"
-  # init-firewall.sh (U-002) resolves this exact string into the ipset it builds, so a
-  # divergence here is what puts a different domain set into the guest's ipset.
   assert_eq "codex's allowlist differs from claude's" "yes" \
     "$([[ -n "$codex_list" && "$claude_list" != "$codex_list" ]] && echo yes || echo no)"
 }
 
-# Template under $TMPDIR: macOS mktemp without a template ignores TMPDIR
 TEST_TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/agents-codex-tests-XXXXXX")
 cleanup() { rm -rf "$TEST_TMPDIR"; }
 trap cleanup EXIT
 
-# hako.sh's resolve_workspace_src takes its clone directory from TMPDIR; pointed inside
-# TEST_TMPDIR so the trap above carries the clones away.
 export TMPDIR="$TEST_TMPDIR"
 
 STUB_BIN="$TEST_TMPDIR/bin"
 mkdir -p "$STUB_BIN"
 
-# Stands in for the host repo hako.sh is invoked from.
 FAKE_REPO="$TEST_TMPDIR/fake-repo"
 mkdir -p "$FAKE_REPO"
 
@@ -66,9 +49,6 @@ exit 0
 EOF
 chmod +x "$STUB_BIN/git"
 
-# container <subcommand> ...: `volume create` is a no-op. `run` relays the trailing
-# agent-name argument hako.sh assembled straight into the real entrypoint.sh, standing in
-# for the built image's own ENTRYPOINT.
 cat > "$STUB_BIN/container" <<EOF
 #!/bin/sh
 printf '%s\n' "\$*" >> "$CONTAINER_LOG"
@@ -81,8 +61,6 @@ exec "$ENTRYPOINT" "\$agent"
 EOF
 chmod +x "$STUB_BIN/container"
 
-# codex: the leaf of the whole chain. Its log is what confirms the run actually reached
-# exec with codex's own command, not claude's.
 cat > "$STUB_BIN/codex" <<EOF
 #!/bin/sh
 printf '%s\n' "\$*" >> "$CODEX_LOG"
@@ -90,8 +68,6 @@ exit 0
 EOF
 chmod +x "$STUB_BIN/codex"
 
-# gosu <user> <command...>: the post-demotion iptables probe must fail, and any other
-# command is the agent's own exec, which must actually run.
 cat > "$STUB_BIN/gosu" <<EOF
 #!/bin/sh
 printf '%s\n' "\$*" >> "$GOSU_LOG"
@@ -150,9 +126,6 @@ chmod +x "$STUB_BIN/curl"
 GOOD_RESOLV_CONF="$TEST_TMPDIR/resolv.conf.good"
 printf 'nameserver 10.9.9.9\n' > "$GOOD_RESOLV_CONF"
 
-# Runs hako.sh for codex with the stubs first on PATH and $FAKE_REPO standing in for the
-# host's $PWD, chaining through the fake container into the real
-# entrypoint.sh/init-firewall.sh/agents.sh, mirroring hako-seam.test.sh's run_chain.
 run_chain() {
   : > "$CONTAINER_LOG"; : > "$GOSU_LOG"; : > "$IPTABLES_LOG"; : > "$CODEX_LOG"
   (
@@ -175,10 +148,6 @@ test_the_chain_execs_codex_when_hako_sh_is_given_codex() {
   assert_eq "the run arguments' trailing positional argument is codex" \
     "$AGENT_NAME" "$last_arg"
 
-  # The codex stub only logs its own argv, not its own command name, so what proves codex
-  # (rather than claude, or nothing) actually ran is that its dedicated log file gained a
-  # line at all -- STUB_BIN has no claude stub in this chain, so a run that resolved
-  # claude's command instead would have logged nothing anywhere.
   assert_eq "codex's own log received an invocation" "yes" \
     "$([[ -s "$CODEX_LOG" ]] && echo yes || echo no)"
 }

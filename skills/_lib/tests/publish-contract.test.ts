@@ -1,22 +1,16 @@
 /// <reference types="node" />
-// /sweep, /dr, and /outcome carry what they wrote to a draft PR through one shared procedure,
-// skills/_lib/publish.md (#802, DR-0128 Migration Plan step 6). Running a skill needs an LLM, so
-// these tests match each SKILL.md against its counterparts instead: publish.md itself, the
-// prefixes workflows/implement.js accepts, and the /outcome callers that must not publish.
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-// skills/_lib/tests -> skills/_lib -> skills -> repo root.
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const read = (rel: string) => readFileSync(join(REPO_ROOT, rel), "utf8");
 const bothSides = (rel: string) => [rel, `.ja/${rel}`];
 
 const PUBLISH_REF = "${CLAUDE_SKILL_DIR}/../_lib/publish.md";
 
-// The branch and prefix each skill passes, from the Issue's table.
 const PUBLISHERS = [
   { skill: "sweep", branch: "refactor/sweep-<", prefix: "Chore" },
   { skill: "dr", branch: "docs/dr-<", prefix: "Docs" },
@@ -114,8 +108,6 @@ test("the publishing skills keep their SKILL.md body within 100 lines", () => {
   }
 });
 
-// A caller that creates a stub and then goes on with its own work would otherwise have /outcome
-// switch the branch to docs/outcome and carry the caller's changes into that PR.
 test("/outcome skips publishing under --no-publish, and every stub caller passes it", () => {
   for (const rel of bothSides("skills/outcome/SKILL.md")) {
     const doc = read(rel);
@@ -141,9 +133,6 @@ test("/outcome skips publishing under --no-publish, and every stub caller passes
   }
 });
 
-// The superseding path runs the process and then changes the old DR. Running the publish stage
-// inside the process would push before the old DR's status changed, and publish twice. The steps
-// cite stages by name, since skills/dr/tests/script-contract.test.js forbids a Step number there.
 test("/dr publishes a proposed-DR edit, and its superseding path publishes once after the old DR changes", () => {
   const wording = {
     "skills/dr/SKILL.md": {
@@ -171,8 +160,6 @@ test("/dr publishes a proposed-DR edit, and its superseding path publishes once 
     assert.ok(start >= 0, `${rel}: has ${section}`);
     const rest = doc.slice(start + section.length);
     const sectionBody = rest.slice(0, rest.search(/^## /m));
-    // The proposed-status path edits in place and skips the numbered steps, so its own sentence
-    // must reach the publish stage or the edited DR stays uncommitted.
     const proposedPath = sectionBody.split("\n").find((line) => line.includes("proposed"));
     assert.ok(
       proposedPath?.includes(publish.stage),

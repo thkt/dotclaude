@@ -1,16 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for skills/dr/scripts/validate-dr.ts: the TS port of the retired Python
-// validate-dr's section checks, frontmatter/status validation, options counting, and
-// markdownlint-cli2 wiring. skills/dr/tests/fixtures/validate-dr-cases.json (built by U-001)
-// freezes the retired Python validate-dr's own argv/env -> exit/stdout, so T-204 replays it
-// through workflows/_lib/tests/_cli-fixture.ts's runCli rather than hand-writing cases that
-// could drift from the Python script it must match.
-// T-205..T-207 isolate the STATUS_VALUES, countOptions, and lint_check wiring the fixture
-// cases only cover indirectly.
-//
-// This unit is still Red (see validate-dr.ts's own header): every scenario below fails on its
-// planned assertion against the scaffold's "not implemented" stub, not on a module/parse/type
-// error.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -26,8 +14,6 @@ import {
 import { countOptions, STATUS_VALUES } from "../scripts/validate-dr.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-// skills/dr/tests -> skills/dr -> skills -> repo root, the same climb
-// skills/dr/tests/pre-check.test.ts's TS_SCRIPT makes from the same starting point.
 const TS_SCRIPT = join(HERE, "..", "scripts", "validate-dr.ts");
 
 interface FixtureCase {
@@ -44,11 +30,6 @@ const CASES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "validate-dr-cases.json"), "utf8"),
 ) as FixtureCase[];
 
-/** Creates a fresh temp directory, writes `setup`'s files under it (each key a path relative
- * to the directory), runs `fn` against it, and removes it afterward whether `fn` returns or
- * throws -- so a case's leftover files never bleed into the next case. The same helper
- * skills/dr/tests/pre-check.test.ts's withCaseDir provides, duplicated here rather than
- * shared: the two CLIs' fixture shapes are unrelated beyond this one setup step. */
 function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): T {
   const dir = mkdtempSync(join(tmpdir(), "validate-dr-case-"));
   try {
@@ -127,8 +108,6 @@ test("T-206 options are counted only under the Considered Options heading and a 
 test("T-207 with markdownlint-cli2 absent from PATH the checks carry markdown_lint=skipped", () => {
   const entry = fixture(CASES, "four-required-sections-frontmatter-and-two-options-exit-0");
   withCaseDir(entry.setup, (dir) => {
-    // runCli clears PATH by default (workflows/_lib/tests/_cli-fixture.ts's runCli), so
-    // markdownlint-cli2 is unreachable here the same way it was when the fixture was frozen.
     const run = runCli(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
     assert.equal(run.status, entry.exit, `exit code (stderr: ${run.stderr})`);
     const parsed = JSON.parse(run.stdout) as { checks: string[] };
@@ -140,8 +119,6 @@ test("T-207 with markdownlint-cli2 absent from PATH the checks carry markdown_li
 });
 
 test("T-196 a directory argument fails with the same one stderr line and exit 1 the python validator gave, not a node stack trace", () => {
-  // existsSync answers true for a directory, so the path reached readFileSync and threw EISDIR.
-  // Python's Path.is_file() answered false and the run ended on the contract's one line.
   withTempHome((home) => {
     const dir = mkdtempSync(join(home, "not-a-dr-file-"));
     const run = runCli(TS_SCRIPT, home, "", [dir], { cwd: home });

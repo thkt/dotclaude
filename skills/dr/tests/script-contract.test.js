@@ -16,7 +16,6 @@ const skills = pair("SKILL.md");
 const templates = pair("templates", "madr-template.md");
 const formats = pair("references", "madr-format.md");
 
-// STATUS_VALUES is compiled as ^(?:a|b|c)$, so the alternation is the list of values it accepts.
 const statusValues = (regex) => regex.source.replace(/^\^\(\?:/, "").replace(/\)\$$/, "").split("|");
 
 const eachLanguage = async (paths, check) => {
@@ -25,15 +24,11 @@ const eachLanguage = async (paths, check) => {
   }
 };
 
-// A key SKILL.md never names is a key the agent never reads. Without filename the auto-numbering
-// is thrown away and the agent invents a name of its own.
 test("SKILL.md uses pre-check's output keys", async () => {
   const keys = OUTPUT_KEYS;
   assert.ok(keys.includes("filename"), `the output keys are readable (${keys.join(", ")})`);
   assert.ok(keys.length >= 6, `six or more keys are present (${keys.length})`);
 
-  // number rides inside filename, slug inside both, and status is always "ok", so none of the
-  // three reaches the body.
   const consumed = ["filename", "dr_dir", "similar_drs", "date"];
   await eachLanguage(skills, (doc, lang) => {
     for (const key of consumed) {
@@ -42,15 +37,11 @@ test("SKILL.md uses pre-check's output keys", async () => {
   });
 });
 
-// validate-dr.ts never checks the status value, so a spelling left over from the rename would
-// pass unnoticed and split the supersede identifier in two.
 test("madr-format writes the supersede identifier as DR-NNNN", () =>
   eachLanguage(formats, (doc, lang) => {
     assert.match(doc, /superseded by DR-NNNN/, `${lang}: it writes DR-NNNN`);
   }));
 
-// MADR went back to Architectural in v4, so a writer reading the name narrows to architectural
-// decisions unless the file states that this skill widens the scope.
 test("madr-format states that the scope is not limited to architecture", () => {
   const widened = { ja: /アーキテクチャに限らない決定/, en: /decisions beyond architecture/ };
   return eachLanguage(formats, (doc, lang) => {
@@ -60,7 +51,6 @@ test("madr-format states that the scope is not limited to architecture", () => {
 
 const FIELDS = ["status", "date", "decision-makers", "consulted", "informed"];
 
-// A field present in the table but absent from the template leaves the writer adding it by hand.
 test("every frontmatter field has a slot in the template", async () => {
   await eachLanguage(skills, (doc, lang) => {
     for (const field of FIELDS) {
@@ -74,8 +64,6 @@ test("every frontmatter field has a slot in the template", async () => {
   });
 });
 
-// With a required section missing from the template, every DR written fails at Validate with
-// missing_section.
 test("the required sections match between the template and validate-dr", async () => {
   const sections = REQUIRED_SECTIONS;
   assert.ok(sections.length >= 4, `the required sections are readable (${sections.join(" / ")})`);
@@ -86,8 +74,6 @@ test("the required sections match between the template and validate-dr", async (
   });
 });
 
-// A gap in the Step numbers hides a stage that was dropped, and a stage nothing names outside the
-// table is a stage no instruction sends the reader to.
 test("the process Steps run without a gap and every cited stage has a row", () => {
   const CITED = ["Validate", "Index"];
   return eachLanguage(skills, (doc, lang) => {
@@ -105,10 +91,7 @@ test("the process Steps run without a gap and every cited stage has a row", () =
       const uses = doc.split(stage).length - 1;
       assert.ok(uses >= 2, `${lang}: ${stage} is named beyond its own row (${uses})`);
     }
-    // A number reference would shift the moment a stage is inserted, so stages are cited by name.
     assert.doesNotMatch(doc, /Step \d/, `${lang}: nothing points at a Step by number`);
-    // A stage whose name is also a section heading makes every later mention ambiguous, and the
-    // collision shows on the English side alone because the Japanese section names differ.
     for (const stage of stages) {
       const collides = new RegExp(`^## ${stage}$`, "m");
       assert.doesNotMatch(doc, collides, `${lang}: ${stage} is a stage and not also a section`);
@@ -116,8 +99,6 @@ test("the process Steps run without a gap and every cited stage has a row", () =
   });
 });
 
-// The Critique stage spawns critic-design itself. A row naming an agent that has no file, or an
-// allowed-tools without Agent, leaves the stage with nothing it can call.
 test("the Critique stage calls the critic-design agent that agents/ defines, and allowed-tools grants Agent", async () => {
   const agent = await readFile(join(root, "agents", "critics", "critic-design.md"), "utf8");
   assert.match(agent, /^name: critic-design$/m, "agents/critics/critic-design.md defines critic-design");
@@ -130,7 +111,6 @@ test("the Critique stage calls the critic-design agent that agents/ defines, and
   });
 });
 
-// A step citing a section the file no longer carries sends the reader nowhere.
 test("every section a step cites exists", () =>
   eachLanguage(skills, (doc, lang) => {
     const cited = [...doc.matchAll(/\(§ ([^)]+)\)/g)].map((m) => m[1]);
@@ -140,9 +120,6 @@ test("every section a step cites exists", () =>
     }
   }));
 
-// The opening sentence of Decision Type says the type changes the recommended topics alone, so a
-// fourth column puts the table at odds with the sentence above it. Nothing reads a per-type line
-// cap either: the type is never written into the DR, so validate-dr.ts cannot look one up.
 test("the decision type table carries type, use case, and topics only", () =>
   eachLanguage(skills, (doc, lang) => {
     const row = doc.split("\n").find((line) => line.startsWith("| technology-selection"));
@@ -150,8 +127,6 @@ test("the decision type table carries type, use case, and topics only", () =>
     assert.equal(row.split("|").length - 2, 3, `${lang}: the row carries three columns`);
   }));
 
-// validate-dr.ts counts no lines per section, so a line cap in the body is a rule nothing checks,
-// and accepted DRs already exceed it. The body states what each section carries instead.
 const LINE_CAP = { en: /\d+(-\d+)? (lines|bullets)/, ja: /\d+(〜\d+)? ?(行|項目)/ };
 const decisionTypeSection = (doc) => doc.split(/^## (?:Decision Type|決定タイプ)$/m)[1]?.split(/^## /m)[0];
 
@@ -168,10 +143,6 @@ test("the Decision Type section states what each section carries, with no line c
   });
 });
 
-// A remove-or-merge proposal is sent to Reassessment Triggers. Three places carry it and all three
-// are needed: the template slot gives the writer somewhere to put it, the body tells them to, and
-// madr-format is what stops the section from being filed as optional while the body requires it.
-// 58 of 101 existing DRs lack the section, which is what a missing piece produces.
 test("every recommended section reaches the template, the body, and the format reference", async () => {
   const sections = RECOMMENDED_SECTIONS;
   assert.ok(
@@ -194,10 +165,6 @@ test("every recommended section reaches the template, the body, and the format r
   }
 });
 
-// update-index.ts buckets By Status with status.startswith(), so a status value no section key
-// matches lands in no group and drops out of the index with nothing reported. Two DRs were lost
-// that way ("Accepted" capitalised, and a free-text retirement note) before validate-dr.ts
-// started rejecting values outside the lifecycle.
 test("every status value has a section in update-index and a row in madr-format", async () => {
   const values = statusValues(STATUS_VALUES);
   assert.ok(values.length >= 5, `the status values are readable (${values.join(" / ")})`);

@@ -1,18 +1,6 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: host.ts probe --repo <abs path> <command>...
-//        host.ts run <workflow> --repo <abs path> [--args-file <file>] [--state <file>]
-//
-// /implement は implement workflow を host (workflows/_lib/claude-run.ts) で起動する。host は中継のコマンドを
-// 自分で実行し、考える必要のある呼び出しにだけ claude -p の子 session を始める (DR-0127)。これは、その起動の
-// 2 つの手順で skill が実行するコマンドである。
-//
-// probe  子 session 1 つに、利用者の permission の規則の下でコマンドを実行させる。テストを実行できない session が
-//        何分も実装してしまう前に確かめる。
-//        stdout: JSON { ran, denied, why }。exit: 0
-// run    workflow を実行する。stdout: 戻り値の JSON。stderr の最後の行 `claude-run: {...}` が、再開に使う state
-//        ファイルと、結果を持つファイルを名乗る。
-//        exit: script が値を返したら 0 (停止を含む)。script が throw したら 1。読めない呼び出しは 2。
+// why-not: /// <reference> 行は日本語のないコメントと数えられ、"no .ja file in this checkout lost its Japanese" が落ちる
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 import { main, probeChild } from "../../../workflows/_lib/claude-run.ts";
 

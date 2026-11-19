@@ -1,25 +1,6 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: find-prior-research.ts <slug|--all> <search-dir> [legacy-dir ...]
-//
-// slug の語とファイル名の語の重なり数を数え、重なりを持つ .md ファイルをすべて返す。
-// ファイル名の日付プレフィックス (YYYY-MM-DD-) は照合の対象から外れる。
-//
-// stdout: JSON { candidates: [{file, shared}, ...], slug_words: int }
-//   candidates: shared 降順。同点はファイル名の昇順で解決する。退役した Python 版
-//   自身の同点順は Path.iterdir() のディレクトリ順に乗っており、ファイルシステム間で
-//   安定しないため、この移植ではその不安定さを再現せず順序を固定する。
-// exit: 0
-//
-// 退役した Python 版からの TypeScript 移植。skills/outcome/scripts/validate-outcome.ts
-// 自身の header と isMainModule(import.meta.url) という entry point の形をそのまま
-// 踏襲する。DATE_PREFIX / words / main を node:* のみで移植する。
-//
-// Contract: このスクリプト自身の振る舞い。下記の fixture が固定する。
-// skills/scoping/tests/find-prior-research.test.ts が検証し、
-// skills/scoping/tests/fixtures/find-prior-research-cases.json (U-001) から再生する。
-//
-// 複数 root または --all は path と aliases を返す。同名・原文同一だけをまとめ、版が異なる原本は残す。
+// why-not: /// <reference> 行は日本語のないコメントと数えられ、"no .ja file in this checkout lost its Japanese" が落ちる
 
 import { lstatSync, readFileSync, readdirSync, realpathSync } from "node:fs";
 import { basename, isAbsolute, join, relative, sep } from "node:path";
@@ -34,12 +15,10 @@ export interface Candidate {
   aliases?: string[];
 }
 
-/** text を "-" 区切りで語集合にしたもの。 */
 function words(text: string): Set<string> {
   return new Set(text.split("-").filter((w) => w !== ""));
 }
 
-/** `a` の要素のうち `b` にも入っている個数。 */
 function intersectionSize(a: Set<string>, b: Set<string>): number {
   let count = 0;
   for (const word of a) {
@@ -48,7 +27,6 @@ function intersectionSize(a: Set<string>, b: Set<string>): number {
   return count;
 }
 
-/** 通常ファイルだけを原本とし、symlink や読めないパスでは走査を止めない。 */
 function isFile(path: string): boolean {
   try {
     return lstatSync(path).isFile();
