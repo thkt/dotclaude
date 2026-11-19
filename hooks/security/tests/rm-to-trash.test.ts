@@ -1,10 +1,4 @@
 /// <reference types="node" />
-// Ports 3 of the retired rm_to_trash Python hook test's 12 scenarios to rm_to_trash.ts's side
-// VERBS and the REASONS prefixes are asserted as literals rather than read off
-// rm_to_trash.ts itself: the module carries a top-level `process.exit(main())` (DR-0114, no
-// isMainModule guard), so importing it in-process would end the test runner's own process the
-// moment the import ran -- exactly the hazard that guard exists for, so only run() (which
-// spawns the hook as a child process) ever touches this file.
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
@@ -14,7 +8,6 @@ import { denyReason, run } from "../../_lib/tests/_hook-harness.ts";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "rm_to_trash.ts");
 
-// rm_to_trash.ts's own VERBS.
 const VERBS = ["rm", "rmdir", "unlink", "shred"];
 
 function runHook(command: string): string {
@@ -45,8 +38,6 @@ test("T-280 find with -delete is denied and find without it is allowed", () => {
 });
 
 test("T-281 a command whose lexing raises is denied rather than allowed through", () => {
-  // An unterminated quote leaves no way to tell where the command position is; kind() catches
-  // the lexer's error and falls to "verb" rather than clearing the line.
   const reason = denyReason(runHook('rm -rf "/tmp/x'));
   assert.match(
     reason ?? "",
@@ -55,9 +46,6 @@ test("T-281 a command whose lexing raises is denied rather than allowed through"
   );
 });
 
-// The retired Python suite's remaining rows, kept as two tables rather than one test each.
-// The allow half is the half worth protecting: a false positive here stops a command the user
-// meant to run, and every row below is one the Python hook let through.
 const DENIED = [
   "cd /tmp\nrm -rf x",
   "sudo rm -rf /tmp/x",

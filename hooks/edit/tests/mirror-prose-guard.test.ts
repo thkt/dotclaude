@@ -1,11 +1,4 @@
 /// <reference types="node" />
-// Ports two of hooks/edit/tests/mirror_prose_guard_test.py's scenarios --
-// test_english_only_source_warns and test_one_japanese_character_passes -- to the .ts guard's
-// entry point (unit U-003, DR-0112 migration). The check itself is mirror_prose.ts's `check`,
-// already covered end to end by hooks/_lib/tests/mirror-prose.test.ts's T-366; this file
-// confirms only that the compiled hook wires stdin into it and prints the same wording the
-// Python guard does, the way hooks/lifecycle/tests/recall-index.test.ts confirms recall_index.ts's
-// wiring rather than re-deriving hook_payload.ts's own contract.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -61,11 +54,6 @@ test("T-373 an edit whose mirror is present produces no output", () => {
   );
 });
 
-// The Python guard answered a payload whose file_path names nothing with exit 0 and no output
-// (`if path is None or not Path(path).is_file(): return`). statSync raises where is_file()
-// answered false, so without the same guard this case ended as an uncaught ENOENT: exit 1 with
-// a stack trace on stderr. run() throws on a non-zero exit, so a regression fails here rather
-// than passing quietly.
 test("a payload naming a path no file sits at produces no output", () => {
   const missing = path.join(mkdtempSync(path.join(tmpdir(), "mirror-prose-guard-missing-")), ".ja", "gone.ts");
 

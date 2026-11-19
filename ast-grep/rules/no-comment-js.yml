@@ -16,7 +16,6 @@ files:
   - '**/*.js'
 ignores:
   - '**/fixtures/**'
-  - 'hooks/**'
   - 'workflows/**'
   - '.ja/workflows/**'
   - 'skills/**'

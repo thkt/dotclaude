@@ -1,21 +1,4 @@
 /// <reference types="node" />
-// Golden tests for hooks/_lib/hook_payload.ts's read path, pinning field, editedFile and
-// notification against literal expected values. This file began as a differential suite
-// diffing hook_payload.ts against its Python counterpart (contract: docs/decisions/0112-adopt-
-// typescript-for-helper-scripts.md's Success Criteria, "the CLI contract does not change across
-// the migration; the first slice confirms it with a differential test diffing the Python and
-// TypeScript outputs"). That contract is discharged: every hook now imports the .ts side, and
-// that counterpart retired with this unit (DR-0121). The literal expectations below are the ones
-// the differential suite had already written by hand and cross-checked against the Python
-// reference while it existed, so dropping the Python half removes a comparison, not a pin.
-//
-// This stays the only direct check of field's null contract (hook_payload.ts:47-51 states that
-// null, rather than undefined, is deliberate). No other tracked test calls field: the files
-// that name hook_payload.ts either copy it into a temp tree
-// (hooks/pre-bash/tests/client-identifier-gate.test.ts) or assert it is in the type-check set
-// (hooks/_lib/tests/hooks-toolchain.test.ts). notification's envelope is pinned end to end by
-// hooks/edit/tests/rumdl-check.test.ts as well, and editedFile only by the truthiness check in
-// hooks/_lib/tests/mirror-prose.test.ts, so the value checks here carry both.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -61,8 +44,6 @@ test("T-540 field returns null rather than undefined for a payload missing a key
   const typeMismatch = fixture("T-540-type-mismatch");
   const key = "file_path";
 
-  // strictEqual separates null from undefined, which is the whole point of the contract: a
-  // consumer branching on `=== null` would take the wrong branch on undefined.
   assert.strictEqual(field(missingKey.payload.tool_input, key), null, "missing key");
   assert.strictEqual(field(typeMismatch.payload.tool_input, key), null, "type mismatch");
 });
@@ -80,8 +61,6 @@ test("T-004 every fixture payload yields a non-empty tool_name", () => {
 test("T-541 notification returns the envelope shape hooks/edit/rumdl_check.ts's notify call depends on, with the finding verbatim in both channels", () => {
   const message = "violation.md:2:1 [MD022] headings should be surrounded by blank lines";
 
-  // Captured from the Python counterpart's own notify before it retired, so the envelope this asserts
-  // is the one the Python side produced rather than a restatement of the TypeScript output.
   assert.deepEqual(notification(message, "PostToolUse"), {
     systemMessage: message,
     hookSpecificOutput: {
@@ -91,15 +70,6 @@ test("T-541 notification returns the envelope shape hooks/edit/rumdl_check.ts's 
   });
 });
 
-// The unit's own outcome: the suite no longer reaches for the retired Python module. Checked
-// against this file's source because the claim is about what the file may invoke, and a run that
-// happens not to spawn a process would pass whether or not the driver were still here.
-//
-// The needles are assembled from fragments rather than written whole, so this file's own
-// assertion does not match itself. That is the opposite problem from the rule against building a
-// fixture from the constant under search (rules/development/TESTING.md § Whether the test swings
-// at nothing), so the positive control below is built from the same fragments the
-// predicate uses and would catch a fragment typo by failing to detect.
 const FORBIDDEN = [`${"child"}_process`, `${"spawn"}Sync`, `${"py"}thon3`];
 
 const namesForbidden = (source: string): string[] =>

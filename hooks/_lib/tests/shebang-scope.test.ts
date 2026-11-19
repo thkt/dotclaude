@@ -1,6 +1,4 @@
 /// <reference types="node" />
-// Tests for hooks/_lib/shebang_scope.ts, the shared bun-shebang / git-discovery module behind
-// the .ts side's exec-bit and shebang checks (DR-0114).
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
@@ -14,9 +12,6 @@ test("T-009 the bun shebang constant names an absolute interpreter path instead 
   );
 });
 
-// The exclude token is what keeps the positive-control fixtures out of every real-subject scan,
-// so the same pathspec is run with and without it: without, the fixtures are listed (the scan
-// reaches them); with, none remain.
 test("T-015 the real subject set the discovery returns contains no path under hooks/_lib/tests/fixtures/", () => {
   const fixturesDir = path.join(FIXTURES_ROOT, path.sep);
   const underFixtures = (entries: Array<[string, string]>) =>

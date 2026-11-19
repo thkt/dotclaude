@@ -1,10 +1,4 @@
 /// <reference types="node" />
-// Ports the retired Python hook test's five scenarios to recall_index.ts's side (unit U-003).
-// The hook names recall by its full path, so the stub -- the same #!/bin/sh script the retired
-// test used -- goes in through CLAUDE_RECALL_BIN, and HOME is swapped per fixture so the
-// throttle stamp never touches this machine's own file. The Python file's five cases fold into
-// T-243..T-246 here, pairing "skip vs. run" and "compact vs. startup" the way this plan's
-// scenario names read each as one behavior.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -25,7 +19,6 @@ import { run } from "../../_lib/tests/_hook-harness.ts";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "recall_index.ts");
 
-// Same stub the retired Python test's STUB_BODY used: log every invocation's argv to $RECALL_LOG.
 const STUB_BODY = '#!/bin/sh\nprintf \'%s\\n\' "$*" >> "$RECALL_LOG"\n';
 
 interface Fixture {
@@ -63,13 +56,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// The hook detaches recall, so the log needs the job to land before it is read -- mirrors
-// the retired Python test's run_hook polling loop.
-// The hook spawns recall detached and unrefs it, so the stub writes its log on the operating
-// system's schedule rather than this test's. One second was not enough under a full parallel
-// suite run: the wait timed out roughly one run in three while the stub was merely late, never
-// absent. The loop returns the moment the log has content, so a longer bound costs the passing
-// path nothing and only buys the loaded machine room.
 const LOG_WAIT_ATTEMPTS = 200;
 const LOG_WAIT_INTERVAL_MS = 50;
 

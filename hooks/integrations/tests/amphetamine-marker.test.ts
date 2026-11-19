@@ -1,17 +1,4 @@
 /// <reference types="node" />
-// Ports 3 of hooks/integrations/tests/amphetamine_agent_session_test.py's mtime-facing
-// observations to amphetamine_state.ts's side (unit U-003): the Python suite never asserts on
-// _fresh/_any_fresh/_sweep directly, reading them only through acquire/release/background and a
-// backdated marker (e.g. test_stale_marker_is_swept, test_release_closes_when_the_bg_marker_
-// went_stale) -- that dispatch is a later unit's scope here (see amphetamine_agent_session.ts's
-// file header), so these three scenarios call the exported primitives straight rather than
-// through a hook subprocess.
-//
-// Imports from amphetamine_state.ts, not amphetamine_agent_session.ts: unit U-004 gave the
-// latter an unconditional `process.exit(main())` at its own top level (DR-0114's hook-body
-// shape), and a module that does that cannot also be imported directly by a `node --test` file
-// (amphetamine_state.ts's own header carries the reasoning). The marker primitives moved there
-// to keep this import safe; the assertions below are otherwise unchanged from unit U-003.
 import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -19,17 +6,12 @@ import { join } from "node:path";
 import test from "node:test";
 import { anyFresh, fresh, removeMarker, STALE_MINUTES, sweep, touchMarker } from "../amphetamine_state.ts";
 
-// The window release reads a bg marker against (the retired amphetamine_agent_session hook's
-// BG_FRESH_MINUTES), independent of STALE_MINUTES: a marker can be well inside the sweep's
-// 8-hour cutoff and still read as stale to the 15-minute bg check.
 const BG_FRESH_MINUTES = 15;
 
 function fixtureDir(): string {
   return mkdtempSync(join(tmpdir(), "amphetamine-marker-tests-"));
 }
 
-/** Moves path's mtime `minutes` into the past. Mirrors the retired Python suite's own backdate
- * helper (hooks/integrations/tests/amphetamine_agent_session_test.py). */
 function backdate(path: string, minutes: number): void {
   const stamp = Date.now() / 1000 - minutes * 60;
   utimesSync(path, stamp, stamp);
@@ -47,8 +29,6 @@ test("T-393 touching an existing marker moves its mtime forward, so a background
     "a bg marker backdated past BG_FRESH_MINUTES must read stale before it is touched again",
   );
 
-  // The background hook re-touches the same marker on its next fresh call, the way release's
-  // _any_fresh(state_dir, "bg-", BG_FRESH_MINUTES) check depends on it still reading fresh.
   touchMarker(bgMarker);
 
   assert.equal(

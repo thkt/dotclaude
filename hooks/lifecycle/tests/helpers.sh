@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Shared test helpers for hook tests
-# Usage: source "$SCRIPT_DIR/helpers.sh"
 
 PASS=0
 FAIL=0

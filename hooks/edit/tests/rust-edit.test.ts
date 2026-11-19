@@ -1,10 +1,4 @@
 /// <reference types="node" />
-// Unit U-003: hooks/edit/rust_pre_edit.ts and hooks/edit/rust_post_edit.ts both compose
-// hooks/_lib/rust_target.ts's target/fmt/clippyOutput, which is why the plan folds
-// hooks/edit/tests/rust_edit_test.py's two-hook coverage into this one test file. cargo is
-// replaced by a stub on PATH exactly as rust_edit_test.py's STUB_CARGO and
-// hooks/_lib/tests/rust-target.test.ts's installStubCargo do: the assertions read what the
-// hooks do with the stub's clippy output, not a real crate.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
@@ -18,10 +12,6 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PRE = path.join(HERE, "..", "rust_pre_edit.ts");
 const POST = path.join(HERE, "..", "rust_post_edit.ts");
 
-// Records the subcommand it was called with, and (unless CARGO_SILENT) prints one finding
-// naming the edited file -- the smallest stub that lets both the "reports" and the "stays
-// silent when there are none" halves of each scenario run. Mirrors rust_edit_test.py's
-// STUB_CARGO.
 const STUB_CARGO = `#!/bin/sh
 echo "$1" >> "$CARGO_CALLS"
 [ "$1" = "clippy" ] || exit 0

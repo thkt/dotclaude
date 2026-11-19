@@ -1,13 +1,4 @@
 /// <reference types="node" />
-// hooks/pre-bash/body_proofread.py, client_identifier_gate.py and package_manager_rewrite.py
-// are retired in favor of their TypeScript replacements (hooks/pre-bash/body_proofread.ts,
-// client_identifier_gate.ts, package_manager_rewrite.ts). This file guards the retirement
-// itself, the same shape as hooks/_lib/tests/security-hooks-retirement.test.ts: no tracked file
-// still names the 3 retired scripts, and the .ts replacements stay runnable. settings.json
-// registers no hook (DR-0123), so the replacements are named by their tracked path. The walk and
-// its historical-directory exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts),
-// reused here rather than re-derived; the exec-bit / shebang read reuses hooks/_lib/shebang_scope.ts
-// rather than a second copy of that check.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -26,18 +17,12 @@ const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
 const EXEC_MODE = "100755";
 
-// The 3 retired hooks/pre-bash/*.py scripts, matched by name alone: this predicate only asks
-// whether the retired filename still shows up anywhere.
 const RETIRED_NAMES = [
   "body_proofread.py",
   "client_identifier_gate.py",
   "package_manager_rewrite.py",
 ];
 
-/** A retired name matched as a whole word: the character before it must not be a word / dot /
- * hyphen character, so "body_proofread.ts" and a longer stem never match, and \b after "py"
- * stops a longer extension from matching. Mirrors security-hooks-retirement.test.ts's own
- * retiredPattern. */
 function retiredPattern(name: string): RegExp {
   const escaped = name.replace(/\./g, "\\.");
   return new RegExp(`(^|[^\\w.-])${escaped}\\b`);
@@ -52,9 +37,6 @@ test("T-310 no tracked file outside the historical directories names body_proofr
     assertDetectsAndMisses((content) => retiredPattern(name).test(content), name);
   }
 
-  // This test's own file names all 3 retired paths in its comments and constants, so it is
-  // passed as an extra exclusion; the historical directories (docs/decisions/,
-  // docs/research/) are offendersAmong's own default, not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),

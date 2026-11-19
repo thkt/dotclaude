@@ -1,12 +1,4 @@
 /// <reference types="node" />
-// Full-hook coverage for git_sandbox_guard.ts's REWRITES / HELP / GIT_ENV / READ_FLAGS /
-// WRITE_FLAGS / READ_ARGUMENTS / REASON table, now that main() wires it end
-// to end. Spawned through _hook-harness.ts's run rather than imported: the module carries a
-// top-level `process.exit(main())` (DR-0114, no isMainModule guard), and main() reads stdin
-// synchronously, so importing it in-process hangs the test runner on its own open stdin -- the
-// same reason npm-install-guard.test.ts and rm-to-trash.test.ts only ever spawn their hook.
-// CLAUDE_CONFIG_DIR points the guard at a disposable fixture repository, so a call denied here
-// is denied because it reaches that repository, not this checkout.
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
@@ -16,8 +8,6 @@ import { denyReason, fixtureRepo, run } from "../../_lib/tests/_hook-harness.ts"
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "git_sandbox_guard.ts");
 
-// One repository for the whole file: every scenario below runs from inside it with
-// CLAUDE_CONFIG_DIR pointed at it, so a rewriting call is denied and a read-only one is not.
 const GUARDED = fixtureRepo("git-sandbox-guard-tests-");
 
 function runHook(command: string): string {
@@ -57,8 +47,6 @@ test("T-287 a read-only flag or argument on a rewriting subcommand keeps it allo
   assert.ok(denyReason(runHook("git reset --hard origin/main")), "write flag must be denied");
 });
 
-// The retired Python suite's remaining judgment rows, kept as two tables. Every row runs from
-// inside GUARDED, so a denial means the call reached the protected repository.
 const DENIED = [
   "git checkout -- agents/x.md",
   "git switch main",
@@ -87,7 +75,6 @@ const DENIED = [
   "git checkout-index -a -f",
   "git read-tree -u --reset HEAD~1",
   "git filter-branch --force --tree-filter true HEAD",
-  // A line that cannot be closed leaves no way to tell where the command position is.
   'git commit -m "unclosed',
 ];
 
@@ -120,7 +107,6 @@ const ALLOWED = [
   "git read-tree HEAD~1",
   "git write-tree",
   "git update-index --refresh",
-  // The word sits inside quotes, so no token on the line is a git command.
   'git commit -m "git pull を追加"',
   'echo "run git checkout main"',
   "ls -la",

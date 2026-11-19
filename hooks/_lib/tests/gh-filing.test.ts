@@ -1,9 +1,4 @@
 /// <reference types="node" />
-// Unit tests for hooks/_lib/gh_filing.ts, ported from the retired Python gh_filing module. No
-// test exercised this module directly at first (hooks/pre-bash/body_proofread.ts
-// reaches it only as part of a larger flow), so the command
-// lines here are drawn from the retired Python originals' filing-construction inputs: a
-// `gh issue create` / `gh pr create` carrying --title/-t, --body/-b, and --body-file/-F.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { BODY_FILE_FLAGS, BODY_FLAGS, body_file, find, flag, TITLE_FLAGS } from "../gh_filing.ts";

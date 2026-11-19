@@ -1,19 +1,4 @@
 /// <reference types="node" />
-// hooks/_lib/hook_payload.py, hooks/_lib/japanese.py, hooks/_lib/textlint.py,
-// hooks/_lib/tests/japanese_test.py and hooks/_lib/tests/shebang_test.py were the last Python
-// files under hooks/. They retire with DR-0121, which also drops Python as a hook implementation
-// language, so this file guards two things no earlier retirement test covers: that no tracked
-// file names one of the five again, and that hooks/ carries no tracked .py at all.
-//
-// The second check is what the name scan cannot do on its own. A module whose own text never
-// spells its filename leaves a name scan with nothing to report, which is the hole
-// hooks/edit/tests/edit-tooling-retirement.test.ts documents for its own paths. Here the
-// language itself retired, so the stronger invariant is available: the extension, not a list of
-// names, is what may not come back.
-//
-// The walk and its historical-directory exclusions are offendersAmong
-// (workflows/_lib/tests/_retirement.ts), reused rather than re-derived, the same shape as
-// hooks/integrations/tests/hooks-python-retirement.test.ts.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -30,8 +15,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
-// The 5 retired files, matched by name alone. settings.json never named any of them, so unlike
-// the earlier retirement tests there is no wiring check to pair with this predicate.
 const RETIRED_NAMES = [
   "hook_payload.py",
   "japanese.py",
@@ -40,9 +23,6 @@ const RETIRED_NAMES = [
   "shebang_test.py",
 ];
 
-/** A retired name matched as a whole word: the character before it must not be a word / dot /
- * hyphen character, so "japanese.ts" and a longer stem never match, and \b after "py" stops a
- * longer extension from matching. Mirrors hooks-python-retirement.test.ts's retiredPattern. */
 function retiredPattern(name: string): RegExp {
   const escaped = name.replace(/\./g, "\\.");
   return new RegExp(`(^|[^\\w.-])${escaped}\\b`);
@@ -57,9 +37,6 @@ test("T-543 no tracked file outside the historical directories names the five re
     assertDetectsAndMisses((content) => retiredPattern(name).test(content), name);
   }
 
-  // This file names all 5 in its header and in RETIRED_NAMES, so it is passed as an extra
-  // exclusion; docs/decisions/ and docs/research/ are offendersAmong's own default, kept as
-  // history and not repeated here.
   const offenders = offendersAmong(
     trackedFiles(REPO_ROOT),
     (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -74,8 +51,6 @@ test("T-543 no tracked file outside the historical directories names the five re
   );
 });
 
-/** Every tracked path under hooks/ ending in `.<extension>`, read from git rather than the
- * filesystem so an untracked scratch file or a stale __pycache__ entry cannot fail this. */
 function trackedUnderHooks(extension: string): string[] {
   return execFileSync(
     "git",
@@ -89,11 +64,6 @@ function trackedUnderHooks(extension: string): string[] {
 test("T-544 hooks/ carries no tracked .py file, and the same query reports the .ts files hooks/ does carry", () => {
   assert.deepEqual(trackedUnderHooks("py"), []);
 
-  // Positive control: the same pathspec with an extension hooks/ does carry must return it.
-  // Without it an emptied pathspec, a renamed hooks/ or a git invocation that silently stopped
-  // matching would read as "no Python left" (rules/development/TESTING.md § Whether the test
-  // swings at nothing). The repository tracks no .py anywhere since DR-0130, so the control can
-  // no longer be a .py file outside hooks/.
   const typescript = trackedUnderHooks("ts");
   assert.ok(
     typescript.includes("hooks/_lib/command_scan.ts"),

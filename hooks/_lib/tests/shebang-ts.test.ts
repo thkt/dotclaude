@@ -1,10 +1,4 @@
 /// <reference types="node" />
-// The exec-bit, stale-shebang, settings-command and library-has-no-shebang checks for the .ts
-// side (DR-0114). Each check takes its subject and expected value as arguments, so the same call
-// scans hooks/'s real .ts files and, separately, a positive-control fixture under
-// fixtures/shebang/ that carries the violation on purpose
-// (rules/development/TESTING.md § Whether the test swings at nothing). The fixture half is what shows each
-// check is alive, since a clean real tree reports nothing either way.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -23,7 +17,6 @@ import {
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
-// Each fixture file states in its own header which check it is the control for.
 const EXEC_BIT_FIXTURE = `${FIXTURES_ROOT}/shebang/exec-bit-wrong-shebang.ts`;
 const STALE_FIXTURE = `${FIXTURES_ROOT}/shebang/stale-env-bun.ts`;
 const LIB_FIXTURE = `${FIXTURES_ROOT}/shebang/_lib/has-shebang.ts`;
@@ -71,8 +64,6 @@ test("T-012 every .ts settings.json names as a hook command carries the exec bit
     `settings.json-named .ts hooks missing the exec bit or the shebang: ${realOffenders.join(", ")}`,
   );
 
-  // The fixture names a tracked file that has the exec bit and the wrong first line, so the
-  // flag comes from the comparison itself and not from the file being absent.
   assert.deepEqual(
     settingsCommandShebangOffenders(readJson(SETTINGS_FIXTURE), SHEBANG),
     [EXEC_BIT_FIXTURE],

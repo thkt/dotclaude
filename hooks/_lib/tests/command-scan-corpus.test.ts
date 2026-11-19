@@ -1,11 +1,4 @@
 /// <reference types="node" />
-// Guards hooks/_lib/tests/_command-scan-corpus.ts's commandScanCorpus(), the single derivation
-// hooks/_lib/tests/fixtures/command-scan-tokens.json's frozen-behavior table and
-// command-scan-tokens.test.ts both read. T-273
-// ties the corpus to the frozen table; T-274 ties it to the three products the contract
-// describes (lexical x placement, heredoc forms, and the resolve layer) rather than to the
-// curated cases layered on top, so a corpus that drops a product member cannot hide behind a
-// count that still reaches the same total.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -50,9 +43,6 @@ test("T-274 the corpus carries every input the generator's three products yield,
   const corpus = commandScanCorpus();
   const corpusCommands = new Set(corpus.map((c) => c.command));
 
-  // "a fresh call": re-derive the three products independently of commandScanCorpus()'s own
-  // concatenation, so a corpus whose length merely reaches the expected total cannot pass this
-  // the way a count comparison could if it substituted or dropped a product member.
   const freshProducts = new Set(
     [...lexicalCases(), ...heredocCases(), ...resolveCases()].map((c) => c.command),
   );

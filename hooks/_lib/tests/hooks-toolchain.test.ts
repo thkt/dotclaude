@@ -1,9 +1,4 @@
 /// <reference types="node" />
-// Whether hooks/**'s .ts files sit inside the repository's type-check set and CI's Node tests
-// step, and outside both oxlint's ignorePatterns and tsconfig's exclude. Each check runs the
-// real tool (tsc, oxlint) and reads its own output, following workflows/tests/tsconfig-
-// scope.test.js's listTypeCheckedFiles rather than reimplementing include/exclude/ignore
-// resolution here.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -22,8 +17,6 @@ function toPosix(filePath: string): string {
   return filePath.split(path.sep).join("/");
 }
 
-// tsc compiles the whole project to answer this, so it runs once for the file rather than once
-// per test. Mirrors workflows/tests/tsconfig-scope.test.js's listTypeCheckedFiles.
 let typeCheckedFiles: string[] | undefined;
 function listTypeCheckedFiles(): string[] {
   if (typeCheckedFiles) return typeCheckedFiles;
@@ -44,10 +37,6 @@ function listTypeCheckedFiles(): string[] {
   return typeCheckedFiles;
 }
 
-// oxlint's own file discovery, spawned once and cached the same way: reading its output is the
-// real ignorePatterns resolution rather than a reimplementation of oxlint's globbing.
-// --debug=files is oxlint's own option for printing the files a run would lint and then exiting
-// (confirmed via `npx oxlint --help`).
 let oxlintFiles: string[] | undefined;
 function listOxlintFiles(): string[] {
   if (oxlintFiles) return oxlintFiles;
@@ -75,9 +64,6 @@ test("T-005 the tsc --listFilesOnly output carries hooks/_lib/hook_payload.ts", 
   );
 });
 
-// The Python step is a find over the tree, so retiring a *_test.py drops it from CI on its own.
-// Adding a .test.ts does not: the Node step names its globs one by one, and a ported test that
-// no glob reaches leaves CI green having run nothing.
 test("T-006 the Node tests step in .github/workflows/test.yml carries hooks/**/tests/*.test.ts", () => {
   const workflow = readFileSync(path.join(ROOT, ".github", "workflows", "test.yml"), "utf8");
   const step = workflow.slice(workflow.indexOf("- name: Node tests"));
@@ -85,9 +71,6 @@ test("T-006 the Node tests step in .github/workflows/test.yml carries hooks/**/t
   assert.match(step.slice(0, step.indexOf("- name:", 1)), /"hooks\/\*\*\/tests\/\*\.test\.ts"/);
 });
 
-// Every tracked .ts under hooks/, fixtures included: a fixture .ts is a real tsc / oxlint
-// subject here. Spawned inside a test like the two listings above, so a missing git fails T-007
-// and T-014 by name rather than the whole file.
 let hooksTsFiles: string[] | undefined;
 function listHooksTsFiles(): string[] {
   hooksTsFiles ??= trackedEntries("hooks/*.ts")
@@ -111,9 +94,6 @@ test("T-007 neither .oxlintrc.json's ignorePatterns nor tsconfig.json's exclude 
   }
 });
 
-// An empty derivation would let T-007 pass having checked nothing, and a derivation that
-// drops a known file would let tsc / oxlint scope narrow unnoticed, so the set is pinned by
-// content (rules/development/TESTING.md § Whether the test swings at nothing).
 test("T-014 the hooks .ts set the toolchain scope check reads is derived from the tracked tree, is not empty, and contains every .ts this plan adds under hooks/", () => {
   const hooksTs = listHooksTsFiles();
   assert.ok(hooksTs.length > 0, "the derived hooks/*.ts set is empty");

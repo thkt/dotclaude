@@ -1,20 +1,4 @@
 /// <reference types="node" />
-// Ports hooks/pre-bash/tests/client_identifier_gate_test.py's nine observations to
-// client_identifier_gate.ts's side (unit U-003), folded into the plan's three scenarios the way
-// hooks/lifecycle/tests/recall-index.test.ts folds the retired Python hook test's five cases
-// into four. Every scenario spawns the hook (run(), from _hook-harness.ts) rather than
-// importing client_identifier_gate.ts in-process: the module carries a top-level
-// `process.exit(main())` (DR-0114, no isMainModule guard), so an in-process import would run
-// main() and exit the test runner's own process the moment the import ran -- the same hazard
-// git-sandbox-guard.test.ts and npm-install-guard.test.ts avoid the same way.
-//
-// GUARDED_REPO is derived from the hook file's own location, so a copy of the hook placed at
-// <scratch>/hooks/pre-bash/ guards <scratch>. T-296 stages its fixture there. Writing into this
-// checkout instead would stage a file in the developer's own index, leave one behind whenever
-// the assertions throw before the cleanup, and fail outright wherever the repository root is
-// not writable. The retired Python test reached the same path by importing the module and
-// calling _hit / _added_lines; this module cannot be imported (top-level process.exit), so the
-// scratch tree buys the same isolation while still spawning the hook end to end.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, mkdtempSync, realpathSync, writeFileSync } from "node:fs";
@@ -26,8 +10,6 @@ import { run } from "../../_lib/tests/_hook-harness.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "client_identifier_gate.ts");
-// hooks/pre-bash/tests -> hooks/pre-bash -> hooks -> repo root, the same three levels
-// client_identifier_gate_test.py's GUARDED_REPO climbs from its own file.
 const GUARDED_REPO = path.resolve(HERE, "..", "..", "..");
 
 const TERM = "zzplaceholderclient";
@@ -51,8 +33,6 @@ interface Decision {
   };
 }
 
-/** The hook's decision for one command, or null for a run that denied nothing -- mirrors the
- * Python test's run_hook + json.loads(stdout) pairing. */
 function runHook(command: string, cwd: string, listPath: string): Decision | null {
   const payload = JSON.stringify({ tool_name: "Bash", tool_input: { command }, cwd });
   const stdout = run(HOOK, payload, {
@@ -62,9 +42,6 @@ function runHook(command: string, cwd: string, listPath: string): Decision | nul
   return stdout.trim() ? (JSON.parse(stdout) as Decision) : null;
 }
 
-/** A git repository holding a copy of the hook at hooks/pre-bash/ and the one module it
- * imports, so the copy's own GUARDED_REPO resolves to this repository rather than to the
- * checkout the test runs from. Returns the repository root and the copied hook's path. */
 function scratchGuardedRepo(prefix: string): { repo: string; hook: string } {
   const repo = realpathSync(mkdtempSync(path.join(tmpdir(), prefix)));
   mkdirSync(path.join(repo, "hooks", "pre-bash"), { recursive: true });
@@ -85,9 +62,6 @@ test("T-296 a commit whose added lines carry a listed term is denied with the te
   const listPath = path.join(scratch, "client-names.txt");
   writeFileSync(listPath, `# comment\n${TERM}\n\n${OTHER_TERM}\n`);
 
-  // The term is uppercased to also cover the case-insensitive match the Python original relies
-  // on, and the file sits under a directory so the reason has a path to name rather than a
-  // bare filename.
   const { repo, hook } = scratchGuardedRepo("client-identifier-gate-guarded-");
   const relPath = path.join("docs", "fixture.md");
   mkdirSync(path.join(repo, "docs"), { recursive: true });
@@ -117,10 +91,6 @@ test("T-297 a dry-run commit and a commit outside the guarded repository are bot
   const listPath = path.join(scratch, "client-names.txt");
   writeFileSync(listPath, `# comment\n${TERM}\n\n${OTHER_TERM}\n`);
 
-  // A scratch guarded repository with the term staged, so passing through is the exemption
-  // doing its work rather than the index happening to carry nothing. Reading this checkout's
-  // index made the case pass only while no staged file named a listed term, and this test file
-  // names one.
   const { repo, hook } = scratchGuardedRepo("client-identifier-gate-dryrun-guarded-");
   writeFileSync(path.join(repo, "staged.md"), `${TERM.toUpperCase()} appears here\n`);
   spawnSync("git", ["add", "staged.md"], { cwd: repo });
