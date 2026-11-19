@@ -1,45 +1,20 @@
 /// <reference types="node" />
-// 退役した Python 版 dr_common の共有ヘルパーを TypeScript に移植したもの。named export
-// のみで、default export は持たない。この module 自身は CLI の入口を持たない -- pre-check.ts、validate-dr.ts、update-index.ts が
-// それぞれこれを import する -- そのため呼び出す側の script が持つ skills-CLI の
-// shebang + 100755 とは違い、shebang 無しの mode 100644 で置く。
-//
-// Contract: 退役した Python 版 dr_common の fail / resolve_dr_dir / guard_skill_dir /
-// split_frontmatter。加えて gitTopLevel / filesUnder / localDate。Python の snake_case な名前は TS 側では camelCase になる。
-//
-// resolveDrDir はここでは純関数であり、git の exit が非 0 のときに自分で fail() を呼ぶ
-// 退役した Python 版 resolve_dr_dir とは違う。env、CLI 引数、git-toplevel の spawn 結
-// 果を明示的な引数としてすべて受け取り、3 つのどれも見つからなかった呼び出し側が、返っ
-// てきた null をどう扱うかを決める。これにより git の spawn と process.exit という副作
-// 用のうち、git の spawn は別の export である gitTopLevel が担い、各 CLI は fallback が要るときだけ
-// それを呼ぶ。process.exit は、main() の Usage ヘッダーの契約が既に文書化している CLI 側の
-// wrapper に留まる。
+// why-not: /// <reference> 行は日本語のないコメントと数えられ、"no .ja file in this checkout lost its Japanese" が落ちる
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-/** 各行を stderr に書き、status 1 でプロセスを終了する。退役した Python 版 dr_common の
- * fail(*lines): print(*lines, sep="\n", file=sys.stderr); sys.exit(1) に対応する。 */
 export function fail(...lines: string[]): never {
   process.stderr.write(`${lines.join("\n")}\n`);
   process.exit(1);
 }
 
-/** resolveDrDir が読む node:child_process の
- * spawnSync(str, ["rev-parse", "--show-toplevel"], { encoding: "utf8" }) 結果のフィールド。
- * SpawnSyncReturns<string> 全体ではなく一部だけを持つ型にしてあるので、呼び出し側は実際の
- * spawnSync が返す残り (pid、signal、output) をでっち上げずに fixture を組み立てられる。 */
 export interface GitTopLevelResult {
   status: number | null;
   stdout: string;
   error?: Error;
 }
 
-/** Decision Record の archive directory を解決する: DR_DIR env、次に CLI 引数、次に
- * docs/decisions を繋げた git top level、の順で見る -- どれも当てはまらないときは null を
- * 返す。git の spawn 自体が起動できなかった場合 (status が null かつ error あり) や、
- * 非 0 で終了した場合も null になる。純関数であり、process.env を自分で読むことも git を
- * 自分で spawn することも、fail() を呼ぶこともない。 */
 export function resolveDrDir(
   env: NodeJS.ProcessEnv,
   arg: string | undefined,
@@ -57,15 +32,10 @@ export function resolveDrDir(
   return join(topLevel.stdout.trim(), "docs", "decisions");
 }
 
-/** path が存在し、かつ通常ファイルであるとき true。Python の Path.is_file() に対応する
- * (SKILL.md という名前のディレクトリは、それを持つことにはならない)。 */
 function isFile(path: string): boolean {
   return existsSync(path) && statSync(path).isFile();
 }
 
-/** drDir が SKILL.md を持つとき (skill-definition directory であって Decision Record の
- * archive ではない)、hint を添えて fail する。退役した Python 版 dr_common の
- * guard_skill_dir に対応する。それ以外は通常どおり返る。 */
 export function guardSkillDir(drDir: string, hint: string): void {
   if (isFile(join(drDir, "SKILL.md"))) {
     fail(
@@ -76,10 +46,6 @@ export function guardSkillDir(drDir: string, hint: string): void {
   }
 }
 
-/** text を --- の区切りペアで (frontmatter の行, body の行) に分割する。退役した Python
- * 版 dr_common の split_frontmatter に対応する: 1 行目にある --- だけが fence を開く。先
- * 頭行以外の --- は区切りにしないので、fence を一度も開かなかったファイルの body に出て
- * くる --- を区切りと誤認することはない。 */
 export function splitFrontmatter(text: string): [string[], string[]] {
   const lines = text.split("\n");
   const fence = /^---[ \t]*$/;
@@ -94,14 +60,11 @@ export function splitFrontmatter(text: string): [string[], string[]] {
   return [[], lines];
 }
 
-/** プロセスの cwd で `git rev-parse --show-toplevel` を実行し、resolveDrDir が読む形で返す。 */
 export function gitTopLevel(): GitTopLevelResult {
   const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };
 }
 
-/** dir 配下の任意の深さにある通常ファイルのうち、ファイル名を `keep` が受け入れるものを、
- * ディレクトリを読んだ順のフルパスで返す。並べ替えは呼び出し側が行う。ディレクトリは名前に関わらず辿る。 */
 export function filesUnder(dir: string, keep: (name: string) => boolean): string[] {
   const found: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -115,7 +78,6 @@ export function filesUnder(dir: string, keep: (name: string) => boolean): string
   return found;
 }
 
-/** `now` のローカルの暦日を、ゼロ埋めした YYYY-MM-DD で返す。DR の date と index の footer が持つ形。 */
 export function localDate(now: Date): string {
   return [
     String(now.getFullYear()).padStart(4, "0"),

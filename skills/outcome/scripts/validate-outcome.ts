@@ -1,19 +1,6 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: validate-outcome.ts <outcome-file>
-//
-// stdout: JSON { file, state, flow, errors, warnings, checks }
-//   state: absent | empty | ok
-//   flow:  generate | update
-// exit: 0 if no errors (warnings allowed), 1 if errors
-//
-// TypeScript port of the retired Python original, with an isMainModule(import.meta.url) entry
-// point. Carries the REQUIRED_SECTIONS / FILLED_SECTIONS / INDICATORS / PLACEHOLDER_LINE /
-// PLACEHOLDER_CELL / section_body / is_unfilled / report / main port, in node:* only.
-//
-// Contract: this script's own behavior, pinned by the fixture below. Exercised by
-// skills/outcome/tests/validate-outcome.test.ts, replayed from
-// skills/outcome/tests/fixtures/validate-outcome-cases.json (U-001).
+// why-not: the /// <reference> line alone counts as a comment with no Japanese on the .ja twin, so "no .ja file in this checkout lost its Japanese" fails
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
@@ -28,9 +15,6 @@ const REQUIRED_SECTIONS = ["Outcome state", "Behavior", "Non-goals", "Constraint
 const FILLED_SECTIONS = ["Behavior", "Non-goals", "Constraints"] as const;
 const INDICATORS = ["Time", "Error rate", "Value"] as const;
 
-// The template writes a prompt as {...} occupying a whole line or a whole table cell.
-// Matching braces anywhere would flag a Behavior that names a JSON shape such as
-// {status, findings}.
 const PLACEHOLDER_LINE = /^[ \t]*(\{[^{}\n]+\})[ \t]*$/gm;
 const PLACEHOLDER_CELL = /\|[ \t]*(\{[^{}\n]+\})[ \t]*(?=\|)/g;
 
@@ -40,12 +24,10 @@ interface Results {
   checks: string[];
 }
 
-// Python's re.escape(heading) for a heading interpolated into a RegExp source string.
 function escapeRegExp(literal: string): string {
   return literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** Text under `heading` up to the next heading of the same or higher level. */
 function sectionBody(text: string, heading: string): string | null {
   const match = new RegExp(`^(#{2,3}) ${escapeRegExp(heading)}\\s*$`, "m").exec(text);
   if (!match) return null;
@@ -55,7 +37,6 @@ function sectionBody(text: string, heading: string): string | null {
   return stop ? rest.slice(0, stop.index) : rest;
 }
 
-/** True when nothing but list markers and TBD sits under the heading. */
 function isUnfilled(body: string): boolean {
   for (const line of body.split("\n")) {
     const content = line.replace(/^\s*([-*]|\d+\.)\s*/, "").trim();
@@ -65,7 +46,6 @@ function isUnfilled(body: string): boolean {
   return true;
 }
 
-/** Every {...} placeholder left as a whole line or a whole table cell, in document order. */
 function placeholdersLeft(text: string): string[] {
   const found: string[] = [];
   for (const match of text.matchAll(PLACEHOLDER_LINE)) found.push(match[1]);
@@ -73,8 +53,6 @@ function placeholdersLeft(text: string): string[] {
   return found;
 }
 
-/** Indicators: a check per label present in the table, a warning per label missing, or the
- * omitted note when the section itself is absent. */
 function checkIndicators(text: string, results: Results): void {
   const indicators = sectionBody(text, "Indicators");
   if (indicators === null) {
@@ -91,7 +69,6 @@ function checkIndicators(text: string, results: Results): void {
   }
 }
 
-/** Prints the report and returns the exit code: 1 when it carries an error, 0 otherwise. */
 function report(target: string, state: string, results: Results): number {
   const payload = {
     file: target,

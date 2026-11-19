@@ -1,6 +1,3 @@
-// Tier 2 checks between the /implement skill and the implement workflow it launches: the skill
-// launches the workflow by name, and its stop table gives a handling for every stop reason the
-// workflow can return, so a reason added to the script cannot reach the user unhandled.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -14,10 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const skill = readFileSync(join(root, "skills", "implement", "SKILL.md"), "utf8");
 const script = readFileSync(join(root, "workflows", "implement.js"), "utf8");
 
-// A stop reason is kebab-case with at least one hyphen, which leaves out values such as "execute".
 const isReason = (value) => /^[a-z][a-z-]*[a-z]$/.test(value) && value.includes("-");
-// Every place implement.js names a stop reason: the first argument of stop() and shipStop(), a
-// stop field of a step result, the CI_STOPS entries, and the reasons replyProblem returns.
 const stopReasons = () => {
   const found = new Set();
   const add = (text) => {
@@ -33,7 +27,6 @@ const stopReasons = () => {
   return found;
 };
 
-// The table moved out of the body when the body passed its line cap. The body points at it.
 const stopTable = readFileSync(join(root, "skills", "implement", "references", "stops.md"), "utf8");
 
 test("the extraction reaches the workflow's stop reasons, including the later additions", () => {
@@ -55,12 +48,9 @@ test("the skill launches the implement workflow by name and maps --no-publish to
   assert.match(script, /const publishing = input\.publish !== false;/);
 });
 
-// The host runs the workflow's commands itself, so a launch costs no agent for a relay (DR-0127). The skill
-// reads the run's result and its state from the last line the host prints, so the two have to name the same keys.
 test("the skill launches on the host through its script, asks the probe first, and reads the keys the host prints", async () => {
   const steps = skill.slice(skill.indexOf("## Phase 2"), skill.indexOf("## Phase 3"));
   assert.match(steps, /\$\{CLAUDE_SKILL_DIR\}\/references\/host\.md/, "Phase 2 does not point at its reference");
-  // The tables Phase 2 routes its outputs with live in the reference it names.
   const phase2 = steps + readFileSync(join(root, "skills", "implement", "references", "host.md"), "utf8");
   assert.match(phase2, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/host\.ts probe --repo "[^"]+" "git status --short"/);
   assert.match(phase2, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/host\.ts run implement --repo "[^"]+" --args-file "[^"]+"/);
@@ -96,8 +86,6 @@ test("the skill launches on the host through its script, asks the probe first, a
   }
 });
 
-// The skill observes the sandbox by running its probe. Inferring it from settings files stopped a
-// session whose sandbox a launch flag had turned off, since no file showed the flag.
 test("the skill observes the sandbox with its probe before launch, and its table routes every field the probe prints", async () => {
   const phase1 = skill.slice(skill.indexOf("## Phase 1"), skill.indexOf("## Phase 2"));
   assert.match(phase1, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/sandbox_probe\.ts/);
@@ -111,14 +99,11 @@ test("the skill observes the sandbox with its probe before launch, and its table
   assert.deepEqual(fields, ["sandboxed", "local_binding", "platform"]);
   for (const field of fields) assert.ok(table.includes(`\`${field}\``), `the table omits ${field}`);
   assert.match(table, /`sandbox\.network\.allowLocalBinding: true`/);
-  // The config contract requires the capture key in every file, with null when no media is needed.
   assert.match(table, /`capture` in `\.dotagents\.json` is not null/);
   const whenToUse = /whenToUse:\s*"([^"]*)"/.exec(script);
   assert.ok(whenToUse && whenToUse[1].includes("sandbox.network.allowLocalBinding"));
 });
 
-// A stop the environment caused can be resumed. The skill passes back, unchanged, the retry the stop
-// returned, and the workflow reads it from the retry input.
 test("the skill resumes a stopped run by passing the stop's retry_next back as the workflow's retry input", () => {
   const section = skill.slice(
     skill.indexOf("## Resuming a run that stopped"),
@@ -132,8 +117,6 @@ test("the skill resumes a stopped run by passing the stop's retry_next back as t
   assert.match(script, /retry_next: null,/);
 });
 
-// A run stopped after eleven repairs because its Issue gave a verification to a host run the workflow does not
-// have. /scoping names the handlings an Issue may agree on, and /implement sends back an Issue that agreed another.
 test("scoping names the three handlings of a step the workflow cannot carry out, and the launch check sends back any other", () => {
   const sufficiency = readFileSync(join(root, "skills", "scoping", "references", "sufficiency.md"), "utf8");
   const heading = "### Handling a step the workflow cannot carry out";
@@ -141,9 +124,7 @@ test("scoping names the three handlings of a step the workflow cannot carry out,
   const section = sufficiency.slice(sufficiency.indexOf(heading), sufficiency.indexOf("## Questions and re-evaluation"));
   const rows = section.split("\n").filter((line) => line.startsWith("| ") && !/^\| (Handling|-)/.test(line));
   assert.equal(rows.length, 3, "the handlings an Issue may agree on");
-  // What the workflow runs itself, in the words its own prompt uses.
   assert.match(sufficiency, /the `check` of `\.dotagents\.json`, the capture, and CI when publishing/);
-  // The implementer returns needs_human for a verification outside this list, so the list has all three.
   assert.match(
     script,
     /The host runs the configured check and capture after you return\. \$\{CI_RULE\}/,
@@ -155,23 +136,16 @@ test("scoping names the three handlings of a step the workflow cannot carry out,
   assert.ok(script.includes('"repair-no-progress"') && section.includes("`repair-no-progress`"));
   const phase1 = skill.slice(skill.indexOf("## Phase 1"), skill.indexOf("## Phase 2"));
   assert.ok(phase1.includes("§ Handling a step the workflow cannot carry out"), "Phase 1 does not name the section");
-  // Phase 1 recognizes a handling by its name, so the names it lists are the rows of the table.
   for (const row of rows) {
     const name = row.split("|")[1].trim();
     assert.ok(phase1.toLowerCase().includes(name.toLowerCase()), `Phase 1 does not name the handling "${name}"`);
   }
-  // An Issue left a step out of scope and added "implement confirms with another tool" to the same cell. One
-  // launch sent it back and another let it through. Both sides now decide by who does the step, so the launch
-  // check lists the same actors scoping forbids in the cell.
   const actors = /Someone inside the run means ([^.]+)\./.exec(section)?.[1];
   assert.ok(actors, "the section no longer says who is inside the run");
   assert.ok(phase1.includes(`assigns work to ${actors}`), `Phase 1 does not return a cell that assigns work to ${actors}`);
   assert.match(section, /or to an option you offer the human/);
 });
 
-// DR-0094 made the build path require a root cause of a bug plan. DR-0128 retires that path and sends a bug
-// through /scoping (Migration Plan step 2), so one item of sufficiency.md carries the root cause on both sides.
-// Each point is matched inside that item, so moving a point out of it or dropping it on one side fails.
 test("scoping confirms a bug's root cause in the code before agreeing on a fix, on both sides", () => {
   const sides = [
     {
@@ -209,7 +183,6 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
   ];
   for (const { path, from, to, marker, points } of sides) {
     const text = readFileSync(join(root, ...path), "utf8");
-    // The section ends at the next H2, which must be the UI section, so an item moved under a new heading fails.
     const start = text.indexOf(from);
     const end = text.indexOf("\n## ", start + from.length) + 1;
     assert.ok(start >= 0 && text.startsWith(to, end), `${path.join("/")} lost the section`);
@@ -221,11 +194,6 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
   }
 });
 
-// DR-0128 retires /research after moving two of its parts: the search of earlier reports (now under
-// skills/scoping/scripts/) and the verification rules (now skills/scoping/references/verification.md).
-// A path left pointing at the removed skill, or a section dropped in the move, leaves /scoping without them.
-// The sweep runs only when Phase 2 sends a confirmed root cause to it (#815), so the step naming the sweep
-// must also carry the root-cause trigger.
 test("scoping's Phase 2 points at the earlier-report search and the verification rules, and both files exist, on both sides", () => {
   const sweepTrigger = {
     skills: /fixes existing code returning a result different from what is required, once you confirm the root cause/,
@@ -253,8 +221,6 @@ test("scoping's Phase 2 points at the earlier-report search and the verification
   }
 });
 
-// rules/conventions/SKILLS.md caps a SKILL.md body and a reference file at 100 lines. #815 grew the
-// SKILL.md and sufficiency.md of /scoping, and publish-contract.test.ts counts only the publishing skills.
 test("scoping keeps its SKILL.md body and sufficiency.md within 100 lines, on both sides", () => {
   const body = (doc) => {
     assert.ok(doc.startsWith("---\n"), "SKILL.md opens with frontmatter");
@@ -272,8 +238,6 @@ test("scoping keeps its SKILL.md body and sufficiency.md within 100 lines, on bo
   }
 });
 
-// The workflow stops as issue-untyped on a title whose prefix is not a key of TYPE_BY_PREFIX, so a prefix
-// scoping lists without a key, or a key scoping never writes, sends an agreed Issue back on every launch.
 test("the type prefixes scoping puts on a title are the keys the workflow maps to a branch type, on both sides", () => {
   const keysIn = (path) => {
     const body = /const TYPE_BY_PREFIX = \{([^}]*)\};/.exec(readFileSync(join(root, ...path), "utf8"))?.[1];
@@ -294,8 +258,6 @@ test("the type prefixes scoping puts on a title are the keys the workflow maps t
     assert.deepEqual(prefixesIn(path), keys, path.join("/"));
 });
 
-// The contract takes the check as a shell string or as one argv array. The skill's line read it as an array
-// of argv arrays, which jq rejects for both.
 test("the skill's jq line reads the check in every shape the workflow's contract accepts", () => {
   assert.match(script, /isShell\(c\.check\) \|\| isArgv\(c\.check\)/);
   const phase2 = skill.slice(skill.indexOf("## Phase 2"), skill.indexOf("## Launching through agents"));
@@ -307,16 +269,12 @@ test("the skill's jq line reads the check in every shape the workflow's contract
   }
 });
 
-// Codex's implement takes any agreed Issue. Routing by a `## Plan` section came from this harness's
-// build flow during the port and has no counterpart in Codex, so neither side routes by it.
 test("neither the skill nor the workflow routes an Issue by its Plan section", () => {
   const whenToUse = /whenToUse:\s*"([^"]*)"/.exec(script)[1];
   assert.ok(!skill.includes("## Plan"), "SKILL.md routes by a ## Plan section");
   assert.ok(!/Plan section/i.test(whenToUse), "whenToUse routes by a Plan section");
 });
 
-// The skill's hand-run revision (per-unit TDD, reviewer agents, a twice-recurring stop) had no basis in Codex;
-// a revision now goes through the workflow like a fresh run.
 test("the skill revises an existing PR through the workflow's revision input, not by hand", () => {
   const section = skill.slice(
     skill.indexOf("## Revising an existing PR"),

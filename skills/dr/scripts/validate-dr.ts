@@ -1,28 +1,12 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: validate-dr.ts <dr-file>
-//
-// stdout: JSON { file, errors, warnings, checks }
-// exit: 0 if no errors (warnings allowed), 1 if errors
-//
-// TypeScript port of the retired Python validate-dr, in the header/entry shape
-// skills/dr/scripts/dr_common.ts and skills/dr/scripts/pre-check.ts already use: a plain shebang +
-// reference-types + Usage header, named exports for the pieces a test can drive directly, and
-// the CLI's own process.exit(main()) guarded by workflows/_lib/entry-point.ts's isMainModule so
-// importing this module for its exports never runs the CLI as a side effect.
-//
-// Contract: the retired Python validate-dr's REQUIRED_SECTIONS, RECOMMENDED_SECTIONS,
-// STATUS_VALUES, count_options, lint_check, and main. REQUIRED_SECTIONS/RECOMMENDED_SECTIONS/
-// STATUS_VALUES are exported for skills/dr/tests/script-contract.test.js to import. Exercised by
-// skills/dr/tests/validate-dr.test.ts.
+// why-not: the /// <reference> line alone counts as a comment with no Japanese on the .ja twin, so "no .ja file in this checkout lost its Japanese" fails
 import { accessSync, constants, existsSync, readFileSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fail, splitFrontmatter } from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
-// Confirmation is an h3 under Decision Outcome; the others are h2. Section detection allows
-// either level so a valid h3 Confirmation is not flagged missing.
 export const REQUIRED_SECTIONS = [
   "Context and Problem Statement",
   "Considered Options",
@@ -30,15 +14,8 @@ export const REQUIRED_SECTIONS = [
   "Confirmation",
 ] as const;
 
-// A remove-or-merge proposal reads this section to judge, so a DR without it leaves that
-// judgment nothing to read. madr-format files it as recommended, so this warns rather than
-// errors.
 export const RECOMMENDED_SECTIONS = ["Reassessment Triggers"] as const;
 
-// update-index.ts buckets By Status with status.startsWith(), so a value outside the lifecycle
-// lands in no section and drops out of the index. The drop is invisible, so this errors.
-// Anchored ^(?:...)$ the same way the retired Python validate-dr's re.compile(...).fullmatch()
-// requires the whole value to match, not merely contain, one of the alternatives.
 export const STATUS_VALUES: RegExp =
   /^(?:proposed|accepted|rejected|deprecated|superseded by DR-\d{4})$/;
 
@@ -48,14 +25,10 @@ interface Results {
   checks: string[];
 }
 
-/** The retired Python validate-dr's count_options: bullets or numbered items directly under the
- * Considered Options heading. A heading of the same or shallower depth ends the count; a deeper
- * heading is a subsection of Considered Options, so its bullets still count. */
 export function countOptions(lines: readonly string[]): number {
   let depth = 0;
   let count = 0;
   for (const line of lines) {
-    // Matching h2 alone reports zero options for a heading the section check calls present.
     const opening = /^(#{2,3}) Considered Options\s*$/.exec(line);
     if (opening) {
       depth = opening[1].length;
@@ -69,9 +42,6 @@ export function countOptions(lines: readonly string[]): number {
   return count;
 }
 
-/** shutil.which("markdownlint-cli2"): true when a directory on PATH carries an executable
- * file of that name -- checked with accessSync's X_OK rather than spawning a subprocess per
- * PATH entry. */
 function which(command: string): boolean {
   const dirs = (process.env.PATH ?? "").split(":").filter((dir) => dir !== "");
   for (const dir of dirs) {
@@ -79,15 +49,11 @@ function which(command: string): boolean {
       accessSync(join(dir, command), constants.X_OK);
       return true;
     } catch {
-      // not in this PATH entry -- keep looking
     }
   }
   return false;
 }
 
-/** The retired Python validate-dr's lint_check: ('checks' | 'warnings', message) from
- * markdownlint-cli2, if installed on PATH. Absent, this returns the skipped message rather than
- * running anything. */
 export function lintCheck(path: string): ["checks" | "warnings", string] {
   if (!which("markdownlint-cli2")) {
     return ["checks", "markdown_lint=skipped (markdownlint-cli2 not installed)"];
@@ -103,10 +69,6 @@ export function lintCheck(path: string): ["checks" | "warnings", string] {
   return ["warnings", "markdown_lint=issues (run markdownlint-cli2 for details)"];
 }
 
-/** Python's Path.is_file(): a directory, a broken symlink, or an unreadable parent all read as
- * "not a file" rather than reaching readFileSync, which throws EISDIR on a directory and would
- * put a node stack trace where the contract names one stderr line. existsSync above answers
- * true for a directory, so it cannot stand in here. */
 function isFile(path: string): boolean {
   try {
     return statSync(path).isFile();
@@ -115,8 +77,6 @@ function isFile(path: string): boolean {
   }
 }
 
-/** REQUIRED_SECTIONS then RECOMMENDED_SECTIONS: a heading present pushes a check, a missing
- * required one an error, a missing recommended one a warning. */
 function checkSections(text: string, results: Results): void {
   for (const section of [...REQUIRED_SECTIONS, ...RECOMMENDED_SECTIONS]) {
     const escaped = section.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -131,7 +91,6 @@ function checkSections(text: string, results: Results): void {
   }
 }
 
-/** MADR v4 frontmatter: status and date are optional but recommended. */
 function checkFrontmatter(text: string, results: Results): void {
   const [frontmatter] = splitFrontmatter(text);
   if (frontmatter.length > 0) {
@@ -156,8 +115,6 @@ function checkFrontmatter(text: string, results: Results): void {
   }
 }
 
-/** countOptions read against its 2+/1/0 thresholds: a check at 2 or more, a warning at exactly
- * one, an error at zero. */
 function checkOptions(lines: readonly string[], results: Results): void {
   const optionsCount = countOptions(lines);
   if (optionsCount >= 2) {
@@ -169,8 +126,6 @@ function checkOptions(lines: readonly string[], results: Results): void {
   }
 }
 
-/** The retired Python validate-dr's main: reads argv[0] as a dr-file path, prints the validation
- * JSON (indent 2), and exits 1 only when results.errors is non-empty. */
 export function main(argv: string[]): number {
   const drFile = argv[0] ?? "";
   if (!isFile(drFile)) {

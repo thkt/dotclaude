@@ -1,14 +1,4 @@
 /// <reference types="node" />
-// Guards the retirement of skills/dr/scripts' 4 Python scripts (dr_common.py, pre-check.py,
-// validate-dr.py, update-index.py) and their .ja mirror, the same way
-// workflows/_lib/tests/ts-harness-retirement.test.ts guards run-workflow.js's: no tracked file
-// outside docs/decisions/ and docs/research/ (kept as historical record) still names one, /dr's SKILL.md invokes the .ts scripts
-// by path instead, and the .ts scripts themselves keep the shebang/mode convention
-// hooks/_lib/shebang_scope.ts already checks for hooks/.
-//
-// The walk and the historical-directory exclusions are offendersAmong (workflows/_lib/tests/_retirement.ts),
-// shared with the other retirement tests; trackedEntries (hooks/_lib/shebang_scope.ts) is the
-// git-mode/first-line reader T-214 shares with hooks/_lib/tests/shebang-scope.test.ts.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -21,10 +11,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
-// Flags a retired script name used as a word (not as part of a longer identifier), immediately
-// followed by the literal ".py" extension -- e.g. "pre-check.py" or "scripts/dr_common.py", but
-// not "pre-check.py.bak" (the trailing \b still lets that through; callers that care skip it
-// on inspection) nor "not-pre-check.py" (the [^\w.-] boundary before the name).
 const PY_NEEDLE = /(^|[^\w.-])(dr_common|pre-check|validate-dr|update-index)\.py\b/;
 
 function referencesRetiredPyScript(content: string): boolean {

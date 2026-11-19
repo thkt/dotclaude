@@ -1,23 +1,4 @@
 #!/usr/bin/env bash
-# Unit tests for sandbox/hako/hako.sh (U-005: host 側 hako <agent> が使い捨て clone を
-# workspace として mount する container run 引数を組む).
-#
-# Interface this test locks in for the not-yet-written script (mirroring how
-# sandbox/hako/tests/entrypoint.test.sh locked in entrypoint.sh's interface before it
-# existed):
-#   hako.sh <agent-name> [--live]
-# Internally it is expected to call, as sibling processes on PATH (apple/container
-# docs/command-reference.md):
-#   container volume create <per-agent-volume-name>   -- once per agent, idempotent
-#   container run --cap-add NET_ADMIN -v <workspace-src>:/workspace \
-#     -v <per-agent-volume-name>:<auth-dir> ... <image> <agent-name>
-# where <workspace-src> is a throwaway `git clone` of the repo by default, and $PWD itself
-# only when --live is given. U-006 adds the login subcommand and full agent-name
-# validation; this unit only locks in the run-argument assembly for a known-good agent name.
-#
-# container and git are replaced by stubs at the front of PATH, mirroring
-# entrypoint.test.sh's gosu/iptables stubs, so the assertions read what hako.sh decided to
-# invoke rather than touching a real VM or the real repo.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -25,29 +6,21 @@ source "$SCRIPT_DIR/../../../hooks/lifecycle/tests/helpers.sh"
 HAKO="$SCRIPT_DIR/../hako.sh"
 AGENT_NAME="claude"
 
-# Template under $TMPDIR: macOS mktemp without a template ignores TMPDIR
 TEST_TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/hako-run-tests-XXXXXX")
 cleanup() { rm -rf "$TEST_TMPDIR"; }
 trap cleanup EXIT
 
-# hako.sh's resolve_workspace_src takes its clone directory from TMPDIR. Pointed inside
-# TEST_TMPDIR so the trap above carries the clones away; left at the outer value, every
-# scenario strands one full clone beside it.
 export TMPDIR="$TEST_TMPDIR"
 
 STUB_BIN="$TEST_TMPDIR/bin"
 mkdir -p "$STUB_BIN"
 
-# Stands in for the host repo hako.sh is invoked from: a real directory so $PWD resolves to
-# something concrete, without needing a real .git history (git itself is stubbed below).
 FAKE_REPO="$TEST_TMPDIR/fake-repo"
 mkdir -p "$FAKE_REPO"
 
 CONTAINER_LOG="$TEST_TMPDIR/container.log"
 GIT_LOG="$TEST_TMPDIR/git.log"
 
-# Logs every `container <subcommand> ...` invocation as one line, so a scenario can grep for
-# the `run` line or the `volume create` line independently.
 cat > "$STUB_BIN/container" <<EOF
 #!/bin/sh
 printf '%s\n' "\$*" >> "$CONTAINER_LOG"
@@ -55,7 +28,6 @@ exit 0
 EOF
 chmod +x "$STUB_BIN/container"
 
-# Logs every git invocation; never touches a real remote or the real repo.
 cat > "$STUB_BIN/git" <<EOF
 #!/bin/sh
 printf '%s\n' "\$*" >> "$GIT_LOG"
@@ -63,8 +35,6 @@ exit 0
 EOF
 chmod +x "$STUB_BIN/git"
 
-# Runs hako.sh with $FAKE_REPO as cwd (standing in for the host's $PWD) and the stubs first
-# on PATH. $1: agent name. $2 (optional): an extra flag such as --live.
 run_hako() {
   local agent="$1" extra_flag="${2:-}"
   : > "$CONTAINER_LOG"
@@ -111,8 +81,6 @@ test_the_generated_run_arguments_carry_cap_add_net_admin_and_the_per_agent_named
   assert_contains "the volume name is scoped to this agent" "$AGENT_NAME" "$volume_name"
 
   run_line="$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null | head -1 || true)"
-  # Pattern omits the leading "--": BSD grep (macOS, used by assert_contains) parses a
-  # pattern argument starting with "--" as an unrecognized long option instead of literal text.
   assert_contains "run carries the cap-add flag" "cap-add" "$run_line"
   assert_contains "run adds the NET_ADMIN capability" "NET_ADMIN" "$run_line"
   assert_contains "run mounts the same per-agent volume volume-create made" "$volume_name" "$run_line"

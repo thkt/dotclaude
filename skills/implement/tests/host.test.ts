@@ -1,4 +1,3 @@
-// Tier 1 checks on host.ts: /implement decides whether to launch on the host from what `probe` prints.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -8,7 +7,6 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const script = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "host.ts");
-// A claude on PATH that answers a probe with the reply given.
 const withClaude = (reply: Record<string, unknown>) => {
   const dir = mkdtempSync(join(tmpdir(), "implement-host-"));
   mkdirSync(join(dir, "bin"));

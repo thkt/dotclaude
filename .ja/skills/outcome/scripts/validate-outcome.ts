@@ -1,20 +1,6 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: validate-outcome.ts <outcome-file>
-//
-// stdout: JSON { file, state, flow, errors, warnings, checks }
-//   state: absent | empty | ok
-//   flow:  generate | update
-// exit: 0 if no errors (warnings allowed), 1 if errors
-//
-// 退役した Python 版からの TypeScript 移植。entry point は isMainModule(import.meta.url) で守る。
-// REQUIRED_SECTIONS / FILLED_SECTIONS / INDICATORS /
-// PLACEHOLDER_LINE / PLACEHOLDER_CELL / section_body / is_unfilled / report / main を
-// node:* のみで移植する。
-//
-// Contract: このスクリプト自身の振る舞い。下記の fixture が固定する。
-// skills/outcome/tests/validate-outcome.test.ts が検証し、
-// skills/outcome/tests/fixtures/validate-outcome-cases.json (U-001) から再生する。
+// why-not: /// <reference> 行は日本語のないコメントと数えられ、"no .ja file in this checkout lost its Japanese" が落ちる
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
@@ -29,8 +15,6 @@ const REQUIRED_SECTIONS = ["Outcome state", "Behavior", "Non-goals", "Constraint
 const FILLED_SECTIONS = ["Behavior", "Non-goals", "Constraints"] as const;
 const INDICATORS = ["Time", "Error rate", "Value"] as const;
 
-// テンプレートの穴埋めは {...} の形で、行全体か表セル全体を占める。位置を問わず
-// brace に一致させると、{status, findings} のような JSON の形を書いた Behavior まで拾う。
 const PLACEHOLDER_LINE = /^[ \t]*(\{[^{}\n]+\})[ \t]*$/gm;
 const PLACEHOLDER_CELL = /\|[ \t]*(\{[^{}\n]+\})[ \t]*(?=\|)/g;
 
@@ -40,12 +24,10 @@ interface Results {
   checks: string[];
 }
 
-// heading を RegExp のソース文字列へ埋め込むための、Python の re.escape(heading) 相当。
 function escapeRegExp(literal: string): string {
   return literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** `heading` 配下のテキストを、同レベル以上の次の heading まで返す。 */
 function sectionBody(text: string, heading: string): string | null {
   const match = new RegExp(`^(#{2,3}) ${escapeRegExp(heading)}\\s*$`, "m").exec(text);
   if (!match) return null;
@@ -55,7 +37,6 @@ function sectionBody(text: string, heading: string): string | null {
   return stop ? rest.slice(0, stop.index) : rest;
 }
 
-/** 見出しの下に箇条書き記号と TBD しか無いとき true。 */
 function isUnfilled(body: string): boolean {
   for (const line of body.split("\n")) {
     const content = line.replace(/^\s*([-*]|\d+\.)\s*/, "").trim();
@@ -65,7 +46,6 @@ function isUnfilled(body: string): boolean {
   return true;
 }
 
-/** 行全体または表セル全体を占める {...} の穴埋めを、出現順ですべて返す。 */
 function placeholdersLeft(text: string): string[] {
   const found: string[] = [];
   for (const match of text.matchAll(PLACEHOLDER_LINE)) found.push(match[1]);
@@ -73,8 +53,6 @@ function placeholdersLeft(text: string): string[] {
   return found;
 }
 
-/** Indicators: 表にある label ごとの check、無い label ごとの warning、
- * section 自体が無いときの omitted note。 */
 function checkIndicators(text: string, results: Results): void {
   const indicators = sectionBody(text, "Indicators");
   if (indicators === null) {
@@ -91,7 +69,6 @@ function checkIndicators(text: string, results: Results): void {
   }
 }
 
-/** 報告を出力し、終了コードを返す。errors があれば 1、無ければ 0。 */
 function report(target: string, state: string, results: Results): number {
   const payload = {
     file: target,

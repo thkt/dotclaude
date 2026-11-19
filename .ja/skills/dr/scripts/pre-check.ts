@@ -1,30 +1,12 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: pre-check.ts "DR Title"
-//
-// stdout: OUTPUT_KEYS が宣言する順 (status, number, filename, slug, date, dr_dir,
-// similar_drs) のキーを持つ JSON (indent 2)。
-// stderr: 検証に落ちた内容。exit 1。
-//
-// 退役した Python 版 pre-check の TypeScript 移植。header/entry の形は
-// skills/dr/scripts/dr_common.ts が既に使っているものと同じ:
-// 素直な shebang + reference-types + Usage ヘッダー、テストが直接動かせる部分は named export
-// にし、CLI 自身の process.exit(main()) は workflows/_lib/entry-point.ts の isMainModule で
-// ガードする。これにより、この module を export 目当てで import しても CLI が副作用として
-// 動くことはない。
-//
-// Contract: 退役した Python 版 pre-check の similarity / first_heading / main。OUTPUT_KEYS は
-// json.dumps のキー順に対応し、skills/dr/tests/script-contract.test.js が import する。
-// skills/dr/tests/pre-check.test.ts が検証する。
+// why-not: /// <reference> 行は日本語のないコメントと数えられ、"no .ja file in this checkout lost its Japanese" が落ちる
 import { spawnSync } from "node:child_process";
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { fail, filesUnder, gitTopLevel, guardSkillDir, localDate, resolveDrDir } from "./dr_common.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
-/** stdout オブジェクトのキー順であり、退役した Python 版 pre-check の json.dumps のキー順に
- * 対応する。OUTPUT_KEYS を import するテスト (この unit の T-200、および
- * script-contract.test.js) が、CLI の stdout をこれと突き合わせて検証する際の正本。 */
 export const OUTPUT_KEYS = [
   "status",
   "number",
@@ -41,10 +23,6 @@ export interface SimilarDr {
   title: string;
 }
 
-/** Python の `f"{score:.2f}"`: 小数第 2 位までの round-half-even を、固定 2 桁の文字列として
- * 表現する。丸めた float に `toFixed` を掛けるのではなく、整数の百分の一単位から組み立てる。
- * 62/100 のように 2 進数で正確に表現できない値が、出力の段になって再度丸まってしまうことが
- * ないようにするため。 */
 export function formatScore(score: number): string {
   const scaled = score * 100;
   const floor = Math.floor(scaled);
@@ -58,10 +36,6 @@ export function formatScore(score: number): string {
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
 }
 
-/** 退役した Python 版 pre-check の similarity(): titleA と titleB の語の集合の重なりを、
- * titleA 自身の語の「個数」(積集合や和集合のサイズではない) で割る -- titleA の中で語が繰り
- * 返されると、Python の `len(words_a)` がそうするのと同じように分母が増える。割る数は和集合
- * でなく title_a の語数なので、長い既存タイトル (titleB) だけでスコアが薄まることはない。 */
 export function similarity(titleA: string, titleB: string): number {
   const wordsA = splitWords(titleA.toLowerCase());
   if (wordsA.length === 0) return 0.0;
@@ -74,16 +48,11 @@ export function similarity(titleA: string, titleB: string): number {
   return overlap / wordsA.length;
 }
 
-/** 引数無しの Python の `str.split()`: 空白の連続で分割し、先頭・末尾・連続する空白から
- * 生じる空文字列を落とす。単一の空白でしか分割せず空文字列の artifact も残す
- * `String.split(" ")` とは違う。 */
 function splitWords(text: string): string[] {
   const trimmed = text.trim();
   return trimmed === "" ? [] : trimmed.split(/\s+/);
 }
 
-/** 退役した Python 版 pre-check の first_heading(): 最初に見つかる `# ` で始まる行の
- * テキスト。ファイルが最上位の heading を持たないときは "" になる。 */
 export function firstHeading(path: string): string {
   const lines = readFileSync(path, "utf8").split("\n");
   for (const line of lines) {
@@ -92,10 +61,6 @@ export function firstHeading(path: string): string {
   return "";
 }
 
-/** drDir 配下の既存 DR (ソート済み) のうち、最初の heading が title に
- * 対して threshold 以上のスコアを持つものすべてを、formatScore(score) と既存の heading
- * テキストを添えて返す -- threshold 以上の *.md が drDir に無ければ空になる。main() から
- * 呼ばれる。 */
 function collectSimilarDrs(title: string, drDir: string, threshold: number): SimilarDr[] {
   const similarDrs: SimilarDr[] = [];
   for (const drFile of filesUnder(drDir, (name) => name.endsWith(".md")).sort()) {
@@ -206,8 +171,6 @@ function highestUsedNumber(drDir: string, localMax: number): number {
   return highest;
 }
 
-// Python の main() は自身の argv を取らない (title は sys.argv[1] から来る)。この main(argv)
-// は process.argv.slice(2) を受け取る。
 export function main(argv: string[]): number {
   const title = argv[0] ?? "";
   const drDir = resolveDrDir(

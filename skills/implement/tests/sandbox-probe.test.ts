@@ -1,5 +1,3 @@
-// Tier 1 checks on sandbox_probe.ts: /implement decides whether to launch from what this prints,
-// so a session whose sandbox was turned off by a launch flag must not read as sandboxed.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -21,8 +19,6 @@ test("a command the sandbox runtime wrapped reports sandboxed, and one it did no
   assert.equal(run({ SANDBOX_RUNTIME: undefined }).sandboxed, false);
 });
 
-// Whether a local listen succeeds is a fact of the environment the suite runs in: a sandbox without
-// allowLocalBinding denies it. The probe has to report what a listen in this process finds.
 test("the probe reports the platform, and for local binding what a listen on 127.0.0.1 finds here", async () => {
   const out = run({});
   assert.equal(out.platform, process.platform);
@@ -30,6 +26,5 @@ test("the probe reports the platform, and for local binding what a listen on 127
 });
 
 test("a listen that the host refuses reads as no binding", async () => {
-  // 203.0.113.1 is a documentation address (RFC 5737) that no local interface holds.
   assert.equal(await canBind("203.0.113.1"), false);
 });

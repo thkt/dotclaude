@@ -1,9 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for skills/dr/scripts/dr_common.ts's exports, in the same shape
-// skills/_lib/tests/harness-hash-digest.test.ts and harness-hash-cli.test.ts use -- pure
-// functions asserted in-process, and two things asserted in a throwaway subprocess: the
-// process.exit(1) side effect of fail() (and of guardSkillDir's failing branch), so this test's
-// own process never exits mid-run, and gitTopLevel, so the test can choose its cwd.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
@@ -29,9 +24,6 @@ interface SubprocessRun {
   stderr: string;
 }
 
-/** Runs `expression` (a function body returning a promise, in scope of the imported module as
- * `m`) in a throwaway node subprocess, so a call that reaches fail()'s process.exit(1) cannot
- * end this test file's own process. */
 function runInSubprocess(expression: string): SubprocessRun {
   const result = spawnSync(
     process.execPath,

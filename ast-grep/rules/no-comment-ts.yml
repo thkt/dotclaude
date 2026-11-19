@@ -18,8 +18,3 @@ ignores:
   - '**/fixtures/**'
   - 'workflows/**'
   - '.ja/workflows/**'
-  - 'skills/**'
-  - '.ja/skills/**'
-  - 'mods/**'
-  - '.ja/mods/**'
-  - 'sandbox/**'

@@ -1,16 +1,4 @@
 /// <reference types="node" />
-// validate-outcome.py (skills/outcome/scripts/validate-outcome.py,
-// .ja/skills/outcome/scripts/validate-outcome.py), find-prior-research.py
-// (skills/research/scripts/find-prior-research.py, .ja/skills/research/scripts/find-prior-research.py;
-// the .ts port now lives under skills/scoping/scripts/, DR-0130) are retired in favor of their
-// .ts ports (established by the preceding units). This file guards the retirement
-// itself: no tracked file still names either as a word, the EN / .ja outcome and scoping
-// SKILL.md invoke the .ts script by path, and no SKILL.md grants Bash(python3:*).
-//
-// Same shape as workflows/_lib/tests/record-retirement.test.ts, which guards its own
-// retirement: offendersAmong/trackedFiles/assertDetectsAndMisses from
-// workflows/_lib/tests/_retirement.ts drive a full-tree scan, and only the helper's own
-// defaults (docs/decisions/, docs/research/) plus this file itself are excluded.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -23,19 +11,11 @@ import {
 } from "../../../workflows/_lib/tests/_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-// skills/_lib/tests -> skills/_lib -> skills -> repo root, the same climb
-// harness-hash-cli.test.ts's REPO_ROOT makes from the same starting point.
 const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
-// A word boundary, not a bare substring: my-validate-outcome.py or validate-outcome.py.bak
-// would not count as one of the retired scripts being named. Mirrors
-// record-retirement.test.ts's own RETIRED_PATTERN, generalized to the two filenames.
 const RETIRED_PATTERN = /(^|[^\w.-])(validate-outcome|find-prior-research)\.py\b/;
 
-// The one predicate the absence scan below relies on, factored out so the positive control can
-// drive it directly instead of re-deriving its own copy
-// (rules/development/TESTING.md § Whether the test swings at nothing).
 function namesRetiredScript(content: string): boolean {
   return RETIRED_PATTERN.test(content);
 }
@@ -47,8 +27,6 @@ test(
   () => {
     assertDetectsAndMisses(namesRetiredScript, "validate-outcome.py");
 
-    // This test's own file names both retired scripts in comments to describe what it
-    // checks; the historical directories are offendersAmong's own default.
     const offenders = offendersAmong(
       trackedFiles(REPO_ROOT),
       (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
@@ -64,13 +42,6 @@ test(
   },
 );
 
-// Same extraction shape as workflows/_lib/tests/record-retirement.test.ts's
-// extractRecorderInvocation and skills/_lib/tests/review-score-retirement.test.ts's
-// extractStep5Command: read the source text and pull out the path token the invocation
-// actually names, never a copied-in literal, because a literal copied into the test keeps
-// passing after the source it was copied from changes.
-// ${CLAUDE_SKILL_DIR} paths are not translated (rules/conventions/MIRROR.md), so the same
-// token pattern matches the EN and .ja source of a given script kind unchanged.
 function extractPathToken(source: string, tokenPattern: RegExp): string | null {
   const m = source.match(tokenPattern);
   return m ? m[0] : null;
@@ -117,8 +88,6 @@ test(
       const source = readFileSync(join(REPO_ROOT, path), "utf8");
       const invocation = extract(source);
       assert.ok(invocation, `${label}: script invocation path is extractable from source`);
-      // One fixed message per source, carrying no path value, so a --require-output anchor on
-      // the Red gate can seal on exactly one line rather than on a set that could reorder.
       assert.ok(
         invocation !== null && invocation.endsWith(".ts"),
         `${label} still invokes the .py script`,
@@ -126,10 +95,6 @@ test(
     }
   },
 );
-
-// A python3 grant on a SKILL.md's allowed-tools line is the shape every retired .py script was
-// invoked through. T-407 checks every tracked SKILL.md rather than a per-skill list, so a skill
-// added later cannot bring the grant back unnoticed.
 
 function grantsPython3Bash(content: string): boolean {
   return content.includes("Bash(python3:*)");
@@ -141,9 +106,6 @@ test(
   () => {
     assertDetectsAndMisses(grantsPython3Bash, "Bash(python3:*)");
 
-    // Every tracked SKILL.md, not a hardcoded per-skill pair: a pair fixed by name would miss a
-    // skill added later whose SKILL.md grants Bash(python3:*). This file itself is not a
-    // SKILL.md, so no self-exclusion is needed.
     const skillMdFiles = trackedFiles(REPO_ROOT).filter((path) => path.endsWith("SKILL.md"));
     const offenders = offendersAmong(
       skillMdFiles,
