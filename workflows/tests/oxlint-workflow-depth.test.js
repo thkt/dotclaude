@@ -41,7 +41,7 @@ const FOUR_NESTED_BLOCKS = `export const nested = (a, b, c, d) => {
 `;
 
 // T-008: FOUR_NESTED_BLOCKS minus the innermost `if`, per the copy-minus-clue step of
-// docs/wiki/absence-test-positive-control-fixture.md. Depth 3, no diagnostic.
+// rules/development/TESTING.md § Whether the test swings at nothing. Depth 3, no diagnostic.
 const THREE_NESTED_BLOCKS = `export const nested = (a, b, c) => {
   if (a) {
     if (b) {

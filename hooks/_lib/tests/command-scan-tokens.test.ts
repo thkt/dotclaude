@@ -3,9 +3,8 @@
 // hooks/_lib/tests/fixtures/command-scan-tokens.json captured from the retired Python module,
 // over the same corpus command-scan-corpus.test.ts already ties to that table (DR-0112). This
 // file spawns no interpreter: the frozen table already is that retired module's answer for every
-// corpus row, captured once by the unit that built it
-// (docs/wiki/fixture-freeze-before-port.md), so re-deriving it here would only restate the
-// fixture.
+// corpus row, captured once by running that module rather than written by hand, so
+// re-deriving it here would only restate the fixture.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

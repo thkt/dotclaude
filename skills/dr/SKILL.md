@@ -12,7 +12,7 @@ argument-hint: "[decision title]"
 
 Take the decision title from `$ARGUMENTS`. If empty, confirm New decision / Update existing via AskUserQuestion. For New decision ask for the title; for Update existing, list recent DRs in `<git-root>/docs/decisions/` for selection (§ Updating an Existing DR). Shape a title you are creating into a specific action like "Adopt X for Y", keeping it 5-64 characters and free of `/:*?"<>|`. The archive defaults to `<git-root>/docs/decisions/`, and the `DR_DIR` env var moves it.
 
-Follow `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`: check relevant wiki/DRs and original conditions and status against the current requirements. Include needed document updates in the agreed scope and pass them through the same evaluation as implementation.
+Follow `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`: check relevant DRs and original conditions and status against the current requirements. Include needed document updates in the agreed scope and pass them through the same evaluation as implementation.
 
 ## Adoption Gate
 
@@ -46,7 +46,7 @@ The Publish stage passes publish.md the values below. When the Adoption Gate cre
 | branch  | `docs/dr-<filename>`, where `<filename>` is Pre-Check's `filename` without `.md`. Editing a proposed DR runs no Pre-Check, so `<filename>` is the edited DR's file name without `.md` |
 | subject | `[Docs] DR-<number> <the DR's H1>`                                                                                  |
 | body    | The "Chosen option" paragraph of Decision Outcome, the number of any DR it supersedes, the DR file's repo-relative path |
-| files   | The DR file, the regenerated `README.md`, the old DR whose status changed, wiki pages rewritten in the same change   |
+| files   | The DR file, the regenerated `README.md`, the old DR whose status changed                                           |
 
 ## Decision Type
 
@@ -102,4 +102,4 @@ Each script reports its failure as JSON or on stderr. Handle them per the table.
 
 ## Evidence and current practice
 
-State the target repository, objective, and conditions in Context. Retain relative original paths, needed versions, and agreement sources in More Information. Leave a decision proposed/unconfirmed when adoption cannot be verified. When superseding a DR, review and update wiki bodies deriving from it in the same change; relinking alone is insufficient.
+State the target repository, objective, and conditions in Context. Retain relative original paths, needed versions, and agreement sources in More Information. Leave a decision proposed/unconfirmed when adoption cannot be verified.

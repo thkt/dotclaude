@@ -1096,7 +1096,7 @@ test("an Issue that changes while the check runs stops before the repair starts"
 
 // ---- references pinned to the start commit (Codex --start-commit / --report) ----
 const REPORT = { path: "docs/research/reset-behavior.md", blob: "1".repeat(40) };
-const WIKI = { path: "docs/wiki/search.md", blob: "2".repeat(40) };
+const DECISION = { path: "docs/decisions/0001-search.md", blob: "2".repeat(40) };
 const listingOf = (...entries) =>
   entries.map(({ path, blob, mode = "100644" }) => `${mode} blob ${blob}\t${path}`).join("\n");
 const withReports = (runArgs, listing, overrides = {}) =>
@@ -1109,15 +1109,15 @@ const withReports = (runArgs, listing, overrides = {}) =>
   );
 
 test("pinned references are checked at the start commit and reach the implementation, repair, and review agents", async () => {
-  const pinned = { ...args, startCommit: BASE_SHA, reports: [REPORT, WIKI] };
-  const { result, calls } = await withReports(pinned, listingOf(REPORT, WIKI), {
+  const pinned = { ...args, startCommit: BASE_SHA, reports: [REPORT, DECISION] };
+  const { result, calls } = await withReports(pinned, listingOf(REPORT, DECISION), {
     check: [(_, { tree }) => ({ exit_code: 1, log_tail: "FAIL", tree })],
   });
   assert.equal(result.status, "verified_local");
   const targetPrompt = calls.agent.find((c) => kindOf(c.opts) === "target").prompt;
   assert.ok(
     targetPrompt.includes(
-      "'git' 'ls-tree' 'HEAD' '--' 'docs/research/reset-behavior.md' 'docs/wiki/search.md'",
+      "'git' 'ls-tree' 'HEAD' '--' 'docs/research/reset-behavior.md' 'docs/decisions/0001-search.md'",
     ),
   );
   for (const kind of ["implement", "repair", "review"]) {
@@ -1128,12 +1128,12 @@ test("pinned references are checked at the start commit and reach the implementa
 });
 
 test("a pinned reference that differs from, or is missing at, the start commit stops as report-mismatch, and a start commit other than HEAD stops as start-commit-mismatch", async () => {
-  const pinned = { ...args, startCommit: BASE_SHA, reports: [REPORT, WIKI] };
+  const pinned = { ...args, startCommit: BASE_SHA, reports: [REPORT, DECISION] };
   const cases = [
-    ["report-mismatch", pinned, listingOf(REPORT, { ...WIKI, blob: "3".repeat(40) })],
+    ["report-mismatch", pinned, listingOf(REPORT, { ...DECISION, blob: "3".repeat(40) })],
     ["report-mismatch", pinned, listingOf(REPORT)],
-    ["report-mismatch", pinned, listingOf(REPORT, { ...WIKI, mode: "120000" })],
-    ["start-commit-mismatch", { ...pinned, startCommit: "4".repeat(40) }, listingOf(REPORT, WIKI)],
+    ["report-mismatch", pinned, listingOf(REPORT, { ...DECISION, mode: "120000" })],
+    ["start-commit-mismatch", { ...pinned, startCommit: "4".repeat(40) }, listingOf(REPORT, DECISION)],
   ];
   for (const [reason, runArgs, listing] of cases) {
     const { result, kinds } = await withReports(runArgs, listing);
@@ -1155,7 +1155,7 @@ test("a pinned reference that differs from, or is missing at, the start commit s
   assert.equal(dirty.result.stopped, "uncommitted-start-inputs");
 });
 
-test("malformed references stop as invalid-reports before any target is read: no start commit, a path outside docs/research|wiki|decisions, a non-Markdown file, a bad blob, or a duplicate", async () => {
+test("malformed references stop as invalid-reports before any target is read: no start commit, a path outside docs/research|decisions, a non-Markdown file, a bad blob, or a duplicate", async () => {
   const bad = [
     { reports: [REPORT] },
     { startCommit: BASE_SHA, reports: [{ ...REPORT, path: "docs/other/x.md" }] },
@@ -1170,6 +1170,18 @@ test("malformed references stop as invalid-reports before any target is read: no
     assert.equal(result.stopped, "invalid-reports", JSON.stringify(extra));
     assert.ok(!kinds.includes("target"));
   }
+});
+
+// The retired wiki directory, assembled from fragments so the tree scan for its path in
+// workflows/_lib/tests/build-path-retirement.test.ts does not flag this file.
+test("a reference under the retired wiki directory stops as invalid-reports while one under docs/decisions is accepted", async () => {
+  const wikiPath = ["docs", "wiki", "search.md"].join("/");
+  const rejected = await run({}, { ...args, startCommit: BASE_SHA, reports: [{ ...REPORT, path: wikiPath }] });
+  assert.equal(rejected.result.stopped, "invalid-reports");
+  assert.ok(!rejected.kinds.includes("target"));
+  const accepted = await withReports({ ...args, startCommit: BASE_SHA, reports: [DECISION] }, listingOf(DECISION));
+  assert.notEqual(accepted.result.stopped, "invalid-reports");
+  assert.ok(accepted.kinds.includes("target"));
 });
 
 // ---- revising a PR this workflow published (Codex --previous-run / --request-file) ----

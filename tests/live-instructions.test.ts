@@ -157,7 +157,7 @@ const frontmatter = (text: string) => text.match(/^---\n([\s\S]*?)\n---\n/)?.[1]
 const pinsModel = (text: string) => /^model:/m.test(frontmatter(text));
 
 test("no skill pins a model in its frontmatter", async () => {
-  // Literal fixtures (docs/wiki/absence-test-positive-control-fixture.md): one value per kind a
+  // Literal fixtures (rules/development/TESTING.md § Whether the test swings at nothing): one value per kind a
   // pin takes, and the same file without the line, and a model line in the body alone.
   assert.equal(pinsModel("---\nname: x\nmodel: opus\n---\n# x\n"), true, "an opus pin is detected");
   assert.equal(pinsModel("---\nname: x\nmodel: fable\n---\n# x\n"), true, "a fable pin is detected");
@@ -236,5 +236,68 @@ test("every tests/ path rules/conventions/SUBAGENT.md names exists", async () =>
     for (const path of named) {
       assert.ok(existsSync(join(root, path)), `${rel} names ${path}, which does not exist`);
     }
+  }
+});
+
+// The rows of the first table in one `## ` section, by their first cell. A missing heading or a
+// table that no longer parses returns no rows, which the deepEqual below reports as a mismatch.
+const sectionOf = (doc: string, heading: string) =>
+  doc.split(/^## /m).find((part) => part.startsWith(`${heading}\n`)) ?? "";
+const firstColumn = (text: string) =>
+  text
+    .split("\n")
+    .filter((line) => line.startsWith("|"))
+    .slice(2)
+    .map((line) => line.split("|")[1].trim());
+
+// DR-0130 moves two wiki pages into TESTING.md as rows. Comparing the labels rather than the row
+// count catches a row replaced by another one, which a count of 5 would let through.
+test("TESTING.md lists the five shapes of a test that swings at nothing, on both sides", async () => {
+  const expected = {
+    en: [
+      "Whether the test swings at nothing",
+      [
+        "Input built from the artifact",
+        "A missing premise returns empty",
+        "A different test fails",
+        "An absence check with no positive control",
+        "Counts compared after the same filter",
+      ],
+    ],
+    ".ja": [
+      "テストが空振りしていないか",
+      [
+        "検査対象を成果物から作る",
+        "前提の欠落が空を返す",
+        "別のテストが落ちる",
+        "不在の検査に陽性対照がない",
+        "同じ条件で絞った後の件数を比べる",
+      ],
+    ],
+  } as const;
+  for (const [lang, [heading, labels]] of Object.entries(expected)) {
+    const rel = `${lang === "en" ? "" : ".ja/"}rules/development/TESTING.md`;
+    const doc = await readFile(join(root, rel), "utf8");
+    assert.deepEqual(firstColumn(sectionOf(doc, heading)), labels, `${rel} § ${heading}`);
+  }
+});
+
+// DR-0130 takes DOCUMENTS.md back to four documents and the three routing rules DR-0067 set.
+test("DOCUMENTS.md divides the ground between four documents and routes with three rules, on both sides", async () => {
+  for (const [rel, routing] of [
+    ["rules/conventions/DOCUMENTS.md", "Routing"],
+    [".ja/rules/conventions/DOCUMENTS.md", "ルーティング"],
+  ]) {
+    const doc = await readFile(join(root, rel), "utf8");
+    const intro = doc.split(/^## /m)[0];
+    assert.deepEqual(
+      firstColumn(intro),
+      ["`rules/`", "`docs/decisions/`", "`CLAUDE.md`", "`docs/research/`"],
+      `${rel} document table`,
+    );
+    const items = sectionOf(doc, routing)
+      .split("\n")
+      .flatMap((line) => line.match(/^(\d+)\. /)?.[1] ?? []);
+    assert.deepEqual(items, ["1", "2", "3"], `${rel} § ${routing}`);
   }
 });

@@ -1,9 +1,10 @@
 /// <reference types="node" />
 // hooks/_lib/scribe_trigger.py, hooks/_lib/command_scan.py, hooks/_lib/hook_harness.py,
 // hooks/post-bash/scribe_prompt.py and hooks/integrations/amphetamine_agent_session.py are
-// retired in favor of their TypeScript replacements: scribe_trigger.ts / scribe_prompt.ts
-// (units U-001/U-002) and amphetamine_agent_session.ts (units U-003/U-004). This file guards the
-// retirement itself, the same shape as hooks/_lib/tests/recall-index-retirement.test.ts and
+// retired in favor of their TypeScript replacements (units U-001/U-002, the two scribe ones
+// later removed in turn by DR-0130) and amphetamine_agent_session.ts (units U-003/U-004). This
+// file guards the retirement itself, the same shape as
+// hooks/_lib/tests/recall-index-retirement.test.ts and
 // hooks/_lib/tests/security-hooks-retirement.test.ts: no tracked file still names the 5 retired
 // scripts. settings.json registers no hook (DR-0123), so no event wiring is checked here. The
 // walk and its historical-directory exclusions are offendersAmong
@@ -34,8 +35,8 @@ const RETIRED_NAMES = [
 ];
 
 /** A retired name matched as a whole word: the character before it must not be a word / dot /
- * hyphen character, so "scribe_trigger.ts" and a longer stem never match, and \b after "py"
- * stops a longer extension from matching. Mirrors security-hooks-retirement.test.ts's
+ * hyphen character, so the same stem with a .ts extension and a longer stem never match, and
+ * \b after "py" stops a longer extension from matching. Mirrors security-hooks-retirement.test.ts's
  * retiredPattern. */
 function retiredPattern(name: string): RegExp {
   const escaped = name.replace(/\./g, "\\.");

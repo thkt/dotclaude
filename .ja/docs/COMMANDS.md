@@ -20,7 +20,7 @@ flowchart LR
     W --> PR["draft PR"]
 ```
 
-Issue を経ない変更は `/sweep`、`/dr`、`/outcome`、`/scribe` が自分で draft PR まで公開する。
+Issue を経ない変更は `/sweep`、`/dr`、`/outcome` が自分で draft PR まで公開する。
 
 ## implement workflow
 

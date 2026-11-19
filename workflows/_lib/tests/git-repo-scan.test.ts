@@ -29,7 +29,7 @@ function callsGitInitDirectly(content: string, path: string): boolean {
   return !content.includes("withTempRepo");
 }
 
-// Positive control (docs/wiki/absence-test-positive-control-fixture.md), built as a literal
+// Positive control (rules/development/TESTING.md § Whether the test swings at nothing), built as a literal
 // fixture source the same way assertDetectsAndMisses builds its own -- hand-written here, not
 // assembled from this file's own constants, so a typo in callsGitInitDirectly's needles cannot
 // silently pass. The fixture calls git through a shell string (`execSync("git init -q")`)

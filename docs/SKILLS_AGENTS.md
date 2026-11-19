@@ -44,12 +44,12 @@ Skills are "knowledge modules" that provide domain-specific knowledge when AI ex
 
 ### Categories
 
-The User-invocable row lists all 6 current Skills.
+The User-invocable row lists all 5 current Skills.
 
 | Category       | Skills                                         | Purpose                    |
 | -------------- | ---------------------------------------------- | -------------------------- |
 | CLI wrapper    | use-cli-recall, use-cli-scout, use-cli-gcloud  | CLI tool integration       |
-| User-invocable | dr, implement, outcome, scoping, scribe, sweep | Slash command entry points |
+| User-invocable | dr, implement, outcome, scoping, sweep         | Slash command entry points |
 
 ### Loading Mechanism
 

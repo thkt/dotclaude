@@ -113,7 +113,7 @@ test("T-007 neither .oxlintrc.json's ignorePatterns nor tsconfig.json's exclude 
 
 // An empty derivation would let T-007 pass having checked nothing, and a derivation that
 // drops a known file would let tsc / oxlint scope narrow unnoticed, so the set is pinned by
-// content (docs/wiki/count-comparison-masks-filtered-set-drift.md).
+// content (rules/development/TESTING.md § Whether the test swings at nothing).
 test("T-014 the hooks .ts set the toolchain scope check reads is derived from the tracked tree, is not empty, and contains every .ts this plan adds under hooks/", () => {
   const hooksTs = listHooksTsFiles();
   assert.ok(hooksTs.length > 0, "the derived hooks/*.ts set is empty");
@@ -155,14 +155,7 @@ test("T-014 the hooks .ts set the toolchain scope check reads is derived from th
     "hooks/edit/mirror_prose_guard.ts",
     "hooks/edit/tests/mirror-prose-guard.test.ts",
     "hooks/_lib/tests/mirror-prose-retirement.test.ts",
-    "hooks/pre-bash/wiki_scene.ts",
-    "hooks/pre-bash/tests/wiki-scene-find.test.ts",
-    "hooks/pre-bash/tests/wiki-scene-runtime.test.ts",
     "hooks/pre-bash/tests/pre-bash-skill-hooks-retirement.test.ts",
-    "hooks/_lib/scribe_trigger.ts",
-    "hooks/_lib/tests/scribe-trigger.test.ts",
-    "hooks/post-bash/scribe_prompt.ts",
-    "hooks/post-bash/tests/scribe-prompt.test.ts",
     "hooks/integrations/amphetamine_agent_session.ts",
     "hooks/integrations/amphetamine_state.ts",
     "hooks/integrations/tests/amphetamine-marker.test.ts",

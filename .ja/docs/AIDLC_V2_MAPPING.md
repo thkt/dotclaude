@@ -4,7 +4,7 @@ awslabs/aidlc-workflows v2 の stage と、このハーネスの workflow と sk
 
 計測時点は upstream の `v2` ブランチ `840ba653` (2026-08-22)。stage ディレクトリはこの 2 週間で 4 回動いたので、読むときは sha を確認する。
 
-この対応表が名指した手元の単位の多くは、その後 DR-0128 と DR-0129 で消えた。表には今も残る単位だけを置く。そのため、相当が消えただけの stage は unmatched になる。`/scoping`、`/implement`、`/sweep` は stage と突き合わせていない。
+この対応表が名指した手元の単位の多くは、その後 DR-0128、DR-0129、DR-0130 で消えた。表には今も残る単位だけを置く。そのため、相当が消えただけの stage は unmatched になる。`/scoping`、`/implement`、`/sweep` は stage と突き合わせていない。
 
 ## 出典
 
@@ -37,7 +37,7 @@ stage は 2026-08-08 時点で 32、`840ba653` で 33。差は追加でなく分
 
 ## v2 の stage から見た対応
 
-33 stage のうち matched 1、partial 5、unmatched 27。
+33 stage のうち matched 0、partial 5、unmatched 28。
 
 OPERATION phase の 7 stage が全て unmatched であることは、`deploy|observab|incident|rollback|provision` の 5 語で `workflows/` と `skills/` を走査して確かめた。`tests/` を除く 20 行のヒットは全て別物で、形容詞の "observable"、rollback リスクを書かせるテンプレート、検索先ディレクトリの列挙、コード例だった。
 
@@ -54,7 +54,7 @@ OPERATION phase の 7 stage が全て unmatched であることは、`deploy|obs
 | 1.6 | rough-mockups            | unmatched | -                                                                                                     |
 | 1.7 | approval-handoff         | partial   | `/dr` が decision-log                                                                                 |
 | 2.1 | reverse-engineering      | unmatched | -                                                                                                     |
-| 2.2 | practices-discovery      | matched   | `/scribe` が closed PR / issue と research 成果から規則を抽出し、コードで検証して `docs/wiki/` へ出す |
+| 2.2 | practices-discovery      | unmatched | -                                                                                                     |
 | 2.3 | requirements-analysis    | unmatched | requirements を持つ成果物の分類が無い                                                                 |
 | 2.4 | user-stories             | unmatched | -                                                                                                     |
 | 2.5 | refined-mockups          | unmatched | -                                                                                                     |
@@ -79,11 +79,10 @@ OPERATION phase の 7 stage が全て unmatched であることは、`deploy|obs
 
 ## 手元から見た対応
 
-この表で対応付けた lifecycle skill 3 本のうち matched 1、partial 2。`use-*` は context loader で、突き合わせる stage を持たないため母数から外す。
+この表で対応付けた lifecycle skill 2 本は、どちらも partial。`use-*` は context loader で、突き合わせる stage を持たないため母数から外す。
 
 | 手元の単位            | 判定      | v2 の相当                                                                                        |
 | --------------------- | --------- | ------------------------------------------------------------------------------------------------ |
-| `/scribe`             | matched   | 2.2 practices-discovery                                                                          |
 | `/dr`                 | partial   | 2.6 domain-design の decisions                                                                   |
 | `/outcome`            | partial   | 1.1 intent-capture                                                                               |
 

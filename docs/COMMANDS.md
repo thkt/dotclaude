@@ -20,7 +20,7 @@ flowchart LR
     W --> PR["draft PR"]
 ```
 
-A change with no Issue is published up to a draft PR by `/sweep`, `/dr`, `/outcome`, or `/scribe` themselves.
+A change with no Issue is published up to a draft PR by `/sweep`, `/dr`, or `/outcome` themselves.
 
 ## implement workflow
 

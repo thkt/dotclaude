@@ -13,15 +13,13 @@
 // against .git/index.lock flakiness: background gc/maintenance firing mid-test on a repo git
 // considers large or stale enough, racing the test's own git commands for the same lock file.
 // Every command this helper runs against the repo carries the same four-variable git identity
-// (GIT_AUTHOR_NAME/EMAIL, GIT_COMMITTER_NAME/EMAIL) skills/scribe/tests/verify-run.test.ts's
-// GIT_ENV uses, so a commit made through this repo never falls back to an unset git identity.
+// (GIT_AUTHOR_NAME/EMAIL, GIT_COMMITTER_NAME/EMAIL), so a commit made through this repo never falls back to an unset git identity.
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-/** The four-variable git identity `skills/scribe/tests/verify-run.test.ts`'s GIT_ENV uses,
- * layered onto `process.env` -- passed to every command `withTempRepo` runs against the
+/** The four-variable git identity, layered onto `process.env` -- passed to every command `withTempRepo` runs against the
  * repository it creates. Exported so a caller that runs its own git commands (commits, most
  * often) against a `withTempRepo` repository reuses this identity instead of carrying a second
  * copy of the same four variables. */
@@ -53,9 +51,7 @@ export function withTempRepo<T>(fn: (repo: string) => T): T {
 }
 
 /** The value `git -C repo config gc.auto` reports, or `""` when unset -- what a caller reads to
- * confirm a repository went through `withTempRepo` rather than a bare `git init`. The T-419 /
- * T-420 adoption checks (skills/scribe/tests/verify-run.test.ts, scripts-contract.test.ts)
- * share this one read instead of each carrying a copy inline. */
+ * confirm a repository went through `withTempRepo` rather than a bare `git init`. */
 export function gcAutoValue(repo: string): string {
   const result = spawnSync("git", ["-C", repo, "config", "gc.auto"], { encoding: "utf8" });
   return result.status === 0 ? result.stdout.trim() : "";

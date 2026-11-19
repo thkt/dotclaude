@@ -12,7 +12,7 @@ argument-hint: "[decision title]"
 
 決定タイトルは `$ARGUMENTS` で受け取る。空なら AskUserQuestion で New decision/Update existing を確認する。New decision ならタイトルを聞き、Update existing なら `<git-root>/docs/decisions/` の既存 DR から選択させる (§ 既存 DR の更新)。新規に作るタイトルは "Adopt X for Y" のような具体的なアクションに整え、5〜64 文字に収めて `/:*?"<>|` を含めない。保存先は既定で `<git-root>/docs/decisions/` で、`DR_DIR` 環境変数を設定すると変えられる。
 
-`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従い、関連 wiki・DR と原本の適用条件・状態を現在の要求へ照合する。必要な文書更新を今回の合意範囲へ含め、実装と同じ評価へ渡す。
+`${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従い、関連 DR と原本の適用条件・状態を現在の要求へ照合する。必要な文書更新を今回の合意範囲へ含め、実装と同じ評価へ渡す。
 
 ## 採用ゲート
 
@@ -46,7 +46,7 @@ Publish で publish.md に渡す値は下表のとおり。採用ゲートで DR
 | branch   | `docs/dr-<filename>`。`<filename>` は Pre-Check の `filename` から `.md` を除いたもの。proposed の DR を編集するときは Pre-Check を実行しないので、編集した DR のファイル名から `.md` を除いたもの |
 | 件名     | `[Docs] DR-<番号> <DR の H1>`                                                                                     |
 | 本文     | Decision Outcome の「Chosen option」の段落、置き換えた DR の番号、DR ファイルの repo 相対パス                     |
-| ファイル | DR のファイル、再生成した `README.md`、status を変えた旧 DR、同じ変更で書き直した wiki ページ                     |
+| ファイル | DR のファイル、再生成した `README.md`、status を変えた旧 DR                                                       |
 
 ## 決定タイプ
 
@@ -102,4 +102,4 @@ status が proposed なら本文を直接編集し、Validate、Index、Publish 
 
 ## 根拠と現在形
 
-Context に対象 repo・目的・適用条件を書き、More Information に原本の相対パス・必要な版と合意の出典を残す。採用を確認できない判断は proposed/未確認のままにする。DR を置換するときは由来がその DR を指す wiki の本文も同じ変更単位で照合・更新する。リンクの張り替えだけでは完了にしない。
+Context に対象 repo・目的・適用条件を書き、More Information に原本の相対パス・必要な版と合意の出典を残す。採用を確認できない判断は proposed/未確認のままにする。

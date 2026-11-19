@@ -111,7 +111,7 @@ This directory contains important decisions about the project.
 | [0103](0103-carry-reference-rules-in-the-plan-instead-of-a-flat-index.md) | Carry reference rules in the plan instead of a flat index | superseded by DR-0128 | 2026-11-18 |
 | [0104](0104-keep-disposition-out-of-audit-gates.md) | Keep disposition out of audit gates | superseded by DR-0129 | 2026-11-18 |
 | [0105](0105-require-argsrepo-in-every-workflow.md) | Require args.repo in every workflow | accepted | 2026-08-23 |
-| [0106](0106-adopt-the-wiki-as-the-current-state-view-over-immutable-drs.md) | Adopt the wiki as the current-state view over immutable DRs | accepted | 2026-08-24 |
+| [0106](0106-adopt-the-wiki-as-the-current-state-view-over-immutable-drs.md) | Adopt the wiki as the current-state view over immutable DRs | superseded by DR-0130 | 2026-11-19 |
 | [0107](0107-track-research-reports-in-git-while-the-rest-of-the-workspace-stays-untracked.md) | Track research reports in git while the rest of the workspace stays untracked | superseded by DR-0119 | 2026-09-25 |
 | [0108](0108-grant-ast-grep-only-to-write-capable-agents.md) | Grant ast-grep only to write-capable agents | superseded by DR-0129 | 2026-11-18 |
 | [0109](0109-keep-the-scope-tag-and-retire-the-cluster-promotion-rule.md) | Keep the scope tag and retire the cluster-promotion rule | proposed | 2026-08-27 |
@@ -121,7 +121,7 @@ This directory contains important decisions about the project.
 | [0113](0113-ban-bun-branded-identifiers-in-typescript-sources.md) | Ban bun-branded identifiers in TypeScript sources | accepted | 2026-09-01 |
 | [0114](0114-justify-the-hooks-typescript-migration-by-the-type-contract.md) | Justify the hooks TypeScript migration by the type contract | accepted | 2026-09-01 |
 | [0115](0115-adopt-two-tier-path-for-agent-bundled-assets.md) | Adopt two-tier path for agent bundled assets | accepted | 2026-09-02 |
-| [0116](0116-place-the-scribe-gate-outside-the-hooks-shebang-rule.md) | Place the scribe gate outside the hooks shebang rule | accepted | 2026-09-10 |
+| [0116](0116-place-the-scribe-gate-outside-the-hooks-shebang-rule.md) | Place the scribe gate outside the hooks shebang rule | superseded by DR-0130 | 2026-11-19 |
 | [0117](0117-decide-the-last-python3-invocation-in-a-shell-hook.md) | Decide the last python3 invocation in a shell hook | deprecated | 2026-11-12 |
 | [0118](0118-adopt-biome-cognitive-complexity-beside-oxlint.md) | Adopt Biome cognitive complexity beside oxlint | accepted | 2026-09-13 |
 | [0119](0119-keep-research-reports-under-docs-research-in-every-repository.md) | Keep research reports under docs/research in every repository | accepted | 2026-09-25 |
@@ -206,14 +206,12 @@ This directory contains important decisions about the project.
 - **0098**: ADR-0098: 機構の退役判断に時間ベースの予測台帳ではなく使用センサスを採る
 - **0100**: Replace 5 Whys with hypothesis elimination in root cause analysis
 - **0105**: Require args.repo in every workflow
-- **0106**: Adopt the wiki as the current-state view over immutable DRs
 - **0110**: Keep workflow enums in meta as a derived copy
 - **0111**: Adopt Apple container for agent sandbox
 - **0112**: Adopt TypeScript for helper scripts
 - **0113**: Ban bun-branded identifiers in TypeScript sources
 - **0114**: Justify the hooks TypeScript migration by the type contract
 - **0115**: Adopt two-tier path for agent bundled assets
-- **0116**: Place the scribe gate outside the hooks shebang rule
 - **0118**: Adopt Biome cognitive complexity beside oxlint
 - **0119**: Keep research reports under docs/research in every repository
 - **0120**: Keep the implement workflow's deviations from Codex's implement
@@ -276,8 +274,10 @@ This directory contains important decisions about the project.
 - **0102**: Resolve uncertainty at issue creation instead of marking it
 - **0103**: Carry reference rules in the plan instead of a flat index
 - **0104**: Keep disposition out of audit gates
+- **0106**: Adopt the wiki as the current-state view over immutable DRs
 - **0107**: Track research reports in git while the rest of the workspace stays untracked
 - **0108**: Grant ast-grep only to write-capable agents
+- **0116**: Place the scribe gate outside the hooks shebang rule
 - **0121**: Narrow the hook trinity to guardrails alone
 
 ### Rejected

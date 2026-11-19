@@ -1,7 +1,6 @@
 /// <reference types="node" />
 // One home for the walk the "no tracked file still names X" tests share: skip docs/decisions/
-// and docs/research/ and its legacy roots (historical records, per
-// docs/wiki/retire-rename-procedure.md), skip whatever extra path the caller names, read the
+// and docs/research/ and its legacy roots (historical records), skip whatever extra path the caller names, read the
 // rest, and keep the ones a predicate flags. Same shape as workflows/_lib/tests/_brace.ts
 // (small, independently testable, named exports; no .ja mirror, per rules/conventions/MIRROR.md).
 //
@@ -10,7 +9,7 @@
 // synthetic tree and a reader that fails on demand. trackedFiles is the git-backed list its
 // callers hand it, cached per process because the tree does not change while a test file runs.
 // assertDetectsAndMisses is the positive control every absence scan pairs with
-// (docs/wiki/absence-test-positive-control-fixture.md).
+// (rules/development/TESTING.md § Whether the test swings at nothing).
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";

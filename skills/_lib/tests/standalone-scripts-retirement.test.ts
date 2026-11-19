@@ -2,9 +2,9 @@
 // validate-outcome.py (skills/outcome/scripts/validate-outcome.py,
 // .ja/skills/outcome/scripts/validate-outcome.py), find-prior-research.py
 // (skills/research/scripts/find-prior-research.py, .ja/skills/research/scripts/find-prior-research.py;
-// the .ts port now lives under skills/scribe/scripts/, DR-0128) are retired in favor of their
+// the .ts port now lives under skills/scoping/scripts/, DR-0130) are retired in favor of their
 // .ts ports (established by the preceding units). This file guards the retirement
-// itself: no tracked file still names either as a word, the EN / .ja outcome and scribe
+// itself: no tracked file still names either as a word, the EN / .ja outcome and scoping
 // SKILL.md invoke the .ts script by path, and no SKILL.md grants Bash(python3:*).
 //
 // Same shape as workflows/_lib/tests/record-retirement.test.ts, which guards its own
@@ -35,7 +35,7 @@ const RETIRED_PATTERN = /(^|[^\w.-])(validate-outcome|find-prior-research)\.py\b
 
 // The one predicate the absence scan below relies on, factored out so the positive control can
 // drive it directly instead of re-deriving its own copy
-// (docs/wiki/absence-test-positive-control-fixture.md).
+// (rules/development/TESTING.md § Whether the test swings at nothing).
 function namesRetiredScript(content: string): boolean {
   return RETIRED_PATTERN.test(content);
 }
@@ -67,7 +67,8 @@ test(
 // Same extraction shape as workflows/_lib/tests/record-retirement.test.ts's
 // extractRecorderInvocation and skills/_lib/tests/review-score-retirement.test.ts's
 // extractStep5Command: read the source text and pull out the path token the invocation
-// actually names, never a copied-in literal (docs/wiki/workflow-const-source-text-check.md).
+// actually names, never a copied-in literal, because a literal copied into the test keeps
+// passing after the source it was copied from changes.
 // ${CLAUDE_SKILL_DIR} paths are not translated (rules/conventions/MIRROR.md), so the same
 // token pattern matches the EN and .ja source of a given script kind unchanged.
 function extractPathToken(source: string, tokenPattern: RegExp): string | null {
@@ -95,21 +96,21 @@ const SCRIPT_INVOCATION_SOURCES: ScriptInvocationSource[] = [
       extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/validate-outcome\.(?:ts|py)/),
   },
   {
-    label: "skills/scribe/SKILL.md",
-    path: "skills/scribe/SKILL.md",
+    label: "skills/scoping/SKILL.md",
+    path: "skills/scoping/SKILL.md",
     extract: (s) =>
       extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/find-prior-research\.(?:ts|py)/),
   },
   {
-    label: ".ja/skills/scribe/SKILL.md",
-    path: ".ja/skills/scribe/SKILL.md",
+    label: ".ja/skills/scoping/SKILL.md",
+    path: ".ja/skills/scoping/SKILL.md",
     extract: (s) =>
       extractPathToken(s, /\$\{CLAUDE_SKILL_DIR\}\/scripts\/find-prior-research\.(?:ts|py)/),
   },
 ];
 
 test(
-  "T-188 the EN and .ja outcome and scribe SKILL.md each invoke the .ts script by path " +
+  "T-188 the EN and .ja outcome and scoping SKILL.md each invoke the .ts script by path " +
     "and none names the .py, read from source text",
   () => {
     for (const { label, path, extract } of SCRIPT_INVOCATION_SOURCES) {
@@ -140,8 +141,9 @@ test(
   () => {
     assertDetectsAndMisses(grantsPython3Bash, "Bash(python3:*)");
 
-    // Every tracked SKILL.md, not a hardcoded per-skill pair (docs/wiki/retire-rename-procedure.md):
-    // this file itself is not a SKILL.md, so no self-exclusion is needed.
+    // Every tracked SKILL.md, not a hardcoded per-skill pair: a pair fixed by name would miss a
+    // skill added later whose SKILL.md grants Bash(python3:*). This file itself is not a
+    // SKILL.md, so no self-exclusion is needed.
     const skillMdFiles = trackedFiles(REPO_ROOT).filter((path) => path.endsWith("SKILL.md"));
     const offenders = offendersAmong(
       skillMdFiles,

@@ -3,7 +3,7 @@
 // replacements (run-workflow.ts, codex-run.ts, tests/_brace.ts) carry the harness. This file
 // guards the retirement itself, the same way workflows/_lib/tests/pr-body-retirement.test.ts guards
 // its own retired script: no tracked file outside docs/decisions/ and docs/research/ (kept as
-// historical record, per docs/wiki/retire-rename-procedure.md) still names a retired path. The
+// historical record) still names a retired path. The
 // walk and the historical-directory exclusions are assertNoResidualReferences
 // (workflows/_lib/tests/_retirement.ts), whose tracked-file list and positive control
 // pr-body-retirement.test.ts shares too; this file keeps only its retired paths and their
@@ -34,7 +34,7 @@ test(
   () => {
     // Positive controls stay hand-typed literals, one per retired path, independent of
     // RETIRED_PATHS: a typo in that array must not flow into the fixture the control checks
-    // against (docs/wiki/absence-test-positive-control-fixture.md item 4; T-431 pins this).
+    // against (rules/development/TESTING.md § Whether the test swings at nothing; T-431 pins this).
     // Each call stays on one line so that check can read its fixture argument back out.
     assertDetectsAndMisses((content) => referencesPath(content, "_lib/run-workflow.js"), "_lib/run-workflow.js");
     assertDetectsAndMisses((content) => referencesPath(content, "_lib/codex-run.js"), "_lib/codex-run.js");
@@ -67,7 +67,6 @@ test(
     const prBodyRetiredName = ["pr-body", "py"].join(".");
     const prBodyPattern = new RegExp(`(^|[^\\w.-])${prBodyRetiredName.replace(".", "\\.")}\\b`);
     const prBodySelfPath = "workflows/_lib/tests/pr-body-retirement.test.ts";
-    const prBodyHistoricalFile = "docs/wiki/pr-tail-translate-prose-only.md";
     assert.doesNotThrow(
       () =>
         assertNoResidualReferences(
@@ -75,7 +74,7 @@ test(
           read,
           (content) => prBodyPattern.test(content),
           prBodyRetiredName,
-          [prBodySelfPath, prBodyHistoricalFile],
+          [prBodySelfPath],
         ),
       "pr-body-retirement.test.ts's own retirement scan, driven through the shared helper, must " +
         "stay clean under its own exclusions",
@@ -109,7 +108,7 @@ test(
           read,
           (content) => prBodyPattern.test(content),
           prBodyRetiredName,
-          [SELF_PATH, prBodyHistoricalFile],
+          [SELF_PATH],
         ),
       "pr-body-retirement.test.ts's own self-exclusion must not be substitutable by another " +
         "file's, or the two retirement tests are not really keeping their own exclusions",
@@ -125,11 +124,10 @@ test(
     const prBodySource = readFileSync(PR_BODY_RETIREMENT_PATH, "utf8");
 
     // assertDetectsAndMisses's 2nd argument builds the positive-control fixture
-    // (docs/wiki/absence-test-positive-control-fixture.md item 4). When that argument is a bare
+    // (rules/development/TESTING.md § Whether the test swings at nothing). When that argument is a bare
     // reference to the same constant the predicate searches for, a typo introduced in the
     // constant changes both sides together, so the positive control keeps passing even though
-    // the scan it guards is now broken -- exactly the gap that wiki page's own retirement-test
-    // citation names. The fixture argument must instead be a hand-typed literal, independent of
+    // the scan it guards is now broken. The fixture argument must instead be a hand-typed literal, independent of
     // that constant.
     for (const [label, source] of [
       ["pr-body-retirement.test.ts", prBodySource],

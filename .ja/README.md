@@ -8,7 +8,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 
 このリポジトリは Claude AI のパーソナル設定を含み、以下を提供する。
 
-- 体系的な開発ワークフローのためのカスタムスラッシュコマンド (9 skills)
+- 体系的な開発ワークフローのためのカスタムスラッシュコマンド (8 skills)
 - 設計案に反論する専門 AI エージェント (1 agent)
 - AI 動作のコア原則と開発のベストプラクティス
 - 品質パイプラインバイナリ 6 本。いずれも未配線
@@ -24,7 +24,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 │   ├── core/             # AI 動作のコア原則
 │   ├── conventions/      # ドキュメント規約
 │   └── development/      # 開発パターン・方法論
-├── skills/               # スキルベースのナレッジモジュール (9 skills)
+├── skills/               # スキルベースのナレッジモジュール (8 skills)
 ├── agents/               # 専門 AI エージェント (1 agent)
 │   └── critics/          # 設計案への反論 (critic-design)
 ├── docs/                 # 設計ドキュメント・ガイド (decisions/ に DR)
@@ -60,7 +60,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 
 #### 利用可能なプラグイン
 
-- build: 自己完結の開発ワークフロー一式。install 時にリポジトリ全体を一度 clone し、全 skill/agent/workflow を build: namespace でロードする。`/scoping` で要求を整理して Issue に合意し、その Issue を `/implement` に渡す。`/implement` は implement workflow で実装から検証を経て draft PR と CI 確認まで進める。同梱対象は critic-design エージェントと implement workflow。`/sweep` `/outcome` `/dr` `/scribe` の 4 skill も含む。
+- build: 自己完結の開発ワークフロー一式。install 時にリポジトリ全体を一度 clone し、全 skill/agent/workflow を build: namespace でロードする。`/scoping` で要求を整理して Issue に合意し、その Issue を `/implement` に渡す。`/implement` は implement workflow で実装から検証を経て draft PR と CI 確認まで進める。同梱対象は critic-design エージェントと implement workflow。`/sweep` `/outcome` `/dr` の 3 skill も含む。
 
 ### Option 2: 手動インストール (フル設定)
 
@@ -191,7 +191,7 @@ Slack 読み込み: `scout fetch <slack-url>` で任意の Slack メッセージ
 
 - AI 処理: 内部は英語
 - ユーザー出力: 日本語 (設定可能)
-- ドキュメント: README.md と `docs/*.md` は英語・日本語の両方を提供。`docs/wiki/*.md` の 7 件は英語のみ
+- ドキュメント: README.md と `docs/*.md` は英語・日本語の両方を提供
 
 ## 🛠️ 主要機能
 

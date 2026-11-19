@@ -1,6 +1,6 @@
 // An EN and .ja .ts pair must carry the same body once comments are removed. The comparison
 // reads the body itself rather than a line or identifier count: two sets filtered the same way
-// agree on their counts while their elements drift (docs/wiki/count-comparison-masks-filtered-set-drift.md).
+// agree on their counts while their elements drift (rules/development/TESTING.md § Whether the test swings at nothing).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";

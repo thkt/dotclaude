@@ -2,7 +2,7 @@
 name: scoping
 description: 要求・完了条件・検証方法を整理し、合意した範囲を GitHub Issue にする。合意済み Issue の実装には使わない (/implement)。
 when_to_use: 要求整理, 実装範囲の整理, 完了条件, 合意をIssueに, scoping, requirements scoping, sufficiency check
-allowed-tools: Read Write Edit LS Agent AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(gh issue:*) Bash(gh api user:*) Bash(gh repo view:*) Bash(git:*) Bash(command -v:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Agent AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(gh issue:*) Bash(gh api user:*) Bash(gh repo view:*) Bash(git:*) Bash(command -v:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
 argument-hint: "[request or issue number]"
 ---
 
@@ -18,7 +18,7 @@ argument-hint: "[request or issue number]"
 
 ## Phase 2: 判断
 
-1. `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain に従い、対象 repo の関連 wiki と判断記録を選ぶ。`${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <依頼の語> <触れそうなパス> --scene plan` の `matched` と `scenes` のページを読む。slug は依頼の語から小文字とハイフンで作る。過去の調査は `${CLAUDE_SKILL_DIR}/../scribe/scripts/find-prior-research.ts <slug> docs/research research .claude/workspace/research` で探す。`shared` が 2 以上か `slug_words` と等しい候補を読み、今回への適用条件を確かめる。それ以外の候補は読まない。選んだページ・判断記録・過去の調査を現行コード・合意と照合する。文書が無くても調査を続ける。
+1. `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain に従い、対象 repo の関連する判断記録を選ぶ。slug は依頼の語から小文字とハイフンで作る。過去の調査は `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> docs/research research .claude/workspace/research` で探す。`shared` が 2 以上か `slug_words` と等しい候補を読み、今回への適用条件を確かめる。それ以外の候補は読まない。選んだ判断記録・過去の調査を現行コード・合意と照合する。文書が無くても調査を続ける。
 2. `${CLAUDE_SKILL_DIR}/references/sufficiency.md` を先頭から最後まで読む。次に決めることを定め、その表の 6 つの問いで根拠・代替案・不確実さ・権限を確認する。事実で解ける不足は調べる。
 3. Issue へ書く主張のうち、「存在しない」「唯一である」「網羅している」と述べるものと、この session で実行していない外部の挙動を前提とするものへ、`${CLAUDE_SKILL_DIR}/references/verification.md` の検証を当てる。既存のコードが要求と違う結果を返すことを直す要求で根本原因を確かめたときは、`${CLAUDE_SKILL_DIR}/references/verification.md` § Same-origin sweep を当てる。
 4. 意図・優先順位・許容範囲・権限が未確定なら、AskUserQuestion で選択肢と影響を示して質問する。仮説を先頭の選択肢に置く。判断を左右する根拠が変わったら再評価する。
@@ -26,7 +26,7 @@ argument-hint: "[request or issue number]"
 
 ## Phase 3: 成果物
 
-目的・範囲・完了条件・検証方法、合意と未解決事項を Issue または下書きにまとめる。再利用する根拠や長い検証結果が必要な場合だけ、`${CLAUDE_SKILL_DIR}/references/session.md` の保存と引き継ぎを行う。判断が固まったら DOCUMENTS.md § Read and retain で wiki と判断記録への影響を確かめる。判断記録が要るなら `/dr` の MADR テンプレートを使う。
+目的・範囲・完了条件・検証方法、合意と未解決事項を Issue または下書きにまとめる。再利用する根拠や長い検証結果が必要な場合だけ、`${CLAUDE_SKILL_DIR}/references/session.md` の保存と引き継ぎを行う。判断が固まったら DOCUMENTS.md § Read and retain で判断記録と `rules/` への影響を確かめる。判断記録が要るなら `/dr` の MADR テンプレートを使う。
 
 要求の抜け・矛盾・曖昧さと、合意・根拠との一致を確認する。矛盾か偏りが残るときは critic-design による独立評価を行い、行わなかったときは未実施と記録する。
 

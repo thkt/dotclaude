@@ -2,7 +2,7 @@
 name: implement
 description: Carry an agreed GitHub Issue through the implement workflow to implementation, verification, a draft PR, and CI confirmation, then check the published body and switch the PR to ready. Do NOT use to settle requirements (use /scoping) or for a review-only request.
 when_to_use: 合意済みIssueを実装, Issueから実装, PR作成まで進める, 既存PRの修正, implement issue
-allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
+allowed-tools: Read Write Edit LS Workflow AskUserQuestion Bash(${CLAUDE_SKILL_DIR}/scripts/*) Bash(${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint:*) Bash(jq:*) Bash(gh:*) Bash(git:*) Bash(cat:*) Bash(ugrep:*) Bash(bfs:*)
 argument-hint: "[issue number or URL] [--no-publish]"
 ---
 
@@ -20,7 +20,7 @@ Investigate the facts you can confirm, and ask early about facts only the user k
 2. Decide the target repo's absolute path with `git rev-parse --show-toplevel`.
 3. Confirm that `.dotagents.json` is committed. The workflow checks it against the Codex target contract: repository, remote, baseBranch, setup, check, ciChecks, and capture. When it is absent, propose its content from package.json scripts or the CI definition through AskUserQuestion, hypothesis first, and proceed once the user has committed the agreed content by their own decision. When it has uncommitted changes, do not stash or port them; ask the user how to handle them. Check the Issue's required media against the `capture` setting with the table in `${CLAUDE_SKILL_DIR}/references/capture.md`; when they disagree, do not launch, and return to `/scoping`. For a step whose handling in the Issue is "put it into the check or capture", confirm that the committed `check` or `capture` runs it, and when it does not, do not launch, and return to `/scoping`.
 4. Observe the sandbox. Run ${CLAUDE_SKILL_DIR}/scripts/sandbox_probe.ts and keep its output. When `local_binding` and `sandboxed` are both false, do not launch, and ask the human what is denying the bind. The rest of the output is handled with the table in § Observing the sandbox when launching through agents. Do not infer the sandbox from settings files. A sandbox changed by a launch flag or a managed setting does not show up in them.
-5. Select the references to pin. Per `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain, select the related wiki pages and decision records. For the wiki, read the `matched` and `scenes` pages from `${CLAUDE_SKILL_DIR}/../scribe/scripts/find_wiki_rule.ts docs/wiki <Issue terms> <paths likely touched> --scene implement`. Check the selected pages and records against the Issue and current code. Add the research reports the Issue references, per `${CLAUDE_SKILL_DIR}/../scoping/references/session.md` § Hand over research results. Only Markdown under `docs/research/`, `docs/wiki/`, and `docs/decisions/` can be a reference. Record each reference's blob with `git rev-parse HEAD:<path>` and the start commit with `git rev-parse HEAD`. When a needed report is not committed at HEAD, stop as an incomplete handover.
+5. Select the references to pin. Per `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` § Read and retain, select the related decision records. Check the selected records against the Issue and current code. Add the research reports the Issue references, per `${CLAUDE_SKILL_DIR}/../scoping/references/session.md` § Hand over research results. Only Markdown under `docs/research/` and `docs/decisions/` can be a reference. Record each reference's blob with `git rev-parse HEAD:<path>` and the start commit with `git rev-parse HEAD`. When a needed report is not committed at HEAD, stop as an incomplete handover.
 6. When the request is to revise an existing PR, leave this Phase for § Revising an existing PR.
 
 ## Phase 2: Launch the workflow
@@ -96,7 +96,7 @@ Revising a PR this workflow published uses the same workflow. The user hands ove
 2. Run steps 2 to 5 of Phase 1. When pinning references, the start commit is the PR-wide base (the start commit of the run that first published it).
 3. Launch with steps 1 to 6 of Phase 2. In args, put the current Issue's number in `issue` and add `revision: {pr: "<PR URL>", request: "<adopted findings, expected result, and permission scope>"}`. The workflow reuses the earlier worktree at the published head and reviews the whole PR against both the Issue and the request. It commits on the published head, pushes, rewrites the body, and waits for CI. It opens no new PR.
 4. Handle the result with the same table as Phase 3.
-5. Check the adopted findings' cause and whether they can recur, and only when needed connect them to existing wiki pages, decision records, tests, or lint per `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`. Do not add improvements beyond this agreed scope to the existing PR's done conditions.
+5. Check the adopted findings' cause and whether they can recur, and only when needed connect them to existing decision records, tests, or lint per `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`. Do not add improvements beyond this agreed scope to the existing PR's done conditions.
 
 ## Stop conditions
 

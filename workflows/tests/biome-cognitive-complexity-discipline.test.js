@@ -46,7 +46,7 @@ const COMPLEXITY_16 = `export function nested(a, b, c, d, e, f) {
 `;
 
 // T-002: COMPLEXITY_16 minus the flat `if (f)`, per the copy-minus-clue step of
-// docs/wiki/absence-test-positive-control-fixture.md. Scores 15, no diagnostic.
+// rules/development/TESTING.md § Whether the test swings at nothing. Scores 15, no diagnostic.
 const COMPLEXITY_15 = `export function nested(a, b, c, d, e) {
   if (a) {
     if (b) {
@@ -144,7 +144,7 @@ test("T-004 the same script placed under src/ yields a parse diagnostic", () => 
 // T-005 requires exactly "error", not "warn", because lint() above no longer passes
 // `--error-on-warnings`: a "warn"-level diagnostic would print but leave the exit code 0.
 // T-006 compares `files.includes` as a list, not a count, per
-// docs/wiki/count-comparison-masks-filtered-set-drift.md.
+// rules/development/TESTING.md § Whether the test swings at nothing.
 const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 
 // Held as a literal so this copy cannot drift toward whatever files.includes contains.

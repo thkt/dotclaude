@@ -4,9 +4,8 @@
 // _fresh/_any_fresh/_sweep directly, reading them only through acquire/release/background and a
 // backdated marker (e.g. test_stale_marker_is_swept, test_release_closes_when_the_bg_marker_
 // went_stale) -- that dispatch is a later unit's scope here (see amphetamine_agent_session.ts's
-// file header), so these three scenarios call the exported primitives straight, the way
-// hooks/_lib/tests/scribe-trigger.test.ts calls scribe_trigger.ts's find/shouldPrompt straight
-// rather than through a hook subprocess.
+// file header), so these three scenarios call the exported primitives straight rather than
+// through a hook subprocess.
 //
 // Imports from amphetamine_state.ts, not amphetamine_agent_session.ts: unit U-004 gave the
 // latter an unconditional `process.exit(main())` at its own top level (DR-0114's hook-body

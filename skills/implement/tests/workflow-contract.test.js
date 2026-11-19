@@ -222,7 +222,7 @@ test("scoping confirms a bug's root cause in the code before agreeing on a fix, 
 });
 
 // DR-0128 retires /research after moving two of its parts: the search of earlier reports (now under
-// skills/scribe/scripts/) and the verification rules (now skills/scoping/references/verification.md).
+// skills/scoping/scripts/) and the verification rules (now skills/scoping/references/verification.md).
 // A path left pointing at the removed skill, or a section dropped in the move, leaves /scoping without them.
 // The sweep runs only when Phase 2 sends a confirmed root cause to it (#815), so the step naming the sweep
 // must also carry the root-cause trigger.
@@ -240,7 +240,7 @@ test("scoping's Phase 2 points at the earlier-report search and the verification
     const doc = readFileSync(join(skillDir, "SKILL.md"), "utf8");
     const phase2 = /^## Phase 2[^\n]*\n([\s\S]*?)(?=^## )/m.exec(doc)?.[1];
     assert.ok(phase2, `${side}: scoping lost Phase 2`);
-    for (const ref of ["/../scribe/scripts/find-prior-research.ts", "/references/verification.md"]) {
+    for (const ref of ["/scripts/find-prior-research.ts", "/references/verification.md"]) {
       assert.ok(phase2.includes(`\${CLAUDE_SKILL_DIR}${ref}`), `${side}: Phase 2 does not name ${ref}`);
       assert.ok(existsSync(join(skillDir, ref)), `${side}: ${ref} resolves to no file`);
     }

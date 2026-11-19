@@ -10,13 +10,15 @@
 // critic-audit, critic-evidence, agents/_lib, the six skills those agents preload, and the reviewer
 // measurement harness under skills/_lib (#807). #823 then removes /challenge, whose attack
 // critic-design runs when /scoping or /dr calls it, and the use-cli-ast-grep and use-cli-codegraph
-// wrappers, whose commands run without them (DR-0056's criterion). This file guards the removal: the removed paths stay gone on
-// both trees, and no tracked file names a removed command, agent, hook, skill path or workflow.
+// wrappers, whose commands run without them (DR-0056's criterion). DR-0130 then retires the wiki,
+// /scribe and the hooks that served them (#827). This file guards the removal: the removed paths
+// stay gone on both trees, and no tracked file names a removed command, agent, hook, skill path or
+// workflow.
 //
 // #800 widened the scan from the skill, agent, rule, plugin, README and catalog prose to every
 // tracked file. isScanned leaves out exactly these: the historical records (docs/decisions/,
-// docs/research/), docs/wiki/ (whose pages a separate Issue moves), this file, and the absence
-// tests that hold a removed name as a literal so they can check it stays gone.
+// docs/research/), this file, and the absence tests that hold a removed name as a literal so they
+// can check it stays gone. The wiki and /scribe scan has its own, narrower exclusions.
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -81,7 +83,7 @@ const REMOVED_PATHS = [
   "workflows/_lib/tests/snapshot-retirement.test.ts",
   "workflows/_lib/tests/record-retirement.test.ts",
   "workflows/tests/gate-flags-ssot.test.js",
-  "docs/wiki/gate-checks-read-whole-output.md",
+  "docs/wiki",
   "agents/reviewers",
   "agents/enhancers",
   "agents/generators",
@@ -106,10 +108,21 @@ const REMOVED_PATHS = [
   "skills/_lib/tests/harness-freshness.test.ts",
   "skills/_lib/tests/fixtures/review-score-cases.json",
   "workflows/_lib/tests/severity-enum-single-source.test.ts",
-  "docs/wiki/reviewer-baseline-measurement.md",
   "skills/challenge",
   "skills/use-cli-ast-grep",
   "skills/use-cli-codegraph",
+  "skills/scribe",
+  ".github/workflows/scribe.yml",
+  "hooks/pre-bash/wiki_scene.ts",
+  "hooks/pre-bash/tests/wiki-scene-find.test.ts",
+  "hooks/pre-bash/tests/wiki-scene-runtime.test.ts",
+  "hooks/post-bash/scribe_prompt.ts",
+  "hooks/post-bash/tests/scribe-prompt.test.ts",
+  "hooks/_lib/scribe_gate.ts",
+  "hooks/_lib/scribe_trigger.ts",
+  "hooks/_lib/tests/scribe-gate.test.ts",
+  "hooks/_lib/tests/scribe-trigger.test.ts",
+  "hooks/_lib/tests/scribe-gate-retirement.test.ts",
 ];
 
 test("no path the build-path retirement removed exists on the English side or under .ja/", () => {
@@ -127,7 +140,7 @@ const ABSENCE_TESTS = [
 
 function isScanned(path: string): boolean {
   return !(
-    /^(\.ja\/)?docs\/(decisions|research|wiki)\//.test(path) ||
+    /^(\.ja\/)?docs\/(decisions|research)\//.test(path) ||
     path === THIS_FILE ||
     path.endsWith("-retirement.test.ts") ||
     ABSENCE_TESTS.includes(path)
@@ -196,7 +209,8 @@ function namesRetiredRoute(content: string): boolean {
 
 test("the retired-route predicate flags each removed name written in a fixture and passes the same lines once the name is replaced", () => {
   // Literal fixtures, not built from RETIRED_COMMAND or RETIRED_NAMES, so a typo in those
-  // constants cannot flow into both sides (docs/wiki/absence-test-positive-control-fixture.md).
+  // constants cannot flow into both sides (rules/development/TESTING.md § Whether the test swings
+  // at nothing).
   const flagged = [
     "Plan it with /think first.",
     "Run `/qualify` on the Issue.",
@@ -334,7 +348,7 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "TDD は use-cli-scout で進める。",
     "Read agents/critics/critic-design.md for the severity.",
     "Follow the blind procedure in skills/_lib/publish.md.",
-    "Score the run with skills/scribe/scripts/find_wiki_rule.ts.",
+    "Score the run with skills/dr/scripts/validate-dr.ts.",
     "Write the digest output into the record.",
     "Attack the proposal with /scoping first.",
     "Run `/dr` before the DR.",
@@ -346,7 +360,7 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "「skills/scoping/」を消した",
     "// history-recording CLIs (workflows/implement/record.ts, workflows/implement/record.ts).",
     '    "skills/dr/scripts",',
-    "// skills/scribe/tests/verify-run.test.ts shared this read.",
+    "// skills/scoping/tests/find-prior-research.test.ts shared this read.",
     "// implement.js's sibling() matches on the message.",
     "// Not a raw slice of the source: implement.js escapes an apostrophe.",
     "// the same subset workflows/implement.js's globToRegExp accepts",
@@ -403,7 +417,7 @@ test("the retired-route predicate flags each removed name written in a fixture a
   }
 });
 
-test("no tracked file outside the records, the wiki and the absence tests names a retired command, agent, hook, skill path or workflow", () => {
+test("no tracked file outside the records and the absence tests names a retired command, agent, hook, skill path or workflow", () => {
   const scanned = trackedFiles(REPO_ROOT).filter(isScanned);
   for (const path of [
     "README.md",
@@ -418,7 +432,6 @@ test("no tracked file outside the records, the wiki and the absence tests names 
   }
   for (const path of [
     THIS_FILE,
-    "docs/wiki/retire-rename-procedure.md",
     "docs/decisions/0128-retire-the-plan-based-build-path-for-scoping-and-implement.md",
     "workflows/_lib/tests/pr-body-retirement.test.ts",
     ...ABSENCE_TESTS,
@@ -431,6 +444,111 @@ test("no tracked file outside the records, the wiki and the absence tests names 
     namesRetiredRoute,
   );
   assert.deepEqual(offenders, [], `files still naming a retired route: ${offenders.join(", ")}`);
+});
+
+// DR-0130 retires docs/wiki/, /scribe and the hooks that served them. This scan reads every tracked
+// file outside docs/decisions/ and docs/research/ (offendersAmong's own default) and this file. It
+// reads the other *-retirement tests and the absence tests too, which isScanned leaves out, because
+// they cited wiki pages as their reason until #827. The slash command uses RETIRED_COMMAND's
+// boundaries, so `describe(`, `/transcribe` and `/scribe-x` stay out. The wiki path and the skill
+// path, written from the repository root or relative as `../scribe`, count only when no letter,
+// digit, underscore or hyphen continues them. A hook counts by its bare stem too, as docs/HOOKS.md
+// named them, except as the retired .py the Python retirement tests keep as a literal.
+const WIKI_SCRIBE_COMMAND = /(^|[\s`"([{（［｛「『【〔〈《])\/scribe(?![A-Za-z0-9/-])/m;
+const WIKI_SCRIBE_PATH = /docs\/wiki(?![A-Za-z0-9_-])|(?:skills|\.\.)\/scribe(?![A-Za-z0-9_-])/;
+const WIKI_SCRIBE_HOOK = /\b(?:wiki_scene|scribe_prompt|scribe_gate|scribe_trigger)\b(?!\.py)/;
+
+function namesWikiOrScribe(content: string): boolean {
+  return (
+    WIKI_SCRIBE_COMMAND.test(content) ||
+    WIKI_SCRIBE_PATH.test(content) ||
+    WIKI_SCRIBE_HOOK.test(content) ||
+    content.includes("find_wiki_rule")
+  );
+}
+
+test("the wiki and scribe predicate flags each retired name written in a fixture and passes the same lines once the name is replaced", () => {
+  // Literal fixtures, not built from the constants above, so a typo in a constant cannot flow
+  // into both sides. 【/scribe】 and a bare `docs/wiki` with no slash after it are shapes no
+  // removed line used, tried so the boundaries are not fitted to the lines that existed.
+  const flagged = [
+    "Select pages from docs/wiki/search.md first.",
+    "`docs/wiki/` の README を読む。",
+    "Read the wiki under docs/wiki before planning.",
+    "Read skills/scribe/SKILL.md for the phases.",
+    "See .ja/skills/scribe/SKILL.md for the body.",
+    "Run `/scribe` after the merge.",
+    "Distill the patterns with /scribe.",
+    "「/scribe」で共通項を抽出する。",
+    "【/scribe】で wiki へ出す。",
+    "[/scribe](x) proposes pages.",
+    "Score the request with find_wiki_rule.ts.",
+    "hooks/pre-bash/wiki_scene.ts names the pages.",
+    "post-bash/scribe_prompt.ts prompts the run.",
+    "node hooks/_lib/scribe_gate.ts",
+    "scribe_trigger.ts finds the merged PR.",
+    "allowed-tools: Read Bash(${CLAUDE_SKILL_DIR}/../scribe/scripts/*)",
+    "| command_scan.ts | body_proofread, wiki_scene, scribe_trigger, gh_filing |",
+    "| PostToolUse | Bash | post-bash/scribe_prompt |",
+  ];
+  const replaced = [
+    "Select pages from docs/decisions/search.md first.",
+    "`docs/decisions/` の README を読む。",
+    "Read the wiki under docs/decisions before planning.",
+    "Read skills/scoping/SKILL.md for the phases.",
+    "See .ja/skills/scoping/SKILL.md for the body.",
+    "Run `/scoping` after the merge.",
+    "Distill the patterns with /scoping.",
+    "「/scoping」で共通項を抽出する。",
+    "【/scoping】で wiki へ出す。",
+    "[/scoping](x) proposes pages.",
+    "Score the request with find-prior-research.ts.",
+    "hooks/pre-bash/body_proofread.ts names the pages.",
+    "post-bash/body_proofread.ts prompts the run.",
+    "node hooks/_lib/command_scan.ts",
+    "command_scan.ts finds the merged PR.",
+    "allowed-tools: Read Bash(${CLAUDE_SKILL_DIR}/scripts/*)",
+    "| command_scan.ts | body_proofread, gh_filing |",
+    "| PostToolUse | Bash | post-bash/body_proofread |",
+  ];
+  for (const line of flagged) {
+    assert.equal(namesWikiOrScribe(line), true, `flagged: ${line}`);
+  }
+  for (const line of replaced) {
+    assert.equal(namesWikiOrScribe(line), false, `not flagged once replaced: ${line}`);
+  }
+  for (const line of [
+    'describe("the parser", () => {});',
+    "Save the report under docs/research/ in the target repo.",
+    "Read the spreadsheet with /transcribe.",
+    "the /scribe-x flag",
+    "Subscribe to the release feed.",
+    "Read docs/wikipedia.md for the history.",
+    "A GitHub wiki page is fetched with --raw.",
+    "DR-0116 placed hooks/_lib/scribe_gate.py outside the shebang rule.",
+    "Read ../scribes/notes.md first.",
+  ]) {
+    assert.equal(namesWikiOrScribe(line), false, `not a retired name: ${line}`);
+  }
+});
+
+test("no tracked file outside the records and this file names docs/wiki, skills/scribe, /scribe, find_wiki_rule or a removed wiki and scribe hook", () => {
+  const files = trackedFiles(REPO_ROOT);
+  // Each of these is a file isScanned leaves out but this scan reads, and the DR is one the
+  // historical exclusion alone keeps out: it names the removed paths.
+  for (const path of [
+    "workflows/_lib/tests/pr-body-retirement.test.ts",
+    "hooks/pre-bash/tests/pre-bash-skill-hooks-retirement.test.ts",
+    ...ABSENCE_TESTS,
+  ]) {
+    assert.ok(files.includes(path), `the scan reaches ${path}`);
+  }
+  const record = "docs/decisions/0130-retire-the-wiki-and-scribe-and-keep-intent-in-code-and-rules.md";
+  assert.equal(namesWikiOrScribe(readFileSync(join(REPO_ROOT, record), "utf8")), true);
+  const read = (path: string) => readFileSync(join(REPO_ROOT, path), "utf8");
+  assert.deepEqual(offendersAmong([record], read, namesWikiOrScribe), []);
+  const offenders = offendersAmong(files, read, namesWikiOrScribe, [THIS_FILE]);
+  assert.deepEqual(offenders, [], `files still naming the wiki or scribe: ${offenders.join(", ")}`);
 });
 
 test("marketplace.json parses and every command path it lists exists", () => {
@@ -499,6 +617,21 @@ test("each DR the workflow retirement replaces carries the status superseded by 
       /^status: "?([^"\n]*)"?$/m,
     )?.[1];
     assert.equal(status, "superseded by DR-0129", `DR-${number} status`);
+  }
+});
+
+const SUPERSEDED_BY_DR_0130 = ["0106", "0116"];
+
+test("each DR the wiki and scribe retirement replaces carries the status superseded by DR-0130", () => {
+  const decisions = join(REPO_ROOT, "docs", "decisions");
+  const names = readdirSync(decisions);
+  for (const number of SUPERSEDED_BY_DR_0130) {
+    const file = names.find((name) => name.startsWith(`${number}-`));
+    assert.ok(file, `DR-${number} exists`);
+    const status = readFileSync(join(decisions, file as string), "utf8").match(
+      /^status: "?([^"\n]*)"?$/m,
+    )?.[1];
+    assert.equal(status, "superseded by DR-0130", `DR-${number} status`);
   }
 });
 

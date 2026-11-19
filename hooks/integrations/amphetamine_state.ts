@@ -12,12 +12,10 @@
 // -> ... -> the hook's stdin payload) inside that top-level call deadlocks the worker rather
 // than returning -- confirmed by reproduction, not a guess. hooks/integrations/tests/
 // amphetamine-marker.test.ts (unit U-003) already imports this module's marker functions
-// directly, the way hooks/_lib/tests/scribe-trigger.test.ts imports scribe_trigger.ts's
-// find/shouldPrompt straight rather than through a hook subprocess -- so the functions those
-// tests exercise live here, apart from the file that gains the unconditional process.exit call.
-// This mirrors the codebase's existing scribe_trigger.ts (pure, hooks/_lib/) / scribe_prompt.ts
-// (hook body, hooks/post-bash/) split, one level closer to its single consumer since nothing
-// outside amphetamine_agent_session.ts reaches for these.
+// directly rather than through a hook subprocess -- so the functions those tests exercise live
+// here, apart from the file that gains the unconditional process.exit call. This is a pure-module
+// / hook-body split, kept beside its single consumer in hooks/integrations/ rather than under
+// hooks/_lib/ since nothing outside amphetamine_agent_session.ts reaches for these.
 import { closeSync, openSync, readdirSync, rmSync, statSync, utimesSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "../_lib/hook_payload.ts";

@@ -4,7 +4,7 @@ Both directions of a mapping between awslabs/aidlc-workflows v2's stages and thi
 
 Measured at upstream `v2` branch `840ba653` (2026-08-22). The stages directory moved four times in the two weeks before that, so check the sha when reading.
 
-DR-0128 and DR-0129 later removed most of the local units this mapping named. The tables keep only the units that remain, so a stage whose only counterpart was removed reads unmatched. `/scoping`, `/implement`, and `/sweep` are not mapped against the stages.
+DR-0128, DR-0129, and DR-0130 later removed most of the local units this mapping named. The tables keep only the units that remain, so a stage whose only counterpart was removed reads unmatched. `/scoping`, `/implement`, and `/sweep` are not mapped against the stages.
 
 ## Source
 
@@ -37,7 +37,7 @@ The stages numbered 32 on 2026-08-08 and 33 at `840ba653`. The delta is one spli
 
 ## From v2's stages
 
-Of the 33 stages, 1 matched, 5 partial, 27 unmatched.
+Of the 33 stages, 0 matched, 5 partial, 28 unmatched.
 
 That every one of the 7 OPERATION stages is unmatched was checked by sweeping `workflows/` and `skills/` for `deploy|observab|incident|rollback|provision`. All 20 hits outside `tests/` are something else: the adjective "observable", a template prompting for a rollback risk, a list of directories to search, and code samples.
 
@@ -54,7 +54,7 @@ That every one of the 7 OPERATION stages is unmatched was checked by sweeping `w
 | 1.6 | rough-mockups            | unmatched | -                                                                                                                                     |
 | 1.7 | approval-handoff         | partial   | `/dr` produces the decision-log                                                                                                       |
 | 2.1 | reverse-engineering      | unmatched | -                                                                                                                                     |
-| 2.2 | practices-discovery      | matched   | `/scribe` extracts rules from closed PRs / issues and research output, verifies them against the code, and lands them in `docs/wiki/` |
+| 2.2 | practices-discovery      | unmatched | -                                                                                                                                     |
 | 2.3 | requirements-analysis    | unmatched | No local artifact class holds requirements                                                                                            |
 | 2.4 | user-stories             | unmatched | -                                                                                                                                     |
 | 2.5 | refined-mockups          | unmatched | -                                                                                                                                     |
@@ -79,11 +79,10 @@ That every one of the 7 OPERATION stages is unmatched was checked by sweeping `w
 
 ## From the harness
 
-Of the 3 lifecycle skills this table maps, 1 matched and 2 partial. The `use-*` skills are context loaders with no stage to compare against, so they stay out of the denominator.
+Of the 2 lifecycle skills this table maps, both are partial. The `use-*` skills are context loaders with no stage to compare against, so they stay out of the denominator.
 
 | Local unit            | Verdict   | v2 counterpart                                                                                     |
 | --------------------- | --------- | -------------------------------------------------------------------------------------------------- |
-| `/scribe`             | matched   | 2.2 practices-discovery                                                                            |
 | `/dr`                 | partial   | 2.6 domain-design's decisions                                                                      |
 | `/outcome`            | partial   | 1.1 intent-capture                                                                                 |
 

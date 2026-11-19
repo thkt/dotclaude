@@ -259,14 +259,14 @@ if (!issueNumber) {
 if (!repo) {
   return await stop("no-repo", "対象リポジトリを絶対パスで渡す。");
 }
-// 開始 commit に固定する参照 (調査報告・wiki・判断記録)。正本は input.ts の assertReportReferences と
-// research-handoff.ts。参照があれば開始 commit が要り、参照先は docs/research・wiki・decisions の Markdown に限る。
+// 開始 commit に固定する参照 (調査報告・判断記録)。正本は input.ts の assertReportReferences と
+// research-handoff.ts。参照があれば開始 commit が要り、参照先は docs/research・decisions の Markdown に限る。
 const startCommit = typeof input.startCommit === "string" ? input.startCommit.trim() : "";
 const reports = input.reports === undefined ? [] : input.reports;
 const COMMIT_ID = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const isReportPath = (p) =>
   typeof p === "string" &&
-  /^docs\/(?:research|wiki|decisions)\/.+\.md$/.test(p) &&
+  /^docs\/(?:research|decisions)\/.+\.md$/.test(p) &&
   !p.split("/").includes("..");
 const referenceProblem = () => {
   if (!Array.isArray(reports)) return "参照は {path, blob} の配列で渡す";
@@ -274,7 +274,7 @@ const referenceProblem = () => {
   if (reports.length && !startCommit) return "参照を渡すときは開始 commit も渡す";
   const bad = reports.find((r) => !r || !isReportPath(r.path) || !COMMIT_ID.test(String(r.blob)));
   if (bad)
-    return `参照は docs/research・docs/wiki・docs/decisions の Markdown と確認済みの blob ID にする: ${JSON.stringify(bad)}`;
+    return `参照は docs/research・docs/decisions の Markdown と確認済みの blob ID にする: ${JSON.stringify(bad)}`;
   const paths = reports.map((r) => r.path);
   return new Set(paths).size === paths.length ? "" : "参照の path が重複している";
 };
@@ -999,8 +999,8 @@ const referenceContext = [
   "判断に関わる規則や所見は、出典・版・適用範囲・合意状態まで辿る。観測した事実・合意済みの規則・仮説を区別する。別の範囲の証拠を当てはめず、未合意の提案を要求に格上げしない。",
   "欠けた・古い・矛盾する参照が判断に影響するなら、出典・影響する判断・調べ直すか合意し直すべきことを示す。事実不足は調査で解き、要求・範囲・許可の変更は人へ戻す。確認済みの参照を新しい ID に黙って置き換えない。",
 ].join("\n");
-// 正本は skills/implement/SKILL.md の文書の更新。wiki と判断記録への影響は、差分が揃ったときに DOCUMENTS.md で確かめる。
-const DOCUMENTS_RULE = `差分が揃ったら \`cat ${bundled("rules/conventions/DOCUMENTS.md")}\` を実行して Read and retain の節に従い、次の作業でも使う説明と既存の wiki・判断記録への影響を確かめる。必要な更新は今回の変更に含め、独立レビューの対象にする。毎回新しいページを作らない。`;
+// 正本は skills/implement/SKILL.md の文書の更新。判断記録への影響は、差分が揃ったときに DOCUMENTS.md で確かめる。
+const DOCUMENTS_RULE = `差分が揃ったら \`cat ${bundled("rules/conventions/DOCUMENTS.md")}\` を実行して Read and retain の節に従い、次の作業でも使う説明と既存の判断記録・\`rules/\` への影響を確かめる。必要な更新は今回の変更に含め、独立レビューの対象にする。`;
 // 正本は revision.ts の revisionContext。修正依頼は合意済み Issue と並ぶ正本で、PR 全体をその両方に合わせる。
 const revisionContext = revising
   ? [

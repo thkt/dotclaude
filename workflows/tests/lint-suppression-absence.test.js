@@ -1,7 +1,7 @@
 // Whether any tracked file silences the two nesting checks with a suppression comment. Biome
 // reads a bare form (the `lint:` keyword alone, silencing every rule), a rule-qualified form,
 // and the file-wide `-all` and range `-start` variants; oxlint reads the eslint-style disable
-// comments naming `max-depth`. Fixtures follow docs/wiki/absence-test-positive-control-fixture.md:
+// comments naming `max-depth`. Fixtures follow rules/development/TESTING.md § Whether the test swings at nothing:
 // one positive control per form and a copy of the first with its comment removed. T-014 reads
 // every tracked file, this one included, so each fixture's comment is spelled in two literal
 // halves and this file carries no whole suppression the scan would flag.

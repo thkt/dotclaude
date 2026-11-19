@@ -70,7 +70,6 @@ A shell hook sits in the directory named after the event that fires it, so `sett
 | PreToolUse         | Bash               | pre-bash/package_manager_rewrite, security/npm_install_guard, security/rm_to_trash, security/git_sandbox_guard, pre-bash/body_proofread |
 | PreToolUse         | Write/Edit         | edit/rust_pre_edit.ts                                                                                                                                             |
 | PostToolUse        | Write/Edit         | edit/rust_post_edit.ts, edit/textlint_fix.ts, edit/rumdl_check.ts, edit/mirror_prose_guard.ts                                                                     |
-| PostToolUse        | Bash               | post-bash/scribe_prompt                                                                                                                                           |
 | PostToolUse        | \*                 | integrations/amphetamine_agent_session background                                                                                                                 |
 | UserPromptSubmit   | -                  | integrations/amphetamine_agent_session acquire                                                                                                                    |
 | Stop / StopFailure | -                  | lifecycle/failure-alert, integrations/amphetamine_agent_session release                                                                                           |
@@ -126,7 +125,7 @@ take, the second takes the mirror alone as its subject.
 
 | Module          | Used by                                                          |
 | --------------- | ---------------------------------------------------------------- |
-| command_scan.ts | body_proofread, wiki_scene, scribe_trigger, gh_filing, and the three security hooks |
+| command_scan.ts | body_proofread, gh_filing, and the three security hooks           |
 | gh_filing.ts    | body_proofread                                                   |
 | hook_payload.ts | every hook, plus mirror_prose, rust_target and amphetamine_state |
 | mirror_prose.ts | mirror_prose_guard and the .ja/ sweep test                       |

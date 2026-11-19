@@ -15,8 +15,8 @@
 // returning -- confirmed by reproduction. hooks/integrations/tests/amphetamine-marker.test.ts
 // (unit U-003) already imports the marker functions directly, so they had to move to keep that
 // import safe once this file gained the unconditional process.exit call; amphetamine_state.ts's
-// own header carries the rest of this reasoning. This mirrors the codebase's existing
-// scribe_trigger.ts (pure, hooks/_lib/) / scribe_prompt.ts (hook body, hooks/post-bash/) split.
+// own header carries the rest of this reasoning. The split keeps the importable functions in a
+// pure module and leaves only the hook body in the file that exits at import.
 //
 // main mirrors the retired amphetamine_agent_session hook's main + run + _release +
 // _foreign_session: it reads the same argv position Python's sys.argv[1] does, filters to the
