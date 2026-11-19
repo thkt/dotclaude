@@ -48,7 +48,7 @@ The User-invocable row lists all 5 current Skills.
 
 | Category       | Skills                                         | Purpose                    |
 | -------------- | ---------------------------------------------- | -------------------------- |
-| CLI wrapper    | use-cli-recall, use-cli-scout, use-cli-gcloud  | CLI tool integration       |
+| CLI wrapper    | use-cli-recall, use-cli-scout                  | CLI tool integration       |
 | User-invocable | dr, implement, outcome, scoping, sweep         | Slash command entry points |
 
 ### Loading Mechanism
