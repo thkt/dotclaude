@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// why-not: /// <reference> 行は日本語のないコメントと数えられ、"no .ja file in this checkout lost its Japanese" が落ちる
 import { createServer } from "node:net";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 

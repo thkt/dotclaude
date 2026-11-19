@@ -8,8 +8,7 @@ export const TARGET_SUFFIXES: readonly string[] = [".py", ".js", ".ts", ".sh", "
 
 export const ENGLISH_SUFFIX = ".en.md";
 
-const COMMENT_LINE = /^\s*(#|\/\/|\*)/;
-const SHEBANG_OR_ENCODING = /^#!|^# -\*- coding/;
+const WHY_NOT_LINE = /^\s*(?:\/\/|#) why-not: /;
 const QUOTED = /"[^"]*"|'[^']*'|`[^`]*`/g;
 
 export function isTarget(filePath: string): boolean {
@@ -247,10 +246,8 @@ function markdownProse(src: string): string[] {
   return out;
 }
 
-function commentProse(src: string): string[] {
-  return src
-    .split("\n")
-    .filter((line) => COMMENT_LINE.test(line) && !SHEBANG_OR_ENCODING.test(line));
+function whyNotProse(src: string): string[] {
+  return src.split("\n").filter((line) => WHY_NOT_LINE.test(line));
 }
 
 export function extractProse(filePath: string): string[] {
@@ -258,7 +255,7 @@ export function extractProse(filePath: string): string[] {
   const suffix = extname(filePath);
   if (suffix === ".py") return pythonProse(src);
   if (suffix === ".md") return markdownProse(src);
-  return commentProse(src);
+  return whyNotProse(src);
 }
 
 function isReadableFile(filePath: string): boolean {

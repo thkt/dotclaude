@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// why-not: the /// <reference> line alone counts as a comment with no Japanese on the .ja twin, so "no .ja file in this checkout lost its Japanese" fails
 import { createServer } from "node:net";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
