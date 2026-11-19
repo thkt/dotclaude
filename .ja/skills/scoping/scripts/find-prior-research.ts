@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// why-not: /// <reference> 行は日本語のないコメントと数えられ、"no .ja file in this checkout lost its Japanese" が落ちる
 
 import { lstatSync, readFileSync, readdirSync, realpathSync } from "node:fs";
 import { basename, isAbsolute, join, relative, sep } from "node:path";

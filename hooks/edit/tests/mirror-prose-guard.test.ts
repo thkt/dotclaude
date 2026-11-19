@@ -25,7 +25,7 @@ function runHook(filePath: string): string {
 test("T-372 an edit that leaves the mirror behind is reported with the python version's text", () => {
   const filePath = writeFixture(
     ".ja/hooks/sample.ts",
-    "// Convert the payload and persist it.\n",
+    "// why-not: Convert the payload and persist it.\n",
   );
 
   const stdout = runHook(filePath);
@@ -44,7 +44,7 @@ test("T-372 an edit that leaves the mirror behind is reported with the python ve
 test("T-373 an edit whose mirror is present produces no output", () => {
   const filePath = writeFixture(
     ".ja/hooks/mixed.ts",
-    "// Convert the payload and persist it.\n// 変換する\n",
+    "// why-not: Convert the payload and persist it.\n// why-not: 変換する\n",
   );
 
   assert.equal(

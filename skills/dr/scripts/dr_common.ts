@@ -1,5 +1,4 @@
 /// <reference types="node" />
-// why-not: the /// <reference> line alone counts as a comment with no Japanese on the .ja twin, so "no .ja file in this checkout lost its Japanese" fails
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";

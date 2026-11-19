@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// why-not: the /// <reference> line alone counts as a comment with no Japanese on the .ja twin, so "no .ja file in this checkout lost its Japanese" fails
 import { spawnSync } from "node:child_process";
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename } from "node:path";

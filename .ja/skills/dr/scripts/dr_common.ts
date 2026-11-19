@@ -1,5 +1,4 @@
 /// <reference types="node" />
-// why-not: /// <reference> 行は日本語のないコメントと数えられ、"no .ja file in this checkout lost its Japanese" が落ちる
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";

@@ -64,7 +64,7 @@ test("T-366 an edited .ja file whose english twin is missing is reported, and on
   const root = tempRoot("mirror-prose-verdict-");
 
   const missingJapaneseTwin = editedPath(
-    writeFixture(root, ".ja/sample-missing-twin.ts", "// Convert the payload.\n// Persist it.\n"),
+    writeFixture(root, ".ja/sample-missing-twin.ts", "// why-not: Convert the payload.\n// why-not: Persist it.\n"),
   );
   assert.ok(
     check(missingJapaneseTwin) !== null,
@@ -72,7 +72,7 @@ test("T-366 an edited .ja file whose english twin is missing is reported, and on
   );
 
   const existingJapaneseTwin = editedPath(
-    writeFixture(root, ".ja/sample-existing-twin.ts", "// Convert the payload.\n// 保存する\n"),
+    writeFixture(root, ".ja/sample-existing-twin.ts", "// why-not: Convert the payload.\n// why-not: 保存する\n"),
   );
   assert.equal(
     check(existingJapaneseTwin),
@@ -83,7 +83,7 @@ test("T-366 an edited .ja file whose english twin is missing is reported, and on
 
 test("T-367 the sweep excludes node_modules, projects and logs, and the same predicate flags a fixture path inside them", () => {
   const root = tempRoot("mirror-prose-sweep-");
-  const englishOnly = "// Convert the payload.\n// Persist it.\n";
+  const englishOnly = "// why-not: Convert the payload.\n// why-not: Persist it.\n";
   const excluded = [
     writeFixture(root, "node_modules/pkg/.ja/sample.ts", englishOnly),
     writeFixture(root, "projects/scratch/.ja/sample.ts", englishOnly),
@@ -110,7 +110,7 @@ test("T-367 the sweep excludes node_modules, projects and logs, and the same pre
 test("T-368 an english-side file that kept the japanese original is reported by name", () => {
   const root = tempRoot("mirror-prose-english-sweep-");
   const relative = path.join("skills", "sample", "scripts", "m.ts");
-  const japaneseBody = "// 語の重なりを数える。\n";
+  const japaneseBody = "// why-not: 語の重なりを数える。\n";
   writeFixture(root, relative, japaneseBody);
   writeFixture(root, path.join(".ja", relative), japaneseBody);
 
@@ -119,6 +119,82 @@ test("T-368 an english-side file that kept the japanese original is reported by 
     offenders.includes(relative),
     `the english-side file left in Japanese must be reported by its own relative path: ${offenders.join(", ")}`,
   );
+});
+
+test("a .ja ts file whose only comment is a reference directive is not reported", () => {
+  const root = tempRoot("mirror-prose-reference-");
+  const filePath = writeFixture(
+    root,
+    ".ja/scripts/reference.ts",
+    '/// <reference types="node" />\nexport const answer = 1;\n',
+  );
+
+  assert.equal(check(filePath), null);
+});
+
+test("a .ja ts file with no comment whose template literal holds markdown headings is not reported", () => {
+  const root = tempRoot("mirror-prose-template-");
+  const filePath = writeFixture(
+    root,
+    ".ja/scripts/update-index.ts",
+    "export const readme = `# Decision Records\n\n## DR List\n\n*Last updated*: 2026-11-19\n`;\n",
+  );
+
+  assert.equal(check(filePath), null);
+});
+
+test("a .ja ts file whose why-not line is in English is reported", () => {
+  const root = tempRoot("mirror-prose-why-not-english-");
+  const filePath = writeFixture(
+    root,
+    ".ja/scripts/english.ts",
+    "// why-not: x fails\nexport const answer = 1;\n",
+  );
+
+  assert.notEqual(check(filePath), null);
+});
+
+test("a .ja ts file whose why-not line is in Japanese is not reported", () => {
+  const root = tempRoot("mirror-prose-why-not-japanese-");
+  const filePath = writeFixture(
+    root,
+    ".ja/scripts/japanese.ts",
+    "// why-not: x が落ちる\nexport const answer = 1;\n",
+  );
+
+  assert.equal(check(filePath), null);
+});
+
+test("a .ja sh file whose why-not line is in English is reported", () => {
+  const root = tempRoot("mirror-prose-why-not-sh-");
+  const filePath = writeFixture(
+    root,
+    ".ja/scripts/english.sh",
+    "#!/bin/sh\n# why-not: x fails\necho done\n",
+  );
+
+  assert.notEqual(check(filePath), null);
+});
+
+test("a .ja ts file whose only English comment is not a why-not line is not reported", () => {
+  const root = tempRoot("mirror-prose-plain-comment-");
+  const filePath = writeFixture(
+    root,
+    ".ja/scripts/plain.ts",
+    "// Convert the payload.\nexport const answer = 1;\n",
+  );
+
+  assert.equal(check(filePath), null);
+});
+
+test("an english-side ts file whose why-not line is in Japanese is reported", () => {
+  const root = tempRoot("mirror-prose-english-why-not-");
+  const relative = path.join("scripts", "japanese.ts");
+  const body = "// why-not: x が落ちる\nexport const answer = 1;\n";
+  const filePath = writeFixture(root, relative, body);
+  writeFixture(root, path.join(".ja", relative), body);
+
+  assert.notEqual(checkEnglish(filePath), null);
 });
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
