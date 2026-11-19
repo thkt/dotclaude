@@ -6,17 +6,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { trackedFiles } from "../workflows/_lib/tests/_retirement.ts";
 
-// These sweep every instruction directory, so they belong to no single skill. Living here also
-// keeps them outside their own scan, which is why no self-exemption is needed below.
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 type InstructionFile = { lang: "en" | ".ja"; rel: string; full: string };
 
-// One prefix/dir pair's worth of instructionFiles's list: every markdown/js/py file under
-// root/prefix/dir that git tracks. trackedFiles's doc gives why git rather than a walk, and
-// __pycache__ sits outside what git tracks either way. The assertion keeps a deleted
-// instruction tree from quietly shrinking the sweep to the directories that remain, the way
-// letting readdir throw on a missing directory did.
 const scanInstructionDir = (
   prefix: "" | ".ja",
   lang: "en" | ".ja",
@@ -45,10 +38,7 @@ const instructionFiles = () => {
   return found;
 };
 
-// DR names a decision beyond architecture. An old ADR left in a live instruction makes the writer
-// read only architectural decisions as recordable.
-test("no live instruction or convention still carries the old name ADR", async () => {
-  // A summary of Fowler's article, quoting ADR as the source's own term.
+test("no live instruction, convention, or README carries the old name ADR outside when_to_use and the Fowler summary that declares it", async () => {
   const EXEMPT = "skills/dr/references/fowler-adr.md";
   const declares = { ja: /このファイルでは ADR と呼ぶ/, en: /it says ADR throughout/ };
   const exemptPaths: [keyof typeof declares, string][] = [
@@ -60,7 +50,6 @@ test("no live instruction or convention still carries the old name ADR", async (
     assert.match(doc, declares[lang], `${lang}: the exempt file declares its grounds`);
   }
 
-  // when_to_use lists the words a user types, so ADR stays there to reach whoever types it.
   const files = instructionFiles().filter((f) => f.rel !== EXEMPT);
   assert.ok(files.length > 100, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
@@ -70,13 +59,9 @@ test("no live instruction or convention still carries the old name ADR", async (
   assert.doesNotMatch(await readFile(join(root, "README.md"), "utf8"), /\bADRs?\b/, "README.md");
 });
 
-// A skill body expands ${CLAUDE_SKILL_DIR}, so a home-anchored path there names the dev tree and a
-// plugin install reads another copy of the file, or none at all.
-test("no skill names a bundled asset by a home-anchored path", async () => {
-  // settings.json belongs to the running side, so the same path holds under a plugin install.
+test("no skill outside its tests names a bundled asset by a home-anchored path other than settings.json", async () => {
   const RUNNING_SIDE = /\.claude\/settings\.json/;
   const HOME_ANCHORED = /~\/\.claude\/|\$HOME\/\.claude\//;
-  // A test under skills/ is not an instruction the harness reads, so a path it names is a fixture.
   const files = instructionFiles().filter(
     (f) => f.rel.startsWith("skills/") && !f.rel.includes("/tests/"),
   );
@@ -90,19 +75,12 @@ test("no skill names a bundled asset by a home-anchored path", async () => {
   }
 });
 
-// An agent body expands ${CLAUDE_PLUGIN_ROOT} under a plugin install alone, so SUBAGENT.md
-// § Reference notation pairs the plugin form with one fallback sentence that sends the dev tree to
-// ~/.claude/. A home-anchored path outside that sentence reads the dev tree from a plugin install,
-// and a plugin form without the sentence reads nothing from the dev tree. Neither failure reports
-// itself at run time.
 test("every agent naming a bundled asset pairs the plugin form with the fallback sentence", async () => {
   const FALLBACK = {
     en: "When a path below still begins with `${`, the harness left the variable unexpanded; read the same path under `~/.claude/` instead.",
     ".ja":
       "下のパスが `${` のまま始まっているときは harness が変数を展開していないので、代わりに `~/.claude/` 配下の同じパスを読む。",
   };
-  // settings.json, cache/, and the history/ output belong to the running side, so the same path
-  // holds under a plugin.
   const RUNNING_SIDE = /(~|\$HOME)\/\.claude\/(settings\.json|cache\/|history\/)/;
   const HOME_ANCHORED = /~\/\.claude\/|\$HOME\/\.claude\//;
   const files = instructionFiles().filter(
@@ -126,9 +104,6 @@ test("every agent naming a bundled asset pairs the plugin form with the fallback
   }
 });
 
-// A bare Bash grant hands a skill every shell command, and the commands it actually names are a
-// short list in its own body. Nothing at run time reports the gap: the wider grant only ever shows
-// up as a prompt that did not appear.
 test("no skill grants Bash without narrowing it to the commands it names", async () => {
   const files = instructionFiles().filter((f) => f.rel.endsWith("/SKILL.md"));
   assert.ok(files.length >= 10, `the number scanned (${files.length})`);
@@ -138,8 +113,6 @@ test("no skill grants Bash without narrowing it to the commands it names", async
   }
 });
 
-// DR-0090 unified work products under .claude/workspace/, so a bare workspace/ in a live
-// instruction points at a directory that sits under no project root.
 test("no live instruction or convention names a workspace/ without .claude/", async () => {
   const BARE_WORKSPACE = /(?<!\.claude\/)(?<![\w/.])workspace\//;
   const files = instructionFiles();
@@ -150,15 +123,10 @@ test("no live instruction or convention names a workspace/ without .claude/", as
   }
 });
 
-// A model key in a skill's frontmatter switches the session to that model for as long as the skill
-// runs. The thinking from before the switch is dropped and the prompt cache is rebuilt, and a skill
-// that settles requirements can end up a tier below the session it was called from.
 const frontmatter = (text: string) => text.match(/^---\n([\s\S]*?)\n---\n/)?.[1] ?? "";
 const pinsModel = (text: string) => /^model:/m.test(frontmatter(text));
 
 test("no skill pins a model in its frontmatter", async () => {
-  // Literal fixtures (rules/development/TESTING.md § Whether the test swings at nothing): one value per kind a
-  // pin takes, and the same file without the line, and a model line in the body alone.
   assert.equal(pinsModel("---\nname: x\nmodel: opus\n---\n# x\n"), true, "an opus pin is detected");
   assert.equal(pinsModel("---\nname: x\nmodel: fable\n---\n# x\n"), true, "a fable pin is detected");
   assert.equal(pinsModel("---\nname: x\n---\n# x\n"), false, "no pin once the line is gone");
@@ -173,8 +141,6 @@ test("no skill pins a model in its frontmatter", async () => {
   }
 });
 
-// A comma list of trigger words matches only the words a user types, so a request phrased any
-// other way misses the skill. These two state the intent as a sentence instead.
 const SENTENCE_END = /[。.]$/;
 const whenToUse = (text: string) => frontmatter(text).match(/^when_to_use: (.*)$/m)?.[1] ?? "";
 
@@ -193,16 +159,12 @@ test("the when_to_use of use-cli-scout and sweep is a sentence, not a list of ph
   }
 });
 
-// critic-design runs at effort medium under a probe budget, so a line telling it never to save
-// tokens contradicts both. The phrase ban gave way to a row naming the one step taken before
-// confirmed: apply an unused viewpoint and record what it found.
 test("critic-design asks for one more viewpoint before confirmed, with no token or phrase ban", async () => {
   const removed = {
     en: [/Do not save tokens/, /^\| Banned phrasing /m],
     ".ja": [/トークンを節約しない/, /^\| Banned phrasing /m],
   };
   const kept = { en: /^\| Before confirmed +\| /m, ".ja": /^\| confirmed の前 +\| /m };
-  // Literal copies of the removed lines, so a mistyped pattern fails here first.
   const oldLines = {
     en: "- Do not save tokens, and do not cut short the viewpoint checks\n| Banned phrasing    | Never use `looks reasonable` |",
     ".ja": "- トークンを節約しない。視点の確認を削らない\n| Banned phrasing    | 推論内で `looks reasonable` を禁止 |",
@@ -220,8 +182,6 @@ test("critic-design asks for one more viewpoint before confirmed, with no token 
   }
 });
 
-// A convention naming a test file that does not exist sends the reader to nothing, and the check
-// it describes may not run at all.
 const namedTestPaths = (text: string) =>
   [...text.matchAll(/`(tests\/[^`\s*]+\.(?:ts|js))`/g)].map((m) => m[1]);
 
@@ -239,8 +199,6 @@ test("every tests/ path rules/conventions/SUBAGENT.md names exists", async () =>
   }
 });
 
-// The rows of the first table in one `## ` section, by their first cell. A missing heading or a
-// table that no longer parses returns no rows, which the deepEqual below reports as a mismatch.
 const sectionOf = (doc: string, heading: string) =>
   doc.split(/^## /m).find((part) => part.startsWith(`${heading}\n`)) ?? "";
 const firstColumn = (text: string) =>
@@ -250,8 +208,6 @@ const firstColumn = (text: string) =>
     .slice(2)
     .map((line) => line.split("|")[1].trim());
 
-// DR-0130 moves two wiki pages into TESTING.md as rows. Comparing the labels rather than the row
-// count catches a row replaced by another one, which a count of 5 would let through.
 test("TESTING.md lists the five shapes of a test that swings at nothing, on both sides", async () => {
   const expected = {
     en: [
@@ -282,7 +238,6 @@ test("TESTING.md lists the five shapes of a test that swings at nothing, on both
   }
 });
 
-// DR-0130 takes DOCUMENTS.md back to four documents and the three routing rules DR-0067 set.
 test("DOCUMENTS.md divides the ground between four documents and routes with three rules, on both sides", async () => {
   for (const [rel, routing] of [
     ["rules/conventions/DOCUMENTS.md", "Routing"],

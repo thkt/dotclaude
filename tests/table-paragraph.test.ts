@@ -1,5 +1,3 @@
-// MARKDOWN.md § Do not puts a table's explanation before the table, so the reader holds the rule
-// before the rows it governs. workflows/ and commands/ hold no markdown.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -9,18 +7,10 @@ import { trackedFiles } from "../workflows/_lib/tests/_retirement.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SCANNED = ["agents", "rules", "skills", "docs"];
-// The same row lets a conclusion the table derives stay below it, and a DR's narrative reaches
-// that shape 24 times. Listing each would make an allowlist nobody prunes, so the directory stays
-// out and this line carries the judgement (#450).
-// Research originals retain the source text.
 const SKIPPED = new Set(["docs/decisions", "docs/research"]);
 
-// MARKDOWN.md's row exempts a conclusion the table derives, and no regex separates one from an
-// explanation. Each key carries the opening sentence, so rewriting the conclusion asks for the
-// judgement again. Removing an entry is how a paragraph that stopped being one gets its guard back.
 const DERIVED_CONCLUSIONS = new Map<string, string>();
 
-// An ordered list is not a paragraph, and reading `1. foo` as one fails a file that carries steps.
 const CONTINUES_A_BLOCK = /^(?:[|#>*-]|\d+[.)]\s)/;
 const OPENS_A_BLOCK = /^(?:[|*-]|\d+[.)]\s|```)/;
 
@@ -30,7 +20,6 @@ const nextNonEmpty = (lines: string[], i: number) => {
   return "";
 };
 
-// Tracked files, not a walk: a walk also reads the gitignored skills/synced/ (trackedFiles).
 const markdownUnder = (dir: string): string[] => {
   const base = `${relative(root, dir)}/`;
   return trackedFiles(root)
@@ -39,7 +28,6 @@ const markdownUnder = (dir: string): string[] => {
     .map((rel) => join(root, rel));
 };
 
-// A fenced block carries its own tables and prose, and MARKDOWN.md exempts code from every rule.
 const paragraphsAfterTables = (source: string): { line: number; text: string }[] => {
   const lines = source.split("\n");
   const start = lines[0] === "---" ? lines.indexOf("---", 1) + 1 : 0;
@@ -54,8 +42,6 @@ const paragraphsAfterTables = (source: string): { line: number; text: string }[]
       continue;
     }
     if (inFence || !line) continue;
-    // A paragraph the next block opens under introduces that block, not the table above it.
-    // The lookahead sits last so it runs only for a line that is otherwise a hit.
     if (inTable && !CONTINUES_A_BLOCK.test(line) && !OPENS_A_BLOCK.test(nextNonEmpty(lines, i))) {
       out.push({ line: i + 1, text: line });
     }
@@ -88,7 +74,6 @@ test("no explanation sits below the table it explains", async () => {
   assert.deepEqual(offenders, [], `move the explanation above its table:\n${offenders.join("\n")}`);
 });
 
-// An empty scan reports the same zero offenders as a clean tree.
 test("the scan reaches the files it names", () => {
   const counts = SCANNED.map((dir) => markdownUnder(join(root, dir)).length);
   assert.ok(Math.min(...counts) > 0, `every scanned directory holds markdown: ${counts}`);
@@ -100,7 +85,6 @@ test("historical originals are excluded while current docs pages remain scanned"
   assert.ok(!files.some((path) => path.startsWith("docs/research/")));
 });
 
-// An allowlist nobody prunes stops being a record of judgement and becomes noise.
 test("every DERIVED_CONCLUSIONS entry still names a paragraph that exists", async () => {
   const { seen } = await scan();
   const stale = [...DERIVED_CONCLUSIONS.keys()].filter((k) => !seen.has(k)).sort();
@@ -111,7 +95,6 @@ test("every DERIVED_CONCLUSIONS entry still names a paragraph that exists", asyn
   );
 });
 
-// Two of these shapes occur nowhere in the tree, so a scan of it passes however they are handled.
 test("the classifier separates a trailing explanation from the shapes that are not one", () => {
   const table = "| a | b |\n| - | - |\n| 1 | 2 |\n";
   const cases: [string, string, string[]][] = [
