@@ -9,16 +9,18 @@ import {
   type CheckCommand,
   type CheckRecord,
   checkCommand,
-  checkRecord,
+  type Evaluation,
+  evaluate,
   type GateConfig,
   type GateLocation,
   type GateMode,
   gateLocation,
+  readJson,
   STOP_LOG_FILE,
   STREAK_FILE,
+  storedConfig,
   treeHash,
-  type Verdict,
-  verdict,
+  verdictText,
 } from "../_lib/gate_record.ts";
 
 const USAGE = "usage: done_gate.ts on [--mode enforce] | off | check | status | stop";
@@ -27,14 +29,6 @@ const STREAK_LIMIT = 8;
 function fail(message: string): number {
   process.stderr.write(`done_gate: ${message}\n`);
   return 2;
-}
-
-function readJson(path: string): unknown {
-  try {
-    return JSON.parse(readFileSync(path, "utf8"));
-  } catch {
-    return undefined;
-  }
 }
 
 function modeFrom(args: string[]): GateMode | null {
@@ -84,20 +78,6 @@ function off(gate: GateLocation): number {
   return 0;
 }
 
-function storedConfig(gate: GateLocation): GateConfig | null {
-  const config = readJson(join(gate.dir, CONFIG_FILE));
-  if (typeof config !== "object" || config === null) {
-    return null;
-  }
-  const fields = config as Record<string, unknown>;
-  const check = checkCommand(fields.check);
-  const mode = fields.mode;
-  if (check === null || (mode !== "record" && mode !== "enforce")) {
-    return null;
-  }
-  return { check, mode };
-}
-
 function runCommand(command: CheckCommand, cwd: string): number {
   const [file, args] =
     typeof command === "string" ? ["/bin/sh", ["-c", command]] : [command[0], command.slice(1)];
@@ -128,25 +108,6 @@ function check(gate: GateLocation): number {
   const record: CheckRecord = { tree: after ?? before, exitCode, at: new Date().toISOString() };
   writeFileSync(join(gate.dir, CHECK_FILE), `${JSON.stringify(record, null, 2)}\n`);
   return exitCode;
-}
-
-interface Evaluation {
-  tree: string;
-  record: CheckRecord | null;
-  result: Verdict;
-}
-
-function evaluate(gate: GateLocation): Evaluation | null {
-  const tree = treeHash(gate.root);
-  if (tree === null) {
-    return null;
-  }
-  const record = checkRecord(readJson(join(gate.dir, CHECK_FILE)));
-  return { tree, record, result: verdict(record, tree) };
-}
-
-function verdictText(result: Verdict): string {
-  return result.done ? "done" : result.lines.join("\n");
 }
 
 function status(gate: GateLocation): number {
