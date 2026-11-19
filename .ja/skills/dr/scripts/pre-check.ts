@@ -5,8 +5,6 @@
 // stdout: OUTPUT_KEYS が宣言する順 (status, number, filename, slug, date, dr_dir,
 // similar_drs) のキーを持つ JSON (indent 2)。
 // stderr: 検証に落ちた内容。exit 1。
-// open な PR が使う番号を避けて番号を進めたとき、または open な PR を確認できなかったときも、
-// その旨を 1 行書く。どちらも exit 0。
 //
 // 退役した Python 版 pre-check の TypeScript 移植。header/entry の形は
 // skills/dr/scripts/dr_common.ts が既に使っているものと同じ:
@@ -111,33 +109,27 @@ function collectSimilarDrs(title: string, drDir: string, threshold: number): Sim
   return similarDrs;
 }
 
-/** DR の番号 NNNN を、名前が `NNNN-` で始まるファイルから読む。それ以外は null。 */
 function drNumber(name: string): number | null {
   const match = /^(\d{4})-/.exec(name);
   return match ? parseInt(match[1], 10) : null;
 }
 
-/** open な PR を確認できなかった理由を運ぶ。main() はこれだけを捕まえ、ほかの例外は通す。 */
 class OpenPrCheckUnavailable extends Error {}
 
-/** bin を cwd で走らせて stdout を返す。起動できない、または 0 以外で終わったときは
- * OpenPrCheckUnavailable を投げる。stderr は 1 行に収めるため最初の行だけを理由に入れる。 */
 function runOrUnavailable(bin: string, args: string[], cwd: string): string {
   const result = spawnSync(bin, args, { cwd, encoding: "utf8" });
   if (result.error) {
     throw new OpenPrCheckUnavailable(`${bin} could not run: ${result.error.message}`);
   }
   if (result.status !== 0) {
-    const detail = (result.stderr ?? "").trim().split("\n")[0];
+    const firstStderrLine = (result.stderr ?? "").trim().split("\n")[0];
     throw new OpenPrCheckUnavailable(
-      `${bin} ${args.slice(0, 2).join(" ")} exited ${result.status}${detail ? `: ${detail}` : ""}`,
+      `${bin} ${args.slice(0, 2).join(" ")} exited ${result.status}${firstStderrLine ? `: ${firstStderrLine}` : ""}`,
     );
   }
   return result.stdout;
 }
 
-/** `gh pr list --json number` の出力から PR の番号を取り出す。JSON でない、または整数の
- * number を持つオブジェクトの配列でないときは OpenPrCheckUnavailable を投げる。 */
 function parsePrNumbers(listed: string): number[] {
   let prs: unknown;
   try {
@@ -151,20 +143,15 @@ function parsePrNumbers(listed: string): number[] {
   return prs.map((pr: { number: number }) => pr.number);
 }
 
+const OPEN_PR_LIST_LIMIT = 1000;
+
 interface OpenPrDrUse {
   pr: number;
   number: number;
 }
 
-/** drDir を含む repo の open な PR が、drDir の直下に置くファイルの DR 番号。
- * readdirSync(drDir) が直下だけを数えるので、PR 側も直下だけを数える。
- * `gh pr diff --name-only` は追加以外の変更も返すが、変更や削除の対象はローカルにもある
- * 番号なので、ローカルの最大値を超えるのは main を追い越した変更だけになる。
- * drDir が git の work tree の外にあるときは gh を呼ばない。 */
 function openPrDrUses(drDir: string): OpenPrDrUse[] {
-  // --show-prefix で比べる。macOS の tmpdir は /var を git が /private/var と返すので、
-  // toplevel から path.relative を取ると drDir の外を指す。
-  const [inside, topLevel, prefix = ""] = runOrUnavailable(
+  const [inside, topLevel, drDirPrefix = ""] = runOrUnavailable(
     "git",
     ["rev-parse", "--is-inside-work-tree", "--show-toplevel", "--show-prefix"],
     drDir,
@@ -173,21 +160,19 @@ function openPrDrUses(drDir: string): OpenPrDrUse[] {
     throw new OpenPrCheckUnavailable(`${drDir} is not inside a git work tree`);
   }
   const gh = process.env.CLAUDE_GH_BIN || "gh";
-  // gh pr list の既定は 30 件なので、それを超える open な PR を落とさないよう上限を上げる。
   const prs = parsePrNumbers(
     runOrUnavailable(
       gh,
-      ["pr", "list", "--state", "open", "--json", "number", "--limit", "1000"],
+      ["pr", "list", "--state", "open", "--json", "number", "--limit", String(OPEN_PR_LIST_LIMIT)],
       topLevel,
     ),
   );
   const uses: OpenPrDrUse[] = [];
   for (const pr of prs) {
-    // gh pr list --json files は 1 PR あたり 100 件で切れるので、全件を返す gh pr diff で読む。
     const names = runOrUnavailable(gh, ["pr", "diff", String(pr), "--name-only"], topLevel);
     for (const path of names.split("\n")) {
-      if (!path.startsWith(prefix)) continue;
-      const rest = path.slice(prefix.length);
+      if (!path.startsWith(drDirPrefix)) continue;
+      const rest = path.slice(drDirPrefix.length);
       if (rest.includes("/")) continue;
       const number = drNumber(rest);
       if (number !== null) uses.push({ pr, number });
@@ -198,8 +183,6 @@ function openPrDrUses(drDir: string): OpenPrDrUse[] {
 
 const pad = (n: number): string => String(n).padStart(4, "0");
 
-/** ローカルの最大値と、open な PR が使う番号の最大値のうち大きい方。open な PR を確認でき
- * なかったときはローカルの最大値。空いている番号を詰めては使わない。 */
 function highestUsedNumber(drDir: string, localMax: number): number {
   let uses: OpenPrDrUse[];
   try {

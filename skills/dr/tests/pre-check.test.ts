@@ -6,8 +6,6 @@
 // workflows/_lib/tests/_cli-fixture.ts's runCli rather than hand-writing cases that could drift
 // from the Python script it must match. T-201..T-203 isolate the numbering and formatScore
 // pieces the fixture cases only cover indirectly.
-// T-204..T-209 run the CLI inside a real git work tree with a fake gh passed through
-// CLAUDE_GH_BIN, to pin how the number skips past DR numbers open pull requests add.
 //
 // This unit is still Red (see pre-check.ts's own header): every scenario below fails on its
 // planned assertion against the scaffold's "not implemented" stub, not on a module/parse/type
@@ -149,37 +147,31 @@ test("T-203 formatScore renders an exact tie such as 0.625 as 0.62 the way pytho
   assert.equal(formatScore(0.375), "0.38");
 });
 
-// The open-PR check runs `git` and a fake `gh`, so these runs restore PATH that runCli clears.
-const HOST_PATH = process.env.PATH ?? "";
+const HOST_PATH_FOR_GIT = process.env.PATH ?? "";
 
-/** The stderr lines pre-check.ts writes itself, leaving out any warning the Node runtime adds. */
-const preCheckLines = (stderr: string): string[] => stderr.split("\n").filter((line) => line.startsWith("pre-check: "));
+const stderrLinesFromPreCheck = (stderr: string): string[] => stderr.split("\n").filter((line) => line.startsWith("pre-check: "));
 
 interface FakeGh {
-  /** PR number -> the file names `gh pr diff <n> --name-only` prints for it. */
-  prs?: Record<number, string[]>;
-  /** Replaces the `gh pr list` stdout. */
-  listStdout?: string;
+  changedFilesByPr?: Record<number, string[]>;
+  prListStdout?: string;
   exit?: number;
 }
 
 const shellQuote = (text: string): string => `'${text.replaceAll("'", "'\\''")}'`;
 
-/** Writes an executable fake gh into dir and returns its path and the marker file it creates on
- * every call. It uses shell builtins only, so it runs whatever PATH the CLI sees. */
-function writeFakeGh(dir: string, fake: FakeGh): { bin: string; marker: string } {
+function writeFakeGh(dir: string, fake: FakeGh): { bin: string; calledMarker: string } {
   const bin = join(dir, "fake-gh");
-  const marker = join(dir, "fake-gh-called");
-  const prs = fake.prs ?? {};
-  const list = fake.listStdout ?? JSON.stringify(Object.keys(prs).map((n) => ({ number: Number(n) })));
-  const diffs = Object.entries(prs)
+  const calledMarker = join(dir, "fake-gh-called");
+  const changedFilesByPr = fake.changedFilesByPr ?? {};
+  const list = fake.prListStdout ?? JSON.stringify(Object.keys(changedFilesByPr).map((n) => ({ number: Number(n) })));
+  const diffs = Object.entries(changedFilesByPr)
     .map(([n, files]) => `  "pr diff ${n}") printf '%s\\n' ${files.map(shellQuote).join(" ")} ;;`)
     .join("\n");
   writeFileSync(
     bin,
     [
       "#!/bin/sh",
-      `: > ${shellQuote(marker)}`,
+      `: > ${shellQuote(calledMarker)}`,
       ...(fake.exit ? [`echo 'gh: fake failure' >&2`, `exit ${fake.exit}`] : []),
       'case "$1 $2 $3" in',
       `  "pr list --state") printf '%s' ${shellQuote(list)} ;;`,
@@ -190,11 +182,10 @@ function writeFakeGh(dir: string, fake: FakeGh): { bin: string; marker: string }
     ].join("\n"),
     { mode: 0o755 },
   );
-  return { bin, marker };
+  return { bin, calledMarker };
 }
 
-/** A real git work tree (withTempRepo) whose DR archive, docs/decisions/, holds 0002 and 0005. */
-function withRepo<T>(fn: (dir: string) => T): T {
+function withGitRepoHoldingDrs0002And0005<T>(fn: (dir: string) => T): T {
   return withTempRepo((dir) => {
     mkdirSync(join(dir, "docs", "decisions"), { recursive: true });
     writeFileSync(join(dir, "docs", "decisions", "0002-a.md"), "# A\n");
@@ -206,7 +197,7 @@ function withRepo<T>(fn: (dir: string) => T): T {
 function runWithGh(dir: string, bin: string, env: Record<string, string> = {}) {
   const run = runCli(TS_SCRIPT, dir, "", ["Test Title Here"], {
     cwd: dir,
-    env: { PATH: HOST_PATH, CLAUDE_GH_BIN: bin, ...env },
+    env: { PATH: HOST_PATH_FOR_GIT, CLAUDE_GH_BIN: bin, ...env },
   });
   assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
   const parsed = JSON.parse(run.stdout) as { number: string; filename: string };
@@ -215,8 +206,8 @@ function runWithGh(dir: string, bin: string, env: Record<string, string> = {}) {
 }
 
 test("T-204 an open pull request adding 0007 to the archive above the local 0005 moves the number to 0008 and names 0007 and the pull request on stderr", () => {
-  withRepo((dir) => {
-    const { bin } = writeFakeGh(dir, { prs: { 12: ["docs/decisions/0007-x.md", "README.md"] } });
+  withGitRepoHoldingDrs0002And0005((dir) => {
+    const { bin } = writeFakeGh(dir, { changedFilesByPr: { 12: ["docs/decisions/0007-x.md", "README.md"] } });
     const run = runWithGh(dir, bin);
     assert.equal(run.parsed.number, "0008");
     assert.ok(run.parsed.filename.startsWith("0008-"), `filename follows the number (${run.parsed.filename})`);
@@ -225,40 +216,40 @@ test("T-204 an open pull request adding 0007 to the archive above the local 0005
 });
 
 test("T-205 an open pull request number at or below the local maximum leaves the number at the local maximum plus one", () => {
-  withRepo((dir) => {
-    const { bin } = writeFakeGh(dir, { prs: { 12: ["docs/decisions/0003-x.md", "docs/decisions/0005-b.md"] } });
+  withGitRepoHoldingDrs0002And0005((dir) => {
+    const { bin } = writeFakeGh(dir, { changedFilesByPr: { 12: ["docs/decisions/0003-x.md", "docs/decisions/0005-b.md"] } });
     const run = runWithGh(dir, bin);
     assert.equal(run.parsed.number, "0006");
-    assert.deepEqual(preCheckLines(run.stderr), [], "nothing was skipped, so pre-check writes no line");
+    assert.deepEqual(stderrLinesFromPreCheck(run.stderr), [], "nothing was skipped, so pre-check writes no line");
   });
 });
 
 test("T-206 a numbered file an open pull request adds outside the archive, or inside a numbered subdirectory of it, leaves the number unchanged", () => {
-  withRepo((dir) => {
+  withGitRepoHoldingDrs0002And0005((dir) => {
     const { bin } = writeFakeGh(dir, {
-      prs: { 12: ["notes/0009-x.md", "docs/decisions/0009-drafts/x.md", "docs/0009-x.md"] },
+      changedFilesByPr: { 12: ["notes/0009-x.md", "docs/decisions/0009-drafts/x.md", "docs/0009-x.md"] },
     });
     assert.equal(runWithGh(dir, bin).parsed.number, "0006");
   });
 });
 
 test("T-207 a DR at the 120th of 150 files a pull request changes still counts", () => {
-  withRepo((dir) => {
+  withGitRepoHoldingDrs0002And0005((dir) => {
     const files = Array.from({ length: 150 }, (_, i) => `src/file-${i}.ts`);
     files[119] = "docs/decisions/0009-late.md";
-    const { bin } = writeFakeGh(dir, { prs: { 3: [], 799: files } });
+    const { bin } = writeFakeGh(dir, { changedFilesByPr: { 3: [], 799: files } });
     assert.equal(runWithGh(dir, bin).parsed.number, "0010");
   });
 });
 
 test("T-208 when gh fails or prints something other than JSON, the run exits 0 with the local maximum plus one and says on stderr that the check could not run", () => {
-  for (const fake of [{ exit: 1 }, { listStdout: "not json" }] satisfies FakeGh[]) {
-    withRepo((dir) => {
-      const { bin, marker } = writeFakeGh(dir, fake);
+  for (const fake of [{ exit: 1 }, { prListStdout: "not json" }] satisfies FakeGh[]) {
+    withGitRepoHoldingDrs0002And0005((dir) => {
+      const { bin, calledMarker } = writeFakeGh(dir, fake);
       const run = runWithGh(dir, bin);
-      assert.ok(existsSync(marker), `${JSON.stringify(fake)}: the fake gh was reached`);
+      assert.ok(existsSync(calledMarker), `${JSON.stringify(fake)}: the fake gh was reached`);
       assert.equal(run.parsed.number, "0006", `${JSON.stringify(fake)}: number`);
-      const lines = preCheckLines(run.stderr);
+      const lines = stderrLinesFromPreCheck(run.stderr);
       assert.equal(lines.length, 1, `${JSON.stringify(fake)}: pre-check writes one line (${run.stderr})`);
       assert.match(lines[0], /could not check open pull requests/, `${JSON.stringify(fake)}: stderr`);
     });
@@ -267,9 +258,9 @@ test("T-208 when gh fails or prints something other than JSON, the run exits 0 w
 
 test("T-209 an archive outside a git work tree never calls gh and says on stderr that the check could not run", () => {
   withCaseDir({ "archive/0005-b.md": "# B\n" }, (dir) => {
-    const { bin, marker } = writeFakeGh(dir, { prs: { 12: ["archive/0007-x.md"] } });
+    const { bin, calledMarker } = writeFakeGh(dir, { changedFilesByPr: { 12: ["archive/0007-x.md"] } });
     const run = runWithGh(dir, bin, { DR_DIR: join(dir, "archive") });
-    assert.equal(existsSync(marker), false, "the fake gh was not called");
+    assert.equal(existsSync(calledMarker), false, "the fake gh was not called");
     assert.equal(run.parsed.number, "0006");
     assert.match(run.stderr, /could not check open pull requests/);
   });

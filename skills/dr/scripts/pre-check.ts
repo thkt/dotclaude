@@ -5,8 +5,6 @@
 // stdout: JSON (indent 2) with the keys OUTPUT_KEYS declares, in that order --
 // status, number, filename, slug, date, dr_dir, similar_drs.
 // stderr: validation failures, exit 1.
-// It also gets one line when the number skips past numbers open pull requests use, or when the
-// open pull requests could not be checked. Both exit 0.
 //
 // TypeScript port of the retired Python pre-check, in the header/entry shape
 // skills/dr/scripts/dr_common.ts already uses: a plain shebang + reference-types + Usage header,
@@ -108,34 +106,27 @@ function collectSimilarDrs(title: string, drDir: string, threshold: number): Sim
   return similarDrs;
 }
 
-/** The DR number NNNN of a file whose name starts with `NNNN-`, or null for any other name. */
 function drNumber(name: string): number | null {
   const match = /^(\d{4})-/.exec(name);
   return match ? parseInt(match[1], 10) : null;
 }
 
-/** Carries why the open pull requests could not be checked. main() catches this alone and lets
- * every other exception through. */
 class OpenPrCheckUnavailable extends Error {}
 
-/** Runs bin in cwd and returns its stdout. Throws OpenPrCheckUnavailable when bin cannot start
- * or exits non-zero, putting only the first stderr line in the reason so stderr stays one line. */
 function runOrUnavailable(bin: string, args: string[], cwd: string): string {
   const result = spawnSync(bin, args, { cwd, encoding: "utf8" });
   if (result.error) {
     throw new OpenPrCheckUnavailable(`${bin} could not run: ${result.error.message}`);
   }
   if (result.status !== 0) {
-    const detail = (result.stderr ?? "").trim().split("\n")[0];
+    const firstStderrLine = (result.stderr ?? "").trim().split("\n")[0];
     throw new OpenPrCheckUnavailable(
-      `${bin} ${args.slice(0, 2).join(" ")} exited ${result.status}${detail ? `: ${detail}` : ""}`,
+      `${bin} ${args.slice(0, 2).join(" ")} exited ${result.status}${firstStderrLine ? `: ${firstStderrLine}` : ""}`,
     );
   }
   return result.stdout;
 }
 
-/** The PR numbers in `gh pr list --json number` output. Throws OpenPrCheckUnavailable when the
- * output is not JSON or not a list of objects carrying an integer number. */
 function parsePrNumbers(listed: string): number[] {
   let prs: unknown;
   try {
@@ -149,20 +140,15 @@ function parsePrNumbers(listed: string): number[] {
   return prs.map((pr: { number: number }) => pr.number);
 }
 
+const OPEN_PR_LIST_LIMIT = 1000;
+
 interface OpenPrDrUse {
   pr: number;
   number: number;
 }
 
-/** The DR numbers of the files that the open pull requests of drDir's repo put directly under
- * drDir. readdirSync(drDir) counts direct children only, so the pull request side does too.
- * `gh pr diff --name-only` also returns files a pull request modifies or deletes, but those
- * numbers exist locally as well, so only a change ahead of main can exceed the local maximum.
- * gh is never called when drDir is outside a git work tree. */
 function openPrDrUses(drDir: string): OpenPrDrUse[] {
-  // Compare against --show-prefix. git reports macOS's /var tmpdir as /private/var, so a
-  // path.relative from the toplevel would point outside drDir.
-  const [inside, topLevel, prefix = ""] = runOrUnavailable(
+  const [inside, topLevel, drDirPrefix = ""] = runOrUnavailable(
     "git",
     ["rev-parse", "--is-inside-work-tree", "--show-toplevel", "--show-prefix"],
     drDir,
@@ -171,21 +157,19 @@ function openPrDrUses(drDir: string): OpenPrDrUse[] {
     throw new OpenPrCheckUnavailable(`${drDir} is not inside a git work tree`);
   }
   const gh = process.env.CLAUDE_GH_BIN || "gh";
-  // gh pr list stops at 30 by default, so raise the limit to keep the open PRs past it.
   const prs = parsePrNumbers(
     runOrUnavailable(
       gh,
-      ["pr", "list", "--state", "open", "--json", "number", "--limit", "1000"],
+      ["pr", "list", "--state", "open", "--json", "number", "--limit", String(OPEN_PR_LIST_LIMIT)],
       topLevel,
     ),
   );
   const uses: OpenPrDrUse[] = [];
   for (const pr of prs) {
-    // gh pr list --json files cuts off at 100 per PR, so read them from gh pr diff, which returns all.
     const names = runOrUnavailable(gh, ["pr", "diff", String(pr), "--name-only"], topLevel);
     for (const path of names.split("\n")) {
-      if (!path.startsWith(prefix)) continue;
-      const rest = path.slice(prefix.length);
+      if (!path.startsWith(drDirPrefix)) continue;
+      const rest = path.slice(drDirPrefix.length);
       if (rest.includes("/")) continue;
       const number = drNumber(rest);
       if (number !== null) uses.push({ pr, number });
@@ -196,8 +180,6 @@ function openPrDrUses(drDir: string): OpenPrDrUse[] {
 
 const pad = (n: number): string => String(n).padStart(4, "0");
 
-/** The larger of the local maximum and the highest number an open pull request uses, or the
- * local maximum when the open pull requests could not be checked. Gaps are never filled. */
 function highestUsedNumber(drDir: string, localMax: number): number {
   let uses: OpenPrDrUse[];
   try {
