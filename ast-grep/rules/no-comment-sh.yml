@@ -19,5 +19,3 @@ files:
   - '**/*.sh'
 ignores:
   - '**/fixtures/**'
-  - 'workflows/**'
-  - '.ja/workflows/**'

@@ -1,45 +1,4 @@
 /// <reference types="node" />
-// Usage: relay.ts <digest> [--spec <file>] [--projects <dir>]
-//        relay.ts <digest> --replay <relay_check>
-//
-// Runs the commands a workflow script wants run, and prints their results as one line of JSON.
-// The script declares them as data (a spec) and puts the spec into a relay agent's prompt between
-// `RELAY_SPEC <digest>` and `RELAY_SPEC_END`. The agent runs this command with the digest, and this
-// reads the spec back from the agent's transcript. The agent copies no command, and a host that
-// evaluates the script itself calls runSpec directly with no agent at all.
-//
-// A spec is {defaults, steps}. defaults gives every result field its value when no step sets it.
-// A step is {sh, cwd?, stdin?, timeout_ms?, when?, set?, append?}:
-//   sh          one /bin/sh -c line
-//   when        run the step only when every named field equals the given value
-//   set         field <- source, where a source is one of
-//                 exit        the exit code, or -1 when the command could not start or timed out
-//                 ok          whether the exit code is 0
-//                 out         stdout without its final newline
-//                 last        the last non-empty line of stdout
-//                 timed_out   whether the command ran past timeout_ms
-//                 tail:N      the last N lines of stdout and stderr as they arrived
-//                 fail_tail:N the same when the exit code is not 0, else an empty string
-//   append      list field <- source appended
-// A field whose name starts with `_` steers later steps through `when` and is not printed.
-//
-// stdout, one line of JSON:
-//   {...fields, relay_check}    every step ran. relay_check is the digest of the fields, so the
-//                               script can tell when the agent changed a character returning them
-//   {"relay_continue": true}    the next step may not fit in this call. Run the same command again
-//   {"relay_missing": "..."}    no spec with that digest was found, or the file's digest differs. No
-//                               step ran, and the agent hands the spec over in a file
-//   {"relay_error": "..."}      the line is longer than a Bash call returns, or the run itself failed.
-//                               Steps may have run, so the agent does not run the spec again
-// exit 0, or 1 on relay_missing and relay_error.
-//
-// A call belongs to the agent whose transcript carried the spec. That agent running the command
-// again goes on from where its last call stopped, or gets the same line once every step has run,
-// so a step never runs twice for one agent. Another agent with the same spec starts from the first
-// step. --replay prints the line of the last call that ran every step of that spec, and runs
-// nothing: a script asks for it when the fields an agent returned do not carry relay_check. It
-// names the relay_check that agent returned, and a kept line carrying another check is refused. A
-// call that starts removes the kept line first.
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -64,17 +23,11 @@ export interface Spec {
 }
 
 const STEP_TIMEOUT_MS = 100_000;
-// The agent runs this with the Bash tool's timeout at its 600 s ceiling. A call stops before a
-// step that could run past the budget, so the call always prints its line before the tool kills it.
-// The variable exists for the test, which cannot wait ten minutes.
 const CALL_BUDGET_MS = Number(process.env.RELAY_CALL_BUDGET_MS) || 590_000;
-// A file left by a call that died is not picked up by a later one.
 const STATE_MAX_AGE_MS = 15 * 60 * 1000;
-// A Bash call returns about 30,000 characters. A longer line reaches the agent cut short.
 const MAX_LINE = 28_000;
 const BLOCK = /RELAY_SPEC ([0-9a-f]{8}:\d+)\n\s*(\S[^\n]*)\n\s*RELAY_SPEC_END/g;
 
-// Keys sorted, so the digest does not depend on the order an agent returns the fields in.
 export const canonical = (fields: Record<string, unknown>): string =>
   JSON.stringify(
     Object.fromEntries(
@@ -89,8 +42,6 @@ export const publicFields = (fields: Fields): Fields =>
 
 const lastLines = (text: string, count: number): string =>
   text.replace(/\n+$/, "").split("\n").slice(-count).join("\n");
-// A tail is cut by characters too. Eighty lines of a minified error or a progress bar drawn with carriage returns
-// are longer than a Bash call returns, and a failing check has to reach the repair with its tail.
 const TAIL_MAX_CHARS = 6000;
 const tailOf = (text: string, count: number): string => lastLines(text, count).slice(-TAIL_MAX_CHARS);
 
@@ -98,22 +49,15 @@ interface Ran {
   exit: number;
   timedOut: boolean;
   stdout: string;
-  // stdout and stderr in the order their chunks arrived.
   combined: string;
 }
 
-// The command runs in its own process group. A timeout ends the whole group, so a compound
-// command leaves no child writing into the worktree after the step is reported.
-// A step runs in its own process group, so a signal sent to this process does not reach it. The groups of the
-// running steps are ended first, and nothing keeps writing into the worktree after this process is gone. A host
-// that runs specs in its own process (claude-run.ts) ends them the same way.
 const runningGroups = new Set<number>();
 export const endRunningGroups = () => {
   for (const group of runningGroups) {
     try {
       process.kill(-group, "SIGTERM");
     } catch {
-      // already gone
     }
   }
 };
@@ -140,7 +84,6 @@ const runStep = (step: Step, env: Record<string, string>): Promise<Ran> =>
       try {
         if (child.pid) process.kill(-child.pid, name);
       } catch {
-        // The group is already gone.
       }
     };
     const timer = setTimeout(() => {
@@ -183,10 +126,6 @@ const pick = (ran: Ran, source: string): Value => {
 const holds = (when: Fields | undefined, fields: Fields): boolean =>
   !when || Object.entries(when).every(([key, value]) => fields[key] === value);
 
-// Runs the steps from `from` and returns the fields, or the index of the step it stopped before
-// when `fits` says that step may not fit in the caller's budget. `ran` is called after each step
-// with the index of the next one, so a caller can keep how far the steps got. `env` adds variables to the environment
-// each step's process inherits, and leaves the caller's own environment as it is.
 export const runSpec = async (
   spec: Spec,
   from = 0,
@@ -212,7 +151,6 @@ export const runSpec = async (
 const readSpec = (text: string, wanted: string): Spec | null =>
   digest(text) === wanted ? (JSON.parse(text) as Spec) : null;
 
-// The spec and the caller it belongs to: the transcript that carried it.
 const specInTranscript = (
   projects: string,
   wanted: string,
@@ -235,7 +173,6 @@ const flag = (argv: string[], name: string): string | undefined => {
 type State = { next: number; fields: Fields } | { done: string; code?: number };
 const fresh = (path: string): boolean =>
   existsSync(path) && Date.now() - statSync(path).mtimeMs <= STATE_MAX_AGE_MS;
-// The step ran, so a file that cannot be written must not cost its result.
 const keep = (path: string, text: string): boolean => {
   try {
     writeFileSync(path, text);
@@ -245,8 +182,6 @@ const keep = (path: string, text: string): boolean => {
   }
 };
 
-// The spec and the caller it belongs to, or why none was found. A spec handed over in a file belongs to the
-// agent that wrote that file.
 const findSpec = (argv: string[], wanted: string): { spec: Spec; caller: string } | string => {
   const specFile = flag(argv, "--spec");
   if (!specFile) {
@@ -262,7 +197,6 @@ const findSpec = (argv: string[], wanted: string): { spec: Spec; caller: string 
     : `the spec in ${specFile} does not have the digest ${wanted}`;
 };
 
-// One call of one caller: goes on from where that caller's last call stopped, and returns the line to print.
 const runCall = async (
   spec: Spec,
   statePath: string,
@@ -276,8 +210,6 @@ const runCall = async (
 
   const started = Date.now();
   let saved = true;
-  // The first step of a call always runs, so a single step longer than the budget still makes progress. When
-  // the state could not be saved, the call runs on: stopping would lose the steps that ran.
   const fits = (step: Step, index: number) =>
     index === state.next ||
     !saved ||
@@ -285,8 +217,6 @@ const runCall = async (
   let from = state.next;
   let fields = state.fields;
   while (from < spec.steps.length) {
-  // Kept after every step. A call that is ended in the middle of a step goes on from that step, and the steps
-  // before it are not run a second time.
     const ran = await runSpec(spec, from, fields, fits, (next, reached) => {
       keep(statePath, JSON.stringify({ next, fields: reached }));
     });
@@ -302,7 +232,6 @@ const runCall = async (
   if (line.length > MAX_LINE) {
     const relay_error = `the result is ${line.length} characters, more than a Bash call returns. A field has to be bounded by its command`;
     const refused = `${JSON.stringify({ relay_error })}\n`;
-  // The steps ran. The same caller running the command again gets this line and runs nothing a second time.
     keep(statePath, JSON.stringify({ done: refused, code: 1 }));
     return { line: refused, code: 1 };
   }
@@ -325,8 +254,6 @@ async function main(argv: string[]): Promise<number> {
   if (argv.includes("--replay")) {
     if (!fresh(keptPath)) return fail(`no result of ${wanted} is kept`);
     const kept = readFileSync(keptPath, "utf8");
-    // The line is returned only to the agent that saw it: the check it names is the one this line carries. A line
-    // another call of the same spec left is refused.
     const check = flag(argv, "--replay");
     if ((JSON.parse(kept) as { relay_check?: string }).relay_check !== check)
       return fail(`the kept result of ${wanted} does not carry the check ${String(check)}`);

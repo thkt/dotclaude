@@ -1,9 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for workflows/_lib/tests/_retirement.ts's pure scan core: offendersAmong walks
-// a caller-supplied file list with a caller-supplied reader, so these tests drive it with a
-// synthetic tree instead of this repository's real one. gate-retirement.test.ts and
-// record-retirement.test.ts exercise the git-backed wrapper that a later unit adds on top of
-// this core; T-120-T-122 here are the helper's own tests.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { offendersAmong } from "./_retirement.ts";
@@ -35,10 +30,6 @@ test(
   "T-121 a file the caller lists as an extra exclusion is not reported while the same " +
     "content under another path is reported",
   () => {
-    // Deliberately not the retired recorder script's own filename: record-retirement.test.ts's
-    // T-113 scans every tracked file for that exact name, so spelling it out here (this file
-    // sits outside T-113's exclusion list) would make this fixture a false-positive offender of
-    // its own predicate.
     const retiredNeedle = "_lib/legacy-tool.py";
     const excluded = "docs/notes/supply-list-single-source.md";
     const files = [excluded, "workflows/implement/record.ts"];

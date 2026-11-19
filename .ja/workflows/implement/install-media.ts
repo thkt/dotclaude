@@ -1,17 +1,5 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: install-media.ts <output> <worktree> <destination>
-//
-// 撮影の出力ディレクトリにある媒体を検査し、worktree の destination (repo 相対) の内容を置き換える。
-// 正本は ~/.agents/scripts/correction.ts の installMedia と capture.ts の validateCaptureMedia。
-//
-// stdout: JSON 1 行。成功は {ok: true, files: [{name, size, sha256}]}、失敗は {ok: false, reason}。
-// exit 0 は成功。exit 1 は検査で拒否したとき (destination に触れない)。
-//
-// 拒否する条件:
-//   - 出力が空、または PNG・JPEG・WebP・MP4・WebM 以外の名前、通常ファイルでないもの、先頭の形式識別子が合わないもの
-//   - destination が worktree の外を指す、または親ディレクトリが symlink を経由する
-//   - destination を git が ignore する (reason: "ignored")。媒体がレビュー対象の tree から外れるため。
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -38,7 +26,6 @@ function mediaSignature(name: string, bytes: Buffer): boolean {
   return /\.webm$/i.test(name) && bytes.subarray(0, 4).equals(Buffer.from("1a45dfa3", "hex"));
 }
 
-/** 出力内の媒体を検査し、拒否理由か、名前・サイズ・sha256 の一覧を返す。 */
 function inspectOutput(
   output: string,
 ): { reason: string } | { files: { name: string; size: number; sha256: string }[] } {
@@ -61,7 +48,6 @@ function inspectOutput(
   return { files };
 }
 
-/** worktree 内の destination の絶対パスか、拒否理由を返す。 */
 function resolveDestination(
   worktree: string,
   destination: string,
@@ -73,7 +59,6 @@ function resolveDestination(
   if (!inside || inside.startsWith("..") || inside.startsWith(sep))
     return { reason: "Capture destination is outside the worktree" };
   const parent = dirname(path);
-  // mkdir より先に各階層を確かめる。symlink の先にディレクトリを作らないため。
   let current = root;
   for (const part of relative(root, parent).split(sep)) {
     current = resolve(current, part);

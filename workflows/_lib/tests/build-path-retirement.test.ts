@@ -1,24 +1,4 @@
 /// <reference types="node" />
-// DR-0128 retires the plan-based path (/think, /issue, /qualify, /preview, /slice, the build and
-// code workflows), /fix, the manual git skills (/commit, /checkout, /pr, use-workflow-pageshot),
-// the agents only that path called, and the issue-body-gate hook. The path from an Issue to a PR
-// becomes /scoping then /implement. /research and explorer-feature, its one caller's agent, go in a
-// later change (#803) after the earlier-report search moves to /scribe and the verification rules to
-// /scoping. DR-0129 then retires /ablate, /census and /transcribe with the _lib helpers only /ablate
-// used (#805), and the audit, assert, polish, shake and adrift workflows with workflows/_lib/gate.ts
-// and the tests that read only them (#806), then the reviewer, enhancer and generator agents,
-// critic-audit, critic-evidence, agents/_lib, the six skills those agents preload, and the reviewer
-// measurement harness under skills/_lib (#807). #823 then removes /challenge, whose attack
-// critic-design runs when /scoping or /dr calls it, and the use-cli-ast-grep and use-cli-codegraph
-// wrappers, whose commands run without them (DR-0056's criterion). DR-0130 then retires the wiki,
-// /scribe and the hooks that served them (#827). This file guards the removal: the removed paths
-// stay gone on both trees, and no tracked file names a removed command, agent, hook, skill path or
-// workflow.
-//
-// #800 widened the scan from the skill, agent, rule, plugin, README and catalog prose to every
-// tracked file. isScanned leaves out exactly these: the historical records (docs/decisions/,
-// docs/research/), this file, and the absence tests that hold a removed name as a literal so they
-// can check it stays gone. The wiki and /scribe scan has its own, narrower exclusions.
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -147,13 +127,6 @@ function isScanned(path: string): boolean {
   );
 }
 
-// A slash command counts only after a line start, whitespace, a backtick or an opening bracket,
-// and only when no letter, digit, slash or hyphen follows. The brackets include the full-width
-// ones .ja/ prose uses, such as `（/think）`, `「/fix」` and `【/pr】`, and `[` for a Markdown link
-// `[/pr](...)`, and `"` for a quoted label such as the Mermaid node `A["/audit"]`. So `PR/issue`,
-// `actions/checkout`, `skills/fix/`, `/preview-x`, the directory `docs/research/`, the link
-// `../research/name.md` and the import `node:assert/strict` stay out, and `gh issue` /
-// `git commit` / `assert.equal` carry no slash at all.
 const RETIRED_COMMAND =
   /(^|[\s`"([{（［｛「『【〔〈《])\/(think|qualify|preview|slice|fix|issue|commit|checkout|pr|research|ablate|census|transcribe|audit|assert|polish|shake|adrift|challenge)(?![A-Za-z0-9/-])/m;
 
@@ -192,10 +165,6 @@ const RETIRED_NAMES = [
   "use-cli-codegraph",
 ];
 
-// The removed skill and workflow paths, and the pageshot name. A path counts only when no letter,
-// digit or hyphen continues it, so `skills/prompt-audit`, `workflows/codex-run.ts` and
-// `build.json` stay out. build.js and code.js also need no letter, digit, dot or hyphen before
-// them, so `esbuild.js` and `vscode.js` stay out.
 const RETIRED_PATH =
   /(workflows\/(build|code)|skills\/(think|issue|qualify|preview|slice|fix|commit|checkout|pr))(?![A-Za-z0-9_-])|(?<![A-Za-z0-9_.-])(build|code)\.js(?![A-Za-z0-9_])|pageshot/;
 
@@ -208,9 +177,6 @@ function namesRetiredRoute(content: string): boolean {
 }
 
 test("the retired-route predicate flags each removed name written in a fixture and passes the same lines once the name is replaced", () => {
-  // Literal fixtures, not built from RETIRED_COMMAND or RETIRED_NAMES, so a typo in those
-  // constants cannot flow into both sides (rules/development/TESTING.md § Whether the test swings
-  // at nothing).
   const flagged = [
     "Plan it with /think first.",
     "Run `/qualify` on the Issue.",
@@ -446,14 +412,6 @@ test("no tracked file outside the records and the absence tests names a retired 
   assert.deepEqual(offenders, [], `files still naming a retired route: ${offenders.join(", ")}`);
 });
 
-// DR-0130 retires docs/wiki/, /scribe and the hooks that served them. This scan reads every tracked
-// file outside docs/decisions/ and docs/research/ (offendersAmong's own default) and this file. It
-// reads the other *-retirement tests and the absence tests too, which isScanned leaves out, because
-// they cited wiki pages as their reason until #827. The slash command uses RETIRED_COMMAND's
-// boundaries, so `describe(`, `/transcribe` and `/scribe-x` stay out. The wiki path and the skill
-// path, written from the repository root or relative as `../scribe`, count only when no letter,
-// digit, underscore or hyphen continues them. A hook counts by its bare stem too, as docs/HOOKS.md
-// named them, except as the retired .py the Python retirement tests keep as a literal.
 const WIKI_SCRIBE_COMMAND = /(^|[\s`"([{（［｛「『【〔〈《])\/scribe(?![A-Za-z0-9/-])/m;
 const WIKI_SCRIBE_PATH = /docs\/wiki(?![A-Za-z0-9_-])|(?:skills|\.\.)\/scribe(?![A-Za-z0-9_-])/;
 const WIKI_SCRIBE_HOOK = /\b(?:wiki_scene|scribe_prompt|scribe_gate|scribe_trigger)\b(?!\.py)/;
@@ -468,9 +426,6 @@ function namesWikiOrScribe(content: string): boolean {
 }
 
 test("the wiki and scribe predicate flags each retired name written in a fixture and passes the same lines once the name is replaced", () => {
-  // Literal fixtures, not built from the constants above, so a typo in a constant cannot flow
-  // into both sides. 【/scribe】 and a bare `docs/wiki` with no slash after it are shapes no
-  // removed line used, tried so the boundaries are not fitted to the lines that existed.
   const flagged = [
     "Select pages from docs/wiki/search.md first.",
     "`docs/wiki/` の README を読む。",
@@ -534,8 +489,6 @@ test("the wiki and scribe predicate flags each retired name written in a fixture
 
 test("no tracked file outside the records and this file names docs/wiki, skills/scribe, /scribe, find_wiki_rule or a removed wiki and scribe hook", () => {
   const files = trackedFiles(REPO_ROOT);
-  // Each of these is a file isScanned leaves out but this scan reads, and the DR is one the
-  // historical exclusion alone keeps out: it names the removed paths.
   for (const path of [
     "workflows/_lib/tests/pr-body-retirement.test.ts",
     "hooks/pre-bash/tests/pre-bash-skill-hooks-retirement.test.ts",
@@ -713,7 +666,6 @@ test("the skill and agent counts README.md states match skills/*/SKILL.md and ag
   for (const readme of ["README.md", ".ja/README.md"]) {
     const text = readFileSync(join(REPO_ROOT, readme), "utf8");
     const skillCounts = [...text.matchAll(/(\d+) skills/g)].map((m) => Number(m[1]));
-    // `agents?`: one agent is written in the singular.
     const agentCounts = [...text.matchAll(/(\d+) agents?\b/g)].map((m) => Number(m[1]));
     assert.ok(skillCounts.length > 0, `${readme} states a skill count`);
     assert.ok(agentCounts.length > 0, `${readme} states an agent count`);

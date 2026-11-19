@@ -1,7 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for workflows/implement/record.ts. implement writes a start row and one
-// terminal row per run, joined by the run_id the recorder mints on the first row, so the
-// comparison against build-runs.jsonl reads both workflows with one jq query.
 import assert from "node:assert/strict";
 import test from "node:test";
 import { dirname, join } from "node:path";

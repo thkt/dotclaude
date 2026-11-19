@@ -1,21 +1,11 @@
 /// <reference types="node" />
-// workflow script が agent の prompt に入れたものを、その agent の transcript から読み戻す。
-//
-// workflow script はファイルにもコマンドにも触れられないので、ディスクに置きたいものや実行したいものは
-// すべて agent を通る。Claude Code は agent の prompt を、その transcript の最初の行にそのまま保存する。
-// agent が実行する helper がそこから script のデータを読めば、agent は何も写さずに済む。relay.ts は実行する
-// コマンドを、write-body.ts は PR 本文を、この方法で読む。
 import { closeSync, openSync, readSync, readdirSync, statSync } from "node:fs";
 import type { Dirent } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-// agent は、自分の transcript が書かれてから数秒のうちに helper を実行する。この幅は、過去の全セッションの
-// transcript を開かずに済ませるためだけにある。
 const RECENT_MS = 2 * 60 * 60 * 1000;
 
-// workflow script が計算する digest。末尾の空白を除いた文字列の UTF-16 code unit に対する FNV-1a と、その長さ。
-// script はこの module を import できないので自分の写しを持ち、テストが 2 つを比べる。
 export const digest = (text: string): string => {
   const t = text.trimEnd();
   let h = 0x811c9dc5;
@@ -26,13 +16,9 @@ export const digest = (text: string): string => {
   return `${h.toString(16).padStart(8, "0")}:${t.length}`;
 };
 
-// RELAY_PROJECTS は別の場所を指す。claude-run.ts は agent なしでコマンドを実行するので transcript が無く、prompt を
-// 読むコマンドのためにそこへ prompt を置く。
 export const defaultProjects = (): string =>
   process.env.RELAY_PROJECTS || join(homedir(), ".claude", "projects");
 
-// 読めない項目が 1 つあっても (sandbox が拒むディレクトリ、別のセッションが消したばかりの transcript)、
-// agent 自身の transcript に届く前に走査を終わらせない。
 const attempt = <T>(read: () => T, otherwise: T): T => {
   try {
     return read();
@@ -48,9 +34,6 @@ const walk = (dir: string): string[] =>
     return entry.isDirectory() ? walk(path) : [path];
   });
 
-// agent の transcript は <projects>/<project>/<session>/subagents/**/agent-<id>.jsonl にある。helper が走っている
-// session は CLAUDE_CODE_SESSION_ID が示すので、その session のディレクトリを先に読む。残りの session はその後に
-// 読むので、変数が別の session を指していても、失うのは時間で結果ではない。
 const scanGroups = (projects: string, session: string | undefined): string[][] => {
   const all = entries(projects)
     .filter((project) => project.isDirectory())
@@ -75,7 +58,6 @@ const recentTranscripts = (dirs: string[], now: number): string[] =>
     .sort((a, b) => b.mtime - a.mtime)
     .map((file) => file.path);
 
-// transcript は数 MB になり、prompt はその最初の行にある。
 const firstLine = (path: string): string => {
   const fd = openSync(path, "r");
   try {
@@ -94,8 +76,6 @@ const firstLine = (path: string): string => {
   }
 };
 
-// prompt の本文。最初の行にある user メッセージの content で、文字列か text の部品の並び。最初の行が
-// marker を含まない transcript は、解析せずに飛ばす。
 const promptOf = (transcript: string, marker: string): string => {
   const line = attempt(() => firstLine(transcript), "");
   if (!line.includes(marker)) return "";
@@ -110,8 +90,6 @@ const promptOf = (transcript: string, marker: string): string => {
     : "";
 };
 
-// transcript が最近変わった agent の prompt を返す。marker を含むものに限る。helper 自身の session が先で、
-// それぞれの組の中では新しい順。一致した所で止まる呼び出し側は、後の組を読まない。
 export function* recentPrompts(
   projects: string,
   marker: string,

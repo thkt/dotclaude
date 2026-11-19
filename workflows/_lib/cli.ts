@@ -1,30 +1,12 @@
 /// <reference types="node" />
-// The stdin-payload parse/guard pair and the history-path/timestamp helpers the
-// history-recording CLI (workflows/implement/record.ts) uses, in the same shape as
-// workflows/_lib/entry-point.ts (small, independently testable, named exports).
-//
-// parsePayload takes the raw stdin text and returns either the parsed object or the message
-// the caller writes to stderr -- it never touches stdin or stderr itself. Reading fd 0,
-// calling parsePayload, and writing the message to stderr on failure stay in
-// workflows/implement/record.ts's own `main`.
-//
-// historyPath takes `home` as an explicit argument rather than reading it from
-// process.env.HOME or node:os itself, so a test (or a harness like U-006's) can point it at a
-// temp directory without touching process.env.HOME. The CLI side passes `homedir()` in.
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-/** The outcome of parsing a stdin payload: the object on success, or null with the message
- * the caller writes to stderr on failure. Exactly one of the two is non-null. */
 export interface PayloadResult {
   payload: Record<string, unknown> | null;
   message: string | null;
 }
 
-/** Parse `text` as JSON, a pure function: `{ value }` on success, or `{ error }` carrying the
- * parser's message on failure -- it touches neither stdin nor stderr. parsePayload's own
- * JSON.parse attempt lives here now; parsePayload calls this and layers its own message
- * prefix and object-shape check on top. */
 export function parseJson(text: string): { value: unknown } | { error: string } {
   try {
     return { value: JSON.parse(text) };
@@ -33,16 +15,6 @@ export function parseJson(text: string): { value: unknown } | { error: string } 
   }
 }
 
-/** Parse `text` as a JSON object. Mirrors the two checks the history-recording CLI
- * ported from the Python recorder it replaces: unparseable text, then a value that parses but
- * is not a plain object (an array, a scalar, or null). The message text and prefix match the
- * Python recorder's so a caller switching to this module changes no stderr contract. The
- * JSON.parse attempt itself is parseJson's; this function adds only the message prefix and
- * the object-shape check.
- *
- * hooks/_lib/hook_payload.ts's `parse` is not reused here: it fails open to `{}`, which would
- * turn a malformed payload into a silently-empty row instead of the exit-1-and-write-nothing
- * behavior this CLI's callers require. */
 export function parsePayload(text: string): PayloadResult {
   const parsed = parseJson(text);
   if ("error" in parsed) {
@@ -55,27 +27,16 @@ export function parsePayload(text: string): PayloadResult {
   return { payload: loaded as Record<string, unknown>, message: null };
 }
 
-/** The path a history file named `name` lives at under `home`, ensuring the containing
- * directory exists. `home` is an explicit argument rather than a read of `homedir()` or
- * `process.env.HOME`, so a caller (a test, or U-006's harness) can point it at a temp
- * directory without touching process state; the CLI's own entry point passes `homedir()`. */
 export function historyPath(home: string, name: string): string {
   const dir = join(home, ".claude", "history");
   mkdirSync(dir, { recursive: true });
   return join(dir, name);
 }
 
-/** `date` as a UTC ISO-8601 timestamp with second precision (no milliseconds). Defaults to
- * the current time, matching the `generated_at` field workflows/implement/record.ts
- * writes. */
 export function isoTimestamp(date: Date = new Date()): string {
   return date.toISOString().replace(/\.\d{3}Z$/, "Z");
 }
 
-/** A JSON object rendered the way Python's `json.dumps` renders one: `", "` between entries
- * and `": "` after each key, where `JSON.stringify` writes neither space. A port whose stdout
- * is compared byte for byte against a frozen Python capture needs those spaces. Values are
- * rendered by `JSON.stringify`, which agrees with Python on every scalar these CLIs emit. */
 export function toPythonJson(value: object): string {
   const parts = Object.entries(value).map(
     ([key, entry]) => `${JSON.stringify(key)}: ${JSON.stringify(entry)}`,

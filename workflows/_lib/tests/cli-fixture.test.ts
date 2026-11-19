@@ -1,10 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for workflows/_lib/tests/_cli-fixture.ts's runCli.
-//
-// T-137/T-138 cover runCli's own 5th argument, { cwd?, env? } (U-001): a throwaway CLI script
-// is written to a temp directory for each test (not a fixture worth keeping, so it is generated
-// here rather than checked in) and launched through runCli to prove cwd and env actually reach
-// the spawned process.
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -20,8 +14,6 @@ test(
     try {
       writeFileSync(join(workDir, "note.txt"), "under-cwd-contents");
       const scriptPath = join(workDir, "read-relative.mjs");
-      // A throwaway CLI: reads {relPath} from stdin and prints the file at that path resolved
-      // against its own process.cwd() -- the value spawnSync's cwd option controls.
       writeFileSync(
         scriptPath,
         [
@@ -51,9 +43,6 @@ test("T-138 runCli's env option overrides the cleared PATH while HOME still poin
   const workDir = mkdtempSync(join(tmpdir(), "cli-fixture-env-"));
   try {
     const scriptPath = join(workDir, "spawn-git.mjs");
-    // A throwaway CLI: shells out to `git` by bare name (resolved via its own inherited
-    // PATH) and reports both the lookup's outcome and the HOME it sees, so the test can tell
-    // "PATH was restored" apart from "HOME leaked to the real one".
     writeFileSync(
       scriptPath,
       [

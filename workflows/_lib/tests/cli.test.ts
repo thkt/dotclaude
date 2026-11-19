@@ -1,7 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for workflows/_lib/cli.ts: the stdin payload parse/guard pair
-// workflows/implement/record.ts's `main` calls, the history-directory resolver that takes `home` as an
-// explicit argument, and the second-precision UTC timestamp formatter.
 import assert from "node:assert/strict";
 import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";

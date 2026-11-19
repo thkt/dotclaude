@@ -1,23 +1,7 @@
 /// <reference types="node" />
-// Harness for behavior-testing workflow scripts (workflows/*.js) from node:test.
-// Scripts are written as `export const meta` + top-level return + injected globals
-// (agent/workflow/parallel/pipeline/phase/log), so they cannot run via ESM import.
-// The production sandbox runs scripts in a realm that lacks Node globals (crypto,
-// fetch, process, Buffer, ...) and replaces Date.now / Math.random / no-arg `new Date`
-// with Errors, because a run has to replay across a resume boundary and cannot depend
-// on wall-clock time or randomness. Running scripts here as a plain in-process
-// AsyncFunction would leave Node's real globals reachable, so tests would pass while
-// the same script fails at production runtime.
-// A fresh node:vm context reproduces that missing-globals set structurally, and
-// vm.compileFunction's `parsingContext` binds identifier lookups to that context
-// instead of the host realm. The context also disallows code generation from strings
-// (eval / `new Function`), matching the production sandbox's EvalError behavior.
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-// Values that cross the vm boundary (a script's args, return value, and what it hands to the
-// injected globals) take their shape at run time from the script under test, so they are typed
-// as `any` at that boundary alone.
 type ScriptValue = any;
 
 export interface RunWorkflowStubs {
@@ -54,15 +38,8 @@ interface WorkflowMeta {
   phases?: { title: string; detail?: string }[];
 }
 
-// The globals production supplies on top of the injected parameters, listed in
-// rules/conventions/WORKFLOWS.md § Script evaluation form. Adding a name here does not
-// create the injection, so the suite goes red until the supply below is written too.
 export const PRODUCTION_GLOBALS = ["budget", "console", "setTimeout", "clearTimeout"];
 
-// Errors thrown while executing inside the vm context belong to that context's own
-// realm, so `err instanceof Error` (and subclasses like ReferenceError) fails for
-// host-side callers even though err.message is correct. Rebuild the error with the
-// host's own constructor by name so callers can instanceof-check it normally.
 const ERROR_CONSTRUCTORS: Record<string, ErrorConstructor> = {
   Error,
   TypeError,
@@ -88,14 +65,8 @@ const toHostRealmError = (err: unknown): unknown => {
   return err;
 };
 
-// The own properties production leaves on an error it hands to the script, in the order it
-// writes them. Measured: the object's prototype is null, so `e instanceof
-// Error` is false there and cause, errors and any custom property are gone. Handing a script
-// the host Error itself would let it branch on instanceof under test and take the other branch
-// in production.
 export const SCRIPT_ERROR_KEYS = ["name", "message", "stack", "toString"] as const;
 
-// A non-Error throw is left as it is: what production does with one was not measured.
 const toScriptRealmError = (err: unknown): unknown => {
   if (!(err instanceof Error)) return err;
   const supply: Record<(typeof SCRIPT_ERROR_KEYS)[number], unknown> = {
@@ -109,8 +80,6 @@ const toScriptRealmError = (err: unknown): unknown => {
   return shim;
 };
 
-// Every injected global is a host function called from vm code, so each is a place a host error
-// can reach the script.
 const asProductionThrow =
   <A extends unknown[], R>(fn: (...callArgs: A) => R) =>
   (...callArgs: A): R => {
@@ -126,13 +95,6 @@ const asProductionThrow =
     }
   };
 
-// Plain objects and arrays built inside the vm context carry that context's intrinsics
-// (its own Array.prototype, Object.prototype, ...), so a host-side assert.deepStrictEqual
-// sees them as structurally equal but not reference-equal to a host literal and fails.
-// Map, Set, Date, RegExp and Error are deliberately not special-cased. Production turns a
-// workflow's return value into JSON, where each of those arrives as {} (measured). Copying
-// them by type would keep in tests alone what the real run drops, which is the same
-// tests-pass-production-fails split this context exists to close.
 const rehome = (value: ScriptValue, seen = new Map<object, ScriptValue>()): ScriptValue => {
   if (value === null || typeof value !== "object") return value;
   if (seen.has(value)) return seen.get(value);
@@ -149,12 +111,6 @@ const rehome = (value: ScriptValue, seen = new Map<object, ScriptValue>()): Scri
   return out;
 };
 
-// Runs once per fresh context, before the workflow script. Shadows Date / Math with
-// the context's own intrinsics rather than the host's, so `extends Date` and
-// `Object.create(Math, ...)` stay within one realm.
-// The two messages are the production sandbox's own text, read off a minimal workflow
-// run. A harness that words them differently reports a different signal than the run it
-// stands in for.
 const SANDBOX_SETUP_SOURCE = `
 (function () {
   const OriginalDate = Date;
@@ -190,18 +146,12 @@ const partToString = (part: unknown): string => {
   }
 };
 
-// One step of matchBrace's scan while inside a string literal opened by `quote`: an escaped
-// character consumes the source character after it too, and the literal's own closing quote
-// clears `quote`. Returns how many source characters this step consumes (2 for an escape, 1
-// otherwise) and the quote still open afterward (null once closed).
 function stepInQuote(ch: string, quote: string): { consumed: number; quote: string | null } {
   if (ch === "\\") return { consumed: 2, quote };
   if (ch === quote) return { consumed: 1, quote: null };
   return { consumed: 1, quote };
 }
 
-// Quote-aware, because a brace written inside a string literal need not be balanced and a plain
-// depth count would then close on the wrong one. meta's prose carries such braces.
 const matchBrace = (source: string, start: number): number => {
   let depth = 0;
   let quote: string | null = null;
@@ -226,11 +176,6 @@ const matchBrace = (source: string, start: number): number => {
   throw new Error(`${start}: unterminated brace`);
 };
 
-// Not an import of the module: a workflow script's top-level return and its references to
-// injected globals would run, and only the meta literal is wanted here. Not `new Function`
-// either: the guardrails gate blocks every such call site with no per-site opt-out, so this
-// reuses the vm.compileFunction that checkWorkflowSyntax below already compiles isolated
-// strings with.
 export function readMeta(scriptPath: string): WorkflowMeta {
   const source = readFileSync(scriptPath, "utf8");
   const marker = "export const meta = {";
@@ -245,10 +190,6 @@ export function readMeta(scriptPath: string): WorkflowMeta {
   return evaluate() as WorkflowMeta;
 }
 
-// A workflow script is neither ESM nor CommonJS: it is a function body holding a top-level
-// return. `node --check` therefore reads it under whichever module goal package.json names
-// and rejects that return once the repository declares `type: module`. Compiling it the way
-// production does asks the only question a syntax gate should ask of these files.
 export function checkWorkflowSyntax(scriptPath: string): void {
   const source = readFileSync(scriptPath, "utf8").replace(/^export const meta/m, "const meta");
   vm.compileFunction(
@@ -258,9 +199,6 @@ export function checkWorkflowSyntax(scriptPath: string): void {
   );
 }
 
-// onLog / onPhase mirror each log() and phase() call as the run makes it, for a caller driving
-// a real run that cannot wait for the returned arrays. Both default to no-op, so a caller that
-// omits them observes exactly what it observed before they existed.
 export async function runWorkflow(
   scriptPath: string,
   options: RunWorkflowOptions = {},
@@ -269,13 +207,10 @@ export async function runWorkflow(
   const source = readFileSync(scriptPath, "utf8").replace(/^export const meta/m, "const meta");
   const calls: RunWorkflowCalls = { agent: [], workflow: [], phase: [] };
   const logs: ScriptValue[] = [];
-  // A caller's own reporting must not decide whether the workflow keeps running, so a throw
-  // from onLog / onPhase is dropped here rather than surfacing inside the script.
   const mirror = (notify: (value: ScriptValue) => void) => (value: ScriptValue) => {
     try {
       notify(value);
     } catch {
-      /* the run continues */
     }
   };
   const notifyPhase = mirror(onPhase);
@@ -292,10 +227,6 @@ export async function runWorkflow(
     calls.workflow.push({ name, args: hostArgs });
     return stubs.workflow ? stubs.workflow(name, hostArgs) : undefined;
   });
-  // The production contract both of these mirror: a thunk or stage that throws is left as null
-  // at its own index, no compaction, no reordering, and the call itself never rejects.
-  // Promise.all rejected the whole call, so a script whose thunk throws failed under test and
-  // ran in production (#434).
   const parallel = asProductionThrow(async (tasks: ScriptValue[]) =>
     Promise.all(
       tasks.map(async (t) => {
@@ -307,7 +238,6 @@ export async function runWorkflow(
       }),
     ),
   );
-  // Each item flows through all stages as (prev, originalItem, index).
   const pipeline = asProductionThrow(async (items: ScriptValue[], ...stages: PipelineStage[]) => {
     if (stubs.pipeline) return stubs.pipeline(items, ...stages);
     return Promise.all(
@@ -335,10 +265,6 @@ export async function runWorkflow(
     notifyLog(hostMessage);
   });
 
-  // The supply side of PRODUCTION_GLOBALS. budget holds the state of a run with no token
-  // target, production's default, so a script branching on budget.total takes the same path
-  // here. console lands in logs the way log() does, because a console writing anywhere else
-  // lets a script log through a run where nothing it wrote is observable.
   const consoleWrite =
     (prefix: string) =>
     (...parts: unknown[]) =>
@@ -360,9 +286,6 @@ export async function runWorkflow(
   );
   vm.runInContext(SANDBOX_SETUP_SOURCE, context, { filename: "sandbox-setup.js" });
 
-  // vm.compileFunction produces an ordinary function, which cannot hold the top-level
-  // await the script body carries. An async IIFE around the body restores both that and
-  // the top-level return.
   const run = vm.compileFunction(
     `return (async () => {\n${source}\n})();`,
     ["args", "agent", "workflow", "parallel", "pipeline", "phase", "log"],

@@ -1,5 +1,3 @@
-// Tier 1 checks on write-body.ts: it writes the PR body from the block Claude Code stored in an
-// agent transcript, and only a block whose body carries the digest the workflow asked for.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -21,8 +19,6 @@ const script = join(dirname(fileURLToPath(import.meta.url)), "..", "write-body.t
 const BODY = 'Closes #12\n\nのーと and ﾉｰﾄ give 0; `　pen　` trims; it\'s "quoted" $HOME \\ back\n';
 const OTHER = "Closes #99\n\nanother run's body\n";
 
-// The prompt as the harness stores it: a frame line, then every line of the computed text indented.
-// The read-back prompt carries the body between two data markers, and the copy prompt in a heredoc.
 const base64Lines = (body: string) =>
   (Buffer.from(body, "utf8").toString("base64").match(/.{1,76}/g) ?? []).join("\n");
 const framed = (text: string) => `[Workflow harness — computed task]\n${text.replace(/^/gm, "  ")}`;
@@ -122,15 +118,12 @@ test("the body in a copy prompt's heredoc is read the same way", () => {
   assert.equal(readFileSync(out, "utf8"), BODY);
 });
 
-// The prompt is the first line of a transcript, and the lines after it run to megabytes.
 test("a block on a later line of a transcript is not read", () => {
   const { projects, agents, out } = project();
   transcript(agents, "a1", [userLine("the prompt, with no block"), userLine(prompt(BODY))]);
   assert.equal(run(digest(BODY), out, projects).code, 1);
 });
 
-// A project directory the sandbox denies, or one whose mode forbids listing, must not end the scan
-// before it reaches the agent's own transcript.
 test("a directory that cannot be listed is skipped, and the scan still finds the body", () => {
   const { projects, agents, out } = project();
   const denied = join(projects, "-abs-secrets-tool", "session-9", "subagents");
@@ -146,8 +139,6 @@ test("a directory that cannot be listed is skipped, and the scan still finds the
   }
 });
 
-// implement.js cannot be imported, so write-body.ts carries its own copy of the digest. A change on
-// one side alone makes every read-back miss, and the run falls to the agent's copy without an error.
 test("the digest equals the one implement.js computes, for both the English and the .ja script", () => {
   const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
   const samples = ["", "a", BODY, OTHER, "trailing space  \n\n", "𝒳 surrogate pair", "ﾉｰﾄ"];

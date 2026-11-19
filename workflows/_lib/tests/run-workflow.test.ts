@@ -1,7 +1,3 @@
-// These pin that the globals the production sandbox lacks are missing in the same shape from a
-// test run. Loosening this returns the state where a script that dies in production passes under
-// test. The list of what is supplied and what is sealed off lives in
-// rules/conventions/WORKFLOWS.md under Script evaluation form.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -12,13 +8,8 @@ import { PRODUCTION_GLOBALS, SCRIPT_ERROR_KEYS, readMeta, runWorkflow } from "..
 import { extractBracedBody } from "./_brace.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
-// Discovery (rules/conventions/WORKFLOWS.md § Naming and file placement) reads workflows/ flat,
-// so the meta check below stays flat too rather than recursing into workflows/<name>/ helpers.
 const workflowsDir = join(here, "..", "..");
 
-// runWorkflow's contract reads the source from a file path (readFileSync), so the script body is
-// written to a temporary file first. Each test uses its own temporary directory so script files
-// never collide between tests.
 const withScript = async <T>(source: string, run: (path: string) => Promise<T>): Promise<T> => {
   const dir = mkdtempSync(join(tmpdir(), "run-workflow-test-"));
   const path = join(dir, "script.js");
@@ -30,11 +21,6 @@ const withScript = async <T>(source: string, run: (path: string) => Promise<T>):
   }
 };
 
-// The oracle below reads meta a second way, so that no expected string is copied into the test
-// and a drift in either extractor shows up as a mismatch.
-
-// ECMA-262 SingleEscapeCharacter (https://tc39.es/ecma262/#prod-SingleEscapeCharacter). Any
-// other escaped character evaluates to itself, which the default branch below returns.
 const SINGLE_ESCAPES: Record<string, string> = {
   n: "\n",
   t: "\t",
@@ -45,9 +31,6 @@ const SINGLE_ESCAPES: Record<string, string> = {
   0: "\0",
 };
 
-// Not a raw slice of the source: a script can escape an apostrophe inside a single-quoted
-// description (`plan\'s`), and keeping the backslash would not match what readMeta's vm
-// evaluation returns.
 const extractStringField = (body: string, key: string): string | null => {
   const marker = new RegExp(`(?:^|\\n)\\s*${key}:\\s*(['"])`);
   const m = marker.exec(body);
@@ -69,8 +52,6 @@ const extractStringField = (body: string, key: string): string | null => {
   return value;
 };
 
-// phases entries carry a plain title with no quotes inside ("Load", "Pre-flight", ...), so a
-// bare quoted-string match is enough; "title" appears nowhere else in a meta body.
 const extractPhaseTitles = (body: string): string[] =>
   [...body.matchAll(/title:\s*"([^"]*)"/g)].map((m) => m[1]);
 
@@ -108,8 +89,6 @@ test("readMeta returns name, description, whenToUse and phases for every script 
   }
 });
 
-// The undefined identifier in the return is the observable: reaching it throws, so a clean meta
-// is the only way this passes.
 test("readMeta returns the meta of a script carrying a top-level return without executing that return", async () => {
   const source = `export const meta = {
   name: "sample",
@@ -171,8 +150,6 @@ test("T-006 a script calling Date.now dies with an Error citing resume as the re
       () => runWorkflow(path, {}),
       (err: unknown) => {
         assert.ok(err instanceof Error, "it dies with a host-realm Error");
-        // A partial match would still pass after the harness swapped in its own phrasing, so this
-        // matches the production message itself.
         assert.equal(
           err.message,
           "Date.now() / new Date() are unavailable in workflow scripts (breaks resume). Stamp results after the workflow returns, or pass timestamps via args.",
@@ -210,9 +187,6 @@ test("T-008 a Map, Set, Date, or RegExp placed in the return value becomes an em
   );
 });
 
-// Adding a name to the list does not create the injection, so this goes red until the supply is
-// written too. console alone spins idle, since an ambient vm value returns an object for it, and
-// T-011 guards what it actually does.
 test("T-009 the globals production supplies are reachable from the harness too", async () => {
   for (const name of PRODUCTION_GLOBALS) {
     await withScript(`return typeof ${name};`, async (path) => {
@@ -222,7 +196,6 @@ test("T-009 the globals production supplies are reachable from the harness too",
   }
 });
 
-// This stops a script branching on budget.total from taking a different branch under test alone.
 test("T-010 budget returns the state of a run with no target set", async () => {
   await withScript(
     "return { total: budget.total, spent: budget.spent(), remaining: budget.remaining() };",
@@ -235,7 +208,6 @@ test("T-010 budget returns the state of a run with no target set", async () => {
   );
 });
 
-// Left as the ambient vm console, the output would appear nowhere and the test would still pass.
 test("T-011 console output reaches logs, and warn and error carry a prefix", async () => {
   await withScript(
     "console.log('plain', { a: 1 }); console.warn('careful'); console.error('broken'); return 1;",
@@ -259,7 +231,6 @@ test("T-012 setTimeout resumes after waiting, and clearTimeout cancels that resu
   );
 });
 
-// Nothing pinned parallel against the contract, so it drifted to Promise.all and rejected (#434).
 test("T-013 a parallel whose thunk throws resolves rather than rejecting", async () => {
   const source = `
     const out = await parallel([() => 1, () => { throw new Error("boom"); }, () => 3]);
@@ -271,7 +242,6 @@ test("T-013 a parallel whose thunk throws resolves rather than rejecting", async
   });
 });
 
-// The contract draws no line between a throw and a returned rejection.
 test("T-014 a parallel whose thunk returns a rejected promise leaves null at that index", async () => {
   const source = `
     const out = await parallel([() => Promise.reject(new Error("boom")), () => 2]);
@@ -283,8 +253,6 @@ test("T-014 a parallel whose thunk returns a rejected promise leaves null at tha
   });
 });
 
-// A stub that throws is the harness's only host-origin error path, and production hands such an
-// error to the script as a null-prototype object carrying SCRIPT_ERROR_KEYS and nothing else.
 test("T-015 an error the harness throws into the script arrives in production's shape", async () => {
   const source = `
     try {

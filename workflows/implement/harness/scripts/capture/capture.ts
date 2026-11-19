@@ -1,7 +1,3 @@
-// Vendored copy of ~/.agents/scripts/capture/capture.ts, the canonical source. Edit there first.
-// Deviations: the helpers are not exported (nothing here imports them), output goes through
-// process.stdout and process.stderr instead of console, and import.meta.dirname replaces
-// import.meta.dir.
 import assert from "node:assert/strict";
 import { access, writeFile, readFile, realpath, readdir, lstat } from "node:fs/promises";
 import { resolve, isAbsolute } from "node:path";
@@ -10,7 +6,6 @@ import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
 import { isRecord, outside } from "../shared/values.ts";
 
-// A fixed-browser probe could reject a working target that uses a different browser.
 function captureUnavailable(report: unknown) {
   const text = JSON.stringify(report);
   return (
@@ -99,7 +94,6 @@ async function validateCaptureMedia(output: string) {
   }
 }
 
-// The controller owns the enclosing process group, timeout and output directory.
 async function capture() {
   const [specPath, configPath, output] = process.argv.slice(2);
   if (!specPath || !configPath || !output || !isAbsolute(output)) {

@@ -1,11 +1,3 @@
-// Whether the repository's own `.oxlintrc.json` is wired to catch Bun-runtime-specific code in
-// `.ts` files, read by running oxlint rather than by reimplementing its rule matching here.
-//
-// The fixtures are written into a temp directory rather than committed. CI runs `npx oxlint`
-// bare at the repository root, so a tracked file carrying the violation would keep that step
-// red forever; and `ignorePatterns` wins over an explicit path argument, so parking them under
-// an ignored path would leave the lint below with nothing to read. The config is copied from
-// disk so the rule text lives in one place.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -19,15 +11,11 @@ const ROOT = path.resolve(TEST_DIR, "..", "..");
 const OXLINT_BIN = path.join(ROOT, "node_modules", ".bin", "oxlint");
 const OXLINTRC = path.join(ROOT, ".oxlintrc.json");
 
-// T-001's positive control: a bare `Bun` global reference.
 const BUN_GLOBAL = `export function readConfig() {
   return Bun.file("config.json");
 }
 `;
 
-// T-002: BUN_GLOBAL with its only `Bun` clue removed, per the copy-minus-clue step of
-// rules/development/TESTING.md § Whether the test swings at nothing. A non-zero exit on
-// BUN_GLOBAL is credited to the `Bun` reference only if this shape stays at zero.
 const BUN_GLOBAL_REMOVED = `const config = { file: (name) => name };
 
 export function readConfig() {
@@ -35,7 +23,6 @@ export function readConfig() {
 }
 `;
 
-// T-003's positive control: a `bun:*` import specifier, the second shape the rules name.
 const BUN_SPECIFIER = `import { file } from "bun:test";
 
 export function useFile() {
@@ -43,9 +30,6 @@ export function useFile() {
 }
 `;
 
-// T-004, per the same page's step 3: a pattern-list check is also tried against violation
-// shapes the list does not name. Property access and a dynamic require are this check's blind
-// spot, so this shape is expected to stay unflagged rather than to prove the rules catch all.
 const BUN_OBFUSCATED = `export function readEnv() {
   const a = globalThis.Bun.env;
   const b = globalThis["Bun"].file("x");
@@ -54,9 +38,6 @@ const BUN_OBFUSCATED = `export function readEnv() {
 }
 `;
 
-// oxlint exits non-zero only when a configured rule fires on the given file, so each fixture's
-// exit code, not its stdout, is what this suite reads. One directory serves every case, and
-// each fixture is linted once, mirroring tsconfig-scope.test.js's listTypeCheckedFiles.
 let workspace;
 const cache = new Map();
 
