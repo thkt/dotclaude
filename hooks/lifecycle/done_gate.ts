@@ -105,19 +105,27 @@ function off(gate: GateLocation): number {
   return 0;
 }
 
+function oneLine(text: string): string {
+  return text.replace(/\s+/g, " ");
+}
+
 function runCommand(
+  name: string,
   command: CheckCommand,
   cwd: string,
   stdout: "inherit" | 2 = "inherit",
   env: NodeJS.ProcessEnv = process.env,
-): number {
+): number | string {
   const [file, args] =
     typeof command === "string" ? ["/bin/sh", ["-c", command]] : [command[0], command.slice(1)];
   const result = spawnSync(file, args, { cwd, env, stdio: ["inherit", stdout, "inherit"] });
   if (result.error) {
-    process.stderr.write(`done_gate: could not start the check: ${result.error.message}\n`);
+    return `could not start the ${name}: ${oneLine(result.error.message)}`;
   }
-  return result.status ?? 1;
+  if (result.status === null) {
+    return `the ${name} was stopped by signal ${result.signal}`;
+  }
+  return result.status;
 }
 
 function check(gate: GateLocation): number {
@@ -129,7 +137,11 @@ function check(gate: GateLocation): number {
   if (before === null) {
     return fail("could not hash the working tree");
   }
-  let exitCode = runCommand(command, gate.root);
+  const outcome = runCommand("check", command, gate.root);
+  if (typeof outcome === "string") {
+    process.stderr.write(`done_gate: ${outcome}\n`);
+  }
+  let exitCode = typeof outcome === "string" ? 1 : outcome;
   const after = treeHash(gate.root);
   if (after !== before) {
     process.stdout.write(
@@ -205,18 +217,30 @@ function runInBaseClone(
       copyFileSync(join(gate.root, path), join(clone, path));
     }
     if (setup !== undefined) {
-      const setupExit = runCommand(setup, clone, 2, env);
+      const setupExit = runCommand("setup", setup, clone, 2, env);
+      if (typeof setupExit === "string") {
+        return `${setupExit} in the clone of base ${base}`;
+      }
       if (setupExit !== 0) {
         return `setup exited ${setupExit} in the clone of base ${base}`;
       }
     }
-    return runCommand(check, clone, 2, env);
+    const checkExit = runCommand("check", check, clone, 2, env);
+    return typeof checkExit === "string" ? `${checkExit} in the clone of base ${base}` : checkExit;
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
 }
 
 function red(gate: GateLocation): number {
+  try {
+    return redVerdict(gate);
+  } catch (error) {
+    return fail(oneLine(error instanceof Error ? error.message : String(error)));
+  }
+}
+
+function redVerdict(gate: GateLocation): number {
   const config = storedConfig(gate);
   if (config === null) {
     return fail("not on in this worktree; run `done_gate.ts on` first");
@@ -369,7 +393,7 @@ function stop(): number {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    process.stderr.write(`done_gate: stop allowed after an error: ${message.replace(/\s+/g, " ")}\n`);
+    process.stderr.write(`done_gate: stop allowed after an error: ${oneLine(message)}\n`);
   }
   process.stdout.write(`${JSON.stringify(output)}\n`);
   return 0;

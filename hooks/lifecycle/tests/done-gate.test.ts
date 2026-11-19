@@ -9,6 +9,7 @@ import {
   readFileSync,
   realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -754,4 +755,52 @@ test("T-596 a setup and a check that print to stdout leave the stdout of red at 
   assert.match(result.stdout, /^done_gate: [^\n]*do not verify this change[^\n]*\n$/);
   assert.match(result.stderr, /setup-output/);
   assert.match(result.stderr, /check-output/);
+});
+
+test("T-597 red exits 2 with one done_gate line on stderr, empty stdout, no red.json, no clone left and git status unchanged when check cannot start, check is killed by a signal, or a changed test file is a dangling or directory symlink", () => {
+  const cases: Array<[string, string, boolean]> = [];
+  const unstartable = redRepo({ ...RED_CONFIG, check: ["no-such-binary-xyz"] });
+  writeFiles(unstartable, { "tests/new.sh": "exit 0\n" });
+  cases.push(["check cannot start", unstartable, true]);
+  const killed = redRepo({ ...RED_CONFIG, check: ["sh", "-c", "kill -9 $$"] });
+  writeFiles(killed, { "tests/new.sh": "exit 0\n" });
+  cases.push(["check killed by a signal", killed, false]);
+  const dangling = redRepo();
+  symlinkSync("/nonexistent", path.join(dangling, "tests", "dangling.sh"));
+  cases.push(["dangling symlink", dangling, true]);
+  const directory = redRepo();
+  symlinkSync("../src", path.join(directory, "tests", "link.sh"));
+  cases.push(["directory symlink", directory, true]);
+
+  for (const [label, dir, onlyLine] of cases) {
+    const porcelain = git(dir, "status", "--porcelain");
+    const scratch = realpathSync(mkdtempSync(path.join(tmpdir(), "done-gate-tmp-")));
+    const result = gateWithEnv(dir, { TMPDIR: scratch }, "red");
+    assert.equal(result.status, 2, `${label}: ${result.stdout}${result.stderr}`);
+    assert.equal(result.stdout, "", label);
+    assert.equal(result.stderr.split("\n").filter((line) => line.startsWith("done_gate:")).length, 1, label);
+    if (onlyLine) {
+      assert.match(result.stderr, /^done_gate: [^\n]+\n$/, label);
+    }
+    assert.equal(existsSync(path.join(gateDir(dir), RED_FILE)), false, label);
+    assert.deepEqual(readdirSync(scratch), [], label);
+    assert.equal(git(dir, "status", "--porcelain"), porcelain, label);
+  }
+});
+
+test("T-598 check exits 1 and records exit code 1 when its argv command cannot start", () => {
+  const dir = repo({ ".dotagents.json": '{"check": ["no-such-binary-xyz"]}' });
+  assert.equal(gate(dir, "on").status, 0);
+  const result = gate(dir, "check");
+  assert.equal(result.status, 1, result.stderr);
+  assert.equal(readRecordFile(dir, CHECK_FILE).exitCode, 1);
+});
+
+test("T-599 red copies the content of a changed test file that is a symlink to a regular file and exits 0 when that content fails on base", () => {
+  const dir = redRepo();
+  writeFiles(dir, { "src/fails.txt": "exit 1\n" });
+  symlinkSync("../src/fails.txt", path.join(dir, "tests", "ln.sh"));
+  const result = gate(dir, "red");
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(readRecordFile(dir, RED_FILE).tests, ["tests/ln.sh"]);
 });
