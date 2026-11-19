@@ -16,6 +16,7 @@
 // Contract: 退役した Python 版 pre-check の similarity / first_heading / main。OUTPUT_KEYS は
 // json.dumps のキー順に対応し、skills/dr/tests/script-contract.test.js が import する。
 // skills/dr/tests/pre-check.test.ts が検証する。
+import { spawnSync } from "node:child_process";
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { fail, filesUnder, gitTopLevel, guardSkillDir, localDate, resolveDrDir } from "./dr_common.ts";
@@ -108,6 +109,103 @@ function collectSimilarDrs(title: string, drDir: string, threshold: number): Sim
   return similarDrs;
 }
 
+function drNumber(name: string): number | null {
+  const match = /^(\d{4})-/.exec(name);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+class OpenPrCheckUnavailable extends Error {}
+
+function runOrUnavailable(bin: string, args: string[], cwd: string): string {
+  const result = spawnSync(bin, args, { cwd, encoding: "utf8" });
+  if (result.error) {
+    throw new OpenPrCheckUnavailable(`${bin} could not run: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    const firstStderrLine = (result.stderr ?? "").trim().split("\n")[0];
+    throw new OpenPrCheckUnavailable(
+      `${bin} ${args.slice(0, 2).join(" ")} exited ${result.status}${firstStderrLine ? `: ${firstStderrLine}` : ""}`,
+    );
+  }
+  return result.stdout;
+}
+
+function parsePrNumbers(listed: string): number[] {
+  let prs: unknown;
+  try {
+    prs = JSON.parse(listed);
+  } catch {
+    throw new OpenPrCheckUnavailable("gh pr list printed output that is not JSON");
+  }
+  if (!Array.isArray(prs) || !prs.every((pr) => Number.isInteger((pr as { number?: unknown })?.number))) {
+    throw new OpenPrCheckUnavailable("gh pr list printed JSON that is not a list of PR numbers");
+  }
+  return prs.map((pr: { number: number }) => pr.number);
+}
+
+const OPEN_PR_LIST_LIMIT = 1000;
+
+interface OpenPrDrUse {
+  pr: number;
+  number: number;
+}
+
+function openPrDrUses(drDir: string): OpenPrDrUse[] {
+  const [inside, topLevel, drDirPrefix = ""] = runOrUnavailable(
+    "git",
+    ["rev-parse", "--is-inside-work-tree", "--show-toplevel", "--show-prefix"],
+    drDir,
+  ).split("\n");
+  if (inside !== "true") {
+    throw new OpenPrCheckUnavailable(`${drDir} is not inside a git work tree`);
+  }
+  const gh = process.env.CLAUDE_GH_BIN || "gh";
+  const prs = parsePrNumbers(
+    runOrUnavailable(
+      gh,
+      ["pr", "list", "--state", "open", "--json", "number", "--limit", String(OPEN_PR_LIST_LIMIT)],
+      topLevel,
+    ),
+  );
+  const uses: OpenPrDrUse[] = [];
+  for (const pr of prs) {
+    const names = runOrUnavailable(gh, ["pr", "diff", String(pr), "--name-only"], topLevel);
+    for (const path of names.split("\n")) {
+      if (!path.startsWith(drDirPrefix)) continue;
+      const rest = path.slice(drDirPrefix.length);
+      if (rest.includes("/")) continue;
+      const number = drNumber(rest);
+      if (number !== null) uses.push({ pr, number });
+    }
+  }
+  return uses;
+}
+
+const pad = (n: number): string => String(n).padStart(4, "0");
+
+function highestUsedNumber(drDir: string, localMax: number): number {
+  let uses: OpenPrDrUse[];
+  try {
+    uses = openPrDrUses(drDir);
+  } catch (error) {
+    if (!(error instanceof OpenPrCheckUnavailable)) throw error;
+    process.stderr.write(
+      `pre-check: could not check open pull requests (${error.message});` +
+        ` returning ${pad(localMax + 1)}, the local maximum plus one\n`,
+    );
+    return localMax;
+  }
+  const ahead = uses.filter((use) => use.number > localMax).sort((a, b) => a.number - b.number);
+  if (ahead.length === 0) return localMax;
+  const highest = ahead[ahead.length - 1].number;
+  const used = ahead.map((use) => `${pad(use.number)} (#${use.pr})`).join(", ");
+  process.stderr.write(
+    `pre-check: open pull requests already use ${used};` +
+      ` returning ${pad(highest + 1)} instead of ${pad(localMax + 1)}\n`,
+  );
+  return highest;
+}
+
 // Python の main() は自身の argv を取らない (title は sys.argv[1] から来る)。この main(argv)
 // は process.argv.slice(2) を受け取る。
 export function main(argv: string[]): number {
@@ -143,12 +241,11 @@ export function main(argv: string[]): number {
     fail(`Error: no write permission: ${drDir}`);
   }
 
-  let maxNumber = 0;
+  let localMax = 0;
   for (const entry of readdirSync(drDir)) {
-    const match = /^(\d{4})-/.exec(entry);
-    if (match) maxNumber = Math.max(maxNumber, parseInt(match[1], 10));
+    localMax = Math.max(localMax, drNumber(entry) ?? 0);
   }
-  const nextNumber = String(maxNumber + 1).padStart(4, "0");
+  const nextNumber = pad(highestUsedNumber(drDir, localMax) + 1);
 
   const slug = title
     .toLowerCase()

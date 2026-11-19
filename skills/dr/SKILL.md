@@ -28,7 +28,7 @@ Proceed to the process only when all three conditions below hold. When one is mi
 
 | Step | Stage     | Actions                                                                                                                                                                                            |
 | ---- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | Pre-Check | Run ${CLAUDE_SKILL_DIR}/scripts/pre-check.ts "$TITLE". What it consumes from the return is `dr_dir` and `filename` (where to write), `date` (frontmatter), and `similar_drs` (duplicate check)     |
+| 1    | Pre-Check | Run ${CLAUDE_SKILL_DIR}/scripts/pre-check.ts "$TITLE". What it consumes from the return is `dr_dir` and `filename` (where to write), `date` (frontmatter), and `similar_drs` (duplicate check). When stderr says the open pull requests could not be checked, confirm with `gh pr list --state open` that no pull request adds a DR before using the number |
 | 2    | Type      | Determine the decision type by the decision's intent and pick its recommended topics (§ Decision Type)                                                                                             |
 | 3    | Sources   | Gather project docs, issues, external resources                                                                                                                                                    |
 | 4    | Draft     | Copy ${CLAUDE_SKILL_DIR}/templates/madr-template.md into `dr_dir` under the name `filename` and fill it from what was gathered (§ YAML Frontmatter)                                                |
