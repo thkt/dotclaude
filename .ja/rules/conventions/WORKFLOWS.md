@@ -46,7 +46,7 @@ paths:
 
 | 対象           | 規約                                                                                                                                                                 |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| spec の形      | `{defaults, steps}`。step と source の語彙は `workflows/_lib/relay.ts` の冒頭が正本                                                                                  |
+| spec の形      | `{defaults, steps}`。step と source の語彙は、`workflows/_lib/relay.ts` の `Step` 型と `workflows/_lib/tests/relay.test.ts` のテスト名が正本 |
 | 渡し方         | プロンプトの `RELAY_SPEC <digest>` と `RELAY_SPEC_END` の間に、1 行の JSON で置く。エージェントは digest を付けて relay.ts を実行し、relay.ts が transcript から spec を読む。spec には実行と呼び出しを名乗る `id` を入れ、同じコマンドの呼び出しどうしが同じ digest にならないようにする |
 | 返り値の照合   | relay.ts が出す `relay_check` と、エージェントが返した欄の digest を比べる。合わなければ、`--replay` にエージェントが返した `relay_check` を付けて、保存済みの結果をもう一度だけ求める。relay.ts は、残っている行がその check を持つときだけ行を出すので、別の呼び出しの行を取り違えない。2 度目も合わないとき、または返答が check を持たないときは、結果なしとして扱う |
 | 結果なし       | relay.ts は、digest に合う spec が無いと `relay_missing` を出す。step は 1 つも実行されていないので、エージェントは spec をファイルに書き、`--spec` を付けて relay.ts を実行する。その 2 度目の実行の `relay_missing`、`relay_error`、Bash の時間切れ、それ以外の出力は、結果なしである。step が実行済みのことがあるので、エージェントはそれ以上何も実行せず、出力された文を `relay_note` として返す。スクリプトは `--replay` を求めない。エラーで終わったエージェントも結果なしで、そのエラーが文になる。続く停止は、その文を `relay_note` として返す |

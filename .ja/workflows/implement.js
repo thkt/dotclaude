@@ -14,27 +14,19 @@ export const meta = {
   ],
 };
 
-// 流れの正本は ~/.agents/scripts/implement/ の orchestrator.ts・correction.ts・pr-body.ts・ci.ts
-// と ~/.agents/scripts/shared/target.ts。実装とレビューは LLM、合否の算出・ID の照合・要求と対象の
-// 同一性確認・撮影の要否判定・公開結果の読み戻し・CI の分類は script が持つ。
-
-// harness は object の args を JSON 文字列で渡すことがある。
 let argsValue = args;
 if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
   try {
     const decoded = JSON.parse(argsValue);
     if (decoded && typeof decoded === "object") argsValue = decoded;
   } catch {
-    // 壊れた encoding は届いた文字列のまま args に残す
   }
 }
 const input = typeof argsValue === "object" && argsValue ? argsValue : {};
 const issueRef = String(typeof argsValue === "string" ? argsValue : input.issue || "").trim();
-// 数字だけ、#数字、Issue URL だけを受ける。数字を含む自由文を Issue 番号と読まない。
 const issueNumber =
   (issueRef.match(/^#?(\d+)$/) || issueRef.match(/\/issues\/(\d+)(?:[/?#]|$)/) || [])[1] || "";
 const repo = typeof input.repo === "string" ? input.repo.trim() : "";
-// Codex の --no-publish にあたる。明示の false だけが公開を切る。
 const publishing = input.publish !== false;
 
 const obj = (required, properties) => ({
@@ -45,14 +37,12 @@ const obj = (required, properties) => ({
 });
 const closed = (properties) => obj(Object.keys(properties), properties);
 const str = { type: "string" };
-// 空であってはならない文字列。空文字の拒否は schema でなく blankFields が行う。
 const text = { type: "string" };
 const int = { type: "integer" };
 const bool = { type: "boolean" };
 const choice = (values) => ({ type: "string", enum: values });
 const list = (items) => ({ type: "array", items });
 
-// Issue や設定由来の文字列は shell 構文でなく 1 つの argv 要素として渡す。
 const shq = (value) => `'${String(value).replaceAll("'", `'"'"'`)}'`;
 const argvLine = (argv) => argv.map(shq).join(" ");
 const bundled = (rel) =>
@@ -65,14 +55,6 @@ const parseJsonText = (value) => {
   }
 };
 
-// ---- 中継: script が実行させたいコマンドを、データとして宣言する ----
-// script はコマンドを実行できないので、agent に実行させる。agent はコマンドを文章として読まず、写しもしない。
-// spec の digest を付けて workflows/_lib/relay.ts を実行すると、relay.ts が agent 自身の transcript から spec を読み戻し、
-// step を順に実行して、欄とその digest (relay_check) を 1 行の JSON で返す。script は agent が返した欄と relay_check を
-// 照合するので、戻りの途中で 1 文字でも変われば結果なしとして扱う。この script を自分で評価する host は、prompt にある
-// spec を見つけて agent を介さずに実行する。
-// 本文は LLM に書き写させず、digest (UTF-16 の code unit に対する FNV-1a と長さ) で照合する。node -e にもこの関数の
-// source を埋め込むので、template literal を使わない。
 const digest = (text) => {
   const t = String(text).trimEnd();
   let h = 0x811c9dc5;
@@ -92,15 +74,10 @@ const canonical = (fields) =>
   );
 const fieldSchema = (value) =>
   Array.isArray(value) ? list(int) : { type: typeof value === "number" ? "integer" : typeof value };
-// bundled の helper は bun で起動し、bun が動かなければ node で起動する。PATH の bun は起動に失敗する shim のことがあるので、
-// 探すのではなく実行して確かめる。helper はどちらでも動く書き方を保つ (DR-0113)。
 const RUNTIME = `RT=bun; bun --version >/dev/null 2>&1 || RT=node; "$RT"`;
 const RELAY = `${RUNTIME} ${bundled("workflows/_lib/relay.ts")}`;
-// 呼び出しの同一性。snapshot と check はどれも同じコマンドを持つので、spec は実行と、その中での位置と、区切りを
-// やり直した回数も名乗る。relay.ts は id を読まない。id は呼び出しごとに digest を分け、残す結果も呼び出しごとに分ける。
 let relaySeq = 0;
 let boundaryTag = "";
-// 最後の中継が結果を返さなかった理由。その後に続く停止に載せる。
 let relayNote = "";
 const relay = async (
   label,
@@ -120,8 +97,6 @@ const relay = async (
     relay_check: str,
     relay_note: str,
   });
-  // 返答を schema の形にできなかった agent は、エラーで終わる。中継にとってそれは結果なしで、workflow の終わりではない。
-  // 結果なしは、どの呼び出し元もすでに自分の停止にしている。
   let failure = "";
   const asked = async (prompt, opts) => {
     try {
@@ -150,7 +125,6 @@ const relay = async (
       model,
     },
   );
-  // agent が返した欄。relay.ts が一緒に出力した digest を持たなければ null。
   const confirmed = (value) => {
     if (!value) return null;
     const { relay_check: check, relay_note: _note, ...fields } = value;
@@ -164,14 +138,10 @@ const relay = async (
   if (!reply) return refuse(failure ? `中継の agent が失敗した: ${failure}` : "中継の agent が結果を返さなかった");
   const first = confirmed(reply);
   if (first) return first;
-  // relay.ts が結果の無い理由を出力した。求め直せる行は残っていない。
   if (String(reply.relay_check).trim() === "relay_error")
     return refuse(String(reply.relay_note || "").trim() || "relay_error");
   const seen = String(reply.relay_check).trim();
   if (!/^[0-9a-f]{8}:\d+$/.test(seen)) return refuse("返った欄が relay_check と一致せず、残っている結果を求めるための check も返答に無い");
-  // 戻りの途中で文字が変わるのは agent の写しで、コマンドのせいではない。relay.ts は出力した行を残しているので、
-  // 2 つ目の agent が、コマンドを実行し直さずにそれを返す。relay.ts は最初の agent が名乗った check の行だけを返すので、
-  // 同じコマンドの別の呼び出しの行をこの呼び出しのものと取り違えない。
   log(`中継 ${label}: 返った欄が relay_check (${reply.relay_check}) と一致しない。保存済みの結果をもう一度だけ求める。`);
   const again = await asked(
     `手順 1 のコマンドを実行し、出力された JSON の各欄をそのまま返す。要約・修正・判断をしない。このコマンドは計算済みの結果を出力するだけで、何も実行し直さない。relay_note は "" にする。出力が relay_error なら、各欄を型に応じて ""・0・false・[] にして返す。\n` +
@@ -181,13 +151,9 @@ const relay = async (
   return confirmed(again) || refuse("返った欄が、求め直した後も relay_check と一致しなかった");
 };
 
-// ---- 実行記録: 開始行と終端行を run_id で結ぶ ----
 const counts = { check_runs: 0, review_rounds: 0, repairs: 0, captures: 0, ci_rounds: 0 };
 let runId = "";
 let recordedBranch = "";
-// 公開で分かった commit・PR URL・PR 全体の基点・本文の digest と、本文をファイルへ渡した方法。停止した行にも載せ、人が実際の状態を照合する手掛かりにする。
-// body_transport は transcript (write-body.ts が読み戻した) か copied (agent が写した)。body_fallback は写しに回った理由。
-// 後の修正は published_draft 行の commit と base_sha から、公開した head と PR 全体の基点を取る。
 const published = {
   commit: "",
   url: "",
@@ -203,7 +169,6 @@ const recordRun = async (reason) => {
     repo,
     branch: recordedBranch,
     publish: publishing,
-    // 修正した PR の URL。検証前の停止でも行に残すため、入力から直接読む。
     revision:
       input.revision && typeof input.revision.pr === "string" ? input.revision.pr.trim() : "",
     ...published,
@@ -223,7 +188,6 @@ const recordRun = async (reason) => {
   });
   const recorded = written ? parseJsonText(written.record_out) : null;
   const id = String((recorded && recorded.run_id) || "").trim();
-  // 記録は実行を止めない。書けなかった行は log に残して先へ進む。
   if (!id) {
     log(
       `"${reason}" 行を書けなかった (recorder が run_id を返さなかった)。この実行は implement-runs.jsonl に欠ける。`,
@@ -232,11 +196,8 @@ const recordRun = async (reason) => {
   }
   runId = id;
 };
-// 停止はすべてここを通るので、Issue と repo が揃った実行は終端行を必ず持つ。
-// 正本は orchestrator.ts の remaining。停止したときも残る作業を返す。公開の段の停止は shipStop が絞り込む。
 const REMAINING_AFTER_PR = ["ci", "published_body_check", "mark_ready", "human_review"];
 const stop = async (reason, why, fields = {}) => {
-  // 記録より前に読む。記録も中継で、始めるときにこの理由を消す。
   const note = relayNote;
   if (repo && issueNumber) await recordRun(reason);
   return {
@@ -245,9 +206,7 @@ const stop = async (reason, why, fields = {}) => {
     ...counts,
     run_id: runId,
     remaining: ["local_verification", "publication", ...REMAINING_AFTER_PR],
-    // 原因を直せば再開できる停止は、再開に渡す retry を fields で上書きする。
     retry_next: null,
-    // この停止の前の中継が結果を返さなかったときの、その理由。
     ...(note ? { relay_note: note } : {}),
     ...fields,
   };
@@ -259,8 +218,6 @@ if (!issueNumber) {
 if (!repo) {
   return await stop("no-repo", "対象リポジトリを絶対パスで渡す。");
 }
-// 開始 commit に固定する参照 (調査報告・判断記録)。正本は input.ts の assertReportReferences と
-// research-handoff.ts。参照があれば開始 commit が要り、参照先は docs/research・decisions の Markdown に限る。
 const startCommit = typeof input.startCommit === "string" ? input.startCommit.trim() : "";
 const reports = input.reports === undefined ? [] : input.reports;
 const COMMIT_ID = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
@@ -282,9 +239,6 @@ const referenceIssue = referenceProblem();
 if (referenceIssue) {
   return await stop("invalid-reports", referenceIssue);
 }
-// 既存 PR の修正。正本は revision.ts と README の既存PRの修正。人が採用した指摘・期待する結果・許可範囲を
-// 1 つの文章 (request) で受け取り、この workflow が公開した PR だけを対象にする。args は実行中に変わらないので、
-// Codex の修正入力ファイルの hash 照合は要らない。
 const revising = input.revision !== undefined;
 const revisionUrl = revising && input.revision ? String(input.revision.pr || "").trim() : "";
 const revisionRequest =
@@ -302,12 +256,6 @@ const revisionIssue = revisionProblem();
 if (revisionIssue) {
   return await stop("invalid-revision", revisionIssue);
 }
-// 停止した実行の再開。Workflow の resumeFromRunId は、prompt が変わらない agent() の結果を cache から返し、
-// prompt が変わった最初の呼び出しから後ろを実際に走らせる。再開する区切りの先頭の prompt に印を足すと、そこから再開する。
-// 区切りは 2 つ。round:N は Verify の N 巡目の先頭で、要求と tree を観測し直してから撮影・check・レビューを行う。
-// ship は Ship の先頭で、書き込みの前の照合をすべてやり直す。区切りの途中からは再開しない。cache にある前段の結果が、
-// 今の Issue・worktree・実行ユーザーのものとは限らないため。
-// retry は区切りごとのやり直し回数を持つ。前の再開の印を落とすと、その区切りの prompt が元に戻り、そこからやり直しになる。
 const RETRY_KEY = /^(?:round:[1-9]\d*|ship)$/;
 const retrying = input.retry !== undefined;
 const retryMap =
@@ -330,16 +278,13 @@ if (retryIssue) {
   return await stop("invalid-retry", retryIssue);
 }
 const retryCount = (key) => (retryMap && retryMap[key]) || 0;
-// 再開する区切りの先頭の prompt に足す印。回数を含めるので、同じ区切りをもう 1 度やり直すときも prompt が変わる。
 const retryMark = (key) =>
   retryCount(key)
     ? `\n\nこの呼び出しは、停止した実行の再開で ${retryCount(key)} 回目のやり直しになる。手順を変えずに最初から実行する。`
     : "";
-// 止まった区切りをもう 1 度やり直すための retry。呼び出し側はこの値をそのまま渡す。
 const retryNext = (key) => ({ ...retryMap, [key]: retryCount(key) + 1 });
 await recordRun("started");
 
-// ---- Target: Issue・実効ユーザー・repo・未コミット変更・.dotagents.json を照合する ----
 phase("Target");
 const BRANCH_NAME_SHAPE = /^[\w][\w./-]*$/;
 const isArgv = (v) =>
@@ -348,7 +293,6 @@ const isNameList = (v) =>
   Array.isArray(v) &&
   v.every((n) => typeof n === "string" && n.trim() !== "") &&
   new Set(v).size === v.length;
-// destination は worktree 内の相対パスに限る。install-media.ts も同じ条件を実行時に確かめる。
 const isRepoRelative = (p) =>
   typeof p === "string" && p.trim() !== "" && !p.startsWith("/") && !p.split("/").includes("..");
 const isCapture = (v) =>
@@ -357,8 +301,6 @@ const isCapture = (v) =>
     isArgv(v.command) &&
     isRepoRelative(v.destination) &&
     typeof v.required === "boolean");
-// 正本は ~/.agents/scripts/shared/target.ts の assertTarget。setup・check・feedbackCheck は shell 文字列も受け、
-// 文字列は /bin/sh -c に包んで argv にそろえる。feedbackCheck だけは省略できる。
 const CONFIG_KEYS = [
   "repository",
   "remote",
@@ -404,21 +346,14 @@ const configErrors = (c) =>
     ? [".dotagents.json が JSON object でない"]
     : CONFIG_RULES.filter(([ok]) => !ok(c)).map(([, message]) => message);
 
-// Issue の同一性は、本文の転記でなく gh の出力の sha256 で比べる。転記の 1 文字の揺れを要求の変更と読まないため。
-// 正本は orchestrator.ts の Issue 取得。state と updatedAt も含めるので、途中で閉じられた Issue も変更として検出する。
-// gh が失敗したときに空の入力の digest を返さないよう、取得できたときだけ shasum へ渡す。
 const issueDigestCommand = (repoFlag = "") =>
   `out=$(gh issue view ${issueNumber}${repoFlag} --json title,body,state,updatedAt) && printf %s "$out" | shasum -a 256 | cut -d ' ' -f 1`;
 const DIGEST_SHAPE = /^[0-9a-f]{64}$/;
-// 修正する PR の照合項目と本文の sha256。本文は agent に書き写させず、gh の出力を shasum に通す。
 const prApiPath = revisionPr ? `repos/${revisionPr[1]}/pulls/${revisionPr[2]}` : "";
 const PR_FIELDS_JQ =
   "{state, draft, html_url, user: .user.login, head_sha: .head.sha, head_ref: .head.ref, head_repo: .head.repo.full_name, base_ref: .base.ref, base_repo: .base.repo.full_name}";
 const prFieldsCommand = argvLine(["gh", "api", prApiPath, "--jq", PR_FIELDS_JQ]);
 const prBodyShaCommand = `${argvLine(["gh", "api", prApiPath, "--jq", ".body"])} | shasum -a 256 | cut -d ' ' -f 1`;
-// 正本は orchestrator.ts。worktree は checkout のローカル HEAD から切り、設定はその commit の版を読む。
-// 検証した設定と実行する版が食い違わないようにするため。
-// 開始入力。下の status はこれに絞る。未追跡のファイルが多い checkout でも、中継の行が Bash 呼び出しの返せる長さを超えないようにする。
 const START_INPUTS = [".dotagents.json", ...reports.map((r) => r.path)];
 const target = await relay("target", "Target", {
   defaults: {
@@ -484,8 +419,6 @@ const target = await relay("target", "Target", {
         ]
       : []),
   ],
-  // Issue の本文はこの agent を通って戻る。引用符付きのマークアップを含む本文で、haiku は本文の後ろの欄を落とした
-  // (通し実行 4 回のうち 1 回、その行だけを写す試行 13 回のうち 12 回)。sonnet は 10 回のうち 10 回写した。
 }, { model: "sonnet" });
 if (!target) {
   return await stop("target-unavailable", "対象を照合する agent が結果を返さなかった。");
@@ -509,8 +442,6 @@ if (issue.state !== "OPEN") {
     `Issue #${issueNumber} は ${issue.state}。合意済みの OPEN な Issue で再実行する。`,
   );
 }
-// branch の type は、/scoping が title に付けた種別の接頭辞だけから決める。接頭辞のない Issue に既定の type は当てない。
-// 接頭辞の集合の正本は skills/scoping/references/issue.md の表。
 const TYPE_BY_PREFIX = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
 const titlePrefix = ((/^\[(\w+)\]/.exec(issue.title) || [])[1] || "").toLowerCase();
 const typePrefixes = Object.keys(TYPE_BY_PREFIX).map((key) => `[${key[0].toUpperCase()}${key.slice(1)}]`);
@@ -532,9 +463,6 @@ const repoInfo = parseJsonText(target.repo_json);
 if (!repoInfo || !repoInfo.nameWithOwner) {
   return await stop("repo-unreadable", "gh repo view で対象 repo を読めなかった。");
 }
-// 作業は隔離 worktree で行うので、未コミットであってはならないのは開始入力 (.dotagents.json) だけ。
-// 元 checkout の無関係な作業 (/scoping の Issue 下書きなど) は保ち、止める理由にしない。
-// 正本は orchestrator.ts の開始入力の照合 ("Required start inputs have uncommitted changes")。
 const uncommittedInputs = String(target.porcelain || "")
   .split("\n")
   .filter((line) => START_INPUTS.includes(line.slice(3).trim()));
@@ -566,7 +494,6 @@ const config = {
       ? shellArgv(settings.feedbackCheck)
       : settings.feedbackCheck,
 };
-// 正本は ~/.agents/scripts/implement/feedback.ts の feedbackInstructions。省いたときは実装と修正の指示に何も足さない。
 const FEEDBACK_RULE = config.feedbackCheck
   ? [
       `feedbackCheck (担当セッション内の反復用): ${JSON.stringify(config.feedbackCheck)}。作業中の確認には通常このコマンドを使い、対象 repo の方針に従って必要な確認範囲へ広げる。完了前に全体の check が通る状態にする契約は変わらない。host は各修正の後に全体の check を実行する。feedbackCheck の成功を全体の check の成功として扱わない。`,
@@ -574,7 +501,6 @@ const FEEDBACK_RULE = config.feedbackCheck
   : [];
 const capture = config.capture;
 const { repository, remote, baseBranch } = config;
-// 正本は target.ts の readTarget。GH_HOST・remote の取得先と push 先・gh が解決した repo が、すべて repository を指すことを確かめる。
 const ghHost = String(target.gh_host || "").trim();
 if (ghHost && ghHost !== "github.com") {
   return await stop("gh-host", `GH_HOST が ${ghHost} を指している。github.com の対象だけを扱う。`);
@@ -594,7 +520,6 @@ if (!remoteMatches) {
     `remote ${remote} の取得先と push 先が ${repository} を指していない。.dotagents.json か remote を直してから再実行する。`,
   );
 }
-// 正本は target.ts の issueNumber。別の repo の Issue URL を、番号だけ取り出してこの repo に流用しない。
 const issueUrlRepo = (/github\.com\/([\w.-]+\/[\w.-]+)\/issues\//.exec(issueRef) || [])[1];
 if (issueUrlRepo && issueUrlRepo !== repository) {
   return await stop(
@@ -608,7 +533,6 @@ if (repoInfo.nameWithOwner !== repository) {
     `gh が解決した repo ${repoInfo.nameWithOwner} が .dotagents.json の repository ${repository} と違う。`,
   );
 }
-// 公開の前提は、書き込む前の Target で確かめる。Codex も公開には ciChecks と push 権限を求める。
 if (publishing && !config.ciChecks.length) {
   return await stop(
     "no-ci-checks",
@@ -621,8 +545,6 @@ if (publishing && !["ADMIN", "MAINTAIN", "WRITE"].includes(repoInfo.viewerPermis
     `対象 repo への権限が ${repoInfo.viewerPermission || "不明"} で、push できない。別の主体には切り替えない。`,
   );
 }
-// 正本は revision.ts の previousRun。この workflow が同じ checkout で公開し、行を残した PR だけを直す。
-// 公開した head と PR 全体の基点は、GitHub の今の状態でなくその行から取り、公開後に積まれた commit を検出する。
 if (revising && revisionPr[1] !== repository) {
   return await stop(
     "invalid-revision",
@@ -645,7 +567,6 @@ if (revising && !rowUsable(revisionRow)) {
     `${revisionUrl} を、この checkout と Issue #${issueNumber} で公開した記録 (implement-runs.jsonl の published_draft 行) が無い。この workflow が公開した PR だけを直す。`,
   );
 }
-// 正本は revision.ts の checkRevision。OPEN・作者・head・base・head の repo が、公開時と同じであることを確かめる。
 const prHeld = (fields) =>
   Boolean(fields) &&
   fields.state === "open" &&
@@ -664,18 +585,13 @@ if (revising && (!prHeld(parseJsonText(target.revision_pr)) || !DIGEST_SHAPE.tes
   );
 }
 
-// ---- Prepare: base から隔離 worktree と branch を作り、setup を実行する ----
 phase("Prepare");
-// branch 名は <type>/<Issue 番号>-<description> の形。
-// type は Target で確かめた Issue title の接頭辞から、description は title の英数字語から決定論的に作る。
 const titleWords = issue.title
   .replace(/^\[\w+\]\s*/, "")
   .toLowerCase()
   .split(/[^a-z0-9]+/)
   .filter(Boolean)
   .slice(0, 4);
-// 英数字の語が 2 語未満のタイトル (日本語のタイトルなど) では 2〜4 語に届かない。そのときだけ agent に
-// 英語の説明を 1 度提案させ、形は script が検査する。形が外れたら title の語に戻す。
 const isDescription = (value) => {
   const words = String(value).split("-");
   return words.length >= 2 && words.length <= 4 && words.every((w) => /^[a-z0-9]+$/.test(w));
@@ -697,7 +613,6 @@ const named =
       );
 const description =
   named && isDescription(named.description) ? named.description : titleWords.join("-") || "issue";
-// 修正では、公開した branch をそのまま使う。
 const branch = revising ? revisionRow.branch : `${branchType}/${issueNumber}-${description}`;
 const worktree = `${repo}/.claude/worktrees/implement-${issueNumber}`;
 const where = { branch, worktree };
@@ -706,7 +621,6 @@ const headSha = String(target.head_sha || "").trim();
 if (!revising && !/^[0-9a-f]{40}$/.test(headSha)) {
   return await stop("target-unavailable", "checkout の HEAD を読めなかった。", where);
 }
-// 正本は research-handoff.ts。開始 commit は、新規の実行では checkout の HEAD、修正では PR 全体の基点と一致する。
 const expectedStart = revising ? revisionRow.base_sha : headSha;
 if (startCommit && startCommit !== expectedStart) {
   return await stop(
@@ -715,10 +629,6 @@ if (startCommit && startCommit !== expectedStart) {
     where,
   );
 }
-// 各参照は開始 commit の通常ファイルで、blob が確認した版と一致する。一致しない参照の path を返す。
-// git ls-tree が出力する path の形。非 ASCII・引用符・バックスラッシュ・制御文字を含む path は、引用符で囲み
-// UTF-8 のバイトを 8 進でエスケープする (core.quotePath の既定)。非対話のセッションは `git -c` を権限確認で
-// 拒むので、設定を変えずにこの形と照合する。
 const gitQuoted = (path) => {
   let quoted = false;
   const escape = (ch) => {
@@ -762,12 +672,7 @@ const reportStop = (listing) => {
 };
 const earlyReportStop = revising ? null : reportStop(target.report_listing);
 if (earlyReportStop) return await earlyReportStop;
-// 正本は README の既存PRの修正。前回の checkout (worktree) を、公開した head で追跡・未追跡の差分が無い状態で再利用する。
-// stash・reset・rebase・作業差分の移植はしない。
 const revisionBase = revising ? revisionRow.base_sha : "";
-// setup は最初の非 0 終了で止める。_setup が、次のコマンドへ進むかを運ぶ。
-// 末尾の出力は、失敗したコマンドのものだけを返す。成功した setup がダウンロードの進捗バーを出力し、agent はそれを返すときに
-// 繰り返される文字の個数を変えた。
 const setupSteps = (ready) =>
   config.setup.map((argv) => ({
     sh: argvLine(argv),
@@ -838,7 +743,6 @@ const revisionSpec = {
       when: { existing: false },
       set: { created: "ok" },
     },
-    // 読むのは worktree に差分が無いかどうかだけなので、先頭の数行で足りる。
     {
       sh: `git -C ${shq(worktree)} status --porcelain --untracked-files=all | head -20`,
       cwd: repo,
@@ -898,7 +802,6 @@ if (!worktreeReady) {
   return await stop("worktree-failed", "worktree と branch を作れなかった。", where);
 }
 recordedBranch = branch;
-// 正本は orchestrator.ts の "Start HEAD changed during preparation"。
 if (
   !revising &&
   (prepared.base_sha !== headSha || String(prepared.checkout_head).trim() !== headSha)
@@ -929,7 +832,6 @@ if (revising && String(prepared.config_blob).trim() !== String(prepared.base_con
 }
 const lateReportStop = revising ? reportStop(prepared.report_listing) : null;
 if (lateReportStop) return await lateReportStop;
-// PR 全体の基点 (レビューの差分と撮影の基準)。修正では前回の開始 commit で、公開した head は新しい commit の親になる。
 const baseSha = revising ? revisionRow.base_sha : prepared.base_sha;
 published.base_sha = baseSha;
 const setupExits = prepared.setup_exits || [];
@@ -944,12 +846,10 @@ if (setupExits.length !== config.setup.length || setupExits.some((code) => code 
   );
 }
 
-// ---- Implement: 合意済み Issue 全体を 1 回の実装パスで実装する ----
 phase("Implement");
 const requirements = `Title: ${issue.title}\n\n${issue.body}`;
 const inTree = (p) =>
   `作業は ${worktree} の worktree の中だけで行う。各 shell コマンドは \`cd ${worktree} && \` で始め、この path の下のファイルだけを編集する。\n\n${p}`;
-// 正本は ~/.agents/scripts/implement/repair.ts の repairInstructions。撮影の行は capture の有無で分かれる。
 const CAPTURE_RULES = capture
   ? [
       `設定された撮影コマンドと、この Issue に必要な媒体を準備する。最終的な媒体は ${capture.destination}/ で参照する。`,
@@ -959,7 +859,6 @@ const CAPTURE_RULES = capture
       "この対象は撮影を宣言していない。合意した Issue が媒体を必要とするなら、実行前に撮影を設定するため needs_human を返す。",
     ];
 const TESTING_RULE = `変更が、非同期 UI の E2E テスト、外部入力の境界、失敗後の経路、対象の版の再取得、検査が何を成功と数えるか、のいずれかを変えるときは、\`cat ${bundled("skills/implement/references/testing.md")}\` を実行し、該当する場合を適用する。それ以外では読まない。`;
-// この文が無いと、agent は host が CI を確かめるか、どの CI を確かめるかを知らない。
 const CI_RULE = publishing
   ? `この実行は公開まで進むので、公開した head で、設定された CI (${config.ciChecks.join(", ")}) も host が確かめる。`
   : "この実行は公開しないので、host が実行するのはその 2 つだけで、CI は確かめない。";
@@ -974,7 +873,6 @@ const REPAIR_RULES = [
   "status (repaired か needs_human) と findings を持つ JSON を返す。findings には変更内容か、必要な人の判断を説明する。needs_human の findings は空にせず、問い・人が選ぶ選択肢・その影響を書く。指示ファイルが停止の理由なら、実際に読んだファイルと該当する指示を引用し、明示された要求と自分の解釈を分ける。",
 ].join("\n");
 const REPLY_SCHEMA = closed({ status: choice(["repaired", "needs_human"]), findings: str });
-// 実装と修正の応答を検査する。正本は repair.ts の parseRepairReply。
 const replyProblem = (reply) => {
   if (!reply || typeof reply.findings !== "string") return "invalid-repair";
   if (reply.status === "repaired") return "";
@@ -992,16 +890,13 @@ const actorRun = (role, prompt, label) =>
     effort: "high",
   });
 
-// 正本は research-handoff.ts の researchContext。実装・修正・独立レビューに同じ開始 commit と参照一覧を渡す。
 const referenceContext = [
   `Implementation references: ${JSON.stringify({ startCommit: baseSha, reports })}`,
   "要求と合意の記録が正本であり、参照は証拠を与えるが追加の許可ではない。選ばれた参照と Issue が参照する関連資料を読み、リポジトリの全文書は読まない。参照の blob は startCommit での引き継ぎ版を示すので、現在のファイルと比べ、変わった根拠は頼る前に説明する。",
   "判断に関わる規則や所見は、出典・版・適用範囲・合意状態まで辿る。観測した事実・合意済みの規則・仮説を区別する。別の範囲の証拠を当てはめず、未合意の提案を要求に格上げしない。",
   "欠けた・古い・矛盾する参照が判断に影響するなら、出典・影響する判断・調べ直すか合意し直すべきことを示す。事実不足は調査で解き、要求・範囲・許可の変更は人へ戻す。確認済みの参照を新しい ID に黙って置き換えない。",
 ].join("\n");
-// 正本は skills/implement/SKILL.md の文書の更新。判断記録への影響は、差分が揃ったときに DOCUMENTS.md で確かめる。
 const DOCUMENTS_RULE = `差分が揃ったら \`cat ${bundled("rules/conventions/DOCUMENTS.md")}\` を実行して Read and retain の節に従い、次の作業でも使う説明と既存の判断記録・\`rules/\` への影響を確かめる。必要な更新は今回の変更に含め、独立レビューの対象にする。`;
-// 正本は revision.ts の revisionContext。修正依頼は合意済み Issue と並ぶ正本で、PR 全体をその両方に合わせる。
 const revisionContext = revising
   ? [
       `この実行は、公開済みの PR ${revisionUrl} を直す。公開した head は ${revisionRow.commit}、PR 全体の基点は ${baseSha}。`,
@@ -1038,13 +933,10 @@ if (implementProblem) {
   );
 }
 
-// ---- Verify: 撮影 → check → 独立レビュー → 修正を accepted まで回す (回数上限なし、dotagents #155) ----
 phase("Verify");
 const TREE_SHAPE = /^[0-9a-f]{40}$/;
 const stageTree = `git -C ${shq(worktree)} add -A && git -C ${shq(worktree)} write-tree`;
-// 開始時の worktree の .dotagents.json。正本は orchestrator.ts の unchangedTarget で、agent が設定を書き換えても検出する。
 const baseConfigBlob = String(prepared.config_blob || "").trim();
-// 要求 (Issue の digest)、成果物 (worktree の tree id)、設定 (stage 済みの .dotagents.json の blob) を 1 度に観測する。
 const snapshot = async (label, stage = "Verify", mark = "") => {
   const snap = await relay(
     label,
@@ -1070,11 +962,9 @@ const snapshot = async (label, stage = "Verify", mark = "") => {
   return snap && { ...snap, configHeld: String(snap.config_blob).trim() === baseConfigBlob };
 };
 const requirementsHeld = (snap) => Boolean(snap) && snap.issue_digest === issueDigest;
-// 観測そのものの失敗 (agent が結果を返さない、digest を読めない) は、要求の変更と分けて止める。
 const observed = (snap) => Boolean(snap) && DIGEST_SHAPE.test(String(snap.issue_digest).trim());
 const UNOBSERVED = "Issue と tree を観測できなかった。実行環境を確かめる。";
 const history = [];
-// host の check や撮影の失敗を修正担当へ渡す証拠にする。過去のレビューがあれば履歴として添える。
 const hostFailure = (message) =>
   [
     message,
@@ -1083,11 +973,8 @@ const hostFailure = (message) =>
       : "",
   ].join("\n");
 
-// ---- 撮影: 正本は correction.ts の verifyHost と captureDecision ----
-// {harness} は workflows/implement/harness に展開する。これは Codex のハーネスの capture アダプター (scripts/capture・scripts/shared) の複製で、~/.agents が無くても撮影が動く。配置は Codex のハーネスと同じなので、対象の `bun {harness}/scripts/capture/capture.ts` というコマンドはどちらでも解決する。
 const captureArg = (arg) => arg.split("{harness}").map(shq).join('"$H"');
 const captureLine = (argv) => argv.map(captureArg).join(" ");
-// 撮影コマンドの引数が直接指す checkout 内の定義ファイル。文書の拡張子でも撮り直しの対象にする。
 const captureDefinitions = capture
   ? capture.command
       .filter((arg) => !arg.includes("{harness}"))
@@ -1101,8 +988,6 @@ const destinationDir = capture ? capture.destination.replace(/\/+$/, "") : "";
 const recordPrefix = destinationDir.includes("/")
   ? `${destinationDir.slice(0, destinationDir.lastIndexOf("/"))}/`
   : "";
-// destination の親ディレクトリ内 (destination を除く) の保存記録。撮影の入力に使わない配置として扱う。
-// repo 直下の destination には親ディレクトリが無い。Codex の dirname(destination) が "." になるのと同じ扱い。
 const isRecordFile = (path) =>
   recordPrefix !== "" &&
   /\.(json|txt|log|stdout|stderr|diff)$/.test(path) &&
@@ -1110,8 +995,6 @@ const isRecordFile = (path) =>
   !path.startsWith(`${destinationDir}/`);
 const DIFF_LINE = /^:(\d{6}) (\d{6}) [A-Z]\d* (.+)$/;
 const PLAIN_MODE = /^(000000|100644)$/;
-// 変更が撮影の入力にならない通常ファイル (Markdown と、初回撮影の後は保存記録) だけかを判定する。
-// symlink・実行属性・撮影定義の変更、判定できない行があれば撮り直す。
 const onlyNonRendering = (raw, allowRecords) => {
   const lines = String(raw).split("\n").filter(Boolean);
   return (
@@ -1124,8 +1007,6 @@ const onlyNonRendering = (raw, allowRecords) => {
     })
   );
 };
-// 判定は全行を読むので、step は判定が読むもの (2 つの mode、status、path) を返し、行を絞る前に行数を数える。
-// 行数は最初の行に入る。丸ごと戻らなかった差分では必ず撮影する。
 const DIFF_LINES = 200;
 const DIFF_CHARS = 20000;
 const treeDiff = (from, to, label) =>
@@ -1141,13 +1022,11 @@ const treeDiff = (from, to, label) =>
   });
 let lastCaptureTree = "";
 let lastCapture = null;
-// 撮影の要否を決める。同じ tree なら再利用、required: false で文書だけの変更なら不要か再利用、他は実行。
 const captureDecision = async (tree) => {
   if (lastCaptureTree === tree) return "reused";
   if (capture.required) return "execute";
   const from = lastCaptureTree || `${baseSha}^{tree}`;
   const diff = await treeDiff(from, tree, `capture-diff:${counts.check_runs + 1}`);
-  // 最初の行は差分の行数。戻った行がそれより少なければ、途中で切れている。
   const [count, ...rest] = diff ? String(diff.raw).split("\n") : [];
   const listed = rest.filter(Boolean);
   if (
@@ -1159,8 +1038,6 @@ const captureDecision = async (tree) => {
     return "execute";
   return lastCaptureTree ? "reused" : "not_required";
 };
-// 以前の撮影が残した出力 (ディレクトリと、harness がその隣に作る 3 つ) を脇へ移す。残っていると mkdir が失敗し、
-// 止まった実行の再開も、以前の branch を片付けた後の新しい起動も撮影で止まる。削除はしない。
 const staleAside = (output) =>
   `for p in ${["", ".artifacts", ".config.mjs", ".report.json"].map((ext) => shq(`${output}${ext}`)).join(" ")}; do [ ! -e "$p" ] || mv "$p" "$p.stale-$(date +%s)-$$"; done`;
 const HARNESS = `H=${bundled("workflows/implement/harness")}`;
@@ -1194,7 +1071,6 @@ const installMedia = (output, label) =>
       { sh: stageTree, cwd: repo, timeout_ms: 60000, set: { tree: "out" } },
     ],
   });
-// 撮影の実行結果から停止理由を決める。終了コード 78 は Codex の撮影アダプターが起動不能を示す値。
 const shotStop = (shot, tree) => {
   if (!shot)
     return { stop: "capture-unavailable", why: "撮影を実行する agent が結果を返さなかった。" };
@@ -1223,7 +1099,6 @@ const captureStep = async (tree) => {
   const output = `${worktree}-capture-${counts.captures}`;
   const shot = await runCapture(output, `capture:${counts.captures}`);
   const stopped = shotStop(shot, tree);
-  // 撮影の後の tree が撮影の前と同じだと確かめられた停止だけを再開できる。確かめられない tree は、次の観測が成果物として取り込む。
   if (stopped) return { ...stopped, resumable: Boolean(shot) && shot.tree === tree };
   if (shot.exit_code !== 0)
     return {
@@ -1261,7 +1136,6 @@ const runCheck = (label) =>
     ],
   });
 
-// 正本は ~/.agents/scripts/implement/review.ts の reviewSchema。host が ID・初出・disposition を割り当てる。
 const REVIEW_SCHEMA = closed({
   findings: text,
   targetId: text,
@@ -1290,8 +1164,6 @@ const REVIEW_SCHEMA = closed({
   ),
   handoff: list(text),
 });
-// 正本は review.ts の reviewInstructions。knowledge node と PR 公開の分担に関する行は、この workflow が
-// 扱わないので移していない。
 const REVIEW_RULES = [
   "初回レビューと再評価のたびに、現在の成果物を独立にレビューする。現在の差分に加え、影響する呼び出し元と呼び出し先、共有型、状態遷移、エラー処理、関連テストを読む。過去の指摘を判定しながら、現在の関連経路に再発や新しい具体的な問題が無いかも確かめる。過去の指摘を直しただけでは受理の根拠にならない。無関係なコードの監査、範囲外の機能、書き方の好みは求めない。",
   "4 つの観点を分けて評価する。コードの正しさ (入力境界、状態更新、非同期の振る舞い、失敗時の副作用) と具体的な冗長、合意した Issue の要求と範囲、テストの現実的な検出力、必要な文書と証拠が実装版と整合しているか。",
@@ -1305,8 +1177,6 @@ const REVIEW_RULES = [
   "ファイルを編集しない。全体の check も実行しない。host の check 結果は host context にある。現在の成果物と必要な的を絞った検証で判定し、修正担当の自己申告を信用しない。",
   "host context の repairsSinceReview を順に読む。前回の独立レビューから後 (初回レビューなら実行開始から後) に完了した追加の修正で、check の失敗が続いた修正も含む。各 findings の証拠・変更・成果物を変えなかった理由を辿る。修正の説明は調べるべき主張であり、fixed や accepted の自動の判定にしない。過去のすべての項目を現在の証拠で独立に判定し直す。空の repairsSinceReview は初回レビューでは正当である。",
   "PR 本文は assessments・現在の項目の reason (open の項目は condition・impact・action も)・文書の reason・handoff を公開する。説明ごとに置き場所を 1 つにする。code は具体的な変更と理由、requirements は合意した振る舞いとの対応、tests は実際の検証と限界、documentation は出典の適用・版・合意・前提の変化を担う。同じ変更・結論・注意を複数の assessments で繰り返さない。fixed か not_applicable の項目では reason を完全な公開の回答にし、該当する問題と条件、現在の解決か非該当とその根拠を書く。",
-  // 正本は review.ts の reviewInstructions のうち、PR 生成器の行と冗長性の行。移すときに落ちていた文で、再評価の assessments が
-  // 前回のレビューからの差分で書かれ、それがそのまま PR 本文になった。
   "公開される欄 (assessments・項目の reason・文書の reason・handoff) には、レビューと修正の反復の経緯を語り直さない。assessments.code は指摘の経緯を繰り返さず、最終的な変更と理由を説明する。指摘への回答を assessments へコピーしない。生のログ、host 内の記録への参照、反復の経緯は findings と内部の記録に置く。内部の完全な評価と指摘の履歴は保つ。",
   "レビューの JSON schema で返す。targetId は host context の値をそのまま返す。4 つの assessments それぞれに適用範囲を含む実質的な理由を書く。findings は全体の要約にする。status と items は返さない。host が required かつ open の指摘から status を算出する。",
   "newItems の各要素には kind・area・required・location・condition・impact・evidence・action・reason を入れる。id・introducedIn・disposition は入れない。実在するコード位置が無ければ path と line を null にする。位置や再現を作り上げない。",
@@ -1319,8 +1189,6 @@ const blankText = (value) => typeof value !== "string" || !value.trim();
 const badLocation = (loc) =>
   !loc ||
   (loc.line !== null && (blankText(loc.path) || !Number.isInteger(loc.line) || loc.line < 1));
-// 空文字と行番号の範囲は schema でなくここで検査する。既存の workflow が agent() に渡した前例の無い
-// minLength と minimum に、受理の判定を預けないため。
 const blankFields = (value) => {
   const problems = [];
   if (blankText(value.findings)) problems.push("findings");
@@ -1348,7 +1216,6 @@ const idProblem = (prior, value) => {
   const paths = value.documents.map((d) => d.path);
   return new Set(paths).size === paths.length ? "" : "同じ文書の参照が重複している";
 };
-// 正本は review.ts の parseReview。status は reviewer の申告でなく required かつ open の有無から算出する。
 const mergeReview = (value, targetId, attempt, previous) => {
   if (
     !value ||
@@ -1391,7 +1258,6 @@ const mergeReview = (value, targetId, attempt, previous) => {
     },
   };
 };
-// 正本は review.ts の reviewSummary。
 const reviewSummary = (entries) => {
   const current = entries.at(-1);
   if (!current) return "";
@@ -1411,16 +1277,12 @@ const reviewSummary = (entries) => {
   ].join("\n\n");
 };
 
-// 前回の独立レビューから後に完了した修正の説明。check の失敗を挟んだ修正も含め、レビューが終わると空にする。
-// 正本は correction.ts の repairsSinceReview。直さなかった理由や反証も、次のレビューが自分で確かめる材料にする。
 let repairsSinceReview = [];
 const CONFIG_CHANGED = {
   stop: "config-changed",
   why: "worktree の .dotagents.json が開始時の版から変わった。実行中の agent は対象の setup・check・capture の契約を変えない。",
 };
 const TREE_ENTRY = /^(\d{6}) (\w+) [0-9a-f]+\s+(.+)$/;
-// 正本は correction.ts の文書参照の照合。レビューが挙げた文書は、レビューした tree にある通常のファイルに限る。
-// PR 本文はこの参照へ link を張るので、存在しない文書を公開しない。
 const missingDocuments = async (review, tree, attempt) => {
   const paths = review.documents.map((doc) => doc.path);
   if (!paths.length) return [];
@@ -1464,7 +1326,6 @@ const reviewRound = async (checked) => {
     inTree(
       [
         REVIEW_RULES,
-        // 正本は revision.ts:236。accepted の評価が新しい公開本文になるので、前回の本文で今も要る内容を残させる。
         revising
           ? "この実行は既存 PR を直す。baseCommit からの PR 全体を、合意済みの Issue と修正依頼の両方に対してレビューする。accepted の assessments と handoff が新しい公開本文になる。前回の本文を現在の成果物と比べ、今も当てはまる変更の説明・未解決の限界・公開済みの添付リンクを、それらの欄に明示して残す。古い成功の主張や過去に生成した節は写さない。必要な文脈の欠落は needs_changes にする。"
           : "",
@@ -1504,11 +1365,9 @@ const reviewRound = async (checked) => {
       stop: "invalid-review",
       why: `レビューした tree に無い文書を参照している: ${missing.join(", ")}`,
     };
-  // 完了したレビューが、ここまでの修正の説明を読み終えた。check の失敗は読み終えたことにならない。
   repairsSinceReview = [];
   return { review: merged.review };
 };
-// check を実行し、通ればレビューまで進める。停止・修正の証拠・受理のどれか 1 つを返す。
 const checkAndReview = async () => {
   counts.check_runs += 1;
   const checked = await runCheck(`check:${counts.check_runs}`);
@@ -1547,18 +1406,10 @@ const repairPrompt = (evidence) =>
     referenceContext,
   ].join("\n");
 
-// 原因を直せば、止まった巡の先頭から再開できる停止。巡の先頭の観測からやり直すので、撮影・check・レビューは
-// 今の tree に対して揃う。媒体や設定に原因がある停止と、要求・成果物が変わった停止は入れない。
 const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
-// 修正は tree を変えずに理由を述べてよく、次のレビューがそれを読む。そのレビューが同じ必須の指摘を開いたままに
-// するなら、修正とレビューが食い違っていて、次の修正も何も変えない。ある実行は、agent が人に尋ねるまでこの形で
-// 11 回修正した。何も変えない修正を挟んで、同じ tree が host の同じ手順に 2 度落ちるときも同じである。
-// correction.ts に対応するものは無く、この停止はこの harness 独自である。1 つ前の巡から持ち越すのは、その修正の
-// 前の tree、修正が述べたこと、その巡が受け入れなかった理由。
 let treeBeforeRepair = "";
 let lastRepair = null;
 let lastRejection = null;
-// レビューが開いたままにした必須の指摘。2 つのレビューを比べるための 1 つの値にする。
 const openRequired = (review) =>
   review.items
     .filter((item) => item.required && item.disposition === "open")
@@ -1570,7 +1421,6 @@ let roundNumber = 0;
 while (!accepted) {
   roundNumber += 1;
   const roundKey = `round:${roundNumber}`;
-  // ここから次の巡までの呼び出しは、この巡と、それをやり直した回数に属する。
   boundaryTag = `${roundKey}:${retryCount(roundKey)}`;
   const before = await snapshot(
     `requirements:${counts.check_runs + 1}`,
@@ -1607,9 +1457,6 @@ while (!accepted) {
     accepted = step.accepted;
     break;
   }
-  // 直前の修正は何も変えず、この巡は同じ tree を同じ理由で受け入れなかった。新しい理由で受け入れなかった巡は、
-  // 修正へ進む。修正はまだそれを見ていない。
-  // この巡が tree を受け入れなかった理由。落ちた host の手順か、レビューが開いたままにした必須の指摘。
   const reviewed = step.kind === "review";
   const rejection = reviewed ? openRequired(history.at(-1)) : step.kind;
   if (idleRepair && lastRejection === rejection) {
@@ -1623,13 +1470,11 @@ while (!accepted) {
         review: history.at(-1) || null,
         findings: lastRepair.findings,
         evidence: step.evidence,
-        // host の手順は tree の外の原因でも落ちる。巡を再開すれば、その原因をもう一度読む。
         retry_next: reviewed ? null : retryNext(roundKey),
       },
     );
   }
   lastRejection = rejection;
-  // 正本は correction.ts の beforeRepair。check に数分かかる間に Issue が変わっていないかを、修正の直前にも確かめる。
   const beforeRepair = await snapshot(`before-repair:${counts.repairs + 1}`);
   if (!observed(beforeRepair)) {
     return await stop("check-unavailable", UNOBSERVED, {
@@ -1656,7 +1501,6 @@ while (!accepted) {
     return await stop(
       repairProblem,
       (repaired && repaired.findings) || "修正 agent が有効な応答を返さなかった。",
-      // 人が判断する open の指摘を戻り値に残す。
       { ...where, review: history.at(-1) || null },
     );
   }
@@ -1683,7 +1527,6 @@ if (!publishing) {
     ...verified,
     ...counts,
     run_id: runId,
-    // 正本は orchestrator.ts の remaining。公開と人の判断は、この workflow の外に残る。
     remaining: [
       "commit",
       "publication",
@@ -1695,26 +1538,18 @@ if (!publishing) {
   };
 }
 
-// ---- Ship: 正本は orchestrator.ts の ship と publish.ts。書き込みの前に照合し、書き込みのたびに読み戻す ----
 phase("Ship");
-// 公開後の停止は、分かっている commit と URL を返す。人が GitHub の実際の状態と照合するため。
 const shipStop = (reason, why, fields = {}) =>
   stop(reason, why, {
     ...where,
     ...published,
     review: accepted.review,
-    // ローカルの検証は済んでいる。PR の URL が分かる前なら公開も残る。
     remaining: [...(published.url ? [] : ["publication"]), ...REMAINING_AFTER_PR],
     ...fields,
   });
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-// 本文は LLM に書き写させず、digest (UTF-16 の code unit に対する FNV-1a と長さ) で照合する。
-// agent は半角カナを全角にするなど、数 KB の転記で文字を書き換えるため。
-// 末尾の空白は意味を持たないので比べない。GitHub の保存で末尾の改行が揺れるため。
-// node -e にもこの関数の source を埋め込むので、template literal を使わない。
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
-// ここから先の呼び出しは、Ship と、それをやり直した回数に属する。
 boundaryTag = `ship:${retryCount("ship")}`;
 const gate = await snapshot("ship", "Ship", retryMark("ship"));
 if (!observed(gate)) {
@@ -1735,7 +1570,6 @@ if (gate.tree !== accepted.tree) {
 }
 
 const owner = repository.split("/")[0];
-// 衝突の確認が読む欄だけを返す。PR の object 全体は数十 KB あり、中継の行の残りと合わせると Bash 呼び出しの返せる長さを超える。
 const PULLS_JS =
   `const pages = JSON.parse(require("fs").readFileSync(0, "utf8")); ` +
   `const at = (o, k) => (o && typeof o === "object" ? o[k] : undefined); ` +
@@ -1746,7 +1580,6 @@ const pulls = await relay("pulls", "Ship", {
   steps: [
     { sh: "gh api user --jq .login", cwd: repo, set: { actor: "out" } },
     {
-      // gh の出力は、gh が成功したときだけ先へ渡す。/bin/sh に pipefail は無く、gh が途中のページで失敗したのを 0 件と読んではならない。
       sh: `out=$(gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp) && printf %s "$out" | node -e ${shq(PULLS_JS)}`,
       cwd: repo,
       set: { pulls_exit: "exit", pulls_json: "out" },
@@ -1770,7 +1603,6 @@ const clash = pages.flat().find(
     pr.head.ref === branch &&
     pr.head.repo &&
     pr.head.repo.full_name === repository &&
-    // 修正では、直す PR 自身がこの branch を使う。
     !(revising && pr.html_url === revisionUrl),
 );
 if (clash) {
@@ -1780,8 +1612,6 @@ if (clash) {
   );
 }
 
-// 正本は revision.ts の checkRevision。修正では、書き込みの前に PR が開始時から変わっていないことを確かめ、
-// ready なら draft に戻して読み戻す。ready を元に戻すことはしない。
 if (revising) {
   const current = await relay("revision-pr", "Ship", {
     defaults: { pr_fields: "", body_sha: "" },
@@ -1823,18 +1653,13 @@ if (revising) {
 }
 
 const inWorktree = (...argv) => argvLine(["git", "-C", worktree, ...argv]);
-// Ship の再開はこの段をもう 1 度実行する。accepted の変更が既に親の上の 1 つの commit になっていれば、commit を重ねない。
 const commitParent = revising ? revisionRow.commit : baseSha;
 const commitOnce = inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`);
-// Ship の再開は、止まった実行がまだ何も push していないときだけ進む。script は前の実行がどこで止まったかを知らないので、
-// remote の branch で確かめる。push の後の停止からの再開は、書き込みのやり直しになる。
 if (retryCount("ship")) {
   const remoteHead = await relay("pushed", "Ship", {
     defaults: { ls_exit: -1, remote_head: "" },
     steps: [
       {
-        // この行は commit と ref を tab で繋いだもの。読むのは commit だけで、agent は tab を返すときに
-        // バックスラッシュと t の 2 文字にしたことがある。
         sh: `out=$(${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}) && printf %s "$out" | cut -f 1`,
         cwd: repo,
         set: { ls_exit: "exit", remote_head: "out" },
@@ -1863,7 +1688,6 @@ const committed = await relay("commit", "Ship", {
     { sh: inWorktree("rev-parse", "HEAD"), cwd: repo, set: { commit: "out" } },
     { sh: inWorktree("rev-parse", "HEAD^"), cwd: repo, set: { parent: "out" } },
     { sh: inWorktree("rev-parse", "HEAD^{tree}"), cwd: repo, set: { tree: "out" } },
-    // この一覧は撮影の保存先にある媒体を拾うためだけに読むので、そのディレクトリに絞る。
     ...(capture
       ? [
           {
@@ -1882,8 +1706,6 @@ if (!committed || committed.commit_exit !== 0 || !TREE_SHAPE.test(String(committ
   );
 }
 published.commit = committed.commit;
-// commit hook が内容を書き換えた場合や、base の上に 1 つだけ積まれていない場合を、accepted との不一致として止める。
-// 修正では、新しい commit の親は PR 全体の基点でなく公開した head になる。
 if (
   committed.tree !== accepted.tree ||
   committed.parent !== commitParent
@@ -1901,7 +1723,6 @@ const media = capture
       .filter((file) => file.startsWith(`${destinationDir}/`) && MEDIA_FILE.test(file))
   : [];
 
-// 正本は pr-body.ts の publicText。既知のローカル root の下のパスと、それ以外の明示的なファイルシステム表記を伏せる。
 const PATH_SUFFIX = /[A-Za-z0-9_./\\:@%+~=-]*/.source;
 const OMITTED = "(内部パス省略)";
 const publicText = (value) => {
@@ -1927,7 +1748,6 @@ const MEDIA_TASKS = [
   `- workflow: 対象 commit の媒体を添付する (${media.join("、")})。`,
   "- 担当 AI: 添付後の実際の PR 画面で、媒体の表示・再生と、説明・配置との対応を確かめる (rendered_media_check)。",
 ];
-// 正本は pr-body.ts の prBody。accepted の評価から公開してよい事実だけを選び、内部の要約と履歴は載せない。
 const prBody = (review) =>
   [
     `Closes #${issueNumber}`,
@@ -1954,12 +1774,8 @@ const prBody = (review) =>
     "- 人: 要求や権限の変更を判断し、レビュー・承認・マージを判断する。",
   ].join("\n\n") + "\n";
 const body = prBody(accepted.review);
-// 後の修正が、公開した本文の版を行から照合できるようにする。
 published.body_digest = digest(body);
-// 本文は worktree の外 (撮影の出力と同じ兄弟の位置) に置き、commit 済みの tree を汚さない。
 const bodyFile = `${worktree}-pr.md`;
-// agent には本文を UTF-8 の base64 で渡す。\uXXXX のエスケープは agent が書き写す途中で元の文字に戻し、
-// shell の引用を壊したため、agent が解釈できない形にする。変換は実行環境に頼らず script の中で行う。
 const utf8Bytes = (text) => {
   const bytes = [];
   for (const ch of text) {
@@ -1979,7 +1795,6 @@ const utf8Bytes = (text) => {
   return bytes;
 };
 const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-// 1 行 76 文字に折り返す。長い 1 行より、短い行の並びのほうが agent は崩さずに写せる。
 const base64Lines = (text) => {
   const bytes = utf8Bytes(text);
   let out = "";
@@ -1992,14 +1807,8 @@ const base64Lines = (text) => {
   }
   return out.match(/.{1,76}/g) || [];
 };
-// agent に渡すコマンドを 1 行に保つため、関数の source の改行をつぶして埋め込む。
 const DIGEST_SRC = String(digest).replace(/\s*\n\s*/g, " ");
 const DIGEST_JS = `const digest = ${DIGEST_SRC}; console.log(digest(require("fs").readFileSync(process.argv[1], "utf8")))`;
-// 本文は 2 通りのどちらかでファイルになる。まず agent が write-body.ts を実行する。write-body.ts は、Claude Code が
-// transcript に保存したその agent 自身の prompt から本文を読み戻すので、本文の文字はモデルを通らない。agent が数 KB の
-// base64 を写すと 1〜2 文字を取り違え、digest の照合で止まった。読み戻しで生成した本文にならなかったときだけ
-// (transcript を残さない Codex の runner など)、2 つ目の agent が heredoc を写す。どちらで書いたかはここで決め、
-// モデルの申告には頼らない。
 const bodyData = ["PR_BODY_B64_BEGIN", ...base64Lines(body), "PR_BODY_B64_END"].join("\n");
 const readBack = await relay(
   "body",
@@ -2025,7 +1834,6 @@ const readHeld =
 published.body_transport = readHeld ? "transcript" : "copied";
 let bodyWritten = readHeld;
 if (!readHeld) {
-  // 読み戻せなかった理由を戻り値と実行記録に残す。Claude Code で copied になったら、transcript の場所か形が変わっている。
   const fallbackReason = () => {
     if (!readBack) return "読み戻しの agent が結果を返さなかった";
     if (readBack.extract_exit !== 0)
@@ -2051,7 +1859,6 @@ if (!readHeld) {
       phase: "Ship",
       agentType: "general-purpose",
       schema: closed({ write_exit: int, body_digest: str }),
-      // 数 KB の base64 を一字も落とさずに写す役なので、haiku でなく sonnet に任せる。
       model: "sonnet",
     },
   );
@@ -2066,9 +1873,6 @@ if (!bodyWritten) {
   );
 }
 
-// Codex の target.ts の pushArguments は、コマンド内で一時 remote の URL と credential helper を差し替えて push する。
-// Claude Code の auto mode はその形を remote の付け替えとして拒否するので、Target で検証した設定の remote に push する。
-// 代わりに push の直前で、insteadOf と pushInsteadOf を適用した後の実際の push 先がすべて repository を指すことを照合する。
 const probe = await relay("push-target", "Ship", {
   defaults: { push_url: "", effective_url: "" },
   steps: [
@@ -2125,7 +1929,6 @@ if (!pushed || pushed.push_exit !== 0 || remoteSha !== published.commit) {
 const PR_URL_SHAPE = new RegExp(
   `^https://github\\.com/${escapeRegExp(repository)}/pull/[1-9]\\d*$`,
 );
-// 新規の実行は draft PR を 1 回だけ作る。修正は PR を作らず、正本は publish.ts の revision 経路で、本文だけを書き換える。
 const openPr = async () => {
   const created = await relay("create", "Ship", {
     defaults: { create_exit: -1, url: "", create_tail: "" },
@@ -2169,8 +1972,6 @@ const opened = revising ? await rewriteBody() : await openPr();
 if (opened.stop) return await shipStop(opened.stop, opened.why, opened.fields);
 published.url = opened.url;
 
-// 正本は publish.ts の checkPublishedPr と pr-identity.ts の matchPrPublication。
-// 照合する項目だけに絞り、本文は digest に置き換えてから agent に返させる。
 const PROJECT_JS =
   `const digest = ${DIGEST_SRC}; const p = JSON.parse(require("fs").readFileSync(0, "utf8")); ` +
   `const at = (o, k) => (o && typeof o === "object" ? o[k] : undefined); ` +
@@ -2237,19 +2038,14 @@ if (media.length) {
   }
 }
 
-// ---- CI: 正本は ci.ts の waitForCi。同じ head の CI を待ち、分類は script が行う ----
 phase("CI");
-// Codex は 540 秒の予算で待つ。ここでは 1 回の待ちを Bash tool の上限内の 540 秒に収め、
-// 登録前に待ちが空振りした場合に備えて回数で区切る。
 const CI_WAIT_ROUNDS = 6;
-// --jq は本文を Issue 参照を保っているかの真偽値に置き換える。本文そのものを書き写させないため。
 const CI_FIELDS = "url,headRefOid,baseRefName,state,isDraft,body,statusCheckRollup";
 const checkState = (value) => {
   if (!value) return undefined;
   if (value.status === undefined) return value.state;
   return value.status === "COMPLETED" ? value.conclusion : "PENDING";
 };
-// 正本は ci.ts の checkStatus。required の SKIPPED と NEUTRAL は成功と数えない。
 const checkStatus = (values) => {
   const checks = values.map((value) => ({
     name: value && (value.name ?? value.context),
@@ -2279,7 +2075,6 @@ const checkStatus = (values) => {
     failed: failed.map((c) => c.name),
   };
 };
-// 正本は ci.ts の parseTarget。別の head・base・非 draft・Issue 参照の欠けた PR では、この commit の CI を確かめられない。
 const ciTargetHeld = (view) =>
   view.headRefOid === published.commit &&
   view.baseRefName === baseBranch &&
@@ -2321,7 +2116,6 @@ while (counts.ci_rounds < CI_WAIT_ROUNDS) {
   const viewed = await relay(`ci:${counts.ci_rounds}`, "CI", {
     defaults: { view_exit: -1, view_json: "" },
     steps: [
-    // 1 つ目の step は待つためだけに実行し、その結果は使わない。
       {
         sh: argvLine(["gh", "pr", "checks", published.url, "--repo", repository, "--watch", "--interval", "10"]),
         cwd: repo,
@@ -2360,7 +2154,6 @@ return {
   ci,
   ...counts,
   run_id: runId,
-  // 正本は orchestrator.ts の remaining。ready への切り替えと人の判断は、この workflow の外に残る。
   remaining: [
     ...(media.length ? ["rendered_media_check"] : []),
     "published_body_check",

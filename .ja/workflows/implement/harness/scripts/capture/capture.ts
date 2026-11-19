@@ -1,6 +1,3 @@
-// ~/.agents/scripts/capture/capture.ts の複製。正本は向こうなので、先にそちらを編集する。
-// 差分: ヘルパーは export しない (ここから import する先が無い)。出力は console でなく
-// process.stdout と process.stderr に書く。import.meta.dir は import.meta.dirname に置き換えた。
 import assert from "node:assert/strict";
 import { access, writeFile, readFile, realpath, readdir, lstat } from "node:fs/promises";
 import { resolve, isAbsolute } from "node:path";
@@ -9,7 +6,6 @@ import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
 import { isRecord, outside } from "../shared/values.ts";
 
-// ブラウザーを固定した事前確認は、別のブラウザーで動く対象を弾いてしまう。
 function captureUnavailable(report: unknown) {
   const text = JSON.stringify(report);
   return (
@@ -98,7 +94,6 @@ async function validateCaptureMedia(output: string) {
   }
 }
 
-// 外側のプロセスグループ・タイムアウト・出力ディレクトリは呼び出し側が持つ。
 async function capture() {
   const [specPath, configPath, output] = process.argv.slice(2);
   if (!specPath || !configPath || !output || !isAbsolute(output)) {

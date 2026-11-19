@@ -1,7 +1,3 @@
-// Behavior checks on implement.js with every agent stubbed. They pin what the script decides on
-// its own: the stop reasons, the review contract (finding IDs, target identity, host-computed
-// status), the unbounded repair loop, the deterministic branch name, the publication gates, the
-// CI classification, and the run rows.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
@@ -20,10 +16,8 @@ import { runWorkflow } from "../../_lib/run-workflow.ts";
 
 const implementJs = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "implement.js");
 const workflowsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-// write-body.ts found no transcript holding the body, as on a host that keeps none.
 const NO_READ_BACK = { extract_exit: 1, extract_out: '{"ok":false,"reason":"no transcript"}', body_digest: "" };
 const repo = "/abs/target-repo";
-// The verification-loop tests stop at verified_local; publishArgs takes the default publish path.
 const args = { issue: "12", repo, publish: false };
 const publishArgs = { issue: "12", repo };
 const BASE_SHA = "a".repeat(40);
@@ -34,7 +28,6 @@ const COMMIT = "e".repeat(40);
 const PR_URL = "https://github.com/o/r/pull/34";
 const PUSH_URL = "https://github.com/o/r.git";
 const BRANCH = "fix/12-fix-login-crash-on";
-// Revision: the head the earlier run published, its body's sha256, and the row that run wrote.
 const PUBLISHED = "5".repeat(40);
 const START_BODY_SHA = "6".repeat(64);
 const PR_FIELDS = {
@@ -103,8 +96,6 @@ const finding = (overrides = {}) => ({
   ...overrides,
 });
 
-// Classifies an agent call by its schema's properties rather than its label or wording. The first
-// property found decides, so a schema sharing a later property (tree, exit_code) is caught earlier.
 const CONFIG_BLOB = "b".repeat(40);
 const FILLED = {
   target: {
@@ -145,14 +136,10 @@ const KIND_BY_PROPERTY = [
   ["newItems", "review"],
   ["description", "name"],
 ];
-// A relay's prompt carries its commands as a spec between RELAY_SPEC and RELAY_SPEC_END. The tests read
-// the commands from the spec, the way workflows/_lib/relay.ts does.
 const specOf = (prompt) => {
   const found = /RELAY_SPEC [0-9a-f]{8}:\d+\n(.*)\nRELAY_SPEC_END/.exec(String(prompt));
   return found ? JSON.parse(found[1]) : null;
 };
-// The prompt as a test reads it: one numbered line per step with its shell command, then whatever
-// follows the spec. A prompt with no spec is left as it is.
 const readable = (prompt) => {
   const spec = specOf(prompt);
   if (!spec) return prompt;
@@ -160,8 +147,6 @@ const readable = (prompt) => {
   const steps = spec.steps.map((step, i) => `${i + 1}. \`${step.sh}\`: ${JSON.stringify(step.set ?? {})}`);
   return `${steps.join("\n")}${after}`;
 };
-// The digest relay.ts prints with the fields. A stub that names its own relay_check keeps it, which
-// is how a test hands back fields that changed on the way.
 const canonical = (fields) =>
   JSON.stringify(
     Object.fromEntries(
@@ -170,7 +155,6 @@ const canonical = (fields) =>
         .map((key) => [key, fields[key]]),
     ),
   );
-// relay_note is the agent's own field: relay.ts prints no such field, and the digest does not cover it.
 const withCheck = (value, opts) => {
   const relayed = "relay_check" in ((opts.schema && opts.schema.properties) || {});
   if (!relayed || !value || typeof value !== "object") return value;
@@ -187,21 +171,16 @@ const kindOf = (opts) => {
   throw new Error(`unclassified agent call: ${opts.label}`);
 };
 
-// Marks a repair stub as one that changes no file.
 const idle = (stub) => Object.assign(stub, { idle: true });
 
-// Each kind answers from a queue when one is given, else from its default. The check queue and
-// the review queue drive the loop; the rest default to the happy path.
 const makeStubs = (overrides = {}) => {
   const queues = Object.fromEntries(
     Object.entries(overrides).map(([kind, v]) => [kind, Array.isArray(v) ? [...v] : v]),
   );
   const rows = [];
   let tree = treeOf(1);
-  // The body the script asked the body agent to write, echoed back by the readback and CI views.
   const published = { body: "" };
   const defaults = {
-    // record.ts reads the row from its stdin and prints where it wrote it.
     record: (_, { spec }) => {
       rows.push(JSON.parse(spec.steps[0].stdin));
       return { record_out: JSON.stringify({ path: "/h/implement-runs.jsonl", run_id: RUN_ID }) };
@@ -221,7 +200,6 @@ const makeStubs = (overrides = {}) => {
     check: () => ({ exit_code: 0, log_tail: "ok", tree }),
     diff: () => ({ exit_code: 0, raw: "1\n:100644 100644 M src/app.js\n" }),
     capture: () => ({ started: true, timed_out: false, exit_code: 0, log_tail: "", tree }),
-    // Installing media changes the worktree, so the check and review that follow see a new tree.
     install: () => {
       tree = treeOf(Number.parseInt(tree, 10) + 500);
       return {
@@ -235,14 +213,12 @@ const makeStubs = (overrides = {}) => {
     review: () => reviewReply(tree),
     implement: () => ({ status: "repaired", findings: "implemented" }),
     repair: () => ({ status: "repaired", findings: "repaired" }),
-    // git ls-tree over the reviewed tree for the documents a review named: every path is a blob.
     documents: (prompt) => ({
       exit_code: 0,
       listing: listedPaths(prompt)
         .map((p) => `100644 blob ${"d".repeat(40)}\t${p}`)
         .join("\n"),
     }),
-    // Revision: the earlier worktree is reused clean at the published head.
     reprepare: () => ({
       existing: true,
       created: false,
@@ -265,7 +241,6 @@ const makeStubs = (overrides = {}) => {
       tree,
       files: "src/login.js\n",
     }),
-    // write-body.ts read the body back from the transcript, so the copy below is not asked for.
     read: (prompt) => {
       published.body = dataIn(prompt);
       return { extract_exit: 0, extract_out: '{"ok":true}', body_digest: digestOf(published.body) };
@@ -275,7 +250,6 @@ const makeStubs = (overrides = {}) => {
       return { write_exit: 0, body_digest: digestOf(published.body) };
     },
     probe: () => ({ push_url: PUSH_URL, effective_url: PUSH_URL }),
-    // git ls-remote for the run's branch, asked only on a resumed Ship: nothing is on the remote yet.
     pushed: () => ({ ls_exit: 0, remote_head: "" }),
     push: () => ({ push_exit: 0, push_tail: "", remote_sha: COMMIT }),
     create: () => ({ create_exit: 0, url: PR_URL, create_tail: "" }),
@@ -286,13 +260,11 @@ const makeStubs = (overrides = {}) => {
   const agent = async (prompt, opts) => {
     const kind = kindOf(opts);
     const queued = queues[kind];
-    // A queue answers in order and then falls back to the default; a bare function answers every call.
     const answer = Array.isArray(queued)
       ? queued.length
         ? queued.shift()
         : defaults[kind]
       : (queued ?? defaults[kind]);
-    // A repair changes files, which moves the tree. A stub wrapped in idle() is a repair that left them alone.
     if (kind === "repair" && !(typeof answer === "function" && answer.idle))
       tree = treeOf(Number.parseInt(tree, 10) + 1);
     const value =
@@ -304,7 +276,6 @@ const makeStubs = (overrides = {}) => {
             spec: specOf(prompt),
           })
         : answer;
-    // Fields a test rarely varies default here, so an override names only what it changes.
     const filled =
       value && typeof value === "object" && FILLED[kind] ? { ...FILLED[kind], ...value } : value;
     return withCheck(filled, opts);
@@ -316,7 +287,6 @@ const run = async (overrides, runArgs = args) => {
   const stub = makeStubs(overrides);
   const ran = await runWorkflow(implementJs, { args: runArgs, stubs: stub.stubs });
   const { result } = ran;
-  // Tests read a relay's commands, so each recorded prompt is shown the way readable gives it.
   const calls = {
     ...ran.calls,
     agent: ran.calls.agent.map((c) => ({
@@ -399,9 +369,6 @@ test("the loop has no round cap: six needs_changes rounds still end in acceptanc
   assert.equal(result.repairs, 6);
 });
 
-// A repair may leave the tree as it was and say why, and the next review reads that. One run repaired eleven
-// times that way: its Issue assigned a verification to a run the workflow does not make, the repair kept
-// answering that nothing was left to change, and the review kept the finding open.
 test("a repair that changes nothing gets one round to be read, and a round that rejects the same tree for the same thing stops as repair-no-progress", async () => {
   const open = (_, { tree }) =>
     reviewReply(tree, { updates: [{ id: "R1-1", disposition: "open", reason: "the sweep has not run" }] });
@@ -417,8 +384,6 @@ test("a repair that changes nothing gets one round to be read, and a round that 
   assert.equal(result.retry_next, null);
   assert.equal(kinds.filter((kind) => kind === "repair").length, 1, "no second repair is asked for");
 
-  // The same tree failing its check twice, with a repair between that found nothing to change. The cause can
-  // be outside the tree, so the round can be run again.
   const failing = (_, { tree }) => ({ exit_code: 1, log_tail: "FAIL an unrelated test", tree });
   const flaky = await run({ check: [failing, failing, failing], repair: [nothing, nothing] });
   assert.equal(flaky.result.stopped, "repair-no-progress");
@@ -427,8 +392,6 @@ test("a repair that changes nothing gets one round to be read, and a round that 
   assert.match(flaky.result.evidence, /FAIL an unrelated test/);
 });
 
-// The round after an idle repair can reject the same tree for something the repair has not seen: a check that
-// now passes and a first review, or a review that settles the old finding and raises another.
 test("a round that rejects an unchanged tree for something new goes on to a repair", async () => {
   const nothing = idle(() => ({ status: "repaired", findings: "The failing test is unrelated to this change." }));
   const fixed = (id) => (_, { tree }) => reviewReply(tree, { updates: [{ id, disposition: "fixed", reason: "done" }] });
@@ -448,7 +411,6 @@ test("a round that rejects an unchanged tree for something new goes on to a repa
           updates: [{ id: "R1-1", disposition: "fixed", reason: "the repair is right" }],
           newItems: [finding({ condition: "another defect" })],
         }),
-      // A review answers every earlier finding.
       (_, { tree }) =>
         reviewReply(tree, {
           updates: [
@@ -476,7 +438,6 @@ test("a repair that changes nothing and whose reason the next review accepts end
 
   const open = (_, { tree }) =>
     reviewReply(tree, { updates: [{ id: "R1-1", disposition: "open", reason: "still broken" }] });
-  // Idle, then a repair that changes files: the round after it is a new tree, not a second rejection of the same one.
   const changed = await run({
     review: [
       (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
@@ -494,8 +455,6 @@ test("a repair that changes nothing and whose reason the next review accepts end
   assert.deepEqual([twice.result.review_rounds, twice.result.repairs], [3, 2]);
 });
 
-// The agent of that run read "pending host execution alone is not needs_human" as covering a verification the
-// Issue gave to a host run the workflow does not have.
 test("the implementing and repairing prompts say what the host runs, and send a verification it does not run to a human", async () => {
   const { calls } = await run({
     review: [(_, { tree }) => reviewReply(tree, { newItems: [finding()] })],
@@ -506,7 +465,6 @@ test("the implementing and repairing prompts say what the host runs, and send a 
     assert.match(prompt, /This run does not publish, so the host runs only those two and confirms no CI check\./, label);
     assert.match(prompt, /a run by this workflow's host that is none of those, and names no other owner for it, return needs_human/, label);
   }
-  // A publishing run names the checks, so the agent can compare them with the ones the Issue names.
   const publishing = await run({}, publishArgs);
   const prompt = publishing.calls.agent.find((c) => c.opts.label === "implement").prompt;
   assert.match(prompt, /This run publishes, so the host also confirms the configured CI checks \(tests\) on the published head\./);
@@ -580,8 +538,6 @@ test("an Issue whose digest cannot be read at the start stops as issue-unreadabl
   assert.ok(!kinds.includes("prepare"));
 });
 
-// The work happens in an isolated worktree, so only the start inputs must be committed; unrelated work
-// in the original checkout, such as a /scoping Issue draft, is preserved and does not stop the run.
 test("an untracked Issue draft, an earlier worktree, or another modified file in the checkout does not stop the run", async () => {
   const { result } = await run({
     target: [
@@ -594,7 +550,6 @@ test("an untracked Issue draft, an earlier worktree, or another modified file in
   assert.equal(result.status, "verified_local");
 });
 
-// A non-required concern would otherwise be accepted in the same round, so only the line check can stop it.
 test("a new finding whose line is below 1 stops as invalid-review", async () => {
   const { result } = await run({
     review: [
@@ -681,7 +636,6 @@ test("needs_human stops as human-decision-required, and needs_human with empty f
   assert.equal(blank.result.stopped, "invalid-repair");
 });
 
-// The smoke run on #124 stopped here with review: null, which hid the open finding the human had to judge.
 test("a repair that returns needs_human after a review keeps that review in the stopped result", async () => {
   const { result } = await run({
     review: [(_, { tree }) => reviewReply(tree, { newItems: [finding({ area: "requirements" })] })],
@@ -714,7 +668,6 @@ test("a title with fewer than two ASCII words takes a 2-4 word description from 
   assert.ok(kinds.indexOf("name") < kinds.indexOf("prepare"));
 });
 
-// Before #801 an untyped title fell back to feat, so an Issue whose type nobody had decided was published on feat/.
 test("a title without one of the four type prefixes stops as issue-untyped before any worktree or branch exists, in a fresh run and in a revision", async () => {
   const untypedIssue = (title) => ({ issue_json: JSON.stringify({ ...ISSUE, title }) });
   const fresh = (title) => () => withTitle(title);
@@ -764,8 +717,6 @@ test("a title with two or more ASCII words names the branch without the naming a
   assert.ok(!kinds.includes("name"));
 });
 
-// ---- capture ----
-// The trial repo's own capture shape: the adapter lives in the Codex harness, named via {harness}.
 const CAPTURE = {
   command: [
     "bun",
@@ -893,7 +844,6 @@ test("a change to a capture definition, a mode change, or required: true forces 
   );
 });
 
-// required: true recaptures on every change, so only an unchanged tree can reuse the capture.
 test("with required: true, a repair that leaves the tree unchanged reuses the capture without a diff", async () => {
   const { result, kinds } = await withCapture(
     { ...CAPTURE, required: true },
@@ -975,8 +925,6 @@ test("capture stops: timeout, unavailable adapter, a capture that writes into th
   }
 });
 
-// The default target reply, reused by the gate tests that patch one field of it.
-// ---- review context and identity checks carried over from Codex ----
 test("the next review reads every repair explanation since the previous review, including one followed by a failed check, and a completed review clears them", async () => {
   const reviewPrompts = [];
   const review = (reply) => (prompt, ctx) => {
@@ -1021,9 +969,7 @@ test("a review naming a document missing from the reviewed tree, or a directory,
   const ok = await withDocs([doc("README.md"), doc("docs/guide.md")]);
   assert.equal(ok.result.status, "verified_local");
   const listPrompt = ok.calls.agent.find((c) => kindOf(c.opts) === "documents").prompt;
-  // `git -c` is denied as a permission prompt in a non-interactive session, so the listing runs without it.
   assert.ok(!listPrompt.includes("'-c'"), "no command-scoped git config");
-  // git quotes a non-ASCII path with octal escapes; the script compares against that form.
   const japanese = await withDocs(
     [doc("docs/日本.md")],
     `100644 blob ${"d".repeat(40)}\t"docs/\\346\\227\\245\\346\\234\\254.md"`,
@@ -1094,7 +1040,6 @@ test("an Issue that changes while the check runs stops before the repair starts"
   assert.ok(!kinds.includes("repair"));
 });
 
-// ---- references pinned to the start commit (Codex --start-commit / --report) ----
 const REPORT = { path: "docs/research/reset-behavior.md", blob: "1".repeat(40) };
 const DECISION = { path: "docs/decisions/0001-search.md", blob: "2".repeat(40) };
 const listingOf = (...entries) =>
@@ -1172,8 +1117,6 @@ test("malformed references stop as invalid-reports before any target is read: no
   }
 });
 
-// The retired wiki directory, assembled from fragments so the tree scan for its path in
-// workflows/_lib/tests/build-path-retirement.test.ts does not flag this file.
 test("a reference under the retired wiki directory stops as invalid-reports while one under docs/decisions is accepted", async () => {
   const wikiPath = ["docs", "wiki", "search.md"].join("/");
   const rejected = await run({}, { ...args, startCommit: BASE_SHA, reports: [{ ...REPORT, path: wikiPath }] });
@@ -1184,7 +1127,6 @@ test("a reference under the retired wiki directory stops as invalid-reports whil
   assert.ok(accepted.kinds.includes("target"));
 });
 
-// ---- revising a PR this workflow published (Codex --previous-run / --request-file) ----
 const REQUEST =
   "Adopted finding: the heading misnames the field. Expected: rename it. Permission: docs only.";
 const revisionArgs = { issue: "12", repo, revision: { pr: PR_URL, request: REQUEST } };
@@ -1340,7 +1282,6 @@ test("revision stops: malformed input, no record of the publication, a PR or wor
   }
 });
 
-// The earlier worktree as the revision prepare agent reports it, clean at the published head.
 function repreparedAt() {
   return {
     existing: true,
@@ -1355,7 +1296,6 @@ function repreparedAt() {
   };
 }
 
-// ---- what a stop leaves for the human (Codex result.remaining) ----
 test("a stop names the work that remains: local verification before acceptance, publication before the PR exists, and CI after it", async () => {
   const early = await run({ target: [() => ({ ...makeStubsTarget(), user: "" })] }, publishArgs);
   assert.deepEqual(early.result.remaining.slice(0, 2), ["local_verification", "publication"]);
@@ -1385,7 +1325,6 @@ test("a stop names the work that remains: local verification before acceptance, 
   assert.ok(afterPr.result.remaining.includes("mark_ready"));
 });
 
-// ---- config ----
 test("config follows the Codex target contract: repository, remote, and baseBranch are required and unknown fields are rejected", async () => {
   const withConfig = (config) =>
     run({ target: [() => ({ ...makeStubsTarget(), config_text: JSON.stringify(config) })] });
@@ -1510,7 +1449,6 @@ test("a remote pointing at another repository, a non-github.com GH_HOST, or a pu
     assert.equal(result.stopped, reason, reason);
     assert.ok(!kinds.includes("prepare"), `${reason}: nothing is prepared`);
   }
-  // Without publishing, an empty ciChecks and a read-only viewer are no reason to stop.
   const local = await run(
     {
       target: target({
@@ -1521,7 +1459,6 @@ test("a remote pointing at another repository, a non-github.com GH_HOST, or a pu
     args,
   );
   assert.equal(local.result.status, "verified_local");
-  // An agent may transcribe git remote -v's tab as spaces; the same remotes still match.
   const spaced = await run(
     { target: target({ remotes: `origin  ${PUSH_URL} (fetch)\norigin  ${PUSH_URL} (push)\n` }) },
     args,
@@ -1529,15 +1466,11 @@ test("a remote pointing at another repository, a non-github.com GH_HOST, or a pu
   assert.equal(spaced.result.status, "verified_local");
 });
 
-// ---- The commands the body and readback agents run, executed for real ----
-// The command inside a prompt step's inline code, as the agent is told to run it verbatim.
 const stepCommand = (prompt, step) => {
   const line = prompt.split("\n").find((l) => l.startsWith(`${step}. \``)) || "";
   return line.slice(line.indexOf("`") + 1, line.lastIndexOf("`:"));
 };
 
-// The body step's commands run for real against one accepted review. The overrides decide how the
-// file gets written: by write-body.ts from a transcript, or by the block a second agent copies.
 const TRICKY = 'のーと and ﾉｰﾄ give 0; `　pen　` trims; it\'s "quoted" $HOME \\ back';
 const runBodyStep = async (writers) => {
   const dir = mkdtempSync(join(tmpdir(), "implement-body-"));
@@ -1571,13 +1504,6 @@ const runBodyStep = async (writers) => {
   return { result, rows, kinds };
 };
 
-// An agent that copied about 10 KB of base64 changed one or two characters, and the digest check
-// stopped the run before publication. The read-back agent's first command reads the body out of
-// that agent's own prompt, which Claude Code keeps as the first line of its transcript. The test
-// runs the command exactly as the agent receives it, with HOME pointing at a tree that holds this
-// repository's workflows directory and one stored transcript. The command gets no RELAY_PROJECTS from the caller: the
-// claude-run.ts host sets it for every relay step, the check among them, and the command would then look there and
-// not under HOME (#808). The test sets one that names no directory, so a command that inherits it fails here.
 test("the read-back command, run as the agent receives it, writes the body from the transcript holding the agent's own prompt, and no copy is asked for", async (t) => {
   const before = process.env.RELAY_PROJECTS;
   process.env.RELAY_PROJECTS = join(tmpdir(), "implement-no-such-projects");
@@ -1592,13 +1518,11 @@ test("the read-back command, run as the agent receives it, writes the body from 
         const agents = join(home, ".claude", "projects", "-abs-target-repo", "session-1", "subagents", "workflows", "wf_1");
         mkdirSync(agents, { recursive: true });
         symlinkSync(workflowsDir, join(home, ".claude", "workflows"));
-        // The transcript as the harness stores it: a frame line, then the computed text indented.
         const stored = `[Workflow harness — computed task]\n${prompt.replace(/^/gm, "  ")}`;
         writeFileSync(
           join(agents, "agent-a1.jsonl"),
           `${JSON.stringify({ type: "user", message: { role: "user", content: stored } })}\n{"type":"assistant"}\n`,
         );
-        // The data block is ASCII and carries no shell command for the agent to run.
         const data = prompt.slice(prompt.indexOf("PR_BODY_B64_BEGIN"));
         assert.match(data, /^[\x20-\x7e\n]+$/);
         assert.ok(!data.includes("base64 -d"));
@@ -1619,7 +1543,6 @@ test("when the read-back finds no transcript, a second agent's block writes a bo
     read: [NO_READ_BACK],
     body: [
       (prompt) => {
-        // The agent copies only ASCII, which it cannot rewrite the way it rewrote ﾉｰﾄ into ノート.
         assert.match(bodyBlock(prompt), /^[\x20-\x7e\n]+$/);
         assert.ok(
           !bodyBlock(prompt)
@@ -1640,8 +1563,6 @@ test("when the read-back finds no transcript, a second agent's block writes a bo
   );
 });
 
-// Which way the file was written is decided by the script from the read-back's own result, so a
-// read-back that reports success with another body, or returns nothing, counts as no read-back.
 test("a read-back that returns nothing, or a file whose digest differs, goes to the copy, and a copy that also differs stops as pr-body-mismatch without writing", async () => {
   const cases = [
     [null, /returned no result/],
@@ -1661,7 +1582,6 @@ test("a read-back that returns nothing, or a file whose digest differs, goes to 
   }
 });
 
-// ---- Ship and CI ----
 const SHIP_KINDS = ["pulls", "commit", "read", "body", "probe", "push", "create", "readback", "attach"];
 const WRITES = ["push", "create", "attach"];
 
@@ -1681,7 +1601,6 @@ test("by default an accepted run commits once, pushes, opens a draft PR, reads i
   assert.equal(result.ci.status, "passed");
   assert.deepEqual(
     kinds.filter((k) => SHIP_KINDS.includes(k) || k === "ci"),
-    // The body is read back from the transcript, so no agent is asked to copy it.
     ["pulls", "commit", "read", "probe", "push", "create", "readback", "ci"],
   );
   assert.ok(!result.remaining.includes("ci"));
@@ -1692,7 +1611,6 @@ test("by default an accepted run commits once, pushes, opens a draft PR, reads i
     ["started", "published_draft"],
   );
   assert.equal(rows[1].url, PR_URL);
-  // The body closes the Issue, names the verified commit, and carries the accepted assessments.
   assert.match(published.body, /^Closes #12\n/);
   assert.ok(published.body.includes(COMMIT));
   assert.ok(published.body.includes("Fixed "), "the accepted assessment reaches the body");
@@ -1703,11 +1621,8 @@ test("by default an accepted run commits once, pushes, opens a draft PR, reads i
   const pushPrompt = calls.agent.find((c) => kindOf(c.opts) === "push").prompt;
   assert.ok(pushPrompt.includes(`'${BRANCH}:refs/heads/${BRANCH}'`));
   assert.ok(pushPrompt.includes("--no-follow-tags"));
-  // The push goes to the configured remote, which Target verified; no command-scoped remote or
-  // credential override, which Claude Code's auto mode denies as a remote repoint.
   assert.ok(pushPrompt.includes("push' '--no-follow-tags' 'origin'"));
   assert.ok(!pushPrompt.includes("credential.helper"));
-  // An ssh push URL for the same repository is accepted.
   const ssh = await run(
     { probe: [{ push_url: "git@github.com:o/r.git\n", effective_url: PUSH_URL }] },
     publishArgs,
@@ -1785,7 +1700,6 @@ test("publication gates before the first write stop without pushing: a changed t
       "push-target-mismatch",
       { probe: [{ push_url: PUSH_URL, effective_url: "https://evil.example/o/r.git" }] },
     ],
-    // One rewritten push URL among several is enough to stop.
     [
       "push-target-mismatch",
       {
@@ -1961,9 +1875,6 @@ test("CI that never registers its required checks stops ci-timed-out after the r
   assert.deepEqual(result.ci.missing, ["tests"]);
 });
 
-// ---- resuming a stopped run ----
-// Workflow's resumeFromRunId answers every agent call whose prompt is unchanged from cache and runs
-// the first changed call and everything after it. The tests find that first changed call.
 const firstChange = (a, b) =>
   a.calls.agent.findIndex((c, i) => c.prompt !== (b.calls.agent[i] || {}).prompt);
 const labelAt = (r, index) => (index < 0 ? "(none)" : r.calls.agent[index].opts.label);
@@ -1988,7 +1899,6 @@ test("a stop that fixing the environment clears returns the retry to pass next, 
     ["capture-timeout", { "round:1": 1 }, () => withCapture(CAPTURE, { capture: shotReply({ timed_out: true, exit_code: -1 }) })],
     ["check-unavailable", { "round:1": 1 }, () => run({ check: [noTree] })],
     ["invalid-review", { "round:1": 1 }, () => run({ review: [() => reviewReply(treeOf(999))] })],
-    // The second round opens after a repair, and its stop names the second round.
     ["check-unavailable", { "round:2": 1 }, () => run({ check: [failedCheck, noTree] })],
     ["pr-body-mismatch", { ship: 1 }, () => run(mangledBody, publishArgs)],
     ["human-decision-required", null, () => run({ implement: [{ status: "needs_human", findings: "Which API?" }] })],
@@ -2025,23 +1935,17 @@ test("a retry runs from the observation that opens the named boundary, and every
     assert.equal(labelAt(plain, firstChange(plain, first)), opener, key);
     assert.equal(labelAt(first, firstChange(first, second)), opener, `${key}: a second run-again`);
   }
-  // Resuming the second round replays the first round's repair from cache.
   const plain = await run(needsRepair, args);
   const resumed = await run(needsRepair, { ...args, retry: { "round:2": 1 } });
   assert.ok(plain.kinds.slice(0, firstChange(plain, resumed)).includes("repair"));
 });
 
-// A run resumed at round 1 and then stopped at the body is resumed with both boundaries. Dropping the
-// first one would put the round's prompt back, and the run would start again from the round.
 test("a second resume that keeps the first boundary's count runs from the second boundary", async () => {
   const afterRound = await run({}, { ...publishArgs, retry: { "round:1": 1 } });
   const afterShip = await run({}, { ...publishArgs, retry: { "round:1": 1, ship: 1 } });
   assert.equal(labelAt(afterRound, firstChange(afterRound, afterShip)), "ship");
 });
 
-// A capture that stopped leaves its output directory and the three paths the harness writes next to
-// it. A resume of that round, and a fresh launch after the earlier branch was cleared, capture into
-// the same path.
 test("the capture command moves what an earlier capture left aside before it creates its directory, and deletes nothing", async () => {
   const { calls } = await withCapture(CAPTURE);
   const prompt = calls.agent.find((c) => c.opts.label === "capture:1").prompt;
@@ -2065,15 +1969,12 @@ test("the capture command moves what an earlier capture left aside before it cre
     const moved = names.filter((n) => n.startsWith(`implement-12-capture-1${ext}.stale-`));
     assert.equal(moved.length, 1, `${ext || "the directory"} is kept under a stale name`);
   }
-  // With nothing left behind, the same command creates the directory.
   const fresh = mkdtempSync(join(tmpdir(), "implement-capture-"));
   const clean = join(fresh, "implement-12-capture-1");
   execSync(`${aside.replaceAll(output, clean)} && mkdir '${clean}'`, { stdio: "pipe" });
   assert.deepEqual(readdirSync(fresh), ["implement-12-capture-1"]);
 });
 
-// A capture may not write into the checkout. When it stopped and its tree cannot be confirmed equal to
-// the tree before it, a resume would take whatever it wrote in as the deliverable.
 test("a capture stop whose tree changed, or whose agent returned nothing, cannot be resumed", async () => {
   const cases = [
     ["capture-timeout", shotReply({ timed_out: true, exit_code: -1, tree: treeOf(999) })],
@@ -2087,8 +1988,6 @@ test("a capture stop whose tree changed, or whose agent returned nothing, cannot
   }
 });
 
-// An observation that fails is the first live call of every resume. Reporting it as a changed Issue
-// sent the run back to a fresh launch although nothing had changed.
 test("an observation that returns nothing or no digest stops as check-unavailable and can be resumed, apart from a changed Issue", async () => {
   const nth = (n, reply) => {
     let seen = 0;
@@ -2099,12 +1998,10 @@ test("an observation that returns nothing or no digest stops as check-unavailabl
   };
   const needsRepair = (_, { tree }) => reviewReply(tree, { newItems: [finding()] });
   const cases = [
-    // The round's opening observation, the one after the review, and the one before the repair.
     [{ snapshot: nth(1, null) }, args, { "round:1": 1 }],
     [{ snapshot: nth(1, { issue_digest: "", tree: treeOf(1) }) }, args, { "round:1": 1 }],
     [{ snapshot: nth(2, null) }, args, { "round:1": 1 }],
     [{ snapshot: nth(3, null), review: [needsRepair] }, args, { "round:1": 1 }],
-    // The observation that opens Ship.
     [{ snapshot: (_, ctx) => (ctx.label === "ship" ? null : { issue_digest: DIGEST, tree: ctx.tree }) }, publishArgs, { ship: 1 }],
   ];
   for (const [overrides, runArgs, next] of cases) {
@@ -2118,8 +2015,6 @@ test("an observation that returns nothing or no digest stops as check-unavailabl
   assert.equal(changed.result.retry_next, null);
 });
 
-// The script cannot tell where the earlier run stopped, so a resumed Ship asks the remote. A branch
-// already there means the stopped run pushed, and going on would retry a write.
 test("a resumed Ship stops without writing when the branch is already on the remote, and a run that is not resumed does not ask", async () => {
   const retry = { ship: 1 };
   const clean = await run({}, { ...publishArgs, retry });
@@ -2140,7 +2035,6 @@ test("a resumed Ship stops without writing when the branch is already on the rem
   assert.ok(!plain.kinds.includes("pushed"));
 });
 
-// A resume of Ship runs the commit step once more, on a worktree the stopped run already committed.
 test("the commit command of a resumed Ship commits once, leaves that commit alone on a second run, and still fails when there is nothing to commit", async () => {
   const target = mkdtempSync(join(tmpdir(), "implement-commit-"));
   const worktree = join(target, ".claude", "worktrees", "implement-12");
@@ -2210,16 +2104,9 @@ test("a retry that is not the value a stop returned stops as invalid-retry befor
   }
 });
 
-// The body agent's first command writes the PR body from its last argument, an ASCII-only JSON
-// string in shell single quotes. Decoding it recovers the body the script generated.
-// ---- relays: the commands the script wants run ----
-// An agent that read commands as prose copied them into its shell and copied their output back, and
-// changed characters both ways. A relay's prompt names the digest of a spec, and relay.ts reads the
-// spec from the agent's transcript.
 const LLM_ROLES = ["implement", "repair", "review", "name"];
 
 test("every agent except the implementing, repairing, reviewing, and naming ones is handed a spec whose digest the prompt names", async () => {
-  // One finding, repaired and then marked fixed, so the run passes through every kind of relay.
   const repaired = {
     review: [
       (_, { tree }) => reviewReply(tree, { newItems: [finding()] }),
@@ -2237,7 +2124,6 @@ test("every agent except the implementing, repairing, reviewing, and naming ones
     assert.ok(named, `${label} carries no spec`);
     assert.equal(named[1], digestOf(named[2]), `${label}: the digest names another spec`);
     assert.ok(call.raw.includes(`relay.ts`) && call.raw.includes(`'${named[1]}'`), `${label}: the command does not pass the digest`);
-    // The fields the agent must return are the spec's defaults without the internal ones, plus the check.
     const fields = Object.keys(call.spec.defaults).filter((key) => !key.startsWith("_"));
     assert.deepEqual(
       Object.keys(call.opts.schema.properties).sort(),
@@ -2246,18 +2132,12 @@ test("every agent except the implementing, repairing, reviewing, and naming ones
     );
     for (const step of call.spec.steps) {
       assert.equal(typeof step.sh, "string", label);
-      // The spec carries the place a prose prompt used to get from anchor(): a step that runs git or gh names it.
-      // argvLine quotes each word, so the command reads 'git' '-C' … as often as git -C ….
       if (/(^|[\s;&|($])'?(git|gh)'? /.test(step.sh)) assert.ok(step.cwd, `${label}: "${step.sh.slice(0, 40)}" names no cwd`);
-      // relay.ts has to print its line before the Bash tool's 600 s ceiling kills the call.
       assert.ok((step.timeout_ms ?? 0) < 600000, `${label}: a step can outlast the Bash tool`);
     }
   }
 });
 
-// relay.ts prints the digest of the fields with them. A reply whose fields do not carry that digest
-// had a character changed on the way back. The commands are not run again: a second agent returns the
-// line relay.ts kept. Only when that reply is wrong too is the relay used as no result.
 test("fields that do not match the relay's digest are asked for once more, and a second mismatch reads as no result", async () => {
   const changed = "00000000:0";
   const miscopied = (_, { tree }) => ({ exit_code: 0, log_tail: "", tree, relay_check: changed });
@@ -2289,8 +2169,6 @@ test("fields that do not match the relay's digest are asked for once more, and a
   }
 });
 
-// Every snapshot and every check of a run carries the same commands. relay.ts keeps the line it printed under
-// the spec's digest, so two calls sharing a digest would share the kept line and the progress.
 test("every relay of a run carries a spec with a digest of its own, and the id names the run and the boundary run again", async () => {
   const repaired = {
     review: [
@@ -2314,7 +2192,6 @@ test("every relay of a run carries a spec with a digest of its own, and the id n
   };
   sameCommands(await run({}, args), await run({}, { ...args, retry: { "round:1": 1 } }), "check:1");
   sameCommands(await run({}, publishArgs), await run({}, { ...publishArgs, retry: { ship: 1 } }), "pulls");
-  // Another run of the same Issue is another run id, which the recorder mints.
   const otherRun = await run({
     record: (_, { spec }) => ({
       record_out: JSON.stringify({ path: "/h/implement-runs.jsonl", run_id: JSON.parse(spec.steps[0].stdin).run_id || "f".repeat(32) }),
@@ -2323,8 +2200,6 @@ test("every relay of a run carries a spec with a digest of its own, and the id n
   sameCommands(await run({}, args), otherRun, "check:1");
 });
 
-// relay_error is relay.ts saying it has no result: the spec was unreadable, or its line was too long to
-// return. Nothing is kept to ask for, so no second agent is started, and the stop says why.
 test("a relay with no result leaves its reason in the stop that follows, and a relay that returned one leaves none", async () => {
   const refused = () => ({
     exit_code: -1,
@@ -2345,15 +2220,12 @@ test("a relay with no result leaves its reason in the stop that follows, and a r
   assert.equal(silent.result.stopped, "check-unavailable");
   assert.match(silent.result.relay_note, /returned no result/);
 
-  // The recorder's failure is tolerated, and the relays after it returned their results. The stop is not theirs.
   const failing = { exit_code: 1, log_tail: "boom" };
   const later = await run({ record: [() => null], check: [failing, failing] });
   assert.ok(later.result.stopped, "the run stops on a failing check");
   assert.ok(!("relay_note" in later.result), "a stop that follows a returned result carries no note");
 });
 
-// The line relay.ts kept is returned only for the check the first agent named, so the replay cannot answer with
-// the line of another call. The check goes into a command, so a reply that names none is not asked for.
 test("the replay names the check the first reply carried, and a reply that carries no check is not asked for again", async () => {
   const changed = "0badc0de:7";
   const miscopied = (_, { tree }) => ({ exit_code: 0, log_tail: "", tree, relay_check: changed });
@@ -2368,8 +2240,6 @@ test("the replay names the check the first reply carried, and a reply that carri
   assert.ok(!unnamed.calls.agent.some((c) => c.opts.label.endsWith(":replay")));
   assert.match(unnamed.result.relay_note, /names no check/);
 
-  // The first record's reply sets the run id, and its row is already written. Asking again recovers the id, so
-  // the terminal row joins the start row.
   const { result, calls, rows } = await run({
     record: [
       () => ({ record_out: "changed on the way", relay_check: changed }),
@@ -2381,8 +2251,6 @@ test("the replay names the check the first reply carried, and a reply that carri
   assert.equal(rows.at(-1).run_id, RUN_ID);
 });
 
-// The commands of a relay are data in the spec. These run them for real, with the paths of a repository made
-// for the test in place of the stubbed ones.
 const stepSetting = (calls, kind, field) =>
   calls.agent
     .filter((c) => kindOf(c.opts) === kind)
@@ -2396,8 +2264,6 @@ const sh = (command, options = {}) => {
   }
 };
 
-// A relay's line has to fit in what one Bash call returns. The diff grows with the change, and the decision
-// reads every line of it, so a diff that did not come back whole must capture.
 test("the tree diff command returns the count and the lines the decision reads, and a diff cut short captures", async () => {
   const { calls } = await withCapture(CAPTURE, { diff: [mdOnly] });
   const command = stepSetting(calls, "diff", "raw").sh;
@@ -2424,7 +2290,6 @@ test("the tree diff command returns the count and the lines the decision reads, 
   assert.notEqual(between("no-such-tree", few).code, 0, "a diff git could not compute is not an empty one");
   assert.equal(between(few, few).out.trim(), "0");
 
-  // What the command printed, handed back to the script.
   const decided = async (raw) => (await withCapture(CAPTURE, { diff: [{ exit_code: 0, raw }] })).result.captures;
   assert.equal(await decided(small.out), 0, "three Markdown files need no capture");
   assert.equal(await decided(between(few, many).out), 1, "a diff with more lines than came back captures");
@@ -2433,7 +2298,6 @@ test("the tree diff command returns the count and the lines the decision reads, 
   assert.equal(await decided("0\n"), 1, "an empty diff captures");
 });
 
-// A page gh failed to fetch must not read as no open PR: the run would open a second PR for the branch.
 test("the open PR command fails when gh fails, and prints the three fields the script reads when gh succeeds", async () => {
   const { calls } = await run({}, publishArgs);
   const command = stepSetting(calls, "pulls", "pulls_json").sh;
@@ -2451,8 +2315,6 @@ test("the open PR command fails when gh fails, and prints the three fields the s
   assert.deepEqual(JSON.parse(listed.out), [[{ html_url: "u", head: { ref: "b", repo: { full_name: "o/r" } } }]]);
 });
 
-// The commit lists files only to find the media under the capture destination, and a revision reads only
-// whether its worktree is clean. Neither returns a listing that grows with the change.
 test("the listings a relay returns are limited to what the script reads from them", async () => {
   const captured = await withCapture(CAPTURE, {}, publishArgs);
   assert.match(stepSetting(captured.calls, "commit", "files").sh, / '--' 'trial\/evidence\/generated'$/);
@@ -2460,9 +2322,6 @@ test("the listings a relay returns are limited to what the script reads from the
   assert.equal(stepSetting(plain.calls, "commit", "files"), undefined, "a run with no capture lists no files");
 });
 
-// A relay agent that cannot shape its reply ends in an error, which used to end the workflow before it could
-// record a stop. The Issue body is the longest value a relay returns, and that relay runs on a model that
-// copied it.
 test("a relay agent that fails is no result with its error in the stop, and the relay that returns the Issue runs on sonnet", async () => {
   const { result, calls } = await run({
     target: () => {
@@ -2481,8 +2340,6 @@ test("a relay agent that fails is no result with its error in the stop, and the 
   assert.ok(calls.agent.length > 0);
 });
 
-// ls-remote prints the commit and the ref with a tab between them. The script reads the commit, and a tab is a
-// character an agent has returned as two.
 test("the remote head command prints the commit alone, and fails when the remote cannot be read", async () => {
   const { calls } = await run({}, publishArgs);
   const command = stepSetting(calls, "push", "remote_sha").sh;
@@ -2498,8 +2355,6 @@ test("the remote head command prints the commit alone, and fails when the remote
   assert.notEqual(sh(here(command).replace("'origin'", "'no-such-remote'")).code, 0);
 });
 
-// A successful command's output is not returned. A setup that succeeded printed a download's progress
-// bar, and the agent changed the count of its repeated character, which stopped the run at prepare.
 test("the tail of a command's output is asked for only when the command failed", async () => {
   const { calls } = await withCapture(CAPTURE, {}, publishArgs);
   const sources = calls.agent
@@ -2509,7 +2364,6 @@ test("the tail of a command's output is asked for only when the command failed",
   assert.deepEqual(sources.filter((source) => source.startsWith("tail:")), []);
 });
 
-// The body in the read-back prompt: the base64 lines between the two data markers.
 function dataIn(prompt) {
   const start = prompt.indexOf("PR_BODY_B64_BEGIN\n");
   const end = prompt.indexOf("\nPR_BODY_B64_END", start);
@@ -2523,22 +2377,18 @@ function bodyIn(prompt) {
   return Buffer.from(lines.join(""), "base64").toString("utf8");
 }
 
-// The fenced shell block the body agent runs as one Bash call: a base64 heredoc piped to base64 -d.
 function bodyBlock(prompt) {
   const start = prompt.indexOf("```sh\n");
   const end = prompt.indexOf("\n```", start + 1);
   return start < 0 || end < 0 ? "" : prompt.slice(start + "```sh\n".length, end);
 }
 
-// The paths after `--` in the documents agent's git ls-tree command, one quoted argv element each.
 function listedPaths(prompt) {
   const line = prompt.split("\n").find((l) => l.includes("'ls-tree'")) || "";
   const tail = (line.split("'--' ")[1] || "").replace(/`.*$/, "");
   return tail ? tail.split(" ").map((q) => q.replace(/^'|'$/g, "")) : [];
 }
 
-// The same digest the workflow computes: FNV-1a over the UTF-16 code units of the trimmed text,
-// with its length. A replica, so a change to the script's digest alone fails the tests.
 function digestOf(text) {
   const t = String(text).trimEnd();
   let h = 0x811c9dc5;
@@ -2549,8 +2399,6 @@ function digestOf(text) {
   return `${h.toString(16).padStart(8, "0")}:${t.length}`;
 }
 
-// The projection the readback command prints from gh api repos/o/r/pulls/34, with the body
-// replaced by its digest.
 function restPr(body, patch = {}) {
   return {
     state: "open",
@@ -2564,8 +2412,6 @@ function restPr(body, patch = {}) {
   };
 }
 
-// gh pr view --json url,headRefOid,baseRefName,state,isDraft,body,statusCheckRollup, with --jq
-// replacing the body by whether it still closes the Issue.
 function ciView(body, patch = {}) {
   return {
     url: PR_URL,

@@ -14,30 +14,19 @@ export const meta = {
   ],
 };
 
-// The flow's canonical source is orchestrator.ts, correction.ts, pr-body.ts, and ci.ts under
-// ~/.agents/scripts/implement/, and ~/.agents/scripts/shared/target.ts. The LLM implements and
-// reviews; the script computes acceptance, matches IDs, confirms that the requirements and the
-// target have not changed, decides whether a capture is needed, reads back each publication
-// result, and classifies CI.
-
-// The harness may deliver object args as a JSON-encoded string.
 let argsValue = args;
 if (typeof argsValue === "string" && argsValue.trim().startsWith("{")) {
   try {
     const decoded = JSON.parse(argsValue);
     if (decoded && typeof decoded === "object") argsValue = decoded;
   } catch {
-    // a malformed encoding leaves args as the string it arrived as
   }
 }
 const input = typeof argsValue === "object" && argsValue ? argsValue : {};
 const issueRef = String(typeof argsValue === "string" ? argsValue : input.issue || "").trim();
-// Accept only a bare number, #number, or an Issue URL. Freeform text that merely contains digits
-// is not read as an Issue number.
 const issueNumber =
   (issueRef.match(/^#?(\d+)$/) || issueRef.match(/\/issues\/(\d+)(?:[/?#]|$)/) || [])[1] || "";
 const repo = typeof input.repo === "string" ? input.repo.trim() : "";
-// Codex's --no-publish. Only an explicit false turns publishing off.
 const publishing = input.publish !== false;
 
 const obj = (required, properties) => ({
@@ -48,15 +37,12 @@ const obj = (required, properties) => ({
 });
 const closed = (properties) => obj(Object.keys(properties), properties);
 const str = { type: "string" };
-// A string that must not be empty. blankFields, not the schema, rejects the empty string.
 const text = { type: "string" };
 const int = { type: "integer" };
 const bool = { type: "boolean" };
 const choice = (values) => ({ type: "string", enum: values });
 const list = (items) => ({ type: "array", items });
 
-// Strings derived from the Issue or the config reach the shell as one argv element each, never
-// as shell syntax.
 const shq = (value) => `'${String(value).replaceAll("'", `'"'"'`)}'`;
 const argvLine = (argv) => argv.map(shq).join(" ");
 const bundled = (rel) =>
@@ -69,15 +55,6 @@ const parseJsonText = (value) => {
   }
 };
 
-// ---- Relays: the commands the script wants run, declared as data ----
-// A script cannot run a command, so an agent runs it. The agent does not read the commands as prose and does not
-// copy them. It runs workflows/_lib/relay.ts with the digest of the spec; relay.ts reads the spec back from the
-// agent's own transcript, runs the steps in order, and prints the fields and their digest (relay_check) as one line
-// of JSON. The script compares the fields the agent returned with relay_check, so a single character changed on the
-// way back reads as no result. A host that evaluates this script itself finds the spec in the prompt and runs it
-// with no agent.
-// The body is never transcribed by an LLM; it is compared by digest (FNV-1a over UTF-16 code units, plus the
-// length). The function's source is also embedded into node -e, so it uses no template literal.
 const digest = (text) => {
   const t = String(text).trimEnd();
   let h = 0x811c9dc5;
@@ -97,16 +74,10 @@ const canonical = (fields) =>
   );
 const fieldSchema = (value) =>
   Array.isArray(value) ? list(int) : { type: typeof value === "number" ? "integer" : typeof value };
-// A bundled helper starts on bun, or on node when bun does not run. A bun on PATH can be a shim that fails to
-// start, so the check runs it instead of looking it up. The helpers stay runnable on both (DR-0113).
 const RUNTIME = `RT=bun; bun --version >/dev/null 2>&1 || RT=node; "$RT"`;
 const RELAY = `${RUNTIME} ${bundled("workflows/_lib/relay.ts")}`;
-// A call's identity. Every snapshot and every check carries the same commands, so the spec also names the run, the
-// call's place in it, and how many times its boundary has been run again. relay.ts ignores the id. It gives each
-// call a digest of its own, and with it a kept result of its own.
 let relaySeq = 0;
 let boundaryTag = "";
-// Why the last relay returned no result, for the stop that follows it.
 let relayNote = "";
 const relay = async (
   label,
@@ -126,8 +97,6 @@ const relay = async (
     relay_check: str,
     relay_note: str,
   });
-  // An agent that cannot give its reply the schema's shape ends in an error. For a relay that is no result,
-  // which every caller already turns into its stop, and not the end of the workflow.
   let failure = "";
   const asked = async (prompt, opts) => {
     try {
@@ -156,7 +125,6 @@ const relay = async (
       model,
     },
   );
-  // The fields an agent returned, or null when they do not carry the digest relay.ts printed with them.
   const confirmed = (value) => {
     if (!value) return null;
     const { relay_check: check, relay_note: _note, ...fields } = value;
@@ -170,14 +138,10 @@ const relay = async (
   if (!reply) return refuse(failure ? `the relay agent failed: ${failure}` : "the relay agent returned no result");
   const first = confirmed(reply);
   if (first) return first;
-  // relay.ts said why it has no result, and nothing is kept to ask for.
   if (String(reply.relay_check).trim() === "relay_error")
     return refuse(String(reply.relay_note || "").trim() || "relay_error");
   const seen = String(reply.relay_check).trim();
   if (!/^[0-9a-f]{8}:\d+$/.test(seen)) return refuse("the returned fields did not match relay_check, and the reply names no check to ask for the kept result by");
-  // A changed character on the way back is the agent's copy, not the commands. relay.ts kept the line it printed,
-  // so a second agent returns it without any command running again. relay.ts returns the line only for the check
-  // the first agent named, so the line of another call of the same commands is not taken for this one's.
   log(`relay ${label}: the returned fields do not match relay_check (${reply.relay_check}). Asking for the stored result once more.`);
   const again = await asked(
     `Run the command in step 1 and return each field of the JSON it prints, unchanged. Do not summarize, fix, or judge. The command prints the result that was already computed and runs nothing again. Set relay_note to "". When it prints relay_error, return each field as "", 0, false, or [] by its type.\n` +
@@ -187,15 +151,9 @@ const relay = async (
   return confirmed(again) || refuse("the returned fields did not match relay_check, also when asked again");
 };
 
-// ---- Run recording: the start row and the terminal row are joined by run_id ----
 const counts = { check_runs: 0, review_rounds: 0, repairs: 0, captures: 0, ci_rounds: 0 };
 let runId = "";
 let recordedBranch = "";
-// The commit, PR URL, PR-wide base, and body digest publication has learned, and how the body reached its file:
-// body_transport is transcript (write-body.ts read it back) or copied (an agent copied it), and body_fallback is why
-// it came to a copy. Stopped rows carry them too, so a human
-// can reconcile the actual state from the row. A later revision takes the published head and the PR-wide base from
-// the commit and base_sha of a published_draft row.
 const published = {
   commit: "",
   url: "",
@@ -211,7 +169,6 @@ const recordRun = async (reason) => {
     repo,
     branch: recordedBranch,
     publish: publishing,
-    // The URL of the PR a revision revises. Read straight from the input so a stop before validation still carries it.
     revision:
       input.revision && typeof input.revision.pr === "string" ? input.revision.pr.trim() : "",
     ...published,
@@ -231,7 +188,6 @@ const recordRun = async (reason) => {
   });
   const recorded = written ? parseJsonText(written.record_out) : null;
   const id = String((recorded && recorded.run_id) || "").trim();
-  // Recording never stops a run. A row that could not be written goes to the log and the run goes on.
   if (!id) {
     log(
       `The "${reason}" row was not written (the recorder returned no run_id), so this run is missing from implement-runs.jsonl.`,
@@ -240,11 +196,8 @@ const recordRun = async (reason) => {
   }
   runId = id;
 };
-// Every stop passes through here, so a run that has both the Issue and the repo always gets a terminal row.
-// Canonical source: remaining in orchestrator.ts. A stop also returns the work that remains; shipStop narrows it for publication-stage stops.
 const REMAINING_AFTER_PR = ["ci", "published_body_check", "mark_ready", "human_review"];
 const stop = async (reason, why, fields = {}) => {
-  // Read before the row is recorded: the recorder is a relay too, and starting it clears the note.
   const note = relayNote;
   if (repo && issueNumber) await recordRun(reason);
   return {
@@ -253,9 +206,7 @@ const stop = async (reason, why, fields = {}) => {
     ...counts,
     run_id: runId,
     remaining: ["local_verification", "publication", ...REMAINING_AFTER_PR],
-    // A stop that fixing the cause clears overrides this in fields with the retry to pass on the resume.
     retry_next: null,
-    // When the relay before this stop returned no result, why it did not.
     ...(note ? { relay_note: note } : {}),
     ...fields,
   };
@@ -267,9 +218,6 @@ if (!issueNumber) {
 if (!repo) {
   return await stop("no-repo", "Pass the target repository as an absolute path.");
 }
-// References pinned to the start commit (research reports, decision records). Canonical
-// source: assertReportReferences in input.ts and research-handoff.ts. References need a start commit,
-// and each must be Markdown under docs/research or docs/decisions.
 const startCommit = typeof input.startCommit === "string" ? input.startCommit.trim() : "";
 const reports = input.reports === undefined ? [] : input.reports;
 const COMMIT_ID = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
@@ -292,9 +240,6 @@ const referenceIssue = referenceProblem();
 if (referenceIssue) {
   return await stop("invalid-reports", referenceIssue);
 }
-// Revising an existing PR. Canonical source: revision.ts and the README section on revising an existing PR. The adopted findings,
-// expected result, and permission scope arrive as one text (request), and only a PR this workflow
-// published is a target. Args cannot change mid-run, so Codex's hash checks of a request file are not needed.
 const revising = input.revision !== undefined;
 const revisionUrl = revising && input.revision ? String(input.revision.pr || "").trim() : "";
 const revisionRequest =
@@ -315,15 +260,6 @@ const revisionIssue = revisionProblem();
 if (revisionIssue) {
   return await stop("invalid-revision", revisionIssue);
 }
-// Resuming a run that stopped. Workflow's resumeFromRunId answers an agent() call whose prompt is unchanged
-// from cache, and runs the first call whose prompt changed and everything after it. Marking the prompt that
-// opens a boundary resumes the run from there. There are two boundaries. round:N is the start of verify
-// round N, which observes the requirements and the tree again before the capture, the check, and the review.
-// ship is the start of Ship, which repeats every check that precedes a write. A run does not resume from
-// inside a boundary, because the cached results of the earlier steps may not be those of the current Issue,
-// worktree, or actor.
-// retry carries how many times each boundary has been run again. Dropping the mark of an earlier resume puts
-// that boundary's prompt back as it was, and the run starts again from there.
 const RETRY_KEY = /^(?:round:[1-9]\d*|ship)$/;
 const retrying = input.retry !== undefined;
 const retryMap =
@@ -346,17 +282,13 @@ if (retryIssue) {
   return await stop("invalid-retry", retryIssue);
 }
 const retryCount = (key) => (retryMap && retryMap[key]) || 0;
-// The mark added to the prompt that opens a resumed boundary. It carries the count, so running the same
-// boundary once more changes the prompt again.
 const retryMark = (key) =>
   retryCount(key)
     ? `\n\nThis call resumes a run that stopped, and this is run-again number ${retryCount(key)} of it. Run it from the start without changing the procedure.`
     : "";
-// The retry that runs the stopped boundary once more. The caller passes this value unchanged.
 const retryNext = (key) => ({ ...retryMap, [key]: retryCount(key) + 1 });
 await recordRun("started");
 
-// ---- Target: check the Issue, the effective user, the repo, uncommitted changes, and .dotagents.json ----
 phase("Target");
 const BRANCH_NAME_SHAPE = /^[\w][\w./-]*$/;
 const isArgv = (v) =>
@@ -365,7 +297,6 @@ const isNameList = (v) =>
   Array.isArray(v) &&
   v.every((n) => typeof n === "string" && n.trim() !== "") &&
   new Set(v).size === v.length;
-// destination is limited to a path relative to the worktree. install-media.ts checks the same condition at run time.
 const isRepoRelative = (p) =>
   typeof p === "string" && p.trim() !== "" && !p.startsWith("/") && !p.split("/").includes("..");
 const isCapture = (v) =>
@@ -374,8 +305,6 @@ const isCapture = (v) =>
     isArgv(v.command) &&
     isRepoRelative(v.destination) &&
     typeof v.required === "boolean");
-// Canonical source: assertTarget in ~/.agents/scripts/shared/target.ts. setup, check, and feedbackCheck
-// also take a shell string, which is wrapped in /bin/sh -c to become argv. Only feedbackCheck may be omitted.
 const CONFIG_KEYS = [
   "repository",
   "remote",
@@ -427,24 +356,14 @@ const configErrors = (c) =>
     ? [".dotagents.json is not a JSON object"]
     : CONFIG_RULES.filter(([ok]) => !ok(c)).map(([, message]) => message);
 
-// The Issue's identity is compared by the sha256 of gh's output, not by a transcribed body, so a
-// one-character slip in transcription is not read as a change in requirements.
-// Canonical source: the Issue fetch in orchestrator.ts. The digest covers state and updatedAt too,
-// so an Issue closed mid-run reads as changed.
-// The output goes to shasum only when gh fetched it, so a failed gh does not print the digest of an empty input.
 const issueDigestCommand = (repoFlag = "") =>
   `out=$(gh issue view ${issueNumber}${repoFlag} --json title,body,state,updatedAt) && printf %s "$out" | shasum -a 256 | cut -d ' ' -f 1`;
 const DIGEST_SHAPE = /^[0-9a-f]{64}$/;
-// The fields checked on the PR under revision, and its body's sha256. The body is never transcribed by an agent; gh's output goes through shasum.
 const prApiPath = revisionPr ? `repos/${revisionPr[1]}/pulls/${revisionPr[2]}` : "";
 const PR_FIELDS_JQ =
   "{state, draft, html_url, user: .user.login, head_sha: .head.sha, head_ref: .head.ref, head_repo: .head.repo.full_name, base_ref: .base.ref, base_repo: .base.repo.full_name}";
 const prFieldsCommand = argvLine(["gh", "api", prApiPath, "--jq", PR_FIELDS_JQ]);
 const prBodyShaCommand = `${argvLine(["gh", "api", prApiPath, "--jq", ".body"])} | shasum -a 256 | cut -d ' ' -f 1`;
-// Canonical source: orchestrator.ts. The worktree is cut from the checkout's local HEAD and the config is
-// read from that commit, so the validated config and the version that runs cannot differ.
-// The start inputs. The status below is limited to them, so a checkout with many untracked files cannot make the
-// relay's line longer than a Bash call returns.
 const START_INPUTS = [".dotagents.json", ...reports.map((r) => r.path)];
 const target = await relay("target", "Target", {
   defaults: {
@@ -510,8 +429,6 @@ const target = await relay("target", "Target", {
         ]
       : []),
   ],
-  // The Issue body comes back through this agent. haiku lost the fields after it on a body with quoted markup
-  // (one of four whole runs, and 12 of 13 copies of that line alone), where sonnet copied it 10 times of 10.
 }, { model: "sonnet" });
 if (!target) {
   return await stop("target-unavailable", "The agent checking the target returned no result.");
@@ -535,8 +452,6 @@ if (issue.state !== "OPEN") {
     `Issue #${issueNumber} is ${issue.state}. Relaunch with an agreed, OPEN Issue.`,
   );
 }
-// The branch type comes only from the type prefix /scoping puts on the title. An Issue without one gets no default type.
-// The canonical set of prefixes is the table in skills/scoping/references/issue.md.
 const TYPE_BY_PREFIX = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
 const titlePrefix = ((/^\[(\w+)\]/.exec(issue.title) || [])[1] || "").toLowerCase();
 const typePrefixes = Object.keys(TYPE_BY_PREFIX).map((key) => `[${key[0].toUpperCase()}${key.slice(1)}]`);
@@ -558,9 +473,6 @@ const repoInfo = parseJsonText(target.repo_json);
 if (!repoInfo || !repoInfo.nameWithOwner) {
   return await stop("repo-unreadable", "gh repo view could not read the target repo.");
 }
-// The work happens in an isolated worktree, so only the start input (.dotagents.json) must be committed.
-// Unrelated work in the original checkout (such as a /scoping Issue draft) is preserved and does not stop the run.
-// Canonical source: the start-input check in orchestrator.ts ("Required start inputs have uncommitted changes").
 const uncommittedInputs = String(target.porcelain || "")
   .split("\n")
   .filter((line) => START_INPUTS.includes(line.slice(3).trim()));
@@ -592,7 +504,6 @@ const config = {
       ? shellArgv(settings.feedbackCheck)
       : settings.feedbackCheck,
 };
-// Canonical source: feedbackInstructions in ~/.agents/scripts/implement/feedback.ts. When omitted, nothing is added to the implement and repair prompts.
 const FEEDBACK_RULE = config.feedbackCheck
   ? [
       `feedbackCheck (for iterating inside this session): ${JSON.stringify(config.feedbackCheck)}. Use it for routine checks while working, and widen the scope as the target repository's policy requires. The contract that the full check passes before you finish does not change. The host runs the full check after each repair. Do not treat a feedbackCheck pass as a full check pass.`,
@@ -600,7 +511,6 @@ const FEEDBACK_RULE = config.feedbackCheck
   : [];
 const capture = config.capture;
 const { repository, remote, baseBranch } = config;
-// Canonical source: readTarget in target.ts. GH_HOST, the remote's fetch and push URLs, and the repo gh resolved all point at repository.
 const ghHost = String(target.gh_host || "").trim();
 if (ghHost && ghHost !== "github.com") {
   return await stop("gh-host", `GH_HOST points at ${ghHost}. Only github.com targets are handled.`);
@@ -620,7 +530,6 @@ if (!remoteMatches) {
     `The fetch and push URLs of remote ${remote} do not point at ${repository}. Fix .dotagents.json or the remote, then relaunch.`,
   );
 }
-// Canonical source: issueNumber in target.ts. An Issue URL from another repo is not reused here by its number alone.
 const issueUrlRepo = (/github\.com\/([\w.-]+\/[\w.-]+)\/issues\//.exec(issueRef) || [])[1];
 if (issueUrlRepo && issueUrlRepo !== repository) {
   return await stop(
@@ -634,7 +543,6 @@ if (repoInfo.nameWithOwner !== repository) {
     `The repo gh resolved, ${repoInfo.nameWithOwner}, differs from repository ${repository} in .dotagents.json.`,
   );
 }
-// Publication's preconditions are checked at Target, before any write. Codex also requires ciChecks and push permission to publish.
 if (publishing && !config.ciChecks.length) {
   return await stop(
     "no-ci-checks",
@@ -647,9 +555,6 @@ if (publishing && !["ADMIN", "MAINTAIN", "WRITE"].includes(repoInfo.viewerPermis
     `The permission on the target repo is ${repoInfo.viewerPermission || "unknown"}, which cannot push. The run does not switch to another actor.`,
   );
 }
-// Canonical source: previousRun in revision.ts. Only a PR this workflow published from this checkout, with its row
-// kept, is revised. The published head and the PR-wide base come from that row, not GitHub's current state, so commits
-// stacked after publication are detected.
 if (revising && revisionPr[1] !== repository) {
   return await stop(
     "invalid-revision",
@@ -672,7 +577,6 @@ if (revising && !rowUsable(revisionRow)) {
     `There is no record of publishing ${revisionUrl} from this checkout for Issue #${issueNumber} (a published_draft row in implement-runs.jsonl). Only PRs this workflow published are revised.`,
   );
 }
-// Canonical source: checkRevision in revision.ts. OPEN, author, head, base, and head repo are as published.
 const prHeld = (fields) =>
   Boolean(fields) &&
   fields.state === "open" &&
@@ -691,20 +595,13 @@ if (revising && (!prHeld(parseJsonText(target.revision_pr)) || !DIGEST_SHAPE.tes
   );
 }
 
-// ---- Prepare: cut an isolated worktree and branch from the base, then run setup ----
 phase("Prepare");
-// The branch name takes the shape <type>/<Issue number>-<description>.
-// The type comes from the Issue title's prefix checked at Target, and the description is built
-// deterministically from the title's alphanumeric words.
 const titleWords = issue.title
   .replace(/^\[\w+\]\s*/, "")
   .toLowerCase()
   .split(/[^a-z0-9]+/)
   .filter(Boolean)
   .slice(0, 4);
-// A title with fewer than two alphanumeric words (a Japanese title, for example) cannot reach 2-4 words.
-// Only then does an agent propose an English description once, and the script checks its shape. A reply
-// outside the shape falls back to the title's own words.
 const isDescription = (value) => {
   const words = String(value).split("-");
   return words.length >= 2 && words.length <= 4 && words.every((w) => /^[a-z0-9]+$/.test(w));
@@ -726,7 +623,6 @@ const named =
       );
 const description =
   named && isDescription(named.description) ? named.description : titleWords.join("-") || "issue";
-// A revision keeps the published branch.
 const branch = revising ? revisionRow.branch : `${branchType}/${issueNumber}-${description}`;
 const worktree = `${repo}/.claude/worktrees/implement-${issueNumber}`;
 const where = { branch, worktree };
@@ -735,7 +631,6 @@ const headSha = String(target.head_sha || "").trim();
 if (!revising && !/^[0-9a-f]{40}$/.test(headSha)) {
   return await stop("target-unavailable", "Could not read the checkout's HEAD.", where);
 }
-// Canonical source: research-handoff.ts. The start commit equals the checkout's HEAD for a fresh run, and the PR-wide base for a revision.
 const expectedStart = revising ? revisionRow.base_sha : headSha;
 if (startCommit && startCommit !== expectedStart) {
   return await stop(
@@ -744,10 +639,6 @@ if (startCommit && startCommit !== expectedStart) {
     where,
   );
 }
-// Each reference is a regular file at the start commit with the reviewed blob. Returns the paths that do not match.
-// The form of a path in git ls-tree output. A path with non-ASCII bytes, quotes, backslashes, or control characters
-// is quoted with its UTF-8 bytes escaped in octal (core.quotePath's default). A non-interactive session denies
-// `git -c` at the permission check, so the listing keeps the default and is compared in this form.
 const gitQuoted = (path) => {
   let quoted = false;
   const escape = (ch) => {
@@ -791,12 +682,7 @@ const reportStop = (listing) => {
 };
 const earlyReportStop = revising ? null : reportStop(target.report_listing);
 if (earlyReportStop) return await earlyReportStop;
-// Canonical source: the README section on revising an existing PR. The earlier checkout (worktree) is reused at the published head with no tracked
-// or untracked change. Nothing is stashed, reset, rebased, or carried over.
 const revisionBase = revising ? revisionRow.base_sha : "";
-// setup stops at the first non-zero exit. _setup carries whether to go on to the next command.
-// A tail is returned only for a command that failed. A successful setup printed a download's progress bar, and
-// the agent changed the count of its repeated character while returning it.
 const setupSteps = (ready) =>
   config.setup.map((argv) => ({
     sh: argvLine(argv),
@@ -867,7 +753,6 @@ const revisionSpec = {
       when: { existing: false },
       set: { created: "ok" },
     },
-    // Only whether the worktree is clean is read, so the first lines are enough.
     {
       sh: `git -C ${shq(worktree)} status --porcelain --untracked-files=all | head -20`,
       cwd: repo,
@@ -927,7 +812,6 @@ if (!worktreeReady) {
   return await stop("worktree-failed", "Could not create the worktree and branch.", where);
 }
 recordedBranch = branch;
-// Canonical source: "Start HEAD changed during preparation" in orchestrator.ts.
 if (
   !revising &&
   (prepared.base_sha !== headSha || String(prepared.checkout_head).trim() !== headSha)
@@ -958,7 +842,6 @@ if (revising && String(prepared.config_blob).trim() !== String(prepared.base_con
 }
 const lateReportStop = revising ? reportStop(prepared.report_listing) : null;
 if (lateReportStop) return await lateReportStop;
-// The PR-wide base (the review diff's and the capture's baseline). For a revision it is the earlier start commit, and the published head becomes the new commit's parent.
 const baseSha = revising ? revisionRow.base_sha : prepared.base_sha;
 published.base_sha = baseSha;
 const setupExits = prepared.setup_exits || [];
@@ -973,12 +856,10 @@ if (setupExits.length !== config.setup.length || setupExits.some((code) => code 
   );
 }
 
-// ---- Implement: implement the whole agreed Issue in one implementation pass ----
 phase("Implement");
 const requirements = `Title: ${issue.title}\n\n${issue.body}`;
 const inTree = (p) =>
   `Work only inside the worktree at ${worktree}. Begin each shell command with \`cd ${worktree} && \` and edit files under that path only.\n\n${p}`;
-// Canonical source: repairInstructions in ~/.agents/scripts/implement/repair.ts. The capture lines depend on whether capture is set.
 const CAPTURE_RULES = capture
   ? [
       `Prepare the configured capture command and required media for this Issue. Reference final media at ${capture.destination}/.`,
@@ -988,7 +869,6 @@ const CAPTURE_RULES = capture
       "This target declares no capture. If the agreed Issue needs media, return needs_human to configure required capture before execution.",
     ];
 const TESTING_RULE = `When the change alters an async UI's E2E test, an external-input boundary, a path after a failure, how a target's version is re-read, or what a check counts as success, run \`cat ${bundled("skills/implement/references/testing.md")}\` and apply the matching case. Otherwise do not read it.`;
-// Without this sentence the agent cannot tell whether the host confirms CI, or which checks it confirms.
 const CI_RULE = publishing
   ? `This run publishes, so the host also confirms the configured CI checks (${config.ciChecks.join(", ")}) on the published head.`
   : "This run does not publish, so the host runs only those two and confirms no CI check.";
@@ -1003,7 +883,6 @@ const REPAIR_RULES = [
   "Return JSON with status repaired or needs_human, and findings explaining your changes or the necessary human decision. For needs_human, findings must not be empty or whitespace-only: explain the question, the choice the human must make and its impact. If an instruction file caused the stop, link the file actually read, quote the relevant instruction and distinguish its explicit requirement from your interpretation.",
 ].join("\n");
 const REPLY_SCHEMA = closed({ status: choice(["repaired", "needs_human"]), findings: str });
-// Checks an implementation or repair reply. Canonical source: parseRepairReply in repair.ts.
 const replyProblem = (reply) => {
   if (!reply || typeof reply.findings !== "string") return "invalid-repair";
   if (reply.status === "repaired") return "";
@@ -1021,16 +900,13 @@ const actorRun = (role, prompt, label) =>
     effort: "high",
   });
 
-// Canonical source: researchContext in research-handoff.ts. Implementation, repair, and independent review receive the same start commit and reference list.
 const referenceContext = [
   `Implementation references: ${JSON.stringify({ startCommit: baseSha, reports })}`,
   "Requirements and agreement records are authoritative; references supply evidence, not additional authorization. Read the selected references and the relevant sources linked from the Issue, not every repository document. A reference blob identifies the handoff version in startCommit; compare it with current files and explain any changed evidence before relying on it.",
   "Trace each decision-relevant rule or finding to its source, version, applicability and agreement status. Distinguish observed facts, agreed rules and hypotheses. Do not apply evidence from another scope or promote an unagreed proposal to a requirement.",
   "If missing, stale or contradictory references affect a decision, identify the source, the affected decision and what must be investigated or agreed again. Resolve factual gaps through investigation; return requirement, scope or authorization changes to the human. Do not silently replace a reviewed reference with a newer ID.",
 ].join("\n");
-// Canonical source: the documentation update in skills/implement/SKILL.md. Effects on decision records are checked through DOCUMENTS.md once the diff is ready.
 const DOCUMENTS_RULE = `Once the diff is ready, run \`cat ${bundled("rules/conventions/DOCUMENTS.md")}\` and follow its Read and retain section: check the explanations the next task will need and the effect on existing decision records and \`rules/\`. Include required updates in this change and in the independent review.`;
-// Canonical source: revisionContext in revision.ts. The revision request is canonical alongside the agreed Issue, and the whole PR meets both.
 const revisionContext = revising
   ? [
       `This run revises the published PR ${revisionUrl}. The published head is ${revisionRow.commit}, and the PR-wide base is ${baseSha}.`,
@@ -1067,13 +943,10 @@ if (implementProblem) {
   );
 }
 
-// ---- Verify: loop capture -> check -> independent review -> repair until accepted (no round cap, dotagents #155) ----
 phase("Verify");
 const TREE_SHAPE = /^[0-9a-f]{40}$/;
 const stageTree = `git -C ${shq(worktree)} add -A && git -C ${shq(worktree)} write-tree`;
-// The worktree's .dotagents.json at the start. Canonical source: unchangedTarget in orchestrator.ts, which catches an agent editing the config.
 const baseConfigBlob = String(prepared.config_blob || "").trim();
-// Observes the requirements (the Issue's digest), the deliverable (the worktree's tree id), and the config (the staged .dotagents.json blob) at once.
 const snapshot = async (label, stage = "Verify", mark = "") => {
   const snap = await relay(
     label,
@@ -1099,12 +972,9 @@ const snapshot = async (label, stage = "Verify", mark = "") => {
   return snap && { ...snap, configHeld: String(snap.config_blob).trim() === baseConfigBlob };
 };
 const requirementsHeld = (snap) => Boolean(snap) && snap.issue_digest === issueDigest;
-// A failed observation (the agent returned nothing, or the digest could not be read) stops apart from a
-// change in the requirements.
 const observed = (snap) => Boolean(snap) && DIGEST_SHAPE.test(String(snap.issue_digest).trim());
 const UNOBSERVED = "Could not observe the Issue and the tree. Check the execution environment.";
 const history = [];
-// Turns a host check or capture failure into evidence for the repair agent, with the previous review attached as history when one exists.
 const hostFailure = (message) =>
   [
     message,
@@ -1113,11 +983,8 @@ const hostFailure = (message) =>
       : "",
   ].join("\n");
 
-// ---- Capture: canonical source is verifyHost and captureDecision in correction.ts ----
-// {harness} expands to workflows/implement/harness, a vendored copy of the Codex harness's capture adapter (scripts/capture, scripts/shared), so a capture runs without ~/.agents. The layout stays the same as the Codex harness's, so a target's `bun {harness}/scripts/capture/capture.ts` command resolves in both.
 const captureArg = (arg) => arg.split("{harness}").map(shq).join('"$H"');
 const captureLine = (argv) => argv.map(captureArg).join(" ");
-// Definition files in the checkout that the capture command's arguments point at directly. A change to one forces a recapture, whatever its extension.
 const captureDefinitions = capture
   ? capture.command
       .filter((arg) => !arg.includes("{harness}"))
@@ -1131,8 +998,6 @@ const destinationDir = capture ? capture.destination.replace(/\/+$/, "") : "";
 const recordPrefix = destinationDir.includes("/")
   ? `${destinationDir.slice(0, destinationDir.lastIndexOf("/"))}/`
   : "";
-// Saved records in the destination's parent directory (excluding the destination), treated as a place that capture does not read from.
-// A destination at the repo root has no such parent, the same as Codex's dirname(destination) of ".".
 const isRecordFile = (path) =>
   recordPrefix !== "" &&
   /\.(json|txt|log|stdout|stderr|diff)$/.test(path) &&
@@ -1140,8 +1005,6 @@ const isRecordFile = (path) =>
   !path.startsWith(`${destinationDir}/`);
 const DIFF_LINE = /^:(\d{6}) (\d{6}) [A-Z]\d* (.+)$/;
 const PLAIN_MODE = /^(000000|100644)$/;
-// Whether the changes are only regular files that capture does not read (Markdown, plus saved records after the first capture).
-// A symlink, an executable-bit or capture-definition change, or a line that cannot be classified forces a recapture.
 const onlyNonRendering = (raw, allowRecords) => {
   const lines = String(raw).split("\n").filter(Boolean);
   return (
@@ -1154,9 +1017,6 @@ const onlyNonRendering = (raw, allowRecords) => {
     })
   );
 };
-// The decision reads every line, so the step returns what the decision reads (both modes, the status, the path)
-// and counts the lines before it limits them. The count is the first line. A diff that does not come back whole
-// always captures.
 const DIFF_LINES = 200;
 const DIFF_CHARS = 20000;
 const treeDiff = (from, to, label) =>
@@ -1172,13 +1032,11 @@ const treeDiff = (from, to, label) =>
   });
 let lastCaptureTree = "";
 let lastCapture = null;
-// Decides whether to capture: reuse on the same tree; with required: false, a documentation-only change needs no capture or reuses one; anything else captures.
 const captureDecision = async (tree) => {
   if (lastCaptureTree === tree) return "reused";
   if (capture.required) return "execute";
   const from = lastCaptureTree || `${baseSha}^{tree}`;
   const diff = await treeDiff(from, tree, `capture-diff:${counts.check_runs + 1}`);
-  // The first line is how many lines the diff has. Fewer lines than that came back cut short.
   const [count, ...rest] = diff ? String(diff.raw).split("\n") : [];
   const listed = rest.filter(Boolean);
   if (
@@ -1190,9 +1048,6 @@ const captureDecision = async (tree) => {
     return "execute";
   return lastCaptureTree ? "reused" : "not_required";
 };
-// Moves aside what an earlier capture left: the output directory and the three paths the harness creates
-// next to it. With them in place mkdir fails, and both a resume of the stopped run and a fresh launch after
-// the earlier branch was cleared stop at the capture. Nothing is deleted.
 const staleAside = (output) =>
   `for p in ${["", ".artifacts", ".config.mjs", ".report.json"].map((ext) => shq(`${output}${ext}`)).join(" ")}; do [ ! -e "$p" ] || mv "$p" "$p.stale-$(date +%s)-$$"; done`;
 const HARNESS = `H=${bundled("workflows/implement/harness")}`;
@@ -1226,7 +1081,6 @@ const installMedia = (output, label) =>
       { sh: stageTree, cwd: repo, timeout_ms: 60000, set: { tree: "out" } },
     ],
   });
-// Decides a stop from a capture run. Exit code 78 is the value the Codex capture adapter uses for "cannot start".
 const shotStop = (shot, tree) => {
   if (!shot)
     return {
@@ -1258,8 +1112,6 @@ const captureStep = async (tree) => {
   const output = `${worktree}-capture-${counts.captures}`;
   const shot = await runCapture(output, `capture:${counts.captures}`);
   const stopped = shotStop(shot, tree);
-  // Only a stop whose tree after the capture is confirmed equal to the tree before it can be resumed. A
-  // tree that cannot be confirmed would be taken in as the deliverable by the next observation.
   if (stopped) return { ...stopped, resumable: Boolean(shot) && shot.tree === tree };
   if (shot.exit_code !== 0)
     return {
@@ -1297,7 +1149,6 @@ const runCheck = (label) =>
     ],
   });
 
-// Canonical source: reviewSchema in ~/.agents/scripts/implement/review.ts. The host assigns the ID, the first target, and the disposition.
 const REVIEW_SCHEMA = closed({
   findings: text,
   targetId: text,
@@ -1326,8 +1177,6 @@ const REVIEW_SCHEMA = closed({
   ),
   handoff: list(text),
 });
-// Canonical source: reviewInstructions in review.ts. The lines about knowledge nodes and the PR
-// publication split are not carried over, since this workflow handles neither.
 const REVIEW_RULES = [
   "Independently review the current deliverables on every initial review and re-evaluation. Read the current diff AND affected callers and callees, shared types, state transitions, error handling and relevant tests. Adjudicate previous items while also checking the current related paths for recurring or new concrete problems; fixing previous items alone is not grounds for acceptance. Do not audit unrelated code or demand out-of-scope features or stylistic preferences.",
   "Assess four separate dimensions: code correctness (input boundaries, state updates, async behavior and failure side effects) and concrete redundancy; agreed Issue requirements and scope; realistic test detection; required documentation and evidence consistency with the implementation version.",
@@ -1341,9 +1190,6 @@ const REVIEW_RULES = [
   "Do not edit files or run the full check. The host check result is in the host context. Use current artifacts and necessary targeted verification to adjudicate findings; do not trust repair self-reports.",
   "Read repairsSinceReview in the host context in order: the additional repairs completed since the previous independent review (or since execution began for the initial review), including repairs followed by failed checks. Follow each entry's evidence, changes and reasons for leaving artifacts unchanged. Treat repair explanations as claims to investigate, never as automatic fixed or accepted judgments; independently reassess every previous item against current evidence. An empty repairsSinceReview is valid for an initial review.",
   "The PR body publishes assessments, current item reasons (also condition/impact/action for open items), document reasons and handoff. Assign each explanation one home: code explains the concrete change and why; requirements maps it to agreed behavior; tests states actual verification and limits; documentation explains source applicability, versions, agreement and changed premises. Do not repeat the same change, conclusion or caveat across assessments. For fixed or not_applicable findings, reason is the complete public response: identify the relevant problem and conditions, and the current resolution or non-applicability and its basis.",
-  // Canonical source: the PR generator line and the redundancy line of reviewInstructions in review.ts. These sentences
-  // were dropped in the port, and a re-evaluation wrote its assessments as the difference from the previous review, which
-  // went into the PR body as they were.
   "In the published fields (assessments, item reasons, document reasons, handoff), do not retell the history of review and repair iterations. assessments.code explains the final change and why, without repeating the history of the findings. Do not copy the response to a finding into the assessments. Put raw logs, references to host records, and the history of iterations in findings and the internal record. Keep the full internal evaluation and finding history.",
   "Return the review JSON schema. Echo targetId from the host context. Give substantive reasons in all four assessments, including applicability. findings is the overall summary. Return updates and newItems, not status or items; the host computes status from required open findings.",
   "Each newItems entry needs kind, area, required, location, condition, impact, evidence, action, and reason. Omit id, introducedIn and disposition. Use null path/line when no real code location exists. Never invent locations or reproduction runs.",
@@ -1356,8 +1202,6 @@ const blankText = (value) => typeof value !== "string" || !value.trim();
 const badLocation = (loc) =>
   !loc ||
   (loc.line !== null && (blankText(loc.path) || !Number.isInteger(loc.line) || loc.line < 1));
-// Empty strings and the line-number range are checked here rather than in the schema, so acceptance
-// does not rest on minLength and minimum, which no existing workflow has passed to agent().
 const blankFields = (value) => {
   const problems = [];
   if (blankText(value.findings)) problems.push("findings");
@@ -1385,8 +1229,6 @@ const idProblem = (prior, value) => {
   const paths = value.documents.map((d) => d.path);
   return new Set(paths).size === paths.length ? "" : "Duplicate document reference";
 };
-// Canonical source: parseReview in review.ts. status is computed from whether any required item is
-// open, not taken from the reviewer's own report.
 const mergeReview = (value, targetId, attempt, previous) => {
   if (
     !value ||
@@ -1429,7 +1271,6 @@ const mergeReview = (value, targetId, attempt, previous) => {
     },
   };
 };
-// Canonical source: reviewSummary in review.ts.
 const reviewSummary = (entries) => {
   const current = entries.at(-1);
   if (!current) return "";
@@ -1449,17 +1290,12 @@ const reviewSummary = (entries) => {
   ].join("\n\n");
 };
 
-// The explanations of repairs completed since the previous independent review, including repairs
-// followed by a failed check; a completed review empties it. Canonical source: repairsSinceReview in
-// correction.ts. Reasons for leaving artifacts unchanged, and rebuttals, become material the next review checks itself.
 let repairsSinceReview = [];
 const CONFIG_CHANGED = {
   stop: "config-changed",
   why: "The worktree's .dotagents.json changed from its start version. An agent in the run does not change the target's setup, check, or capture contract.",
 };
 const TREE_ENTRY = /^(\d{6}) (\w+) [0-9a-f]+\s+(.+)$/;
-// Canonical source: the document reference check in correction.ts. A document a review names must be a
-// regular file in the reviewed tree; the PR body links to it, so a missing document is never published.
 const missingDocuments = async (review, tree, attempt) => {
   const paths = review.documents.map((doc) => doc.path);
   if (!paths.length) return [];
@@ -1503,7 +1339,6 @@ const reviewRound = async (checked) => {
     inTree(
       [
         REVIEW_RULES,
-        // Canonical source: revision.ts:236. The accepted review becomes the new public body, so what the previous body still needs is kept.
         revising
           ? "This run revises an existing PR. Review the whole PR from baseCommit against both the agreed Issue and the revision request. The accepted review assessments and handoff become the new public PR body. Compare the previous body with current artifacts and explicitly retain all still-applicable change explanations, unresolved limitations and public attachment links in those fields. Do not copy obsolete success claims or historical generated sections. Missing necessary context is needs_changes."
           : "",
@@ -1543,11 +1378,9 @@ const reviewRound = async (checked) => {
       stop: "invalid-review",
       why: `The review names documents missing from the reviewed tree: ${missing.join(", ")}`,
     };
-  // The completed review has read the repair explanations so far. A failed check has not.
   repairsSinceReview = [];
   return { review: merged.review };
 };
-// Runs the check and, when it passes, the review. Returns exactly one of a stop, repair evidence, or acceptance.
 const checkAndReview = async () => {
   counts.check_runs += 1;
   const checked = await runCheck(`check:${counts.check_runs}`);
@@ -1586,20 +1419,10 @@ const repairPrompt = (evidence) =>
     referenceContext,
   ].join("\n");
 
-// The stops that resume from the start of the round once the cause is fixed. The round starts again from
-// its observation, so the capture, the check, and the review all run against the current tree. A stop caused
-// by the media or the config, and a stop for changed requirements or a changed tree, are left out.
 const ROUND_RETRY = ["capture-unavailable", "capture-timeout", "check-unavailable", "invalid-review"];
-// A repair may leave the tree as it was and give its reason, which the next review reads. When that review
-// keeps the same required findings open, the repair and the review disagree, and another repair would change
-// nothing again. One run repaired eleven times that way before its agent asked. The same holds for a tree that
-// fails the same host step twice with a repair between that changed nothing. correction.ts has no counterpart:
-// this stop is this harness's own. Kept from the round before: the tree before its repair, what the repair said,
-// and what the round had rejected.
 let treeBeforeRepair = "";
 let lastRepair = null;
 let lastRejection = null;
-// The required findings a review left open, as one value to compare two reviews by.
 const openRequired = (review) =>
   review.items
     .filter((item) => item.required && item.disposition === "open")
@@ -1611,7 +1434,6 @@ let roundNumber = 0;
 while (!accepted) {
   roundNumber += 1;
   const roundKey = `round:${roundNumber}`;
-  // Calls from here to the next round belong to this round and to this count of running it again.
   boundaryTag = `${roundKey}:${retryCount(roundKey)}`;
   const before = await snapshot(
     `requirements:${counts.check_runs + 1}`,
@@ -1648,9 +1470,6 @@ while (!accepted) {
     accepted = step.accepted;
     break;
   }
-  // The last repair changed nothing, and this round rejects the same tree for the same thing. A round that
-  // rejects it for something new goes on to a repair, which has not seen that yet.
-  // What this round rejected the tree for: the host step that failed, or the required findings a review left open.
   const reviewed = step.kind === "review";
   const rejection = reviewed ? openRequired(history.at(-1)) : step.kind;
   if (idleRepair && lastRejection === rejection) {
@@ -1664,13 +1483,11 @@ while (!accepted) {
         review: history.at(-1) || null,
         findings: lastRepair.findings,
         evidence: step.evidence,
-        // A host step can fail for a cause outside the tree, which a resume of the round reads again.
         retry_next: reviewed ? null : retryNext(roundKey),
       },
     );
   }
   lastRejection = rejection;
-  // Canonical source: beforeRepair in correction.ts. A check can take minutes, so the Issue is checked again right before the repair.
   const beforeRepair = await snapshot(`before-repair:${counts.repairs + 1}`);
   if (!observed(beforeRepair)) {
     return await stop("check-unavailable", UNOBSERVED, {
@@ -1697,7 +1514,6 @@ while (!accepted) {
     return await stop(
       repairProblem,
       (repaired && repaired.findings) || "The repair agent returned no valid reply.",
-      // Keep the open findings the human has to judge in the stopped result.
       { ...where, review: history.at(-1) || null },
     );
   }
@@ -1724,7 +1540,6 @@ if (!publishing) {
     ...verified,
     ...counts,
     run_id: runId,
-    // Canonical source: remaining in orchestrator.ts. Publication and the human's judgment stay outside this workflow.
     remaining: [
       "commit",
       "publication",
@@ -1736,26 +1551,18 @@ if (!publishing) {
   };
 }
 
-// ---- Ship: canonical source is ship in orchestrator.ts and publish.ts. Check before writing, read back after every write ----
 phase("Ship");
-// A stop after publication starts returns the known commit and URL, so a human can reconcile them with GitHub's actual state.
 const shipStop = (reason, why, fields = {}) =>
   stop(reason, why, {
     ...where,
     ...published,
     review: accepted.review,
-    // Local verification is done. Before the PR's URL is known, publication remains too.
     remaining: [...(published.url ? [] : ["publication"]), ...REMAINING_AFTER_PR],
     ...fields,
   });
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-// The body is never transcribed by an LLM; it is matched by digest (FNV-1a over UTF-16 code units, plus length).
-// An agent rewrites characters over a transcription of a few KB, turning half-width kana into full-width, for example.
-// Trailing whitespace carries no meaning and is not compared, since GitHub's storage can shift the final newline.
-// The function's source is also embedded in node -e, so it uses no template literal.
 const sameBody = (reported, text) => String(reported || "").trim() === digest(text);
 
-// Calls from here on belong to Ship and to this count of running it again.
 boundaryTag = `ship:${retryCount("ship")}`;
 const gate = await snapshot("ship", "Ship", retryMark("ship"));
 if (!observed(gate)) {
@@ -1776,8 +1583,6 @@ if (gate.tree !== accepted.tree) {
 }
 
 const owner = repository.split("/")[0];
-// Only the fields the clash check reads are returned. A whole PR object is tens of KB, more than a Bash call returns
-// with the rest of the relay's line.
 const PULLS_JS =
   `const pages = JSON.parse(require("fs").readFileSync(0, "utf8")); ` +
   `const at = (o, k) => (o && typeof o === "object" ? o[k] : undefined); ` +
@@ -1788,7 +1593,6 @@ const pulls = await relay("pulls", "Ship", {
   steps: [
     { sh: "gh api user --jq .login", cwd: repo, set: { actor: "out" } },
     {
-      // gh's output goes on only when gh succeeded. /bin/sh has no pipefail, and a failed gh page must not read as none.
       sh: `out=$(gh api ${shq(`repos/${repository}/pulls`)} --method GET -f state=open -f ${shq(`head=${owner}:${branch}`)} --paginate --slurp) && printf %s "$out" | node -e ${shq(PULLS_JS)}`,
       cwd: repo,
       set: { pulls_exit: "exit", pulls_json: "out" },
@@ -1812,7 +1616,6 @@ const clash = pages.flat().find(
     pr.head.ref === branch &&
     pr.head.repo &&
     pr.head.repo.full_name === repository &&
-    // In a revision, the PR being revised uses this branch itself.
     !(revising && pr.html_url === revisionUrl),
 );
 if (clash) {
@@ -1822,8 +1625,6 @@ if (clash) {
   );
 }
 
-// Canonical source: checkRevision in revision.ts. In a revision, before any write, the PR must be unchanged since the
-// start; a ready PR is returned to draft and read back. Ready is never restored.
 if (revising) {
   const current = await relay("revision-pr", "Ship", {
     defaults: { pr_fields: "", body_sha: "" },
@@ -1865,20 +1666,13 @@ if (revising) {
 }
 
 const inWorktree = (...argv) => argvLine(["git", "-C", worktree, ...argv]);
-// A resume of Ship runs this step once more. When the accepted change is already one commit on its parent,
-// it does not commit again.
 const commitParent = revising ? revisionRow.commit : baseSha;
 const commitOnce = inWorktree("commit", "-m", `${issue.title} (#${issueNumber})`);
-// A resume of Ship goes on only while the stopped run has pushed nothing. The script does not know where
-// the earlier run stopped, so it checks the branch on the remote. A resume after a stop that followed the
-// push would retry a write.
 if (retryCount("ship")) {
   const remoteHead = await relay("pushed", "Ship", {
     defaults: { ls_exit: -1, remote_head: "" },
     steps: [
       {
-        // The line is the commit and the ref with a tab between them. Only the commit is read, and an agent
-        // returning a tab has written it as a backslash and a t.
         sh: `out=$(${inWorktree("ls-remote", remote, `refs/heads/${branch}`)}) && printf %s "$out" | cut -f 1`,
         cwd: repo,
         set: { ls_exit: "exit", remote_head: "out" },
@@ -1907,7 +1701,6 @@ const committed = await relay("commit", "Ship", {
     { sh: inWorktree("rev-parse", "HEAD"), cwd: repo, set: { commit: "out" } },
     { sh: inWorktree("rev-parse", "HEAD^"), cwd: repo, set: { parent: "out" } },
     { sh: inWorktree("rev-parse", "HEAD^{tree}"), cwd: repo, set: { tree: "out" } },
-    // The listing is read only for the media under the capture destination, so it is limited to that directory.
     ...(capture
       ? [
           {
@@ -1926,8 +1719,6 @@ if (!committed || committed.commit_exit !== 0 || !TREE_SHAPE.test(String(committ
   );
 }
 published.commit = committed.commit;
-// A commit hook that rewrote the content, or a commit that is not the single one on the base, stops as a mismatch with the accepted tree.
-// In a revision, the new commit's parent is the published head, not the PR-wide base.
 if (
   committed.tree !== accepted.tree ||
   committed.parent !== commitParent
@@ -1945,7 +1736,6 @@ const media = capture
       .filter((file) => file.startsWith(`${destinationDir}/`) && MEDIA_FILE.test(file))
   : [];
 
-// Canonical source: publicText in pr-body.ts. Paths under the known local roots, and explicit filesystem notation outside them, are redacted.
 const PATH_SUFFIX = /[A-Za-z0-9_./\\:@%+~=-]*/.source;
 const OMITTED = "(internal path omitted)";
 const publicText = (value) => {
@@ -1971,7 +1761,6 @@ const MEDIA_TASKS = [
   `- Workflow: attach the media of the target commit (${media.join(", ")}).`,
   "- Assigned AI: on the actual PR page after attachment, confirm that the media displays or plays and matches its description and placement (rendered_media_check).",
 ];
-// Canonical source: prBody in pr-body.ts. Only facts fit for publication are selected from the accepted review; the internal summary and history stay out.
 const prBody = (review) =>
   [
     `Closes #${issueNumber}`,
@@ -1998,13 +1787,8 @@ const prBody = (review) =>
     "- Human: decide any change to requirements or permissions, and decide review, approval, and merge.",
   ].join("\n\n") + "\n";
 const body = prBody(accepted.review);
-// So a later revision can match the published body's version from the row.
 published.body_digest = digest(body);
-// The body lives outside the worktree (a sibling, like the capture output), so the committed tree stays clean.
 const bodyFile = `${worktree}-pr.md`;
-// The agent receives the body as UTF-8 base64. It turned \uXXXX escapes back into their characters
-// while copying them and broke the shell quoting, so the payload takes a form the agent cannot read.
-// The conversion runs inside the script, with no reliance on the runtime.
 const utf8Bytes = (text) => {
   const bytes = [];
   for (const ch of text) {
@@ -2024,7 +1808,6 @@ const utf8Bytes = (text) => {
   return bytes;
 };
 const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-// Wrapped at 76 characters a line. An agent copies a run of short lines more faithfully than one long line.
 const base64Lines = (text) => {
   const bytes = utf8Bytes(text);
   let out = "";
@@ -2037,14 +1820,8 @@ const base64Lines = (text) => {
   }
   return out.match(/.{1,76}/g) || [];
 };
-// The function's source is embedded with its line breaks collapsed, so the agent's command stays on one line.
 const DIGEST_SRC = String(digest).replace(/\s*\n\s*/g, " ");
 const DIGEST_JS = `const digest = ${DIGEST_SRC}; console.log(digest(require("fs").readFileSync(process.argv[1], "utf8")))`;
-// The body reaches its file in one of two ways. First an agent runs write-body.ts, which reads the body back from
-// that agent's own prompt as Claude Code stored it in the transcript, so no character of the body passes through a
-// model. An agent copying a few KB of base64 changed one or two characters, and the digest check stopped the run.
-// Only when the read-back does not produce the generated body (the Codex runner, which keeps no transcript) does a
-// second agent copy the heredoc. Which of the two wrote the file is decided here and not reported by a model.
 const bodyData = ["PR_BODY_B64_BEGIN", ...base64Lines(body), "PR_BODY_B64_END"].join("\n");
 const readBack = await relay(
   "body",
@@ -2070,8 +1847,6 @@ const readHeld =
 published.body_transport = readHeld ? "transcript" : "copied";
 let bodyWritten = readHeld;
 if (!readHeld) {
-  // Why the read-back did not hold goes into the return value and the run row. copied on Claude Code means the
-  // transcript moved or changed shape.
   const fallbackReason = () => {
     if (!readBack) return "the read-back agent returned no result";
     if (readBack.extract_exit !== 0)
@@ -2097,7 +1872,6 @@ if (!readHeld) {
       phase: "Ship",
       agentType: "general-purpose",
       schema: closed({ write_exit: int, body_digest: str }),
-      // This role copies a few KB of base64 without dropping a character, so sonnet takes it rather than haiku.
       model: "sonnet",
     },
   );
@@ -2112,9 +1886,6 @@ if (!bodyWritten) {
   );
 }
 
-// pushArguments in Codex's target.ts pushes through a command-scoped remote URL and a replaced credential helper.
-// Claude Code's auto mode denies that shape as a remote repoint, so the push goes to the configured remote Target verified.
-// In its place, right before the push, every effective push URL, after insteadOf and pushInsteadOf, must point at repository.
 const probe = await relay("push-target", "Ship", {
   defaults: { push_url: "", effective_url: "" },
   steps: [
@@ -2170,7 +1941,6 @@ if (!pushed || pushed.push_exit !== 0 || remoteSha !== published.commit) {
 const PR_URL_SHAPE = new RegExp(
   `^https://github\\.com/${escapeRegExp(repository)}/pull/[1-9]\\d*$`,
 );
-// A fresh run opens the draft PR once. A revision opens none; per the revision path in publish.ts, it only rewrites the body.
 const openPr = async () => {
   const created = await relay("create", "Ship", {
     defaults: { create_exit: -1, url: "", create_tail: "" },
@@ -2213,8 +1983,6 @@ const rewriteBody = async () => {
 const opened = revising ? await rewriteBody() : await openPr();
 if (opened.stop) return await shipStop(opened.stop, opened.why, opened.fields);
 published.url = opened.url;
-// Canonical source: checkPublishedPr in publish.ts and matchPrPublication in pr-identity.ts.
-// The agent returns only the fields the checks read, with the body replaced by its digest.
 const PROJECT_JS =
   `const digest = ${DIGEST_SRC}; const p = JSON.parse(require("fs").readFileSync(0, "utf8")); ` +
   `const at = (o, k) => (o && typeof o === "object" ? o[k] : undefined); ` +
@@ -2280,19 +2048,14 @@ if (media.length) {
     );
   }
 }
-// ---- CI: canonical source is waitForCi in ci.ts. Wait for CI on the same head; the script classifies it ----
 phase("CI");
-// Codex waits within a 540-second budget. Here one wait fits 540 seconds, inside the Bash tool's
-// cap, and a round count bounds the waits in case one returns early before checks register.
 const CI_WAIT_ROUNDS = 6;
-// --jq replaces the body with whether it still carries the Issue reference, so the body itself is never transcribed.
 const CI_FIELDS = "url,headRefOid,baseRefName,state,isDraft,body,statusCheckRollup";
 const checkState = (value) => {
   if (!value) return undefined;
   if (value.status === undefined) return value.state;
   return value.status === "COMPLETED" ? value.conclusion : "PENDING";
 };
-// Canonical source: checkStatus in ci.ts. A required SKIPPED or NEUTRAL check does not count as a success.
 const checkStatus = (values) => {
   const checks = values.map((value) => ({
     name: value && (value.name ?? value.context),
@@ -2322,7 +2085,6 @@ const checkStatus = (values) => {
     failed: failed.map((c) => c.name),
   };
 };
-// Canonical source: parseTarget in ci.ts. A PR on another head or base, no longer a draft, or missing the Issue reference cannot confirm this commit's CI.
 const ciTargetHeld = (view) =>
   view.headRefOid === published.commit &&
   view.baseRefName === baseBranch &&
@@ -2364,7 +2126,6 @@ while (counts.ci_rounds < CI_WAIT_ROUNDS) {
   const viewed = await relay(`ci:${counts.ci_rounds}`, "CI", {
     defaults: { view_exit: -1, view_json: "" },
     steps: [
-    // The first step runs only to wait, and its result is not used.
       {
         sh: argvLine(["gh", "pr", "checks", published.url, "--repo", repository, "--watch", "--interval", "10"]),
         cwd: repo,
@@ -2403,7 +2164,6 @@ return {
   ci,
   ...counts,
   run_id: runId,
-  // Canonical source: remaining in orchestrator.ts. The switch to ready and the human's judgment stay outside this workflow.
   remaining: [
     ...(media.length ? ["rendered_media_check"] : []),
     "published_body_check",

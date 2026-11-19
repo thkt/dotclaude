@@ -1,8 +1,3 @@
-// Whether the repository's `biome.json` flags an over-complex function and leaves a workflow
-// script's top-level `return` alone, read by running biome rather than by reimplementing its
-// complexity count or its parser's module/script decision. Fixtures live in a temp directory
-// (a tracked violation would keep the CI biome step red forever) under the real directory
-// names the config's `files.includes` globs match. The config is copied from disk.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -24,8 +19,6 @@ const ROOT = path.resolve(TEST_DIR, "..", "..");
 const BIOME_BIN = path.join(ROOT, "node_modules", ".bin", "biome");
 const BIOME_JSON = path.join(ROOT, "biome.json");
 
-// T-001's positive control: 5 nested `if`s (1+2+3+4+5 = 15) plus one flat `if` = 16, as the
-// real biome binary reports it (`Excessive complexity of 16 detected (max: 15)`).
 const COMPLEXITY_16 = `export function nested(a, b, c, d, e, f) {
   if (a) {
     if (b) {
@@ -45,8 +38,6 @@ const COMPLEXITY_16 = `export function nested(a, b, c, d, e, f) {
 }
 `;
 
-// T-002: COMPLEXITY_16 minus the flat `if (f)`, per the copy-minus-clue step of
-// rules/development/TESTING.md § Whether the test swings at nothing. Scores 15, no diagnostic.
 const COMPLEXITY_15 = `export function nested(a, b, c, d, e) {
   if (a) {
     if (b) {
@@ -63,19 +54,12 @@ const COMPLEXITY_15 = `export function nested(a, b, c, d, e) {
 }
 `;
 
-// T-003/T-004's shared script: a bare top-level `return`, a shape a workflow script can use
-// (the harness runs it as a function body). Under `workflows/` biome must skip it; under `src/`
-// the same source must raise a parse diagnostic, which proves the skip is path-specific.
 const TOP_LEVEL_RETURN_SCRIPT = `if (typeof shouldSkip === "undefined") {
   return;
 }
 console.log("done");
 `;
 
-// Exit code tells most fixtures apart, as in oxlint-runtime-discipline.test.js. Biome also
-// exits 1 for "No files were processed" (a path `files.includes` excludes), the same code as a
-// parse error, so lint() keeps the `--reporter=github` stdout too: only a real parse error
-// prints a `title=parse` line, and T-003/T-004 read that.
 let workspace;
 const cache = new Map();
 
@@ -141,18 +125,8 @@ test("T-004 the same script placed under src/ yields a parse diagnostic", () => 
   assert.ok(output.includes("title=parse"), `expected a parse diagnostic, got: ${output}`);
 });
 
-// T-005 requires exactly "error", not "warn", because lint() above no longer passes
-// `--error-on-warnings`: a "warn"-level diagnostic would print but leave the exit code 0.
-// T-006 compares `files.includes` as a list, not a count, per
-// rules/development/TESTING.md § Whether the test swings at nothing.
 const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 
-// Held as a literal so this copy cannot drift toward whatever files.includes contains.
-// bridge-spawn/ and seed-admin/ are runtime directories of the live ~/.claude checkout that
-// deny scandir, and biome walking one ends the run at `internalError/io`. Neither is tracked
-// nor gitignored, so `vcs.useIgnoreFile` does not reach them as it reaches skills/synced/.
-// Both carry no `/**`, unlike the entries above: `!bridge-spawn/**` matches what is inside and
-// leaves the directory in the traversal, so biome still exits on the io error (biome 2.5.12).
 const PLANNED_FILES_INCLUDES = [
   "**",
   "!workflows/*.js",
@@ -162,13 +136,6 @@ const PLANNED_FILES_INCLUDES = [
   "!seed-admin",
 ];
 
-// Every way a biome.json edit can stop the rule from reaching the tracked tree as a failure, as
-// a list of names so the positive controls below can say which hole a mutation opened. Each
-// entry was confirmed against biome 2.5.12 to skip files or silence the rule: `linter.enabled:
-// false` lints nothing, `linter.includes` excludes paths just as `files.includes` does, an
-// `overrides` entry can turn the linter off per path, and any `level` other than `"error"` (such
-// as `"warn"`) prints a diagnostic that leaves the exit code 0, since `lint()` no longer passes
-// `--error-on-warnings`.
 function biomeHoles(config) {
   const holes = [];
   const rule = config.linter?.rules?.complexity?.noExcessiveCognitiveComplexity;
@@ -198,8 +165,6 @@ test("T-019 biome.json opens none of the holes the config check names", () => {
   assert.deepEqual(biomeHoles(biomeConfig), []);
 });
 
-// T-020's positive controls: one mutation per hole, applied to a copy of the committed config.
-// A mutation the check does not name would leave this list short of the holes it claims to cover.
 const BIOME_MUTATIONS = [
   ["linter.enabled is false", (c) => (c.linter.enabled = false)],
   ["linter.includes is set", (c) => (c.linter.includes = ["**", "!hooks/**"])],

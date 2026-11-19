@@ -1,10 +1,4 @@
 /// <reference types="node" />
-// Runs a workflow script (workflows/<name>.js) on Codex.
-//
-// Claude Code supplies agent() from its own subagent runtime. Codex has no equivalent, so
-// each agent() call becomes one `codex exec` child process here. The rest of the evaluation
-// form -- the vm context, the banned Date / Math globals, parallel and pipeline semantics --
-// is reused from run-workflow.ts, which already reproduces what production does.
 import { spawn } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { availableParallelism, tmpdir } from "node:os";
@@ -16,8 +10,6 @@ import type { RunWorkflowStubs } from "./run-workflow.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-// The subset of JSON Schema the workflow scripts write (workflows/implement.js's
-// obj(required, properties) and its siblings). Anything else is carried through untouched.
 interface JsonSchema {
   type?: string | string[];
   properties?: Record<string, JsonSchema>;
@@ -29,8 +21,6 @@ interface JsonSchema {
   [key: string]: unknown;
 }
 
-// A value parsed from codex's JSON reply, or handed in by a workflow script across the vm
-// boundary: its shape is decided at run time, so it is typed as `any` at that boundary alone.
 type JsonValue = any;
 
 type AgentOptions = {
@@ -41,9 +31,6 @@ type AgentOptions = {
   schema?: JsonSchema;
 };
 
-// Workflow scripts name a model by the tier haiku, sonnet or opus. The three tiers line up
-// with Codex's current-generation coding models; one CODEX_MODEL_<TIER> variable overrides one
-// entry.
 export const MODEL_MAP: Record<string, string> = {
   haiku: process.env.CODEX_MODEL_HAIKU || "gpt-5.6-luna",
   sonnet: process.env.CODEX_MODEL_SONNET || "gpt-5.6-terra",
@@ -51,23 +38,9 @@ export const MODEL_MAP: Record<string, string> = {
 };
 
 const DEFAULT_EFFORT = process.env.CODEX_EFFORT || "medium";
-// A stage that writes code takes longer than one that relays a value, so the ceiling is set
-// for the slowest stage rather than per label.
 const DEFAULT_TIMEOUT_MS = Number(process.env.CODEX_TIMEOUT_MS || 1_800_000);
-// Claude caps in-process agents at min(16, cpus - 2). Child processes carry no such cap, so
-// pipeline() over a long unit list would spawn one codex per unit at once without this.
 const DEFAULT_CONCURRENCY = Math.max(1, Math.min(16, availableParallelism() - 2));
-// One retry, because the failures worth retrying (a dropped connection, a response that
-// misses the schema) do not repeat on every attempt.
 const ATTEMPTS = 2;
-
-// ---- Schema translation ----------------------------------------------------------------
-// codex exec --output-schema runs OpenAI structured outputs in strict mode, which rejects a
-// schema whose `required` omits any declared property:
-//   'required' is required to be supplied and to be an array including every key in properties.
-// The workflow scripts write `required` as a subset on purpose (obj(required, properties)),
-// so every optional property is made required and nullable here instead, and the nulls are
-// dropped again before the value reaches the script.
 
 const NULL_SCHEMA: JsonSchema = { type: "null" };
 const nullable = (schema: JsonSchema): JsonSchema => ({ anyOf: [schema, NULL_SCHEMA] });
@@ -75,8 +48,6 @@ const nullable = (schema: JsonSchema): JsonSchema => ({ anyOf: [schema, NULL_SCH
 const typeList = (type: JsonSchema["type"]): string[] =>
   Array.isArray(type) ? type : type === undefined ? [] : [type];
 
-// A schema declaring neither a type nor a shape constrains nothing, so a null under it is a
-// value rather than a violation.
 const acceptsNull = (schema: JsonSchema | undefined): boolean => {
   if (!schema || typeof schema !== "object") return true;
   if (typeList(schema.type).includes("null")) return true;
@@ -86,7 +57,6 @@ const acceptsNull = (schema: JsonSchema | undefined): boolean => {
 const described = (schema: JsonSchema, description: string | undefined): JsonSchema =>
   description ? { ...schema, description } : schema;
 
-// An object or array schema that also declared null keeps that branch around the rewritten form.
 const keepNullBranch = (
   out: JsonSchema,
   includesNull: boolean,
@@ -131,9 +101,6 @@ export function strictify(schema: JsonSchema | undefined): JsonSchema | undefine
   return described(nullable(scalar), schema.description);
 }
 
-// The inverse of the optional-to-nullable rewrite: a null standing where the original schema
-// declared an optional property is the absence the script expects, so the key is removed. A
-// null under a property the original marked required is a real value and stays.
 export function pruneNulls(value: JsonValue, schema: JsonSchema | undefined): JsonValue {
   if (!schema || typeof schema !== "object" || value === null || typeof value !== "object") {
     return value;
@@ -157,9 +124,6 @@ export function pruneNulls(value: JsonValue, schema: JsonSchema | undefined): Js
   return value;
 }
 
-// findSchemaViolation's array branch: a null is checked directly, then each item recurses back
-// into findSchemaViolation, stopping at the first violation. Produces the same strings in the
-// same order the inline branch it replaces produced.
 function findArrayViolation(value: JsonValue, schema: JsonSchema, here: string): string {
   if (value === null) return acceptsNull(schema) ? "" : `${here} is null`;
   if (!Array.isArray(value)) return `${here} is not an array`;
@@ -170,9 +134,6 @@ function findArrayViolation(value: JsonValue, schema: JsonSchema, here: string):
   return "";
 }
 
-// findObjectViolation's required-key pass: a missing key or a disallowed null on a required
-// key is reported before any property recurses. Produces the same strings in the same order
-// the inline loop it replaces produced.
 function requiredKeyViolation(
   value: Record<string, JsonValue>,
   schema: JsonSchema,
@@ -187,9 +148,6 @@ function requiredKeyViolation(
   return "";
 }
 
-// findSchemaViolation's object branch: required keys are checked for presence and a disallowed
-// null before every property recurses back into findSchemaViolation. Produces the same strings
-// in the same order the inline branch it replaces produced.
 function findObjectViolation(
   value: JsonValue,
   schema: JsonSchema,
@@ -208,11 +166,6 @@ function findObjectViolation(
   return "";
 }
 
-// Strict mode makes every property required and nullable, so the API is free to answer null
-// where the original schema requires a value. A null reaching the script is not the absence
-// the script branches on: a script that reads .length from an array field gets a null there,
-// which throws inside the vm as a run failure rather than a recorded degradation. This walks the
-// original schema and names the first such spot, which the caller turns into a retry.
 export function findSchemaViolation(
   value: JsonValue,
   schema: JsonSchema | undefined,
@@ -231,27 +184,12 @@ export function findSchemaViolation(
   return "";
 }
 
-// ---- Prompt assembly --------------------------------------------------------------------
-// Every string codex reads is built here, so changing what an agent is told does not mean
-// reading through the stage loop.
-
-// The agent definition carries the behavior and the workflow script carries the task. The rule
-// keeps them apart so the model does not read the task as one more clause of the behavior.
 const withPreamble = (preamble: string, prompt: string): string =>
   preamble ? `${preamble}\n\n---\n\n${prompt}` : prompt;
 
-// findSchemaViolation names a required field that came back missing or null, so the retry asks
-// for that field to be filled. Asking instead for extra fields to be dropped answers a
-// violation the strict-mode schema cannot produce.
 const schemaCorrection = (reason: string): string =>
   `\n\nThe previous attempt returned a value that did not fit the output schema (${reason}). ` +
   `Answer again with every declared field filled, using null only where the schema allows it.`;
-
-// ---- Agent definitions -----------------------------------------------------------------
-// agentType names a Claude Code subagent. general-purpose is a Claude Code built-in with no
-// file in this repository, and a bare `codex exec` was measured returning a 611-character
-// issue body verbatim under a strict schema, so that type takes no preamble. The rest carry
-// their behavior in agents/**/<name>.md, whose body becomes the preamble.
 
 const WRITE_TOOLS = /\b(Edit|Write|NotebookEdit|MultiEdit)\b/;
 
@@ -281,8 +219,6 @@ const indexAgents = (): Map<string, string> => {
 export function loadAgent(agentType: string | undefined): LoadedAgent {
   if (!agentType || agentType === "general-purpose") return { preamble: "", readOnly: false };
   const path = indexAgents().get(agentType);
-  // A missing definition is not a reason to stop the run, so the stage proceeds with the
-  // prompt alone and the caller logs the loss.
   if (!path) return { preamble: "", readOnly: false, missing: true };
 
   const source = readFileSync(path, "utf8");
@@ -290,12 +226,8 @@ export function loadAgent(agentType: string | undefined): LoadedAgent {
   const frontmatter = match ? match[1] : "";
   const body = match ? match[2] : source;
   const tools = (frontmatter.match(/^tools:\s*(.*)$/m) || [])[1] || "";
-  // Codex cannot enforce a per-tool allowlist. A definition granting no write tool runs under
-  // the read-only sandbox, which is the closest approximation of that allowlist.
   return { preamble: body.trim(), readOnly: Boolean(tools) && !WRITE_TOOLS.test(tools) };
 }
-
-// ---- codex exec ------------------------------------------------------------------------
 
 interface CodexRunSpec {
   prompt: string;
@@ -339,12 +271,10 @@ const runCodexOnce = ({
       "-c",
       `model_reasoning_effort="${effort}"`,
     ];
-    // gh and git push reach the network, which the workspace-write sandbox blocks by default.
     if (sandbox === "workspace-write") {
       argv.push("-c", "sandbox_workspace_write.network_access=true");
     }
     if (schemaPath) argv.push("--output-schema", schemaPath);
-    // `-` reads the prompt from stdin, which keeps an issue body or a JSON payload off argv.
     argv.push("-o", outPath, "-");
 
     const child = spawn("codex", argv, { stdio: ["pipe", "pipe", "pipe"] });
@@ -371,13 +301,6 @@ const runCodexOnce = ({
     child.stdin?.end(prompt);
   });
 
-// ---- Runner ----------------------------------------------------------------------------
-
-// One codex run plus its outcome, factored out of the attempt loop below. A timeout, a
-// non-zero exit, and a missing output file all reset the correction and ask the loop to retry;
-// a schema violation asks again with the reason appended; success reports done alongside the
-// value the loop returns. codex-run.test.js's T-434..T-437 pin these five paths through the
-// injectable `runOnce`.
 interface AttemptOutcome {
   done: boolean;
   value: JsonValue;
@@ -469,8 +392,6 @@ export const makeSlots = (limit: number) => {
   };
 };
 
-// stubs.workflow and runOnCodex both need the path a name resolves to, and the same missing-name
-// message, so both go through this rather than repeating either.
 export const resolveWorkflowPath = (name: string): string => {
   const path = join(ROOT, "workflows", `${name}.js`);
   if (!existsSync(path)) throw new Error(`workflow('${name}'): no workflow with that name`);
@@ -488,8 +409,6 @@ interface AgentRunConfig {
   base: string;
 }
 
-// Resolves the agent's label/preamble/model/sandbox/schema-file setup once per call, before
-// the attempt loop below starts spending attempts on it.
 function prepareAgentRun(
   prompt: string,
   opts: AgentOptions,
@@ -520,9 +439,6 @@ function prepareAgentRun(
   };
 }
 
-// Spends up to ATTEMPTS calls to runOnce, feeding each schema-violation correction into the
-// next prompt. Produces the same value and the same give-up log the inline loop it replaces
-// produced.
 async function runAgentAttempts(
   config: AgentRunConfig,
   repo: string,
@@ -551,8 +467,6 @@ async function runAgentAttempts(
     if (outcome.done) return outcome.value;
     correction = outcome.correction;
   }
-  // The Agent tool returns null when a subagent dies after its retries, and the workflow
-  // scripts branch on that null, so the same value is returned rather than a throw.
   onLog(`[${config.label}] gave up after ${ATTEMPTS} attempts; the stage returns null.`);
   return null;
 }
@@ -562,15 +476,9 @@ interface CreateStubsOptions {
   concurrency?: number;
   onLog?: (message: string) => void;
   tmp: string;
-  // Injectable seam for the attempt loop below, defaulting to the real runCodexOnce. Tests pass
-  // a stub that answers in sequence to pin the five attempt-loop paths (workflows/_lib/tests/
-  // codex-run.test.js T-434..437) without spawning the codex binary.
   runOnce?: (spec: CodexRunSpec) => Promise<CodexRunOutcome>;
 }
 
-// The pool belongs to one createStubs call. stubs.workflow hands the same stubs object to the
-// nested run, so a script and the workflow it nests share one pool; two concurrent
-// runOnCodex calls would each hold their own and the cap would apply twice.
 export function createStubs({
   repo,
   concurrency = DEFAULT_CONCURRENCY,
@@ -589,8 +497,6 @@ export function createStubs({
       return runAgentAttempts(config, repo, runOnce, onLog);
     });
 
-  // An unresolved name throws the fixed missing-name message rather than returning undefined,
-  // so a calling script can tell a missing workflow from one that returned nothing.
   stubs.workflow = async (name: string, wfArgs: JsonValue) => {
     const path = resolveWorkflowPath(name);
     onLog(`[workflow] ${name}`);
@@ -637,11 +543,6 @@ async function runOnCodex(
   }
 }
 
-// ---- CLI --------------------------------------------------------------------------------
-
-// --args carries whatever the caller typed, so its keys are copied one by one onto a
-// null-prototype target rather than merged, which keeps a "__proto__" key a plain own
-// property instead of a write through the prototype chain.
 const mergeArgs = (target: Record<string, unknown>, source: unknown): void => {
   if (!source || typeof source !== "object") return;
   for (const key of Object.keys(source)) target[key] = (source as Record<string, unknown>)[key];

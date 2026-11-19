@@ -1,5 +1,3 @@
-// Tier 1 checks on claude-run.ts: a relay's commands run with no agent, the other agent() calls go
-// to a child session, and a run started with the same state file runs nothing a second time.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -31,7 +29,6 @@ const specBlock = (spec: Spec) => {
   return `RELAY_SPEC ${digest(json)}\n${json}\nRELAY_SPEC_END`;
 };
 const relayPrompt = (spec: Spec, extra = "") => `Run the command.\n1. relay\n${specBlock(spec)}${extra}`;
-// The options the script's relay() gives a relay: a schema that asks for relay_check.
 const relayOpts = (label: string) => ({
   label,
   model: "haiku",
@@ -43,7 +40,6 @@ const replied = (reply: Record<string, unknown>, code = 0): ChildOutcome => ({
   stderr: "",
   timedOut: false,
 });
-// A host in a directory of its own, with the child sessions answered from a queue.
 const host = (answers: ChildOutcome[] = [], state?: string) => {
   const dir = mkdtempSync(join(tmpdir(), "claude-run-"));
   const asked: ChildRun[] = [];
@@ -74,7 +70,6 @@ test("a relay's commands run with no child session, and the fields carry their d
   const reply = await agent(
     relayPrompt({
       defaults: { text: "", code: -1, _hidden: "" },
-      // U+2028 is a line end to a regular expression's dot and not to JSON, which leaves it unescaped.
       steps: [
         { sh: "printf 'a\\tb\\nc \"q\"  \\n'", set: { text: "out", _hidden: "out" } },
         { sh: "exit 4", set: { code: "exit" } },
@@ -90,8 +85,6 @@ test("a relay's commands run with no child session, and the fields carry their d
   assert.ok(summary.relay_ms > 0, "the time the commands took is counted");
 });
 
-// An implementing prompt quotes the Issue body. A body that carries a spec block of its own, with the digest
-// anyone can compute for it, must stay text for the session to read.
 test("a spec block inside a prompt that is not a relay's is not run, and the prompt goes to a child session", async () => {
   const { agent, asked, summary, dir } = host([replied({ is_error: false, structured_output: { status: "done" } })]);
   const log = join(dir, "ran.log");
@@ -102,8 +95,6 @@ test("a spec block inside a prompt that is not a relay's is not run, and the pro
   assert.deepEqual([asked.length, summary.relays, summary.children], [1, 0, 1]);
 });
 
-// A relay's commands are data the host runs. A relay it cannot read is no result, and never a prompt a session
-// with a shell is left to carry out.
 test("a relay whose prompt holds no spec with the digest it names returns null and starts no session", async () => {
   const { agent, asked, logs, dir, summary } = host();
   const log = join(dir, "ran.log");
@@ -137,7 +128,6 @@ test("a call that is not a relay goes to a child session with its model, effort,
   assert.deepEqual([summary.children, summary.relays, summary.cost_usd], [3, 0, 0.75]);
 });
 
-// A script branches on null, the value the Agent tool returns for an agent that died.
 test("a child session that fails, is ended at its time limit, or gives no structured reply returns null and says why", async () => {
   const schema = { type: "object" };
   const unshaped = replied({ is_error: false, subtype: "success", result: "text", session_id: "s-1" });
@@ -157,8 +147,6 @@ test("a child session that fails, is ended at its time limit, or gives no struct
   }
 });
 
-// The work is in the worktree by the time a session gives its reply. Dropping the reply for an error that came
-// after it would implement the Issue a second time.
 test("a structured reply is returned also when the session then ended on an error", async () => {
   const { agent, logs } = host([
     replied({ is_error: true, subtype: "error_during_execution", structured_output: { status: "done" } }, 1),
@@ -167,8 +155,6 @@ test("a structured reply is returned also when the session then ended on an erro
   assert.match(logs.join("\n"), /ended as error_during_execution after giving its reply/);
 });
 
-// An implementing session wrote the change and ended in prose. Returning null there made the workflow stop with
-// the work already in the worktree.
 test("a session that ends without a structured reply is asked for it once more in the same session, and that reply is returned", async () => {
   const schema = { type: "object" };
   const { agent, asked, summary } = host([
@@ -188,8 +174,6 @@ test("a session that ends without a structured reply is asked for it once more i
   assert.deepEqual([summary.children, summary.cost_usd], [1, 1.25]);
 });
 
-// A stopped run is resumed with the retry the stop returned. Every call before the stopped boundary has the
-// prompt it had, and must come back without implementing, or pushing, a second time.
 test("a run started with the same state file returns the kept results and runs nothing, and a call that returned nothing is asked again", async () => {
   const first = host([replied({ is_error: false, structured_output: { status: "done" } }), replied({ is_error: true }, 1)]);
   const log = join(first.dir, "ran.log");
@@ -198,7 +182,6 @@ test("a run started with the same state file returns the kept results and runs n
   const relayedOnce = await first.agent(relay, relayOpts("check:1"));
   const implemented = await first.agent("implement", opts);
   assert.equal(await first.agent("review", { label: "review:1", schema: { type: "object" } }), null);
-  // The host was ended while it wrote its next line.
   appendFileSync(first.state, '{"key":"cut sho');
 
   const second = host([replied({ is_error: false, structured_output: { accepted: true } })], first.state);
@@ -209,7 +192,6 @@ test("a run started with the same state file returns the kept results and runs n
   assert.deepEqual(second.asked.map((run) => run.prompt), ["review"]);
   assert.deepEqual([second.summary.kept, second.summary.relays, second.summary.children], [2, 0, 1]);
 
-  // The line written after the cut one is whole, and the same prompt with another option is another call.
   const third = host(
     [replied({ is_error: false, structured_output: { status: "again" } }), replied({ is_error: false, structured_output: { status: "more" } })],
     first.state,
@@ -219,8 +201,6 @@ test("a run started with the same state file returns the kept results and runs n
   assert.deepEqual(await third.agent("implement", { ...opts, schema: { type: "object", required: [] } }), { status: "more" });
 });
 
-// write-body.ts reads the PR body from the prompt of the agent that runs it. Here no agent runs the command,
-// so the host stores the prompt where the helpers' scan finds it.
 test("a relay's command finds the prompt of its own call through the scan the helpers use", async () => {
   const { agent } = host();
   const transcript = join(here, "..", "transcript.ts");
@@ -235,9 +215,6 @@ test("a relay's command finds the prompt of its own call through the scan the he
   assert.equal(reply.seen, "1 本文 one");
 });
 
-// The relay's steps include the target's check. A host that set RELAY_PROJECTS in its own environment passed it to
-// every process it started afterwards, and a test in the check that ran a command under another HOME read the host's
-// directory instead (#808).
 test("a relay's step reads RELAY_PROJECTS as the host's projects directory, and the host's own environment keeps its value", async () => {
   const before = process.env.RELAY_PROJECTS;
   process.env.RELAY_PROJECTS = "/the/caller/projects";
@@ -255,7 +232,6 @@ test("a relay's step reads RELAY_PROJECTS as the host's projects directory, and 
   }
 });
 
-// Prompts and command output can carry a token, such as a remote URL with credentials.
 test("the state file and what is kept beside it are readable by their owner alone, and a label with a slash names a file", async () => {
   const { agent, dir, state } = host([replied({ is_error: false, structured_output: { ok: true } })]);
   await agent(relayPrompt({ defaults: { a: "" }, steps: [{ sh: "echo secret", set: { a: "out" } }] }), relayOpts("target"));
@@ -292,7 +268,6 @@ return { head: relayed.head, verdict: judged.verdict };
   await assert.rejects(nest("no-such-workflow", {}), /no workflow with that name/);
 });
 
-// The one place that talks to the real command. A fake claude on PATH records what it was given.
 test("a child session is started as claude -p with the model, the tools, the effort, the schema, and the prompt on stdin, and is resumed by its session id", async () => {
   const dir = mkdtempSync(join(tmpdir(), "claude-run-fake-"));
   const bin = join(dir, "bin");
@@ -324,7 +299,6 @@ console.log(JSON.stringify(n === 0 ? { is_error: false, result: "prose", session
     assert.equal(calls[0].cwd, realpathSync(dir));
     assert.equal(summary.cost_usd, 1.5);
 
-    // No claude to start is a session that failed, not a throw.
     process.env.PATH = "/nonexistent";
     const logs: string[] = [];
     const none = createHost({ repo: dir, state: join(dir, "other.jsonl"), onLog: (message) => logs.push(message) });
@@ -337,7 +311,6 @@ console.log(JSON.stringify(n === 0 ? { is_error: false, result: "prose", session
   }
 });
 
-// Two hosts on one state file would each miss the other's results and push twice.
 test("a state file held by a running process is refused, and one left by a process that is gone is taken over", () => {
   const dir = mkdtempSync(join(tmpdir(), "claude-run-lock-"));
   const state = join(dir, "calls.jsonl");
@@ -358,7 +331,6 @@ test("a call is read with its state path made absolute, and one it cannot read i
     ["implement", "/abs/repo", "12", resolve("run/calls.jsonl"), 2],
   );
   assert.equal(readCall(["implement", "--repo", "/abs/repo"])?.state, undefined);
-  // A request written by a person holds quotes and line breaks. From a file it passes through no shell quoting.
   const dir = mkdtempSync(join(tmpdir(), "claude-run-args-"));
   const request = `it's "wrong"\nfix the 'order'`;
   writeFileSync(join(dir, "args.json"), JSON.stringify({ issue: "12", revision: { pr: "https://example.test/pr/1", request } }));
@@ -384,7 +356,6 @@ test("a call is read with its state path made absolute, and one it cannot read i
   assert.equal(ran.stdout, "");
 });
 
-// A session that cannot run a command would implement for minutes and then say it could not run a test.
 test("the probe says whether a child session ran the commands, and names the ones the user's rules refused", async () => {
   const asked: ChildRun[] = [];
   const answer = (outcome: ChildOutcome) => async (run: ChildRun) => {
@@ -411,8 +382,6 @@ test("the probe says whether a child session ran the commands, and names the one
   assert.deepEqual([failed.ran, failed.why], [false, "the session ended as error_during_execution"]);
 });
 
-// The skill reads the result from the file the summary line names, because the log and the result reach it
-// through one stream.
 test("the command prints the script's return value, writes it beside the state file, and names both files in its last line", async () => {
   const dir = mkdtempSync(join(tmpdir(), "claude-run-main-"));
   const file = join(dir, "sample.js");
@@ -440,7 +409,6 @@ test("the command prints the script's return value, writes it beside the state f
   assert.equal(JSON.parse(thrown.logs.at(-1)?.replace(/^claude-run: /, "") ?? "").result, null);
   assert.equal((await run(["sample"])).code, 2);
 
-  // Another host on the same state: one line the skill can read, and nothing run.
   writeFileSync(`${state}.lock`, String(process.ppid));
   const held = await run(["sample", "--repo", "/abs/repo", "--state", state]);
   assert.equal(held.code, 1);

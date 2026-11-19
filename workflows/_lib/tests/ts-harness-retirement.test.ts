@@ -1,13 +1,4 @@
 /// <reference types="node" />
-// run-workflow.js, codex-run.js and tests/_brace.js are retired once their TypeScript
-// replacements (run-workflow.ts, codex-run.ts, tests/_brace.ts) carry the harness. This file
-// guards the retirement itself, the same way workflows/_lib/tests/pr-body-retirement.test.ts guards
-// its own retired script: no tracked file outside docs/decisions/ and docs/research/ (kept as
-// historical record) still names a retired path. The
-// walk and the historical-directory exclusions are assertNoResidualReferences
-// (workflows/_lib/tests/_retirement.ts), whose tracked-file list and positive control
-// pr-body-retirement.test.ts shares too; this file keeps only its retired paths and their
-// predicate.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -20,8 +11,6 @@ const REPO_ROOT = join(HERE, "..", "..", "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 const PR_BODY_RETIREMENT_PATH = join(REPO_ROOT, "workflows", "_lib", "tests", "pr-body-retirement.test.ts");
 
-// The three retired paths T-042 and T-043 used to check as two separate tests (one path, then a
-// loop of two); T-053, T-430 and T-432 drive all three through this one list instead.
 const RETIRED_PATHS = ["_lib/run-workflow.js", "_lib/codex-run.js", "_lib/tests/_brace.js"];
 
 function referencesPath(content: string, retiredPath: string): boolean {
@@ -32,17 +21,10 @@ test(
   "T-053 no tracked file outside docs/decisions/ and docs/research/ references " +
     "_lib/run-workflow.js, _lib/codex-run.js, or _lib/tests/_brace.js",
   () => {
-    // Positive controls stay hand-typed literals, one per retired path, independent of
-    // RETIRED_PATHS: a typo in that array must not flow into the fixture the control checks
-    // against (rules/development/TESTING.md § Whether the test swings at nothing; T-431 pins this).
-    // Each call stays on one line so that check can read its fixture argument back out.
     assertDetectsAndMisses((content) => referencesPath(content, "_lib/run-workflow.js"), "_lib/run-workflow.js");
     assertDetectsAndMisses((content) => referencesPath(content, "_lib/codex-run.js"), "_lib/codex-run.js");
     assertDetectsAndMisses((content) => referencesPath(content, "_lib/tests/_brace.js"), "_lib/tests/_brace.js");
 
-    // The three residual-reference scans themselves, previously one assertion per test
-    // (T-042 alone, T-043 looping two), now one loop over all three so a failure names the
-    // offending path (T-432 pins this).
     for (const retiredPath of RETIRED_PATHS) {
       assertNoResidualReferences(
         REPO_ROOT,
@@ -60,10 +42,6 @@ test(
   () => {
     const read = (path: string): string => readFileSync(join(REPO_ROOT, path), "utf8");
 
-    // pr-body-retirement.test.ts's own scenario, replayed here through the shared helper under
-    // its own exclusions: must stay clean. The name is built from parts rather than written as
-    // one literal, or T-129's own scan (this file is outside its exclusion list) would flag this
-    // file as a new offender.
     const prBodyRetiredName = ["pr-body", "py"].join(".");
     const prBodyPattern = new RegExp(`(^|[^\\w.-])${prBodyRetiredName.replace(".", "\\.")}\\b`);
     const prBodySelfPath = "workflows/_lib/tests/pr-body-retirement.test.ts";
@@ -80,8 +58,6 @@ test(
         "stay clean under its own exclusions",
     );
 
-    // ts-harness-retirement.test.ts's own scenario for each of the three retired paths this
-    // file checks, under its own self-exclusion: must stay clean too.
     for (const retiredPath of RETIRED_PATHS) {
       assert.doesNotThrow(
         () =>
@@ -97,10 +73,6 @@ test(
       );
     }
 
-    // Each call's exclusion list is its own: substituting ts-harness-retirement.test.ts's
-    // self-exclusion into pr-body-retirement.test.ts's scenario must surface
-    // pr-body-retirement.test.ts itself as an offender, because that file still names the retired
-    // name in its own source and is no longer the excluded path.
     assert.throws(
       () =>
         assertNoResidualReferences(
@@ -123,19 +95,10 @@ test(
     const ownSource = readFileSync(fileURLToPath(import.meta.url), "utf8");
     const prBodySource = readFileSync(PR_BODY_RETIREMENT_PATH, "utf8");
 
-    // assertDetectsAndMisses's 2nd argument builds the positive-control fixture
-    // (rules/development/TESTING.md § Whether the test swings at nothing). When that argument is a bare
-    // reference to the same constant the predicate searches for, a typo introduced in the
-    // constant changes both sides together, so the positive control keeps passing even though
-    // the scan it guards is now broken. The fixture argument must instead be a hand-typed literal, independent of
-    // that constant.
     for (const [label, source] of [
       ["pr-body-retirement.test.ts", prBodySource],
       ["ts-harness-retirement.test.ts", ownSource],
     ] as const) {
-      // A genuine call site has "assertDetectsAndMisses(" in code position, not quoted inside a
-      // string or regex literal -- this file's own source below names the call in both forms
-      // (a filter string, a match() regex), so a bare .includes() would flag itself as a call.
       const callLines = source.split("\n").filter((line) => {
         const idx = line.indexOf("assertDetectsAndMisses(");
         if (idx === -1) return false;

@@ -1,11 +1,3 @@
-// Whether the two nesting checks reach CI and the whole tracked tree: test.yml invokes both
-// linters with GitHub annotation output, each runs clean from the repository root under the
-// committed config, and `.gitignore` hides no lintable tracked file (`vcs.useIgnoreFile` makes
-// biome skip whatever git ignores). test.yml is read as text: package.json carries no YAML
-// parser, and both commands are literal `run:` lines.
-//
-// Both nesting rules sit at error, so an over-nested function makes the bare runs in T-016 and
-// T-017 exit non-zero; no scoped gate with --deny-warnings / --error-on-warnings is needed.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -19,8 +11,6 @@ const BIOME_BIN = path.join(ROOT, "node_modules", ".bin", "biome");
 const OXLINT_BIN = path.join(ROOT, "node_modules", ".bin", "oxlint");
 const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");
 
-// Exit code of `bin args` run from the repository root. A non-zero here means a config error, a
-// parse error, or an error-level finding, which is what both nesting rules now produce.
 function runFromRoot(bin, args) {
   assert.ok(
     existsSync(bin),
@@ -68,10 +58,6 @@ test("T-018 no tracked .js or .ts file is hidden from Biome by .gitignore", () =
 const BIOME_JSON = path.join(ROOT, "biome.json");
 const OXLINTRC = path.join(ROOT, ".oxlintrc.json");
 
-// The level each config holds for its nesting rule, read the way biome-cognitive-complexity-
-// discipline.test.js (T-005) and oxlint-workflow-depth.test.js (T-010) read their own file.
-// Those two pin each linter alone; this one pins that neither can sit at warn while the other
-// sits at error, which is the state T-016 and T-017 rest on.
 function nestingRuleLevels() {
   const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
   const oxlintConfig = JSON.parse(readFileSync(OXLINTRC, "utf8"));

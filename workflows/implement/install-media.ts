@@ -1,18 +1,5 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-// Usage: install-media.ts <output> <worktree> <destination>
-//
-// Validates the media in a capture output directory and replaces the contents of the worktree's
-// destination (repo-relative) with them. Canonical source: installMedia in
-// ~/.agents/scripts/correction.ts and validateCaptureMedia in capture.ts.
-//
-// stdout: one line of JSON. Success is {ok: true, files: [{name, size, sha256}]}; failure is {ok: false, reason}.
-// exit 0 on success. exit 1 when a check rejects the output (the destination is left untouched).
-//
-// Rejected when:
-//   - the output is empty, or holds a name other than PNG, JPEG, WebP, MP4, or WebM, a non-regular file, or a mismatched signature
-//   - the destination points outside the worktree, or its parent directory resolves through a symlink
-//   - git ignores the destination (reason: "ignored"), since the media would fall out of the reviewed tree
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -39,7 +26,6 @@ function mediaSignature(name: string, bytes: Buffer): boolean {
   return /\.webm$/i.test(name) && bytes.subarray(0, 4).equals(Buffer.from("1a45dfa3", "hex"));
 }
 
-/** Validates the media in the output and returns either a rejection reason or the list of names, sizes, and sha256s. */
 function inspectOutput(
   output: string,
 ): { reason: string } | { files: { name: string; size: number; sha256: string }[] } {
@@ -62,7 +48,6 @@ function inspectOutput(
   return { files };
 }
 
-/** Returns the destination's absolute path inside the worktree, or a rejection reason. */
 function resolveDestination(
   worktree: string,
   destination: string,
@@ -74,7 +59,6 @@ function resolveDestination(
   if (!inside || inside.startsWith("..") || inside.startsWith(sep))
     return { reason: "Capture destination is outside the worktree" };
   const parent = dirname(path);
-  // Each level is checked before mkdir, so no directory is created behind a symlink.
   let current = root;
   for (const part of relative(root, parent).split(sep)) {
     current = resolve(current, part);

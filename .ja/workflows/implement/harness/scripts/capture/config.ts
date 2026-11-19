@@ -1,4 +1,3 @@
-// ~/.agents/scripts/capture/config.ts の複製。正本は向こうなので、先にそちらを編集する。
 import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { createRequire } from "node:module";
@@ -108,7 +107,6 @@ function hooks(value: unknown, configFile: string): unknown {
   }
   assert(typeof value === "string", "Invalid global hook");
   const require = createRequire(configFile);
-  // モジュール解決だけでは、元の設定ファイルと同じ場所にある拡張子つきのフック名を拾えない。
   try {
     return require.resolve(resolve(dirname(configFile), value));
   } catch {

@@ -1,4 +1,3 @@
-// Vendored copy of ~/.agents/scripts/capture/config.ts, the canonical source. Edit there first.
 import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { createRequire } from "node:module";
@@ -108,7 +107,6 @@ function hooks(value: unknown, configFile: string): unknown {
   }
   assert(typeof value === "string", "Invalid global hook");
   const require = createRequire(configFile);
-  // Module-only resolution would miss bare hook filenames beside the original config.
   try {
     return require.resolve(resolve(dirname(configFile), value));
   } catch {

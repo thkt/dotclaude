@@ -1,8 +1,3 @@
-// Used by run-workflow.test.ts, which needs an independent, non-eval
-// oracle that extracts a top-level `<marker>{ ... }` object literal from workflow-script source,
-// to check against readMeta's own vm-evaluated result. Depth-counts braces with no
-// quote-awareness — the braces embedded in meta's string values (e.g. "{harness}")
-// are always balanced within the string, so an unaware count still lands on the matching close.
 export const extractBracedBody = (source: string, marker: string): string | null => {
   const idx = source.indexOf(marker);
   if (idx === -1) return null;

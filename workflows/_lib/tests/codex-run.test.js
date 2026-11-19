@@ -1,6 +1,3 @@
-// Behavior tests for the Codex runner's pure seams: the strict-mode schema translation, its
-// inverse, the agent-definition lookup, and the argv parse. The codex child process is never
-// spawned here, so nothing in this file reaches the network.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
@@ -31,9 +28,6 @@ function withTempDir(fn) {
   }
 }
 
-// isMainModule (workflows/_lib/entry-point.ts) resolves both argv[1] and the module path with
-// realpathSync before comparing them, so a symlinked entrypoint still matches its real file and
-// the CLI's usage branch (no workflow name, no --repo) runs instead of silently exiting 0.
 test("T-050 the CLI invoked through a symlinked path to codex-run.ts with no arguments prints the usage line to stderr and exits 2", () => {
   withTempDir((cwd) => {
     const link = join(cwd, "codex-run-link.ts");
@@ -44,8 +38,6 @@ test("T-050 the CLI invoked through a symlinked path to codex-run.ts with no arg
   });
 });
 
-// The shape a workflow script's obj(required, properties) can produce: required is a subset of
-// properties on purpose, which is what OpenAI strict mode rejects.
 const FETCH_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -147,9 +139,6 @@ test("pruneNulls descends into array items", () => {
 
 test("strictify and pruneNulls round-trip a response back to the shape the script expects", () => {
   const strict = strictify(FETCH_SCHEMA);
-  // strict marks title nullable because FETCH_SCHEMA's own required list leaves it optional:
-  // a compliant strict-mode response fills it with null, which pruneNulls must then drop
-  // against the original schema to land back on the shape the script expects.
   assert.deepEqual(
     pruneNulls(
       { found: false, body: "", title: strict.properties.title.anyOf ? null : "unreachable" },
@@ -159,10 +148,6 @@ test("strictify and pruneNulls round-trip a response back to the shape the scrip
   );
 });
 
-// T-433: the test above calls itself a round trip but never reads what strictify returned, so
-// it duplicates "pruneNulls drops a null standing for a property the original left optional"
-// without proving the two functions compose. This pins that the round-trip test's own source
-// captures strictify's return value and threads that same value into the pruneNulls call.
 test("the round-trip check fails when strictify's output is discarded, which the current shape does not", () => {
   const source = readFileSync(fileURLToPath(import.meta.url), "utf8");
   const marker =
@@ -230,8 +215,6 @@ test("parseArgv leaves Object.prototype untouched when --args carries a __proto_
   assert.equal(args.repo, "/tmp/repo");
 });
 
-// A unit shape whose files and tests are arrays a script reads .length from,
-// so a null arriving there throws inside the vm instead of taking a degradation branch.
 const UNIT_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -280,8 +263,6 @@ test("findSchemaViolation passes a response that fills every required field", ()
 });
 
 test("pruneNulls leaves a required null in place for findSchemaViolation to catch", () => {
-  // The two run in sequence inside the agent stage: pruning removes the optional nulls, and
-  // whatever null survives is the one that has to trigger a retry rather than reach the script.
   const pruned = pruneNulls({ units: [{ id: "T-001", files: null, note: null }] }, UNIT_SCHEMA);
   assert.deepEqual(pruned, { units: [{ id: "T-001", files: null }] });
   assert.equal(findSchemaViolation(pruned, UNIT_SCHEMA), "units[0].files is null");
@@ -293,8 +274,6 @@ test("stubs.workflow rejects an unresolved name with the fixed missing-name mess
     const stubs = createStubs({ repo: "/tmp/repo", tmp });
     await assert.rejects(
       () => stubs.workflow("does-not-exist", {}),
-      // A calling script can test the message for this exact substring, so a reworded throw
-      // breaks that check without a type error.
       (err) => err.message.includes("workflow('does-not-exist'): no workflow with that name"),
     );
   } finally {
@@ -302,11 +281,6 @@ test("stubs.workflow rejects an unresolved name with the fixed missing-name mess
   }
 });
 
-// T-434..T-437 pin createStubs's attempt loop (timeout / non-zero exit / missing output file /
-// schema-violation retry / ATTEMPTS exceeded) through the injectable `runOnce`, so no real codex
-// binary is spawned. PATH is blanked around each run all the same: a stub that fell through to
-// the real runCodexOnce would then fail fast with ENOENT instead of reaching a process or the
-// network.
 async function withoutCodexOnPath(fn) {
   const original = process.env.PATH;
   process.env.PATH = "";
@@ -415,9 +389,7 @@ test("T-437 two failed attempts return null and log each attempt", () =>
     const calls = [];
     const runOnce = async (spec) => {
       calls.push(spec);
-      // Attempt 1: codex exits 0 but writes no final message file.
       if (calls.length === 1) return { code: 0, stderr: "", timedOut: false };
-      // Attempt 2: codex exits non-zero.
       return { code: 1, stderr: "boom", timedOut: false };
     };
     const stubs = createStubs({

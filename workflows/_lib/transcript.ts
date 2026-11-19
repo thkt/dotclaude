@@ -1,23 +1,11 @@
 /// <reference types="node" />
-// Reads what a workflow script put into an agent's prompt back from that agent's transcript.
-//
-// A workflow script cannot touch a file or run a command, so everything it wants on disk or
-// executed goes through an agent. Claude Code stores the agent's prompt as the first line of the
-// agent's transcript, byte for byte. A helper the agent runs can read the script's data from
-// there, so the agent copies none of it. relay.ts reads the commands to run this way, and
-// write-body.ts the PR body.
 import { closeSync, openSync, readSync, readdirSync, statSync } from "node:fs";
 import type { Dirent } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-// The agent runs the helper within seconds of its transcript being written. The window only
-// keeps the scan from opening the transcripts of every past session.
 const RECENT_MS = 2 * 60 * 60 * 1000;
 
-// The digest the workflow scripts compute: FNV-1a over the UTF-16 code units of the text without
-// its trailing whitespace, then the length. A script cannot import this module, so it carries its
-// own copy, and the tests compare the two.
 export const digest = (text: string): string => {
   const t = text.trimEnd();
   let h = 0x811c9dc5;
@@ -28,13 +16,9 @@ export const digest = (text: string): string => {
   return `${h.toString(16).padStart(8, "0")}:${t.length}`;
 };
 
-// RELAY_PROJECTS names another place. claude-run.ts stores a prompt there for a command that reads one, since it
-// runs the command with no agent and so with no transcript.
 export const defaultProjects = (): string =>
   process.env.RELAY_PROJECTS || join(homedir(), ".claude", "projects");
 
-// One entry that cannot be read (a directory the sandbox denies, a transcript another session just
-// removed) must not end the scan before it reaches the agent's own transcript.
 const attempt = <T>(read: () => T, otherwise: T): T => {
   try {
     return read();
@@ -50,9 +34,6 @@ const walk = (dir: string): string[] =>
     return entry.isDirectory() ? walk(path) : [path];
   });
 
-// Agent transcripts live at <projects>/<project>/<session>/subagents/**/agent-<id>.jsonl. The session the
-// helper runs in is named by CLAUDE_CODE_SESSION_ID, and its directories are read first. The other sessions
-// follow, so a variable that names another session costs time and not the result.
 const scanGroups = (projects: string, session: string | undefined): string[][] => {
   const all = entries(projects)
     .filter((project) => project.isDirectory())
@@ -77,7 +58,6 @@ const recentTranscripts = (dirs: string[], now: number): string[] =>
     .sort((a, b) => b.mtime - a.mtime)
     .map((file) => file.path);
 
-// A transcript runs to megabytes, and the prompt is its first line.
 const firstLine = (path: string): string => {
   const fd = openSync(path, "r");
   try {
@@ -96,8 +76,6 @@ const firstLine = (path: string): string => {
   }
 };
 
-// The prompt's text: the content of the user message on the first line, as a string or as text
-// parts. A transcript whose first line does not carry `marker` is skipped without parsing.
 const promptOf = (transcript: string, marker: string): string => {
   const line = attempt(() => firstLine(transcript), "");
   if (!line.includes(marker)) return "";
@@ -112,9 +90,6 @@ const promptOf = (transcript: string, marker: string): string => {
     : "";
 };
 
-// The prompts of the agents whose transcripts changed recently, limited to those carrying `marker`. The
-// helper's own session comes first and each group is newest first. A caller that stops at its match reads
-// no further group.
 export function* recentPrompts(
   projects: string,
   marker: string,

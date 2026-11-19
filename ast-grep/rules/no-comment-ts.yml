@@ -16,5 +16,3 @@ files:
   - '**/*.ts'
 ignores:
   - '**/fixtures/**'
-  - 'workflows/**'
-  - '.ja/workflows/**'

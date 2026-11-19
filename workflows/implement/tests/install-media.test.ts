@@ -1,7 +1,4 @@
 /// <reference types="node" />
-// Behavior tests for workflows/implement/install-media.ts: the host step that validates captured
-// media and replaces the capture destination with it (the port of installMedia in
-// ~/.agents/scripts/correction.ts and validateCaptureMedia in capture.ts).
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {

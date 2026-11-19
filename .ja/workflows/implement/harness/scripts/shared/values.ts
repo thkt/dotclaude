@@ -1,5 +1,3 @@
-// ~/.agents/scripts/shared/values.ts の複製。正本は向こうなので、先にそちらを編集する。
-// 差分: capture アダプターが import する export だけを残した。
 import { isAbsolute, relative, sep } from "node:path";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
