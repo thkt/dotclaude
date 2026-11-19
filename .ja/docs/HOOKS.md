@@ -1,6 +1,6 @@
 # Hooks Design
 
-Hook システムの設計意図と仕組み。実登録は `settings.json` が正で、本書は構造と意図を説明する。`settings.json` は hook を 1 つも登録していない (DR-0123)。本書の表は、各スクリプトが最後に持っていた配線の記録である。statusLine の登録だけが残る。
+Hook システムの設計意図と仕組み。実登録は `settings.json` が正で、本書は構造と意図を説明する。`settings.json` が登録する hook は、Stop の `lifecycle/done_gate.ts stop` の 1 つだけである。本書のほかの表は、各スクリプトが最後に持っていた配線の記録である (DR-0123)。statusLine の登録は残る。
 
 ## 実行レイヤー
 
@@ -88,6 +88,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 | statusline.sh    | statusLine        | fail-open  | ステータスライン表示と、自身が持つセッション単位 state の TTL 掃除          |
 | recall_index.ts  | SessionStart      | fail-open  | recall のクロスセッション索引をバックグラウンド更新。いまは SessionStart に配線していない |
 | failure-alert.sh | Stop, StopFailure | fail-open  | 悪い終わり方をしたターンを音で知らせる。end_turn と subagent では鳴らさない |
+| done_gate.ts | Stop | fail-open | `done_gate.ts on` を済ませた作業ツリーで、`check` が今のツリーで通った記録があるかを判定する。mode が `record` のときは判定を記録して停止を許す。`enforce` のときは、記録がない間、停止を差し止める |
 
 ### integrations/
 

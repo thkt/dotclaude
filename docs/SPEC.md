@@ -63,7 +63,7 @@ A hook that stops a call goes through `hook_payload.deny` and emits the same env
 
 ### Wiring
 
-`settings.json` registers no hook (DR-0123). The table below records the registration each script last carried, which is where wiring one back starts. The rows keep the registration order of that time. Within one matcher the hooks run top to bottom, and a hook whose `if` condition does not hold never starts. Each of the four scripts carrying an `if` condition was registered twice, once for `Write` and once for `Edit`, and the table folds that pair into one row.
+The one hook `settings.json` registers is `lifecycle/done_gate.ts stop` on Stop, with timeout 60. The table below records the registration every other script last carried, which is where wiring one back starts (DR-0123). The rows keep the registration order of that time. Within one matcher the hooks run top to bottom, and a hook whose `if` condition does not hold never starts. Each of the four scripts carrying an `if` condition was registered twice, once for `Write` and once for `Edit`, and the table folds that pair into one row.
 
 | Event             | Matcher            | Implementation                                  | if condition       | timeout |
 | ----------------- | ------------------ | ----------------------------------------------- | ------------------ | ------- |

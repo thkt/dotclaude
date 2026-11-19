@@ -47,7 +47,8 @@
       "Bash(sae status *)",
       "Bash(scout *)",
       "Bash(ugrep *)",
-      "Bash(xr *)"
+      "Bash(xr *)",
+      "Bash(~/.claude/hooks/lifecycle/done_gate.ts *)"
     ],
     "deny": [
       "Bash(git stash clear *)",
@@ -117,6 +118,19 @@
       "Edit(//**/.claude/agent-memory-local/**)"
     ],
     "defaultMode": "auto"
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/lifecycle/done_gate.ts stop",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
   },
   "statusLine": {
     "type": "command",

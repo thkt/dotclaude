@@ -7,6 +7,8 @@ import { join } from "node:path";
 export const GATE_DIR_NAME = "agent-gate";
 export const CONFIG_FILE = "config.json";
 export const CHECK_FILE = "check.json";
+export const STOP_LOG_FILE = "stop-log.jsonl";
+export const STREAK_FILE = "stop-streak.json";
 
 export type CheckCommand = string | string[];
 export type GateMode = "record" | "enforce";

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { type SpawnSyncReturns, spawnSync } from "node:child_process";
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
@@ -14,7 +15,13 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { CHECK_FILE, CONFIG_FILE, checkCommand, GATE_DIR_NAME } from "../../_lib/gate_record.ts";
+import {
+  CHECK_FILE,
+  CONFIG_FILE,
+  checkCommand,
+  GATE_DIR_NAME,
+  treeHash,
+} from "../../_lib/gate_record.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GATE = path.join(HERE, "..", "done_gate.ts");
@@ -285,4 +292,183 @@ test("T-557 outside a git working tree and with an unknown or missing action, th
     assert.equal(unknown.status, 2, `${JSON.stringify(args)}`);
     assert.match(unknown.stderr, /^[^\n]+\n$/);
   }
+});
+
+function outsideDir(): string {
+  return realpathSync(mkdtempSync(path.join(tmpdir(), "done-gate-outside-")));
+}
+
+function stopHook(input: string, cwd: string = outsideDir()): Record<string, unknown> {
+  const result = spawnSync(process.execPath, [GATE, "stop"], {
+    cwd,
+    env: isolatedEnv({ GIT_CEILING_DIRECTORIES: path.dirname(cwd) }),
+    input,
+    encoding: "utf8",
+    timeout: 60_000,
+  });
+  assert.equal(result.status, 0, `stop exited ${result.status}: ${result.stderr}`);
+  const output: unknown = JSON.parse(result.stdout);
+  assert.ok(
+    typeof output === "object" && output !== null && !Array.isArray(output),
+    `stop stdout is not one JSON object: ${result.stdout}`,
+  );
+  return output as Record<string, unknown>;
+}
+
+function stopEvent(cwd: string, extra: Record<string, unknown> = {}): string {
+  return JSON.stringify({
+    session_id: "session-1",
+    cwd,
+    background_tasks: [],
+    stop_hook_active: false,
+    ...extra,
+  });
+}
+
+function stopLog(cwd: string): Array<Record<string, unknown>> {
+  const file = path.join(gateDir(cwd), "stop-log.jsonl");
+  if (!existsSync(file)) {
+    return [];
+  }
+  return readFileSync(file, "utf8")
+    .split("\n")
+    .filter((line) => line !== "")
+    .map((line) => JSON.parse(line));
+}
+
+test("T-559 stop prints {} and appends nothing for stdin that is not a JSON object, a cwd outside git, a repo without on, and a non-empty background_tasks", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  assert.equal(gate(dir, "on").status, 0);
+  const notOn = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+
+  assert.deepEqual(stopHook("not json", dir), {});
+  assert.deepEqual(stopHook("[]", dir), {});
+  assert.deepEqual(stopHook(stopEvent(outsideDir())), {});
+  assert.deepEqual(stopHook(stopEvent(notOn)), {});
+  assert.deepEqual(stopHook(stopEvent(dir, { background_tasks: [1] })), {});
+
+  assert.equal(existsSync(gateDir(notOn)), false, "stop created a record directory in a repo without on");
+  assert.deepEqual(stopLog(dir), []);
+  assert.deepEqual(stopHook(stopEvent(dir)), {});
+  assert.equal(stopLog(dir).length, 1, "an empty background_tasks must reach the gate");
+});
+
+test("T-560 in mode record, stop prints {} and appends one line saying done after a passing check, and one saying not done with reason no-record before any check", () => {
+  const passing = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(passing, "on");
+  assert.equal(gate(passing, "check").status, 0);
+  assert.deepEqual(stopHook(stopEvent(passing)), {});
+  const [done, ...restDone] = stopLog(passing);
+  assert.deepEqual(restDone, []);
+  assert.equal(typeof done.at, "string");
+  assert.deepEqual(
+    { session_id: done.session_id, tree: done.tree, done: done.done, reason: done.reason },
+    { session_id: "session-1", tree: treeHash(passing), done: true, reason: undefined },
+  );
+
+  const unchecked = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(unchecked, "on");
+  assert.deepEqual(stopHook(stopEvent(unchecked)), {});
+  const [notDone, ...restNotDone] = stopLog(unchecked);
+  assert.deepEqual(restNotDone, []);
+  assert.equal(typeof notDone.at, "string");
+  assert.deepEqual(
+    { session_id: notDone.session_id, tree: notDone.tree, done: notDone.done, reason: notDone.reason },
+    { session_id: "session-1", tree: treeHash(unchecked), done: false, reason: "no-record" },
+  );
+});
+
+test("T-561 in mode enforce, stop prints {} after a passing check and blocks with the text status prints once the tree changes", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(dir, "on", "--mode", "enforce");
+  assert.equal(gate(dir, "check").status, 0);
+  assert.deepEqual(stopHook(stopEvent(dir)), {});
+
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+  const blocked = stopHook(stopEvent(dir));
+  const status = gate(dir, "status");
+  assert.equal(status.status, 1);
+  assert.deepEqual(blocked, { decision: "block", reason: status.stdout.replace(/\n$/, "") });
+  assert.deepEqual(stopLog(dir), [], "mode enforce must not append to stop-log.jsonl");
+});
+
+test("T-562 in mode enforce, the same not-done event blocks 8 stops, allows the 9th with a systemMessage and no decision, and blocks the 10th again", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(dir, "on", "--mode", "enforce");
+  const event = stopEvent(dir);
+
+  for (let call = 1; call <= 8; call++) {
+    assert.equal(stopHook(event).decision, "block", `call ${call}`);
+  }
+  const ninth = stopHook(event);
+  assert.equal(ninth.decision, undefined);
+  assert.equal(typeof ninth.systemMessage, "string");
+  assert.equal(stopHook(event).decision, "block", "call 10");
+});
+
+test("T-563 in mode enforce, a new check exit code or a new file restarts the count, so the next stop blocks and 8 stops block before one is allowed", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 3"}' });
+  gate(dir, "on", "--mode", "enforce");
+  const event = stopEvent(dir);
+  const blockRun = (label: string, calls: number) => {
+    for (let call = 1; call <= calls; call++) {
+      assert.equal(stopHook(event).decision, "block", `${label} call ${call}`);
+    }
+  };
+
+  blockRun("no record", 8);
+  assert.equal(gate(dir, "check").status, 3);
+  blockRun("after check exited 3", 8);
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+  blockRun("after a new file", 8);
+  const allowed = stopHook(event);
+  assert.equal(allowed.decision, undefined);
+  assert.equal(typeof allowed.systemMessage, "string");
+});
+
+test("T-564 stop leaves the tree hash and git status --porcelain unchanged in mode record and in mode enforce", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
+  writeFileSync(path.join(dir, "tracked.txt"), "two\n");
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+  const before = { tree: treeHash(dir), porcelain: git(dir, "status", "--porcelain") };
+  const current = () => ({ tree: treeHash(dir), porcelain: git(dir, "status", "--porcelain") });
+
+  gate(dir, "on");
+  assert.deepEqual(stopHook(stopEvent(dir)), {});
+  assert.equal(stopLog(dir).length, 1);
+  assert.deepEqual(current(), before);
+
+  gate(dir, "on", "--mode", "enforce");
+  assert.equal(stopHook(stopEvent(dir)).decision, "block");
+  assert.deepEqual(current(), before);
+});
+
+test("T-565 running on again after a passing check makes status exit 1 and leaves stop-log.jsonl as it was", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(dir, "on");
+  assert.equal(gate(dir, "check").status, 0);
+  stopHook(stopEvent(dir));
+  const logFile = path.join(gateDir(dir), "stop-log.jsonl");
+  const log = readFileSync(logFile, "utf8");
+  assert.notEqual(log, "");
+
+  assert.equal(gate(dir, "on").status, 0);
+  assert.equal(gate(dir, "status").status, 1);
+  assert.equal(readFileSync(logFile, "utf8"), log);
+});
+
+test("T-566 when stop cannot write its record, it prints {} and one stderr line and exits 0", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(dir, "on");
+  mkdirSync(path.join(gateDir(dir), "stop-log.jsonl"));
+  const result = spawnSync(process.execPath, [GATE, "stop"], {
+    cwd: dir,
+    env: isolatedEnv(),
+    input: stopEvent(dir),
+    encoding: "utf8",
+    timeout: 60_000,
+  });
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, "{}\n");
+  assert.match(result.stderr, /^[^\n]+\n$/);
 });

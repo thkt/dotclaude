@@ -1,7 +1,7 @@
 #!/opt/homebrew/bin/bun
 /// <reference types="node" />
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   CHECK_FILE,
@@ -14,11 +14,15 @@ import {
   type GateLocation,
   type GateMode,
   gateLocation,
+  STOP_LOG_FILE,
+  STREAK_FILE,
   treeHash,
+  type Verdict,
   verdict,
 } from "../_lib/gate_record.ts";
 
-const USAGE = "usage: done_gate.ts on [--mode enforce] | off | check | status";
+const USAGE = "usage: done_gate.ts on [--mode enforce] | off | check | status | stop";
+const STREAK_LIMIT = 8;
 
 function fail(message: string): number {
   process.stderr.write(`done_gate: ${message}\n`);
@@ -80,12 +84,18 @@ function off(gate: GateLocation): number {
   return 0;
 }
 
-function storedCheck(gate: GateLocation): CheckCommand | null {
+function storedConfig(gate: GateLocation): GateConfig | null {
   const config = readJson(join(gate.dir, CONFIG_FILE));
   if (typeof config !== "object" || config === null) {
     return null;
   }
-  return checkCommand((config as Record<string, unknown>).check);
+  const fields = config as Record<string, unknown>;
+  const check = checkCommand(fields.check);
+  const mode = fields.mode;
+  if (check === null || (mode !== "record" && mode !== "enforce")) {
+    return null;
+  }
+  return { check, mode };
 }
 
 function runCommand(command: CheckCommand, cwd: string): number {
@@ -99,7 +109,7 @@ function runCommand(command: CheckCommand, cwd: string): number {
 }
 
 function check(gate: GateLocation): number {
-  const command = storedCheck(gate);
+  const command = storedConfig(gate)?.check ?? null;
   if (command === null) {
     return fail("not on in this worktree; run `done_gate.ts on` first");
   }
@@ -120,25 +130,139 @@ function check(gate: GateLocation): number {
   return exitCode;
 }
 
+interface Evaluation {
+  tree: string;
+  record: CheckRecord | null;
+  result: Verdict;
+}
+
+function evaluate(gate: GateLocation): Evaluation | null {
+  const tree = treeHash(gate.root);
+  if (tree === null) {
+    return null;
+  }
+  const record = checkRecord(readJson(join(gate.dir, CHECK_FILE)));
+  return { tree, record, result: verdict(record, tree) };
+}
+
+function verdictText(result: Verdict): string {
+  return result.done ? "done" : result.lines.join("\n");
+}
+
 function status(gate: GateLocation): number {
-  if (storedCheck(gate) === null) {
+  if (storedConfig(gate) === null) {
     return fail("not on in this worktree; run `done_gate.ts on` first");
   }
-  const current = treeHash(gate.root);
-  if (current === null) {
+  const evaluation = evaluate(gate);
+  if (evaluation === null) {
     return fail("could not hash the working tree");
   }
-  const result = verdict(checkRecord(readJson(join(gate.dir, CHECK_FILE))), current);
-  if (result.done) {
-    process.stdout.write("done\n");
+  process.stdout.write(`${verdictText(evaluation.result)}\n`);
+  return evaluation.result.done ? 0 : 1;
+}
+
+type StopOutput = Record<string, string>;
+
+function stopEvent(text: string): Record<string, unknown> | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+    ? (parsed as Record<string, unknown>)
+    : null;
+}
+
+function appendStopLog(gate: GateLocation, sessionId: unknown, evaluation: Evaluation): void {
+  const { tree, result } = evaluation;
+  const entry = {
+    at: new Date().toISOString(),
+    session_id: typeof sessionId === "string" ? sessionId : null,
+    tree,
+    done: result.done,
+    ...(result.done ? {} : { reason: result.reason }),
+  };
+  appendFileSync(join(gate.dir, STOP_LOG_FILE), `${JSON.stringify(entry)}\n`);
+}
+
+function blockedBefore(value: unknown, tree: string, checkExit: number | null): number {
+  if (typeof value !== "object" || value === null) {
     return 0;
   }
-  process.stdout.write(`${result.lines.join("\n")}\n`);
-  return 1;
+  const streak = value as Record<string, unknown>;
+  return streak.tree === tree && streak.checkExit === checkExit && typeof streak.count === "number"
+    ? streak.count
+    : 0;
+}
+
+function enforce(gate: GateLocation, evaluation: Evaluation): StopOutput {
+  const { tree, record, result } = evaluation;
+  const streakPath = join(gate.dir, STREAK_FILE);
+  if (result.done) {
+    rmSync(streakPath, { force: true });
+    return {};
+  }
+  const checkExit = record === null ? null : record.exitCode;
+  const count = blockedBefore(readJson(streakPath), tree, checkExit) + 1;
+  if (count > STREAK_LIMIT) {
+    rmSync(streakPath, { force: true });
+    return {
+      systemMessage: `done_gate: this stop is allowed because the last ${STREAK_LIMIT} stops were blocked with no change to the working tree or the check result.\n${verdictText(result)}`,
+    };
+  }
+  writeFileSync(streakPath, `${JSON.stringify({ tree, checkExit, count })}\n`);
+  return { decision: "block", reason: verdictText(result) };
+}
+
+function stopDecision(event: Record<string, unknown>): StopOutput {
+  const { cwd, background_tasks: backgroundTasks, session_id: sessionId } = event;
+  if (Array.isArray(backgroundTasks) && backgroundTasks.length > 0) {
+    return {};
+  }
+  if (typeof cwd !== "string") {
+    return {};
+  }
+  const gate = gateLocation(cwd);
+  if (gate === null) {
+    return {};
+  }
+  const config = storedConfig(gate);
+  if (config === null) {
+    return {};
+  }
+  const evaluation = evaluate(gate);
+  if (evaluation === null) {
+    throw new Error("could not hash the working tree");
+  }
+  if (config.mode === "record") {
+    appendStopLog(gate, sessionId, evaluation);
+    return {};
+  }
+  return enforce(gate, evaluation);
+}
+
+function stop(): number {
+  let output: StopOutput = {};
+  try {
+    const event = stopEvent(readFileSync(0, "utf8"));
+    if (event !== null) {
+      output = stopDecision(event);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`done_gate: stop allowed after an error: ${message.replace(/\s+/g, " ")}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(output)}\n`);
+  return 0;
 }
 
 function main(argv: string[]): number {
   const [action, ...rest] = argv;
+  if (action === "stop") {
+    return stop();
+  }
   const actions: Record<string, (gate: GateLocation) => number> = {
     on: (gate) => on(gate, rest),
     off,
