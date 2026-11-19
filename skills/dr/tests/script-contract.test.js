@@ -99,13 +99,14 @@ test("the process Steps run without a gap and every cited stage has a row", () =
   });
 });
 
-test("the Critique stage calls the critic-design agent that agents/ defines, and allowed-tools grants Agent", async () => {
+test("the Critique stage calls the critic-design agent that agents/ defines and waits for its result, and allowed-tools grants Agent", async () => {
   const agent = await readFile(join(root, "agents", "critics", "critic-design.md"), "utf8");
   assert.match(agent, /^name: critic-design$/m, "agents/critics/critic-design.md defines critic-design");
   await eachLanguage(skills, (doc, lang) => {
     const row = doc.split("\n").find((line) => /^\| \d+ {4}\| Critique /.test(line));
     assert.ok(row, `${lang}: the process table carries a Critique row`);
     assert.match(row, /critic-design/, `${lang}: the Critique row names critic-design`);
+    assert.match(row, { ja: /待って/, en: /\bwait\b/ }[lang], `${lang}: the Critique row waits for the critic-design result`);
     const grant = doc.match(/^allowed-tools:.*$/m)?.[0] ?? "";
     assert.match(grant, /(^|\s)Agent(\s|$)/, `${lang}: allowed-tools grants Agent`);
   });

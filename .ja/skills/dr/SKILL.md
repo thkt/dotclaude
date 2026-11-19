@@ -32,7 +32,7 @@ argument-hint: "[decision title]"
 | 2    | Type      | 決定の意図で決定タイプを判定し、推奨トピックを選ぶ (§ 決定タイプ)                                                                                                    |
 | 3    | Sources   | プロジェクトドキュメント、issue、外部リソースを収集する                                                                                                              |
 | 4    | Draft     | ${CLAUDE_SKILL_DIR}/templates/madr-template.md を `dr_dir` 配下に `filename` で写し、収集した内容で埋める (§ YAML Frontmatter)                                       |
-| 5    | Critique  | 既存 DR の原則に例外を作る、または既存 DR を supersede する場合だけ、下書きを critic-design の agent に渡し、verdict と成立条件を More Information に 1 行で残す |
+| 5    | Critique  | 既存 DR の原則に例外を作る、または既存 DR を supersede する場合だけ、下書きを critic-design の agent に渡し、結果の通知を待ってから、verdict と成立条件を More Information に 1 行で残す |
 | 6    | Validate  | ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE" を実行する。exit 0 なら合格。落ちた項目は `errors[]` に入り、`warnings[]` は参考                               |
 | 7    | Index     | ${CLAUDE_SKILL_DIR}/scripts/update-index.ts を実行し、`dr_dir/README.md` を再生成する                                                                                |
 | 8    | Publish   | ${CLAUDE_SKILL_DIR}/../_lib/publish.md を読み、§ 公開の値を渡して draft PR にする                                                                                    |

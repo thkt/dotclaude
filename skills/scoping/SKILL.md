@@ -28,7 +28,7 @@ Investigate the facts you can confirm, and ask early about facts only the user k
 
 Put the purpose, scope, done conditions, verification methods, agreement, and open items into the Issue or a draft. Only when reusable evidence or a long verification result is needed, save and hand over per `${CLAUDE_SKILL_DIR}/references/session.md`. Once decisions settle, check the effect on decision records and `rules/` per DOCUMENTS.md § Read and retain. When a decision record is needed, use `/dr`'s MADR template.
 
-Check the requirements for gaps, contradictions, and ambiguity, and for agreement with the consensus and evidence. When a contradiction or bias remains, run an independent evaluation with critic-design, and record it as not run when it was not.
+Check the requirements for gaps, contradictions, and ambiguity, and for agreement with the consensus and evidence. When a contradiction or bias remains, run an independent evaluation with critic-design, and wait for its result notification before finalizing the deliverables. Record it as not run when it was not.
 
 With "a proposal only" or "do not publish", stop at a local draft. Use the procedure in `${CLAUDE_SKILL_DIR}/references/issue.md` only when publishing or updating the Issue is within the request, and confirm the target, actor, permission, and the published body and URL. Do not read selecting the skill or saving a draft as permission to publish.
 
