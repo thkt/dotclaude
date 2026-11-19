@@ -78,3 +78,21 @@ test("T-600 commands drops a comment up to its line end, including a line ending
     assert.deepEqual([...commands(input)], expected, JSON.stringify(input));
   }
 });
+
+test("T-603 commands splits the next line as a command after a blank line or a line ending in a separator, and keeps non-newline punctuation joined", () => {
+  const cases: Array<[string, string[][]]> = [
+    ["echo a\n\ngit push", [["echo", "a"], ["git", "push"]]],
+    ["echo a;\ngit push", [["echo", "a"], ["git", "push"]]],
+    ["echo a &&\ngit push", [["echo", "a"], ["git", "push"]]],
+    ["echo a &\ngit push", [["echo", "a"], ["git", "push"]]],
+    ["echo a |\ngrep b", [["echo", "a"], ["grep", "b"]]],
+    ["\n\ngit push", [["git", "push"]]],
+    ["# c\n\ngit push", [["git", "push"]]],
+    ["echo alpha\n;echo beta", [["echo", "alpha"], ["echo", "beta"]]],
+    ["echo hi ;; rm x", [["echo", "hi", ";;", "rm", "x"]]],
+    ["a && b || c", [["a"], ["b"], ["c"]]],
+  ];
+  for (const [input, expected] of cases) {
+    assert.deepEqual([...commands(input)], expected, JSON.stringify(input));
+  }
+});

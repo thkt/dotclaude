@@ -254,6 +254,10 @@ function _lex(text: string): string[] {
     if (_WHITESPACE.includes(ch)) {
       return token;
     }
+    if (ch === _NEWLINE || token === _NEWLINE) {
+      pushback.push(ch);
+      return token;
+    }
     if (_PUNCTUATION.includes(ch)) {
       token += ch;
       return undefined;
