@@ -90,6 +90,7 @@ const REMOVED_PATHS = [
   "workflows/_lib/tests/severity-enum-single-source.test.ts",
   "skills/challenge",
   "skills/use-cli-ast-grep",
+  "skills/use-cli-gcloud",
   "skills/use-cli-codegraph",
   "skills/scribe",
   ".github/workflows/scribe.yml",
@@ -162,6 +163,7 @@ const RETIRED_NAMES = [
   "harness_hash",
   "skills/challenge",
   "use-cli-ast-grep",
+  "use-cli-gcloud",
   "use-cli-codegraph",
 ];
 
@@ -239,6 +241,7 @@ test("the retired-route predicate flags each removed name written in a fixture a
     "提案は「/challenge」で叩く。",
     "Read skills/challenge/SKILL.md for the verdict.",
     "Load use-cli-ast-grep for a structural rewrite.",
+    "Load use-cli-gcloud to read the sheet.",
     "呼び出し元は use-cli-codegraph で調べる。",
     "skills/fix/SKILL.md was removed",
     "「skills/fix/」を消した",

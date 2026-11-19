@@ -51,7 +51,7 @@ test("no live instruction, convention, or README carries the old name ADR outsid
   }
 
   const files = instructionFiles().filter((f) => f.rel !== EXEMPT);
-  assert.ok(files.length > 100, `the number scanned (${files.length})`);
+  assert.ok(files.length > 50, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
     const text = (await readFile(full, "utf8")).replace(/^when_to_use:.*$/gm, "");
     assert.doesNotMatch(text, /\bADRs?\b/, `${lang}: ${rel} still carries the old name ADR`);
@@ -116,7 +116,7 @@ test("no skill grants Bash without narrowing it to the commands it names", async
 test("no live instruction or convention names a workspace/ without .claude/", async () => {
   const BARE_WORKSPACE = /(?<!\.claude\/)(?<![\w/.])workspace\//;
   const files = instructionFiles();
-  assert.ok(files.length > 100, `the number scanned (${files.length})`);
+  assert.ok(files.length > 50, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
     const text = await readFile(full, "utf8");
     assert.doesNotMatch(text, BARE_WORKSPACE, `${lang}: ${rel} names a bare workspace/`);

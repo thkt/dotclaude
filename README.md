@@ -9,7 +9,7 @@ development principles, and workflow optimizations.
 
 This repository contains personal configurations for Claude AI, including:
 
-- Custom slash commands for systematic development workflows (8 skills)
+- Custom slash commands for systematic development workflows (7 skills)
 - A specialized AI agent that challenges design proposals (1 agent)
 - Core AI operation principles and development best practices
 - Six quality pipeline binaries, none of them wired
@@ -26,7 +26,7 @@ This repository contains personal configurations for Claude AI, including:
 │   ├── core/             # Core AI operation principles
 │   ├── conventions/      # Documentation conventions
 │   └── development/      # Development patterns & methodologies
-├── skills/               # Skill-based knowledge modules (8 skills)
+├── skills/               # Skill-based knowledge modules (7 skills)
 ├── agents/               # Specialized AI agents (1 agent)
 │   └── critics/          # Design proposal challenger (critic-design)
 ├── docs/                  # Design docs & guides (DRs under decisions/)
