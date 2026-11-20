@@ -15,6 +15,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { GIVE_REPLY } from "../../../workflows/_lib/claude-run.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "launch.ts");
@@ -313,6 +314,9 @@ test("a call the script cannot read prints the usage and nothing on stdout, and 
     ["prepare", "--repo", f.repo, "--issue", String(ISSUE), "--gate-mode", "off"],
     ["implement"],
     ["implement", "--worktree", "relative/worktree"],
+    ["review"],
+    ["review", "--model", "opus"],
+    ["review", "--worktree", "relative/worktree"],
     ["launch", "--repo", f.repo],
   ];
   for (const args of calls) {
@@ -415,4 +419,322 @@ test("implement stops with not-prepared in a worktree that prepare did not set u
   fakeClaude(f, SESSION_REPLY);
   assertStopped(run(f, ["implement", "--worktree", f.repo]), "not-prepared");
   assert.ok(!existsSync(join(f.logs, "cwd")), "claude is not started");
+});
+
+const REVIEW_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["findings", "verified"],
+  properties: {
+    findings: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["required", "location", "condition", "problem", "action"],
+        properties: {
+          required: { type: "boolean" },
+          location: { type: "string" },
+          condition: { type: "string" },
+          problem: { type: "string" },
+          action: { type: "string" },
+        },
+      },
+    },
+    verified: { type: "string" },
+  },
+};
+
+const POINTS = `Assess four separate things:
+1. Code: correctness at the input boundaries, state written to disk, behavior when something fails, and concrete redundancy (the same file read or the same judgment computed twice).
+2. Requirements and scope: every item the Issue scopes is present and behaves as the Issue's tables say, and nothing the Issue lists as out of scope changed. Check each sentence the Issue says to insert verbatim against the Issue mechanically.
+3. Tests: each done condition in the Issue has a test that would fail if the behavior were removed. Run the targeted tests. For at least two tests, break the code in a temporary copy to show the test fails, and say what you broke.
+4. Documentation and repository rules that apply to the changed files. Read the repository's instruction files, such as CLAUDE.md and AGENTS.md and the rules they point to, to find them.`;
+
+const CLOSING = `Do not edit any file in this worktree. Do not commit. Scratch files go under the directory in $TMPDIR.
+
+Give the result through the structured output. \`findings\` lists every finding. Set \`required\` to true only for a defect you demonstrated or a requirement of the Issue that is not met, which must be fixed before the change is published. Set it to false for every other concern. \`location\` is \`file:line\`, or an empty string when no line applies. \`condition\` is the input or state that triggers the finding, \`problem\` is what goes wrong, and \`action\` is what to do. \`verified\` says what you checked and how. An empty \`findings\` is a valid result.`;
+
+const SELF_PROMPT = `Before your uncommitted change for Issue #42 is published, review it yourself and try to refute it. Read the change again with \`git diff HEAD\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
+
+${POINTS}
+
+${CLOSING}`;
+
+const INDEPENDENT_PROMPT = `Independently review the uncommitted change in this worktree against GitHub Issue #42 of owner/repo. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff HEAD\` and \`git status --short\`, and read each untracked file.
+
+Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.
+
+${POINTS}
+
+${CLOSING}`;
+
+interface Step {
+  reply?: Record<string, unknown> | string;
+  exit?: number;
+  edit?: string;
+}
+
+const FINDING = { location: "a.ts:1", condition: "c", problem: "p", action: "a" };
+
+const shaped = (session: string, findings: Record<string, unknown>[] = [], cost = 1): Record<string, unknown> => ({
+  session_id: session,
+  structured_output: { findings, verified: `${session} checked` },
+  total_cost_usd: cost,
+  duration_ms: 10,
+});
+
+const CLEAN: Record<string, Step> = { self: { reply: shaped("self-1") }, independent: { reply: shaped("ind-1") } };
+
+function fakeReviewer(f: Fixture, plan: Record<string, Step>): void {
+  writeFileSync(join(f.logs, "plan.json"), JSON.stringify(plan));
+  writeFileSync(
+    join(f.bin, "claude"),
+    `#!/usr/bin/env node
+const fs = require("node:fs");
+const logs = process.env.LOGS;
+const args = process.argv.slice(2);
+const stdin = fs.readFileSync(0, "utf8");
+const resumed = args.includes("--resume") ? args[args.indexOf("--resume") + 1] : null;
+const name = resumed === null ? "independent" : args.includes("--fork-session") ? "self" : "again-" + resumed;
+fs.appendFileSync(logs + "/calls", name + "\\n");
+fs.writeFileSync(logs + "/" + name + ".json", JSON.stringify({ cwd: process.cwd(), args, stdin }));
+if (name === "self" || name === "independent") {
+  fs.writeFileSync(logs + "/started-" + name, "");
+  const other = logs + "/started-" + (name === "self" ? "independent" : "self");
+  const until = Date.now() + 10000;
+  while (!fs.existsSync(other)) {
+    if (Date.now() > until) process.exit(9);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 20);
+  }
+}
+const step = JSON.parse(fs.readFileSync(logs + "/plan.json", "utf8"))[name] || {};
+if (step.edit) fs.writeFileSync(step.edit, "changed by the reviewer\\n");
+if (step.reply !== undefined) process.stdout.write(typeof step.reply === "string" ? step.reply : JSON.stringify(step.reply));
+process.exit(step.exit || 0);
+`,
+    { mode: 0o755 },
+  );
+}
+
+function implemented(): Fixture {
+  const f = fixture();
+  assert.equal(prepare(f).status, 0);
+  fakeClaude(f, PASS_CHECK + SESSION_REPLY);
+  assert.equal(run(f, ["implement", "--worktree", worktreeOf(f)]).status, 0);
+  return f;
+}
+
+const review = (f: Fixture, ...extra: string[]) => run(f, ["review", "--worktree", worktreeOf(f), ...extra]);
+
+const callOf = (f: Fixture, name: string): { cwd: string; args: string[]; stdin: string } =>
+  JSON.parse(readFileSync(join(f.logs, `${name}.json`), "utf8"));
+
+const callsOf = (f: Fixture): string[] =>
+  existsSync(join(f.logs, "calls")) ? readFileSync(join(f.logs, "calls"), "utf8").split("\n").filter(Boolean) : [];
+
+const flagValue = (args: string[], flag: string): string => args[args.indexOf(flag) + 1];
+
+test("review returns accepted round 1 and appends its record to launch.json when both reviews find nothing", () => {
+  const f = implemented();
+  const before = launchRecord(worktreeOf(f));
+  fakeReviewer(f, CLEAN);
+  const result = review(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result);
+  assert.equal(typeof out.tree, "string");
+  assert.deepEqual(out, {
+    action: "review",
+    ok: true,
+    round: 1,
+    tree: out.tree,
+    verdict: "accepted",
+    reviews: {
+      self: { verdict: "accepted", findings: [], verified: "self-1 checked", session_id: "self-1", cost_usd: 1, duration_ms: 10 },
+      independent: { verdict: "accepted", findings: [], verified: "ind-1 checked", session_id: "ind-1", cost_usd: 1, duration_ms: 10 },
+    },
+  });
+  const after = launchRecord(worktreeOf(f)) as Record<string, unknown> & { reviews: Record<string, unknown>[] };
+  const { reviews, ...rest } = after;
+  assert.deepEqual(rest, before);
+  assert.equal(reviews.length, 1);
+  assert.equal(typeof reviews[0].at, "string");
+  assert.ok(!Number.isNaN(Date.parse(String(reviews[0].at))));
+  assert.deepEqual(reviews[0], {
+    round: 1,
+    tree: out.tree,
+    at: reviews[0].at,
+    verdict: "accepted",
+    self: { session_id: "self-1", verdict: "accepted", findings: [], verified: "self-1 checked" },
+    independent: { session_id: "ind-1", verdict: "accepted", findings: [], verified: "ind-1 checked" },
+  });
+});
+
+test("review starts self as a fork of the implement session and independent as a new session, both in the worktree with the read-only tools and the schema", () => {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  const self = callOf(f, "self");
+  const independent = callOf(f, "independent");
+  const at = self.args.indexOf("--resume");
+  assert.deepEqual(self.args.slice(at, at + 3), ["--resume", "s-1", "--fork-session"]);
+  assert.ok(!independent.args.includes("--resume"));
+  for (const call of [self, independent]) {
+    assert.equal(call.cwd, realpathSync(worktreeOf(f)));
+    assert.equal(flagValue(call.args, "--allowedTools"), "Read,Glob,Grep,LS");
+    assert.deepEqual(JSON.parse(flagValue(call.args, "--json-schema")), REVIEW_SCHEMA);
+    assert.equal(flagValue(call.args, "--model"), "opus");
+  }
+  assert.deepEqual(callsOf(f).sort(), ["independent", "self"]);
+});
+
+test("review passes --model to both reviews", () => {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f, "--model", "sonnet").status, 0);
+  assert.equal(flagValue(callOf(f, "self").args, "--model"), "sonnet");
+  assert.equal(flagValue(callOf(f, "independent").args, "--model"), "sonnet");
+});
+
+test("review gives each review its full prompt with the Issue number and repository filled in", () => {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  assert.equal(callOf(f, "self").stdin, SELF_PROMPT);
+  assert.equal(callOf(f, "independent").stdin, INDEPENDENT_PROMPT);
+});
+
+test("review runs the two reviews at the same time", () => {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  const result = review(f);
+  assert.equal(result.status, 0, result.stdout);
+  assert.ok(existsSync(join(f.logs, "started-self")));
+  assert.ok(existsSync(join(f.logs, "started-independent")));
+});
+
+test("review is rejected with ok true when one side returns a required finding, and only that side is rejected", () => {
+  for (const side of ["self", "independent"] as const) {
+    const f = implemented();
+    const other = side === "self" ? "independent" : "self";
+    fakeReviewer(f, { ...CLEAN, [side]: { reply: shaped(`${side}-1`, [{ required: true, ...FINDING }]) } });
+    const result = review(f);
+    assert.equal(result.status, 0, result.stderr);
+    const out = outputOf(result) as { ok: boolean; verdict: string; reviews: Record<string, { verdict: string }> };
+    assert.equal(out.ok, true);
+    assert.equal(out.verdict, "rejected", side);
+    assert.equal(out.reviews[side].verdict, "rejected", side);
+    assert.equal(out.reviews[other].verdict, "accepted", side);
+    const record = (launchRecord(worktreeOf(f)) as { reviews: Record<string, Record<string, unknown>>[] }).reviews[0];
+    assert.equal(record.verdict, "rejected");
+    assert.equal(record[side].verdict, "rejected");
+  }
+});
+
+test("review is accepted when every finding has required false", () => {
+  const f = implemented();
+  fakeReviewer(f, { ...CLEAN, self: { reply: shaped("self-1", [{ required: false, ...FINDING }]) } });
+  const result = review(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result) as { verdict: string; reviews: { self: { verdict: string; findings: unknown[] } } };
+  assert.equal(out.verdict, "accepted");
+  assert.equal(out.reviews.self.verdict, "accepted");
+  assert.deepEqual(out.reviews.self.findings, [{ required: false, ...FINDING }]);
+});
+
+test("a second review is round 2 and leaves two records in launch.json", () => {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  assert.equal(outputOf(review(f)).round, 1);
+  assert.equal(outputOf(review(f)).round, 2);
+  const reviews = (launchRecord(worktreeOf(f)) as { reviews: { round: number }[] }).reviews;
+  assert.deepEqual(reviews.map((entry) => entry.round), [1, 2]);
+});
+
+test("a review that gives no structured_output is asked once more in its own session without a fork, and its reply is used", () => {
+  const f = implemented();
+  fakeReviewer(f, {
+    ...CLEAN,
+    self: { reply: { session_id: "self-1", result: "prose", total_cost_usd: 3 } },
+    "again-self-1": { reply: shaped("self-1", [], 2) },
+  });
+  const result = review(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result) as { reviews: { self: Record<string, unknown> } };
+  assert.equal(out.reviews.self.cost_usd, 2);
+  const again = callOf(f, "again-self-1");
+  assert.equal(again.stdin, GIVE_REPLY);
+  assert.equal(flagValue(again.args, "--resume"), "self-1");
+  assert.ok(!again.args.includes("--fork-session"));
+  assert.deepEqual(JSON.parse(flagValue(again.args, "--json-schema")), REVIEW_SCHEMA);
+  assert.equal(callsOf(f).filter((name) => name.startsWith("again-")).length, 1);
+});
+
+test("review stops with review-failed, keeps launch.json, and returns the readable side when one side gives no readable result", () => {
+  const unshaped = { session_id: "ind-1", result: "prose" };
+  const cases: [string, Record<string, Step>][] = [
+    ["the retry also gives no result", { independent: { reply: unshaped }, "again-ind-1": { reply: unshaped } }],
+    ["the child exits non-zero", { independent: { reply: shaped("ind-1"), exit: 3 } }],
+    ["the child prints no JSON", { independent: { reply: "not json" } }],
+    [
+      "required is not boolean",
+      {
+        independent: { reply: shaped("ind-1", [{ required: "yes", ...FINDING }]) },
+        "again-ind-1": { reply: shaped("ind-1", [{ required: "yes", ...FINDING }]) },
+      },
+    ],
+  ];
+  for (const [label, plan] of cases) {
+    const f = implemented();
+    const before = launchRecord(worktreeOf(f));
+    fakeReviewer(f, { self: CLEAN.self, ...plan });
+    const out = assertStopped(review(f), "review-failed") as { action: string; detail: string; reviews: Record<string, Record<string, unknown>> };
+    assert.equal(out.action, "review", label);
+    assert.match(out.detail, /independent/, label);
+    assert.doesNotMatch(out.detail, /\bself\b/, label);
+    assert.deepEqual(Object.keys(out.reviews), ["self"], label);
+    assert.equal(out.reviews.self.session_id, "self-1", label);
+    assert.deepEqual(launchRecord(worktreeOf(f)), before, label);
+    assert.ok(callsOf(f).filter((name) => name.startsWith("again-")).length <= 1, label);
+  }
+});
+
+test("review stops with review-failed naming both sides when neither gives a readable result", () => {
+  const f = implemented();
+  fakeReviewer(f, { self: { reply: "not json" }, independent: { exit: 4 } });
+  const out = assertStopped(review(f), "review-failed") as { detail: string; reviews: Record<string, unknown> };
+  assert.match(out.detail, /self/);
+  assert.match(out.detail, /independent/);
+  assert.deepEqual(out.reviews, {});
+});
+
+test("review stops with tree-changed and keeps launch.json when a review edits the worktree", () => {
+  const f = implemented();
+  const before = launchRecord(worktreeOf(f));
+  fakeReviewer(f, { ...CLEAN, self: { ...CLEAN.self, edit: "README.md" } });
+  const out = assertStopped(review(f), "tree-changed") as { reviews: Record<string, unknown> };
+  assert.deepEqual(Object.keys(out.reviews).sort(), ["independent", "self"]);
+  assert.deepEqual(launchRecord(worktreeOf(f)), before);
+});
+
+test("review stops with not-prepared, not-implemented, or not-done and starts no claude", () => {
+  const unprepared = fixture();
+  fakeReviewer(unprepared, CLEAN);
+  assertStopped(run(unprepared, ["review", "--worktree", unprepared.repo]), "not-prepared");
+  assert.deepEqual(callsOf(unprepared), []);
+
+  const prepared = fixture();
+  assert.equal(prepare(prepared).status, 0);
+  fakeReviewer(prepared, CLEAN);
+  assertStopped(review(prepared), "not-implemented");
+  assert.deepEqual(callsOf(prepared), []);
+
+  const unchecked = fixture();
+  assert.equal(prepare(unchecked).status, 0);
+  fakeClaude(unchecked, SESSION_REPLY);
+  assertStopped(run(unchecked, ["implement", "--worktree", worktreeOf(unchecked)]), "not-done");
+  fakeReviewer(unchecked, CLEAN);
+  const out = assertStopped(review(unchecked), "not-done");
+  assert.match(String(out.detail), /No check result is recorded/);
+  assert.deepEqual(callsOf(unchecked), []);
 });

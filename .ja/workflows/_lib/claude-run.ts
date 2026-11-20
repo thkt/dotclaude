@@ -35,7 +35,7 @@ const CHILD_DENIED = "Agent,Workflow";
 const CHILD_TIMEOUT_MS = Number(process.env.CLAUDE_RUN_TIMEOUT_MS) || 3_600_000;
 const DEFAULT_CONCURRENCY = 4;
 const SPEC_BLOCK = /RELAY_SPEC ([0-9a-f]{8}:\d+)\n([^\n]*)\nRELAY_SPEC_END/;
-const GIVE_REPLY =
+export const GIVE_REPLY =
   "Your work in this session is done. Give its result now through the structured output, in the shape the schema asks for. Do no further work.";
 const PRIVATE_DIR = { recursive: true, mode: 0o700 } as const;
 const PRIVATE_FILE = { mode: 0o600 } as const;
@@ -48,6 +48,8 @@ export interface ChildRun {
   cwd: string;
   timeoutMs: number;
   resume?: string;
+  fork?: boolean;
+  tools?: string;
 }
 export interface ChildOutcome {
   code: number | null;
@@ -76,12 +78,15 @@ export const runClaudeOnce = ({
   cwd,
   timeoutMs,
   resume,
+  fork,
+  tools,
 }: ChildRun): Promise<ChildOutcome> =>
   new Promise((done) => {
-    const argv = ["-p", "--model", model, "--output-format", "json", "--allowedTools", CHILD_TOOLS];
+    const argv = ["-p", "--model", model, "--output-format", "json", "--allowedTools", tools ?? CHILD_TOOLS];
     argv.push("--disallowedTools", CHILD_DENIED);
     if (effort) argv.push("--effort", effort);
     if (resume) argv.push("--resume", resume);
+    if (resume && fork) argv.push("--fork-session");
     if (schema) argv.push("--json-schema", JSON.stringify(schema));
     if (process.env.CLAUDE_RUN_SETTINGS) argv.push("--settings", process.env.CLAUDE_RUN_SETTINGS);
     const child = spawn("claude", argv, { cwd, stdio: ["pipe", "pipe", "pipe"], detached: true });

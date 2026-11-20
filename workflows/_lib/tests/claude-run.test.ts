@@ -15,7 +15,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createHost, holdState, main, probeChild, readCall } from "../claude-run.ts";
+import { createHost, holdState, main, probeChild, readCall, runClaudeOnce } from "../claude-run.ts";
 import type { ChildOutcome, ChildRun } from "../claude-run.ts";
 import { canonical } from "../relay.ts";
 import type { Spec } from "../relay.ts";
@@ -309,6 +309,37 @@ console.log(JSON.stringify(n === 0 ? { is_error: false, result: "prose", session
     if (before.settings === undefined) delete process.env.CLAUDE_RUN_SETTINGS;
     else process.env.CLAUDE_RUN_SETTINGS = before.settings;
   }
+});
+
+const argvOfOnce = async (extra: Partial<ChildRun>): Promise<string[]> => {
+  const dir = mkdtempSync(join(tmpdir(), "claude-run-once-"));
+  const bin = join(dir, "bin");
+  mkdirSync(bin);
+  writeFileSync(join(bin, "claude"), "#!/usr/bin/env node\nconsole.log(JSON.stringify(process.argv.slice(2)));\n", { mode: 0o755 });
+  const before = { PATH: process.env.PATH, settings: process.env.CLAUDE_RUN_SETTINGS };
+  process.env.PATH = `${bin}:${before.PATH}`;
+  delete process.env.CLAUDE_RUN_SETTINGS;
+  try {
+    const outcome = await runClaudeOnce({ prompt: "p", model: "opus", effort: undefined, schema: undefined, cwd: dir, timeoutMs: 60_000, ...extra });
+    assert.equal(outcome.code, 0, outcome.stderr);
+    return JSON.parse(outcome.stdout);
+  } finally {
+    process.env.PATH = before.PATH;
+    if (before.settings !== undefined) process.env.CLAUDE_RUN_SETTINGS = before.settings;
+  }
+};
+
+test("runClaudeOnce puts --fork-session right after --resume <id> when fork and resume are passed, and leaves it out when fork comes without resume", async () => {
+  const forked = await argvOfOnce({ resume: "s-7", fork: true });
+  const at = forked.indexOf("--resume");
+  assert.deepEqual(forked.slice(at, at + 3), ["--resume", "s-7", "--fork-session"]);
+  assert.ok(!(await argvOfOnce({ fork: true })).includes("--fork-session"));
+  assert.ok(!(await argvOfOnce({ resume: "s-7" })).includes("--fork-session"));
+});
+
+test("runClaudeOnce uses tools as the --allowedTools value when it is passed", async () => {
+  const argv = await argvOfOnce({ tools: "Read,Glob,Grep,LS" });
+  assert.equal(argv[argv.indexOf("--allowedTools") + 1], "Read,Glob,Grep,LS");
 });
 
 test("a state file held by a running process is refused, and one left by a process that is gone is taken over", () => {
