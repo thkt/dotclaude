@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { type SpawnSyncReturns, spawnSync } from "node:child_process";
+import { type SpawnSyncReturns, spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   accessSync,
@@ -1846,4 +1846,120 @@ test("implement, review, repair, and run stop with not-prepared and start no cla
     assert.deepEqual(roundCalls(f), [], String(value));
     assert.deepEqual(launchRecord(worktreeOf(f)), before, String(value));
   }
+});
+
+function fakeHangingClaude(f: Fixture): void {
+  writeFileSync(
+    join(f.bin, "claude"),
+    `#!/bin/sh\necho $$ >> "$LOGS/hanging-claude-pids"\nsleep 60 &\necho $! >> "$LOGS/hanging-sleep-pids"\nwait\n`,
+    { mode: 0o755 },
+  );
+}
+
+const pidsIn = (f: Fixture, name: string): number[] =>
+  existsSync(join(f.logs, name)) ? readFileSync(join(f.logs, name), "utf8").split("\n").filter(Boolean).map(Number) : [];
+
+const isRunning = (pid: number): boolean => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+async function waitFor(condition: () => boolean, limitMs: number): Promise<boolean> {
+  const until = Date.now() + limitMs;
+  while (!condition()) {
+    if (Date.now() > until) return false;
+    await new Promise((wake) => setTimeout(wake, 50));
+  }
+  return true;
+}
+
+interface Signalled {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  stdout: string;
+  stderr: string;
+  pids: number[];
+  survivors: number[];
+}
+
+async function signalWhileClaudeWaits(f: Fixture, args: string[], signal: NodeJS.Signals, claudes: number): Promise<Signalled> {
+  fakeHangingClaude(f);
+  const child = spawn(SCRIPT, args, {
+    stdio: ["ignore", "pipe", "pipe"],
+    env: isolatedEnv({ PATH: `${f.bin}:${process.env.PATH}`, LOGS: f.logs, NODE: process.execPath, DONE_GATE }),
+  });
+  let stdout = "";
+  let stderr = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk: string) => {
+    stdout += chunk;
+  });
+  child.stderr.setEncoding("utf8").on("data", (chunk: string) => {
+    stderr += chunk;
+  });
+  const closed = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((done) =>
+    child.on("close", (code, signal) => done({ code, signal })),
+  );
+  const pids = (): number[] => [...pidsIn(f, "hanging-claude-pids"), ...pidsIn(f, "hanging-sleep-pids")];
+  try {
+    const started = await waitFor(() => pidsIn(f, "hanging-sleep-pids").length >= claudes, 20_000);
+    assert.ok(started, `${claudes} claude started before the signal: ${stderr}`);
+    child.kill(signal);
+    const ended = await closed;
+    await waitFor(() => pids().every((pid) => !isRunning(pid)), 5_000);
+    return { ...ended, stdout, stderr, pids: pids(), survivors: pids().filter(isRunning) };
+  } finally {
+    if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+    for (const pid of pids()) {
+      try {
+        process.kill(pid, "SIGKILL");
+      } catch {}
+    }
+  }
+}
+
+function assertEndedBySignal(result: Signalled, claudes: number): void {
+  assert.equal(result.code, 143, `exit ${result.code} signal ${result.signal}: ${result.stderr}`);
+  assert.equal(result.stdout, "");
+  assert.equal(result.pids.length, claudes * 2);
+  assert.deepEqual(result.survivors, []);
+}
+
+const launchFile = (f: Fixture): string =>
+  readFileSync(join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json"), "utf8");
+
+for (const signal of ["SIGTERM", "SIGINT", "SIGHUP"] as const) {
+  test(`implement ends claude and its child, exits 143, prints nothing, and keeps launch.json on ${signal}`, async () => {
+    const f = prepared();
+    const before = launchFile(f);
+    const result = await signalWhileClaudeWaits(f, ["implement", "--worktree", worktreeOf(f)], signal, 1);
+    assertEndedBySignal(result, 1);
+    assert.equal(launchFile(f), before);
+  });
+}
+
+test("review ends both claude and their children, exits 143, and adds no record to launch.json on SIGTERM", async () => {
+  const f = implemented();
+  const before = launchFile(f);
+  const result = await signalWhileClaudeWaits(f, ["review", "--worktree", worktreeOf(f)], "SIGTERM", 2);
+  assertEndedBySignal(result, 2);
+  assert.equal(launchFile(f), before);
+});
+
+test("repair ends claude and its child and exits 143 on SIGTERM", async () => {
+  const f = rejected();
+  const before = launchFile(f);
+  const result = await signalWhileClaudeWaits(f, ["repair", "--worktree", worktreeOf(f)], "SIGTERM", 1);
+  assertEndedBySignal(result, 1);
+  assert.equal(launchFile(f), before);
+});
+
+test("run ends the claude of the action it called, exits 143, and starts no claude after it on SIGTERM", async () => {
+  const f = prepared();
+  const result = await signalWhileClaudeWaits(f, ["run", "--worktree", worktreeOf(f)], "SIGTERM", 1);
+  assertEndedBySignal(result, 1);
+  assert.equal(pidsIn(f, "hanging-claude-pids").length, 1);
 });
