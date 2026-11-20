@@ -549,9 +549,10 @@ test("review returns accepted round 1 and appends its record to launch.json when
     round: 1,
     tree: out.tree,
     verdict: "accepted",
+    required: [],
     reviews: {
-      self: { verdict: "accepted", findings: [], verified: "self-1 checked", session_id: "self-1", cost_usd: 1, duration_ms: 10 },
-      independent: { verdict: "accepted", findings: [], verified: "ind-1 checked", session_id: "ind-1", cost_usd: 1, duration_ms: 10 },
+      self: { verdict: "accepted", findings: [], previous: [], verified: "self-1 checked", session_id: "self-1", cost_usd: 1, duration_ms: 10 },
+      independent: { verdict: "accepted", findings: [], previous: [], verified: "ind-1 checked", session_id: "ind-1", cost_usd: 1, duration_ms: 10 },
     },
   });
   const after = launchRecord(worktreeOf(f)) as Record<string, unknown> & { reviews: Record<string, unknown>[] };
@@ -565,8 +566,9 @@ test("review returns accepted round 1 and appends its record to launch.json when
     tree: out.tree,
     at: reviews[0].at,
     verdict: "accepted",
-    self: { session_id: "self-1", verdict: "accepted", findings: [], verified: "self-1 checked" },
-    independent: { session_id: "ind-1", verdict: "accepted", findings: [], verified: "ind-1 checked" },
+    required: [],
+    self: { session_id: "self-1", verdict: "accepted", findings: [], previous: [], verified: "self-1 checked" },
+    independent: { session_id: "ind-1", verdict: "accepted", findings: [], previous: [], verified: "ind-1 checked" },
   });
 });
 
@@ -748,10 +750,9 @@ const REJECTED: Record<string, Step> = {
   independent: { reply: shaped("ind-1", [INDEPENDENT_REQUIRED]) },
 };
 
-const REPAIR_PROMPT = `The reviews of your uncommitted change for Issue #42 reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests.
+const repairPromptWith = (lines: string): string => `The reviews of your uncommitted change for Issue #42 reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
 
-{"side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1"}
-{"side":"independent","location":"","condition":"c3","problem":"p3","action":"a3"}
+${lines}
 
 1. For each finding, read the code it names and reproduce the problem, and judge whether the finding holds. Fix each finding that holds, and add or change a test that fails without the fix. Do not change the scope of the Issue.
 2. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
@@ -759,8 +760,11 @@ const REPAIR_PROMPT = `The reviews of your uncommitted change for Issue #42 repo
 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-When you are done, reply with: for each finding, what you changed, or why you changed nothing; the files you changed; and what \`${DONE_GATE} status\` printed.
+When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; and what \`${DONE_GATE} status\` printed.
 `;
+
+const REPAIR_PROMPT = repairPromptWith(`{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}
+{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[]}`);
 
 const REPAIR_REPLY = `echo '{"session_id":"s-1","result":"repaired","total_cost_usd":0.7,"duration_ms":900}'\n`;
 const EDIT_FILE = "echo fixed >> README.md\n";
@@ -821,6 +825,7 @@ test("repair resumes the implement session, appends round 1 to repairs, and repo
     session_id: "s-1",
     tree: out.tree,
     changed: true,
+    reply: "repaired",
     at: repairs[0].at,
   });
 });
@@ -846,7 +851,7 @@ test("repair passes --model to claude", () => {
   assert.equal(flagValue(readFileSync(join(f.logs, "repair-args"), "utf8").split("\n"), "--model"), "sonnet");
 });
 
-test("repair passes only the required findings, self first, as JSON lines in the full prompt", () => {
+test("repair passes every entry of the last review's required list in order as JSON lines with key and reopened in the full prompt", () => {
   const f = rejected();
   fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
   assert.equal(repair(f).status, 0);
@@ -911,7 +916,7 @@ test("repair after a new rejected review is round 2 and leaves two records in re
   const f = rejected();
   fakeRepairer(f, EDIT_FILE + PASS_CHECK + REPAIR_REPLY);
   assert.equal(repair(f).status, 0);
-  fakeReviewer(f, REJECTED);
+  fakeReviewer(f, BOTH_OPEN);
   assert.equal(outputOf(review(f)).round, 2);
   fakeRepairer(f, EDIT_FILE + PASS_CHECK + REPAIR_REPLY);
   const result = repair(f);
@@ -982,5 +987,356 @@ test("a repair call without --worktree or with a relative path prints the usage 
     assert.equal(result.status, 2, args.join(" "));
     assert.equal(result.stdout, "", args.join(" "));
     assert.match(result.stderr, /^usage: /, args.join(" "));
+  }
+});
+
+const EARLIER_KEYS = ["1-self-1", "1-independent-1"];
+
+const judging = (
+  session: string,
+  states: Record<string, string>,
+  findings: Record<string, unknown>[] = [],
+): Record<string, unknown> => ({
+  session_id: session,
+  structured_output: {
+    findings,
+    verified: `${session} checked`,
+    previous: Object.entries(states).map(([key, state]) => ({ key, state, reason: `${session} saw ${key} ${state}` })),
+  },
+  total_cost_usd: 1,
+  duration_ms: 10,
+});
+
+const allStates = (state: string): Record<string, string> => Object.fromEntries(EARLIER_KEYS.map((key) => [key, state]));
+
+const BOTH_OPEN: Record<string, Step> = {
+  self: { reply: judging("self-2", allStates("open")) },
+  independent: { reply: judging("ind-2", allStates("open")) },
+};
+
+const JUDGING_SCHEMA = {
+  ...REVIEW_SCHEMA,
+  required: ["findings", "verified", "previous"],
+  properties: {
+    ...REVIEW_SCHEMA.properties,
+    previous: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["key", "state", "reason"],
+        properties: {
+          key: { type: "string" },
+          state: { type: "string", enum: ["fixed", "open", "withdrawn"] },
+          reason: { type: "string" },
+        },
+      },
+    },
+  },
+};
+
+const EARLIER = `An earlier review round reported the findings below as required, and the change may have been repaired since. Each line is one finding as a JSON object with its \`key\`.
+
+{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1"}
+{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3"}`;
+
+const JUDGE = "Judge each earlier finding against the current change. In `previous`, return exactly one entry for every `key`. `state` is `fixed` when the problem no longer occurs, `open` when it still occurs, and `withdrawn` when you now judge that the finding did not hold. `reason` says what you checked and what you saw. Do not repeat an earlier finding in `findings`. `findings` is for problems the earlier rounds did not report.";
+
+const REPLY_PARAGRAPH = `The implementing session replied to the earlier findings as follows. Treat the reply as a claim to check, not as a fact.
+
+repaired`;
+
+const SELF_JUDGING_PROMPT = `Before your uncommitted change for Issue #42 is published, review it yourself and try to refute it. Read the change again with \`git diff HEAD\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
+
+${EARLIER}
+
+${JUDGE}
+
+${POINTS}
+
+${CLOSING}`;
+
+const independentJudgingPrompt = (reply: string | null): string => `Independently review the uncommitted change in this worktree against GitHub Issue #42 of owner/repo. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff HEAD\` and \`git status --short\`, and read each untracked file.
+
+Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.
+
+${EARLIER}
+
+${reply === null ? "" : `${reply}\n\n`}${JUDGE}
+
+${POINTS}
+
+${CLOSING}`;
+
+function rewriteLaunch(f: Fixture, change: (stored: Record<string, unknown>) => Record<string, unknown>): void {
+  const dir = git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate");
+  writeFileSync(join(dir, "launch.json"), `${JSON.stringify(change(launchRecord(worktreeOf(f))), null, 2)}\n`);
+}
+
+type ReviewOut = {
+  verdict: string;
+  required: Record<string, unknown>[];
+  reviews: Record<string, { verdict: string; previous: unknown[] }>;
+};
+
+const reviewOut = (f: Fixture): ReviewOut => {
+  const result = review(f);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  return outputOf(result) as unknown as ReviewOut;
+};
+
+const lastReview = (f: Fixture): Record<string, unknown> & { required: Record<string, unknown>[] } => {
+  const reviews = (launchRecord(worktreeOf(f)) as Stored).reviews;
+  return reviews[reviews.length - 1] as Record<string, unknown> & { required: Record<string, unknown>[] };
+};
+
+const REQUIRED_FIELDS = ["key", "side", "location", "condition", "problem", "action", "reopened"];
+
+test("review lists the required findings of round 1 as self then independent with keys named by round, side, and position, and no reopened", () => {
+  const f = implemented();
+  fakeReviewer(f, {
+    self: { reply: shaped("self-1", [SELF_REQUIRED, SELF_OPTIONAL, { ...SELF_REQUIRED, condition: "c4" }]) },
+    independent: { reply: shaped("ind-1", [INDEPENDENT_REQUIRED]) },
+  });
+  const out = reviewOut(f);
+  const expected = [
+    { key: "1-self-1", side: "self", location: "a.ts:1", condition: "c1", problem: "p1", action: "a1", reopened: [] },
+    { key: "1-self-2", side: "self", location: "a.ts:1", condition: "c4", problem: "p1", action: "a1", reopened: [] },
+    { key: "1-independent-1", side: "independent", location: "", condition: "c3", problem: "p3", action: "a3", reopened: [] },
+  ];
+  assert.deepEqual(out.required, expected);
+  assert.deepEqual(lastReview(f).required, expected);
+  for (const entry of [...out.required, ...lastReview(f).required]) assert.deepEqual(Object.keys(entry), REQUIRED_FIELDS);
+});
+
+test("review gives the round-1 prompts and schema when the last record has no required finding, no required array, or reviews is empty", () => {
+  const cases: [string, (f: Fixture) => void][] = [
+    ["required is empty", (f) => {
+      fakeReviewer(f, CLEAN);
+      reviewOut(f);
+    }],
+    ["required is not an array", (f) => rewriteLaunch(f, (stored) => ({ ...stored, reviews: [{ round: 1, verdict: "rejected" }] }))],
+    ["reviews is empty", (f) => rewriteLaunch(f, (stored) => ({ ...stored, reviews: [] }))],
+  ];
+  for (const [label, arrange] of cases) {
+    const f = implemented();
+    arrange(f);
+    fakeReviewer(f, CLEAN);
+    reviewOut(f);
+    for (const [name, prompt] of [["self", SELF_PROMPT], ["independent", INDEPENDENT_PROMPT]]) {
+      assert.equal(callOf(f, name).stdin, prompt, label);
+      assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), REVIEW_SCHEMA, label);
+    }
+  }
+});
+
+test("a review after a round with required findings gives both reviews the earlier findings in order and the judging paragraph, with the judging schema", () => {
+  const f = rejected();
+  fakeReviewer(f, BOTH_OPEN);
+  reviewOut(f);
+  assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT);
+  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(null));
+  for (const name of ["self", "independent"]) {
+    assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), JUDGING_SCHEMA, name);
+  }
+});
+
+test("the implementing session's reply to the last reviewed round reaches only the independent review", () => {
+  const f = rejected();
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  fakeReviewer(f, BOTH_OPEN);
+  reviewOut(f);
+  assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT);
+  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(REPLY_PARAGRAPH));
+});
+
+test("no review gets the reply paragraph when the last repair answered another round, its reply is empty, or there is no repair", () => {
+  const cases: [string, (repairs: Record<string, unknown>[]) => unknown][] = [
+    ["another round", (repairs) => [{ ...repairs[0], review_round: 0 }]],
+    ["empty reply", (repairs) => [{ ...repairs[0], reply: "" }]],
+    ["no repairs", () => undefined],
+  ];
+  for (const [label, change] of cases) {
+    const f = rejected();
+    fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+    assert.equal(repair(f).status, 0);
+    rewriteLaunch(f, (stored) => ({ ...stored, repairs: change((stored as Stored).repairs) }));
+    fakeReviewer(f, BOTH_OPEN);
+    reviewOut(f);
+    assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT, label);
+    assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(null), label);
+  }
+});
+
+test("review is accepted with no required finding when both reviews judge every earlier finding fixed and report nothing new", () => {
+  const f = rejected();
+  fakeReviewer(f, {
+    self: { reply: judging("self-2", allStates("fixed")) },
+    independent: { reply: judging("ind-2", allStates("fixed")) },
+  });
+  const out = reviewOut(f);
+  assert.equal(out.verdict, "accepted");
+  assert.deepEqual(out.required, []);
+  assert.equal(lastReview(f).verdict, "accepted");
+});
+
+test("an earlier finding that only independent judges open stays required under its key with independent's reason, and only independent is rejected", () => {
+  const f = rejected();
+  fakeReviewer(f, {
+    self: { reply: judging("self-2", allStates("fixed")) },
+    independent: { reply: judging("ind-2", { "1-self-1": "open", "1-independent-1": "fixed" }) },
+  });
+  const out = reviewOut(f);
+  const expected = [
+    {
+      key: "1-self-1",
+      side: "self",
+      location: "a.ts:1",
+      condition: "c1",
+      problem: "p1",
+      action: "a1",
+      reopened: [{ side: "independent", reason: "ind-2 saw 1-self-1 open" }],
+    },
+  ];
+  assert.deepEqual(out.required, expected);
+  assert.deepEqual(Object.keys(out.required[0]), REQUIRED_FIELDS);
+  assert.equal(out.verdict, "rejected");
+  assert.equal(out.reviews.self.verdict, "accepted");
+  assert.equal(out.reviews.independent.verdict, "rejected");
+  const record = lastReview(f) as Record<string, unknown> & { required: unknown[]; self: { previous: unknown[] }; independent: { previous: unknown[] } };
+  assert.deepEqual(record.required, expected);
+  assert.equal(record.verdict, "rejected");
+  assert.deepEqual(record.self.previous, (judging("self-2", allStates("fixed")).structured_output as { previous: unknown[] }).previous);
+  assert.deepEqual(out.reviews.independent.previous, record.independent.previous);
+  assert.equal(record.independent.previous.length, 2);
+});
+
+test("an earlier finding that both reviews judge open lists self then independent in reopened", () => {
+  const f = rejected();
+  fakeReviewer(f, BOTH_OPEN);
+  const out = reviewOut(f);
+  assert.deepEqual(out.required.map((entry) => entry.key), EARLIER_KEYS);
+  assert.deepEqual(out.required[0].reopened, [
+    { side: "self", reason: "self-2 saw 1-self-1 open" },
+    { side: "independent", reason: "ind-2 saw 1-self-1 open" },
+  ]);
+});
+
+test("an earlier finding judged withdrawn does not stay required", () => {
+  const f = rejected();
+  fakeReviewer(f, {
+    self: { reply: judging("self-2", { "1-self-1": "withdrawn", "1-independent-1": "fixed" }) },
+    independent: { reply: judging("ind-2", { "1-self-1": "withdrawn", "1-independent-1": "fixed" }) },
+  });
+  const out = reviewOut(f);
+  assert.deepEqual(out.required, []);
+  assert.equal(out.verdict, "accepted");
+});
+
+test("in round 2 the earlier finding still open comes before the new required finding 2-self-1", () => {
+  const f = rejected();
+  fakeReviewer(f, {
+    self: { reply: judging("self-2", { "1-self-1": "fixed", "1-independent-1": "open" }, [SELF_OPTIONAL, { ...SELF_REQUIRED, condition: "c9" }]) },
+    independent: { reply: judging("ind-2", allStates("fixed")) },
+  });
+  const out = reviewOut(f);
+  assert.deepEqual(out.required.map((entry) => entry.key), ["1-independent-1", "2-self-1"]);
+  assert.deepEqual(out.required[1], {
+    key: "2-self-1",
+    side: "self",
+    location: "a.ts:1",
+    condition: "c9",
+    problem: "p1",
+    action: "a1",
+    reopened: [],
+  });
+});
+
+test("a judging review whose previous is missing, misses a key, names an unknown key, repeats a key, or gives an unknown state is asked once more, then stops with review-failed", () => {
+  const withPrevious = (previous: unknown): Record<string, unknown> => ({
+    session_id: "ind-2",
+    structured_output: { findings: [], verified: "v", ...(previous === undefined ? {} : { previous }) },
+  });
+  const entry = (key: string, state = "fixed") => ({ key, state, reason: "r" });
+  const cases: [string, unknown][] = [
+    ["no previous", undefined],
+    ["a key is missing", [entry("1-self-1")]],
+    ["an unknown key", [entry("1-self-1"), entry("1-independent-1"), entry("9-self-1")]],
+    ["a key twice", [entry("1-self-1"), entry("1-self-1")]],
+    ["an unknown state", [entry("1-self-1"), entry("1-independent-1", "gone")]],
+  ];
+  for (const [label, previous] of cases) {
+    const f = rejected();
+    const before = launchRecord(worktreeOf(f));
+    fakeReviewer(f, { self: BOTH_OPEN.self, independent: { reply: withPrevious(previous) }, "again-ind-2": { reply: withPrevious(previous) } });
+    const out = assertStopped(review(f), "review-failed") as { detail: string };
+    assert.match(out.detail, /independent/, label);
+    assert.deepEqual(callsOf(f).filter((name) => name.startsWith("again-")), ["again-ind-2"], label);
+    assert.deepEqual(JSON.parse(flagValue(callOf(f, "again-ind-2").args, "--json-schema")), JUDGING_SCHEMA, label);
+    assert.deepEqual(launchRecord(worktreeOf(f)), before, label);
+  }
+});
+
+test("a judging review asked once more for a previous that misses a key uses the reply when it judges every key", () => {
+  const f = rejected();
+  fakeReviewer(f, {
+    self: BOTH_OPEN.self,
+    independent: { reply: judging("ind-2", { "1-self-1": "open" }) },
+    "again-ind-2": BOTH_OPEN.independent,
+  });
+  const out = reviewOut(f);
+  assert.equal(out.reviews.independent.previous.length, 2);
+});
+
+test("repair passes a reopened finding carried from an earlier round with its key and reopened, before the new finding", () => {
+  const f = rejected();
+  fakeReviewer(f, {
+    self: { reply: judging("self-2", { "1-self-1": "fixed", "1-independent-1": "open" }, [{ ...SELF_REQUIRED, condition: "c9" }]) },
+    independent: { reply: judging("ind-2", allStates("fixed")) },
+  });
+  reviewOut(f);
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  assert.equal(
+    readFileSync(join(f.logs, "repair-stdin"), "utf8"),
+    repairPromptWith(`{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[{"side":"self","reason":"self-2 saw 1-independent-1 open"}]}
+{"key":"2-self-1","side":"self","location":"a.ts:1","condition":"c9","problem":"p1","action":"a1","reopened":[]}`),
+  );
+});
+
+test("repair stops with not-reviewed when the last record has no required array and with nothing-to-repair when it is empty, and starts no claude", () => {
+  const cases: [string, unknown][] = [
+    ["not-reviewed", undefined],
+    ["not-reviewed", "1-self-1"],
+    ["nothing-to-repair", []],
+  ];
+  for (const [reason, required] of cases) {
+    const f = rejected();
+    rewriteLaunch(f, (stored) => {
+      const reviews = (stored as Stored).reviews;
+      return { ...stored, reviews: [{ ...reviews[0], verdict: "rejected", required }] };
+    });
+    const before = launchRecord(worktreeOf(f));
+    fakeRepairer(f, REPAIR_REPLY);
+    assertStopped(repair(f), reason);
+    assert.equal(repairCalls(f), 0, String(required));
+    assert.deepEqual(launchRecord(worktreeOf(f)), before);
+  }
+});
+
+test("repair records the child's result as reply, and an empty string when the result is not a string", () => {
+  const cases: [string, string][] = [
+    [REPAIR_REPLY, "repaired"],
+    [`echo '{"session_id":"s-1","result":{"text":"x"}}'\n`, ""],
+    [`echo '{"session_id":"s-1"}'\n`, ""],
+  ];
+  for (const [body, reply] of cases) {
+    const f = rejected();
+    fakeRepairer(f, PASS_CHECK + body);
+    const result = repair(f);
+    assert.equal(result.status, 0, result.stderr);
+    assert.ok(!("reply" in outputOf(result)), "the success JSON keeps its fields");
+    assert.equal((launchRecord(worktreeOf(f)) as Stored).repairs[0].reply, reply, body);
   }
 });

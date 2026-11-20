@@ -35,7 +35,7 @@ When you are done, reply with: the files you changed, what \`${doneGate} status\
 `;
 
 const repairPrompt = (issue: number, findings: string, doneGate: string): string =>
-  `The reviews of your uncommitted change for Issue #${issue} reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests.
+  `The reviews of your uncommitted change for Issue #${issue} reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
 
 ${findings}
 
@@ -45,7 +45,7 @@ ${findings}
 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-When you are done, reply with: for each finding, what you changed, or why you changed nothing; the files you changed; and what \`${doneGate} status\` printed.
+When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; and what \`${doneGate} status\` printed.
 `;
 
 const REVIEW_TOOLS = "Read,Glob,Grep,LS";
@@ -74,6 +74,28 @@ const REVIEW_SCHEMA = {
   },
 };
 
+const PREVIOUS_SCHEMA = {
+  type: "array",
+  items: {
+    type: "object",
+    additionalProperties: false,
+    required: ["key", "state", "reason"],
+    properties: {
+      key: { type: "string" },
+      state: { type: "string", enum: ["fixed", "open", "withdrawn"] },
+      reason: { type: "string" },
+    },
+  },
+};
+
+const JUDGING_SCHEMA = {
+  ...REVIEW_SCHEMA,
+  required: [...REVIEW_SCHEMA.required, "previous"],
+  properties: { ...REVIEW_SCHEMA.properties, previous: PREVIOUS_SCHEMA },
+};
+
+const STATES: readonly unknown[] = PREVIOUS_SCHEMA.items.properties.state.enum;
+
 const REVIEW_POINTS = `Assess four separate things:
 1. Code: correctness at the input boundaries, state written to disk, behavior when something fails, and concrete redundancy (the same file read or the same judgment computed twice).
 2. Requirements and scope: every item the Issue scopes is present and behaves as the Issue's tables say, and nothing the Issue lists as out of scope changed. Check each sentence the Issue says to insert verbatim against the Issue mechanically.
@@ -92,7 +114,21 @@ const independentOpening = (issue: number, repository: string): string =>
 
 Read the Issue with \`gh issue view ${issue} --repo ${repository} --json title,body\`, the change, and the code the change calls or is called by.`;
 
-const reviewPrompt = (opening: string): string => [opening, REVIEW_POINTS, REVIEW_CLOSING].join("\n\n");
+const earlierParagraph = (earlier: string): string =>
+  `An earlier review round reported the findings below as required, and the change may have been repaired since. Each line is one finding as a JSON object with its \`key\`.
+
+${earlier}`;
+
+const replyParagraph = (reply: string): string =>
+  `The implementing session replied to the earlier findings as follows. Treat the reply as a claim to check, not as a fact.
+
+${reply}`;
+
+const JUDGE_EARLIER =
+  "Judge each earlier finding against the current change. In `previous`, return exactly one entry for every `key`. `state` is `fixed` when the problem no longer occurs, `open` when it still occurs, and `withdrawn` when you now judge that the finding did not hold. `reason` says what you checked and what you saw. Do not repeat an earlier finding in `findings`. `findings` is for problems the earlier rounds did not report.";
+
+const reviewPrompt = (opening: string, judging: string[]): string =>
+  [opening, ...judging, REVIEW_POINTS, REVIEW_CLOSING].join("\n\n");
 
 type Flags = Record<string, string>;
 type Result = Record<string, unknown> & { ok: boolean };
@@ -356,9 +392,12 @@ const implement = async (argv: string[]): Promise<Result | null> => {
 type Side = "self" | "independent";
 type Verdict = "accepted" | "rejected";
 
+const SIDES: readonly Side[] = ["self", "independent"];
+
 interface Review {
   verdict: Verdict;
   findings: Record<string, unknown>[];
+  previous: Record<string, unknown>[];
   verified: unknown;
   session_id: unknown;
   cost_usd: unknown;
@@ -367,15 +406,27 @@ interface Review {
 
 const verdictOf = (rejected: boolean): Verdict => (rejected ? "rejected" : "accepted");
 
-const reviewOf = (reply: Record<string, unknown>): Review | null => {
+const previousOf = (value: unknown, keys: readonly string[]): Record<string, unknown>[] | null => {
+  if (!Array.isArray(value)) return null;
+  const judged = value.map(objectOf);
+  const named = judged.map((judgment) => judgment?.key);
+  const shaped = judged.every((judgment) => typeof judgment?.key === "string" && STATES.includes(judgment.state));
+  const sameKeys = named.length === keys.length && new Set(named).size === named.length && keys.every((key) => named.includes(key));
+  return shaped && sameKeys ? (judged as Record<string, unknown>[]) : null;
+};
+
+const reviewOf = (reply: Record<string, unknown>, keys: readonly string[] | null): Review | null => {
   const output = objectOf(reply.structured_output);
   const findings = output?.findings;
   if (!output || !Array.isArray(findings)) return null;
   const shaped = findings.map(objectOf);
   if (!shaped.every((finding) => typeof finding?.required === "boolean")) return null;
+  const previous = keys === null ? [] : previousOf(output.previous, keys);
+  if (previous === null) return null;
   return {
-    verdict: verdictOf(findings.some((finding) => finding.required === true)),
+    verdict: verdictOf(findings.some((finding) => finding.required === true) || previous.some((judgment) => judgment.state === "open")),
     findings,
+    previous,
     verified: output.verified,
     session_id: reply.session_id,
     cost_usd: reply.total_cost_usd,
@@ -383,20 +434,70 @@ const reviewOf = (reply: Record<string, unknown>): Review | null => {
   };
 };
 
-const UNSHAPED = "its structured_output is not an object whose findings array has a boolean required in every element";
+const unshapedOf = (keys: readonly string[] | null): string =>
+  keys === null
+    ? "its structured_output is not an object whose findings array has a boolean required in every element"
+    : "its structured_output is not an object whose findings array has a boolean required in every element and whose previous array judges each earlier key exactly once as fixed, open, or withdrawn";
 
-const runReview = async (run: ChildRun): Promise<Review | string> => {
+const runReview = async (run: ChildRun, keys: readonly string[] | null): Promise<Review | string> => {
+  const unshaped = unshapedOf(keys);
   const first = replyOf(await runClaudeOnce(run));
   if (typeof first === "string") return first;
-  const review = reviewOf(first);
+  const review = reviewOf(first, keys);
   if (review !== null) return review;
-  if (!nonEmpty(first.session_id)) return `${UNSHAPED}, and the JSON has no session_id to ask again in.`;
+  if (!nonEmpty(first.session_id)) return `${unshaped}, and the JSON has no session_id to ask again in.`;
   const again = replyOf(await runClaudeOnce({ ...run, prompt: GIVE_REPLY, resume: first.session_id, fork: undefined }));
-  if (typeof again === "string") return `${UNSHAPED}; asked once more, ${again}`;
-  return reviewOf(again) ?? `${UNSHAPED}, also after asking once more.`;
+  if (typeof again === "string") return `${unshaped}; asked once more, ${again}`;
+  return reviewOf(again, keys) ?? `${unshaped}, also after asking once more.`;
 };
 
-const recordOf = ({ session_id, verdict, findings, verified }: Review) => ({ session_id, verdict, findings, verified });
+const recordOf = ({ session_id, verdict, findings, previous, verified }: Review) => ({
+  session_id,
+  verdict,
+  findings,
+  previous,
+  verified,
+});
+
+const earlierRequired = (records: unknown[]): Record<string, unknown>[] | null => {
+  const required = objectOf(records[records.length - 1])?.required;
+  return Array.isArray(required) && required.length > 0 ? required.map((entry) => objectOf(entry) ?? {}) : null;
+};
+
+const earlierLine = ({ key, side, location, condition, problem, action }: Record<string, unknown>): string =>
+  JSON.stringify({ key, side, location, condition, problem, action });
+
+const repairReplyTo = (stored: Record<string, unknown>, reviewRound: unknown): string | null => {
+  const repairs = Array.isArray(stored.repairs) ? stored.repairs : [];
+  const reply = objectOf(repairs[repairs.length - 1]);
+  const answers = reply !== null && reply.review_round === reviewRound && typeof reply.reply === "string" && reply.reply !== "";
+  return answers ? (reply.reply as string) : null;
+};
+
+const requiredAfter = (round: number, earlier: Record<string, unknown>[], reviews: Record<Side, Review>) => {
+  const carried = earlier.flatMap(({ key, side, location, condition, problem, action }) => {
+    const reopened = SIDES.flatMap((judge) =>
+      reviews[judge].previous
+        .filter((judgment) => judgment.key === key && judgment.state === "open")
+        .map((judgment) => ({ side: judge, reason: judgment.reason })),
+    );
+    return reopened.length > 0 ? [{ key, side, location, condition, problem, action, reopened }] : [];
+  });
+  const reported = SIDES.flatMap((side) =>
+    reviews[side].findings
+      .filter((finding) => finding.required === true)
+      .map(({ location, condition, problem, action }, index) => ({
+        key: `${round}-${side}-${index + 1}`,
+        side,
+        location,
+        condition,
+        problem,
+        action,
+        reopened: [],
+      })),
+  );
+  return [...carried, ...reported];
+};
 
 const review = async (argv: string[]): Promise<Result | null> => {
   const call = worktreeCall(argv);
@@ -413,11 +514,23 @@ const review = async (argv: string[]): Promise<Result | null> => {
   const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
   if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`);
 
+  const earlier = Array.isArray(stored.reviews) ? stored.reviews : [];
+  const round = earlier.length + 1;
+  const judged = earlierRequired(earlier) ?? [];
+  const keys = judged.length > 0 ? judged.map((entry) => String(entry.key)) : null;
+  const reply = keys === null ? null : repairReplyTo(stored, objectOf(earlier[earlier.length - 1])?.round);
+  const judging = keys === null ? [] : [earlierParagraph(judged.map(earlierLine).join("\n"))];
+  const closing = keys === null ? [] : [JUDGE_EARLIER];
+
   const tree = treeHash(gate.root);
-  const common = { model, effort: undefined, schema: REVIEW_SCHEMA, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, tools: REVIEW_TOOLS };
+  const schema = keys === null ? REVIEW_SCHEMA : JUDGING_SCHEMA;
+  const common = { model, effort: undefined, schema, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, tools: REVIEW_TOOLS };
+  const selfPrompt = reviewPrompt(selfOpening(launch.issue), [...judging, ...closing]);
+  const independentJudging = [...judging, ...(reply === null ? [] : [replyParagraph(reply)]), ...closing];
+  const independentPrompt = reviewPrompt(independentOpening(launch.issue, launch.repository), independentJudging);
   const [self, independent] = await Promise.all([
-    runReview({ ...common, prompt: reviewPrompt(selfOpening(launch.issue)), resume: implemented, fork: true }),
-    runReview({ ...common, prompt: reviewPrompt(independentOpening(launch.issue, launch.repository)) }),
+    runReview({ ...common, prompt: selfPrompt, resume: implemented, fork: true }, keys),
+    runReview({ ...common, prompt: independentPrompt }, keys),
   ]);
   const results: Record<Side, Review | string> = { self, independent };
   const readable = Object.fromEntries(Object.entries(results).filter(([, result]) => typeof result !== "string"));
@@ -432,34 +545,25 @@ const review = async (argv: string[]): Promise<Result | null> => {
     return stop("tree-changed", `The working tree was ${tree} before the reviews and ${after} after them.`, { reviews });
   }
 
-  const earlier = Array.isArray(stored.reviews) ? stored.reviews : [];
-  const round = earlier.length + 1;
-  const verdict = verdictOf(reviews.self.verdict === "rejected" || reviews.independent.verdict === "rejected");
+  const required = requiredAfter(round, judged, reviews);
+  const verdict = verdictOf(required.length > 0);
   const record = {
     round,
     tree,
     at: new Date().toISOString(),
     verdict,
+    required,
     self: recordOf(reviews.self),
     independent: recordOf(reviews.independent),
   };
   writeFileSync(launchPath, `${JSON.stringify({ ...stored, reviews: [...earlier, record] }, null, 2)}\n`);
-  return { action: "review", ok: true, round, tree, verdict, reviews };
+  return { action: "review", ok: true, round, tree, verdict, required, reviews };
 };
 
-const SIDES: readonly Side[] = ["self", "independent"];
-
-const requiredFindings = (record: Record<string, unknown>): string =>
-  SIDES.flatMap((side) => {
-    const findings = objectOf(record[side])?.findings;
-    return (Array.isArray(findings) ? findings : [])
-      .map(objectOf)
-      .filter((finding) => finding?.required === true)
-      .map((finding) => {
-        const { location, condition, problem, action } = finding as Record<string, unknown>;
-        return JSON.stringify({ side, location, condition, problem, action });
-      });
-  }).join("\n");
+const repairLine = (entry: unknown): string => {
+  const { key, side, location, condition, problem, action, reopened } = objectOf(entry) ?? {};
+  return JSON.stringify({ key, side, location, condition, problem, action, reopened });
+};
 
 const repair = async (argv: string[]): Promise<Result | null> => {
   const call = worktreeCall(argv);
@@ -478,8 +582,12 @@ const repair = async (argv: string[]): Promise<Result | null> => {
     return stop("not-reviewed", `launch.json of ${worktree} has no review record.`);
   }
   const last = objectOf(reviews[reviews.length - 1]) ?? {};
-  if (last.verdict !== "rejected") {
-    return stop("nothing-to-repair", `The last review of ${worktree} is ${String(last.verdict)}, not rejected.`);
+  const required = last.required;
+  if (!Array.isArray(required)) {
+    return stop("not-reviewed", `The last review record of ${worktree} has no required array.`);
+  }
+  if (required.length === 0) {
+    return stop("nothing-to-repair", `The last review of ${worktree} left no required finding.`);
   }
   const before = treeHash(gate.root);
   if (before !== last.tree) {
@@ -488,7 +596,7 @@ const repair = async (argv: string[]): Promise<Result | null> => {
 
   const reply = sessionReplyOf(
     await runClaudeOnce({
-      prompt: repairPrompt(launch.issue, requiredFindings(last), DONE_GATE),
+      prompt: repairPrompt(launch.issue, required.map(repairLine).join("\n"), DONE_GATE),
       model,
       effort: undefined,
       schema: undefined,
@@ -510,7 +618,7 @@ const repair = async (argv: string[]): Promise<Result | null> => {
   };
   writeFileSync(
     launchPath,
-    `${JSON.stringify({ ...stored, repairs: [...earlier, { ...record, at: new Date().toISOString() }] }, null, 2)}\n`,
+    `${JSON.stringify({ ...stored, repairs: [...earlier, { ...record, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] }, null, 2)}\n`,
   );
   const shown = { ...record, ...shownOf(reply) };
   const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
