@@ -113,6 +113,7 @@ const ENV_ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
 
 const _NEWLINE = "\x00";
 const _CONTINUATION = "\x01";
+const _PARENS: ReadonlySet<string> = new Set(["(", ")"]);
 const _PUNCTUATION = "();<>|&" + _NEWLINE;
 
 const _HEREDOC = /<<-?\s*(['"]?)(\w+)\1/;
@@ -266,7 +267,7 @@ function _lex(text: string): string[] {
     if (_WHITESPACE.includes(ch)) {
       return token;
     }
-    if (ch === _NEWLINE || token === _NEWLINE) {
+    if (ch === _NEWLINE || token === _NEWLINE || _PARENS.has(ch) || _PARENS.has(token)) {
       pushback.push(ch);
       return token;
     }
@@ -357,6 +358,14 @@ export function* commands_with_env(text: string): Generator<[Record<string, stri
         yield* _resolve(current);
       }
       current = [];
+      continue;
+    }
+    if (_PARENS.has(token)) {
+      if (current.length > 0) {
+        yield* _resolve(current);
+      }
+      current = [];
+      yield [{}, [token]];
       continue;
     }
     current.push(token);

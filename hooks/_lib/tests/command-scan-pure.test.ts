@@ -124,11 +124,25 @@ test("T-606 commands skips a reserved word at the head of a command, in any orde
   }
 });
 
-test("T-607 commands keeps a subshell and a function definition as one command headed by the opening token", () => {
+test("T-607 commands returns each parenthesis as its own command and splits the commands around it", () => {
   const cases: Array<[string, string[][]]> = [
-    ["(git push)", [["(", "git", "push", ")"]]],
-    ["(cd x && git push)", [["(", "cd", "x"], ["git", "push", ")"]]],
-    ["f() { git push; }; f", [["f", "()", "{", "git", "push"], ["}"], ["f"]]],
+    ["(git push)", [["("], ["git", "push"], [")"]]],
+    ["(cd /b && git push)", [["("], ["cd", "/b"], ["git", "push"], [")"]]],
+    ["(cd /b && true); git push", [["("], ["cd", "/b"], ["true"], [")"], ["git", "push"]]],
+    ["(\ncd /b\n)\ngit push", [["("], ["cd", "/b"], [")"], ["git", "push"]]],
+    ["echo $(git push)", [["echo", "$"], ["("], ["git", "push"], [")"]]],
+    [
+      "x=$(cd /b && git rev-parse HEAD); git push",
+      [["("], ["cd", "/b"], ["git", "rev-parse", "HEAD"], [")"], ["git", "push"]],
+    ],
+    ["echo a | (cd /b; git push)", [["echo", "a"], ["("], ["cd", "/b"], ["git", "push"], [")"]]],
+    [
+      "(cd /b; (cd /c; git push); git push)",
+      [["("], ["cd", "/b"], ["("], ["cd", "/c"], ["git", "push"], [")"], ["git", "push"], [")"]],
+    ],
+    ["f() { git push; }; f", [["f"], ["("], [")"], ["git", "push"], ["}"], ["f"]]],
+    ["((i++)); git push", [["("], ["("], ["i++"], [")"], [")"], ["git", "push"]]],
+    ['echo "(cd /b)"; git push', [["echo", "(cd /b)"], ["git", "push"]]],
   ];
   for (const [input, expected] of cases) {
     assert.deepEqual([...commands(input)], expected, JSON.stringify(input));
