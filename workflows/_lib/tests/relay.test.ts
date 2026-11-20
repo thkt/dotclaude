@@ -388,9 +388,10 @@ test("a spec file that does not exist prints relay_missing", () => {
 test("the command prints the same line on bun as on node", { skip: spawnSync("bun", ["--version"]).status !== 0 }, () => {
   const { projects, agents, tmp } = project();
   const { wanted, prompt } = promptWith({
-    defaults: { text: "", code: 0, late: false },
+    defaults: { text: "", shown: "", code: 0, late: false },
     steps: [
-      { sh: "printf 'ﾉｰﾄ\\n'; echo warn >&2", set: { text: "tail:2" } },
+      { sh: "printf 'ﾉｰﾄ\\n' >&2; echo warn >&2", set: { text: "tail:2" } },
+      { sh: "printf 'ﾉｰﾄ\\n'", set: { shown: "tail:1" } },
       { sh: "sleep 5", timeout_ms: 300, set: { code: "exit", late: "timed_out" } },
     ],
   });
