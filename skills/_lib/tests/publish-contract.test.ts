@@ -88,6 +88,19 @@ test("each publishing skill points at publish.md and passes its branch and an im
   }
 });
 
+test("launch.ts maps each title type to the same branch type as implement.js, on both sides", () => {
+  const pairsIn = (rel: string) => {
+    const literal = /const TYPE_BY_PREFIX(?:: [^=]+)? = \{([^}]*)\}/.exec(read(rel));
+    assert.ok(literal, `${rel} defines TYPE_BY_PREFIX`);
+    return [...literal[1].matchAll(/(\w+):\s*"(\w+)"/g)].map((m) => `${m[1]}->${m[2]}`).sort();
+  };
+  const workflow = pairsIn("workflows/implement.js");
+  assert.ok(workflow.length > 0, "implement.js TYPE_BY_PREFIX has pairs");
+  for (const rel of bothSides("skills/implement/scripts/launch.ts")) {
+    assert.deepEqual(pairsIn(rel), workflow, rel);
+  }
+});
+
 test("/dr and /outcome grant the git and gh commands publish.md runs", () => {
   for (const skill of ["dr", "outcome"]) {
     for (const rel of bothSides(`skills/${skill}/SKILL.md`)) {
