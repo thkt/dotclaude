@@ -19,7 +19,8 @@ const USAGE =
   "usage: launch.ts prepare --repo <abs path> --issue <number> [--description <words>] [--gate-mode record|enforce]\n" +
   "       launch.ts implement --worktree <abs path> [--model <name>]\n" +
   "       launch.ts review --worktree <abs path> [--model <name>]\n" +
-  "       launch.ts repair --worktree <abs path> [--model <name>]\n";
+  "       launch.ts repair --worktree <abs path> [--model <name>]\n" +
+  "       launch.ts run --worktree <abs path> [--model <name>]\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
   `Implement GitHub Issue #${issue} of ${repository} in this worktree.
@@ -467,11 +468,15 @@ const earlierRequired = (records: unknown[]): Record<string, unknown>[] | null =
 const earlierLine = ({ key, side, location, condition, problem, action }: Record<string, unknown>): string =>
   JSON.stringify({ key, side, location, condition, problem, action });
 
-const repairReplyTo = (stored: Record<string, unknown>, reviewRound: unknown): string | null => {
+const repairAnswering = (stored: Record<string, unknown>, reviewRound: unknown): Record<string, unknown> | null => {
   const repairs = Array.isArray(stored.repairs) ? stored.repairs : [];
-  const reply = objectOf(repairs[repairs.length - 1]);
-  const answers = reply !== null && reply.review_round === reviewRound && typeof reply.reply === "string" && reply.reply !== "";
-  return answers ? (reply.reply as string) : null;
+  const last = objectOf(repairs[repairs.length - 1]);
+  return last !== null && last.review_round === reviewRound ? last : null;
+};
+
+const repairReplyTo = (stored: Record<string, unknown>, reviewRound: unknown): string | null => {
+  const reply = repairAnswering(stored, reviewRound)?.reply;
+  return typeof reply === "string" && reply !== "" ? reply : null;
 };
 
 const requiredAfter = (round: number, earlier: Record<string, unknown>[], reviews: Record<Side, Review>) => {
@@ -626,11 +631,124 @@ const repair = async (argv: string[]): Promise<Result | null> => {
   return { action: "repair", ok: true, ...shown };
 };
 
+type StepAction = "implement" | "review" | "repair";
+type Next = { kind: "call"; action: StepAction } | { kind: "done" } | { kind: "stop"; reason: string; detail: string };
+
+const STEP_ACTIONS: Record<StepAction, (argv: string[]) => Promise<Result | null>> = { implement, review, repair };
+
+const STEP_FIELDS: Record<StepAction, readonly string[]> = {
+  implement: ["action", "ok", "cost_usd", "duration_ms", "reason"],
+  review: ["action", "ok", "round", "verdict", "required_keys", "cost_usd", "reason"],
+  repair: ["action", "ok", "round", "changed", "cost_usd", "duration_ms", "reason"],
+};
+
+const amountOf = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) ? value : 0);
+
+const currentReviewOf = (stored: Record<string, unknown>): (Record<string, unknown> & { required: unknown[] }) | null => {
+  const reviews = Array.isArray(stored.reviews) ? stored.reviews : [];
+  const last = objectOf(reviews[reviews.length - 1]);
+  return last !== null && Array.isArray(last.required) ? (last as Record<string, unknown> & { required: unknown[] }) : null;
+};
+
+const requiredKeysOf = (record: unknown): unknown[] => {
+  const required = objectOf(record)?.required;
+  return Array.isArray(required) ? required.map((entry) => objectOf(entry)?.key) : [];
+};
+
+const reopenedAgain = (entry: unknown): boolean => {
+  const reopened = objectOf(entry)?.reopened;
+  return Array.isArray(reopened) && reopened.length > 0;
+};
+
+const convergenceStop = (stored: Record<string, unknown>, current: { required: unknown[] }): Next | null => {
+  const reviews = stored.reviews as unknown[];
+  const before = objectOf(reviews[reviews.length - 2]);
+  const unchanged = before !== null && repairAnswering(stored, before.round)?.changed === false;
+  if (unchanged && current.required.some(reopenedAgain)) {
+    const kept = current.required.filter(reopenedAgain).map((entry) => String(objectOf(entry)?.key));
+    const detail = `The repair after review round ${String(before.round)} changed nothing, and the next review kept ${kept.join(", ")} open.`;
+    return { kind: "stop", reason: "disagreement", detail };
+  }
+  if (reviews.length < 3) return null;
+  const [first, second, third] = reviews.slice(-3).map(requiredKeysOf);
+  const stuck = third.filter((key) => typeof key === "string" && first.includes(key) && second.includes(key));
+  if (stuck.length === 0) return null;
+  const detail = `${stuck.join(", ")} stayed required in each of the last 3 review rounds.`;
+  return { kind: "stop", reason: "not-converging", detail };
+};
+
+const nextOf = (worktree: string): Next => {
+  const prepared = preparedAt(worktree);
+  if (prepared === null) return { kind: "stop", reason: "not-prepared", detail: notPrepared(worktree) };
+  const { gate, stored } = prepared;
+  if (!nonEmpty(objectOf(stored.implement)?.session_id)) return { kind: "call", action: "implement" };
+  const current = currentReviewOf(stored);
+  if (current === null) return { kind: "call", action: "review" };
+  if (repairAnswering(stored, current.round) !== null) return { kind: "call", action: "review" };
+  if (treeHash(gate.root) !== current.tree) return { kind: "call", action: "review" };
+  if (current.required.length === 0) return { kind: "done" };
+  return convergenceStop(stored, current) ?? { kind: "call", action: "repair" };
+};
+
+const stepOf = (action: StepAction, result: Result): Record<string, unknown> => {
+  const reviews = objectOf(result.reviews);
+  const fields: Record<string, unknown> =
+    action === "review"
+      ? {
+          ...result,
+          required_keys: Array.isArray(result.required) ? requiredKeysOf(result) : undefined,
+          cost_usd: reviews === null ? undefined : SIDES.reduce((sum, side) => sum + amountOf(objectOf(reviews[side])?.cost_usd), 0),
+        }
+      : result;
+  return Object.fromEntries(STEP_FIELDS[action].filter((name) => fields[name] !== undefined).map((name) => [name, fields[name]]));
+};
+
+const runOutput = (worktree: string, steps: Record<string, unknown>[], cost: number, stop: Next | null): Result => {
+  const stored = preparedAt(worktree)?.stored ?? {};
+  const current = currentReviewOf(stored);
+  const fields = {
+    verdict: current?.verdict ?? null,
+    required: current?.required ?? [],
+    rounds: Array.isArray(stored.reviews) ? stored.reviews.length : 0,
+    steps,
+    cost_usd: cost,
+  };
+  return stop?.kind === "stop" ? stopped("run", stop.reason, stop.detail, fields) : { action: "run", ok: true, ...fields };
+};
+
+const runRounds = async (argv: string[]): Promise<Result | null> => {
+  const call = worktreeCall(argv);
+  if (call === null) return null;
+  const { worktree, model } = call;
+  const childArgv = ["--worktree", worktree, "--model", model];
+  const steps: Record<string, unknown>[] = [];
+  let cost = 0;
+  let previous: StepAction | null = null;
+  for (;;) {
+    const next = nextOf(worktree);
+    if (next.kind !== "call") return runOutput(worktree, steps, cost, next);
+    if (next.action === previous) {
+      const detail = `${previous} succeeded without advancing launch.json, and the next step would call ${previous} again.`;
+      return runOutput(worktree, steps, cost, { kind: "stop", reason: "no-progress", detail });
+    }
+    previous = next.action;
+    const result = (await STEP_ACTIONS[next.action](childArgv)) as Result;
+    const step = stepOf(next.action, result);
+    steps.push(step);
+    cost += amountOf(step.cost_usd);
+    process.stderr.write(`${JSON.stringify({ ...step, total_cost_usd: cost })}\n`);
+    if (!result.ok) {
+      return runOutput(worktree, steps, cost, { kind: "stop", reason: String(result.reason), detail: String(result.detail) });
+    }
+  }
+};
+
 const ACTIONS: Record<string, (argv: string[]) => Result | null | Promise<Result | null>> = {
   prepare,
   implement,
   review,
   repair,
+  run: runRounds,
 };
 
 export async function launch(argv: string[]): Promise<number> {
