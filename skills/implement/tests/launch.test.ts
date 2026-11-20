@@ -10,6 +10,7 @@ import {
   mkdtempSync,
   readFileSync,
   realpathSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -1361,7 +1362,7 @@ interface Turn {
   issue?: Record<string, unknown>;
 }
 
-type Script = Partial<Record<"implement" | "self" | "independent" | "repair" | "reread", Turn[]>>;
+type Script = Partial<Record<"implement" | "self" | "independent" | "repair" | "reread" | "continue", Turn[]>>;
 
 function fakeRounds(f: Fixture, script: Script): void {
   writeFileSync(join(f.logs, "script.json"), JSON.stringify(script));
@@ -1383,9 +1384,11 @@ const role = schema
     : "independent"
   : stdin.startsWith("GitHub Issue #")
     ? "reread"
-    : resumed
-      ? "repair"
-      : "implement";
+    : stdin.startsWith("Your work on GitHub Issue #")
+      ? "continue"
+      : resumed
+        ? "repair"
+        : "implement";
 const log = logs + "/run-calls";
 const index = (fs.existsSync(log) ? fs.readFileSync(log, "utf8").split("\\n") : []).filter((line) => line.startsWith(role + " ")).length;
 fs.appendFileSync(log, role + " " + JSON.stringify(args) + "\\n");
@@ -2370,4 +2373,316 @@ test("run stops with the reason and detail of a reread that fails, and reread is
   const out = assertStopped(runLaunch(f), "child-failed") as unknown as RunOut;
   assert.equal(out.steps[out.steps.length - 1].action, "reread");
   assert.equal(out.detail, outputOf(reread(f)).detail);
+});
+
+const continueWork = (f: Fixture, ...extra: string[]) => run(f, ["continue", "--worktree", worktreeOf(f), ...extra]);
+
+const CONTINUE_PROMPT = `Your work on GitHub Issue #42 of owner/repo in this worktree is not finished. \`${DONE_GATE} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
+
+1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the uncommitted changes that are in the worktree, and finish that work.
+2. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
+3. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+
+When you are done, reply with: what was unfinished; what you changed; the files you changed; and what \`${DONE_GATE} status\` printed.
+`;
+
+const CONTINUE_REPLY = `echo '{"session_id":"s-1","result":"continued","total_cost_usd":0.4,"duration_ms":800}'\n`;
+
+function fakeContinuer(f: Fixture, body: string): void {
+  writeFileSync(
+    join(f.bin, "claude"),
+    `#!/bin/sh\necho call >> "$LOGS/continue-calls"\npwd -P > "$LOGS/continue-cwd"\nprintf '%s\\n' "$@" > "$LOGS/continue-args"\ncat > "$LOGS/continue-stdin"\n${body}`,
+    { mode: 0o755 },
+  );
+}
+
+const continueCalls = (f: Fixture): number =>
+  existsSync(join(f.logs, "continue-calls")) ? readFileSync(join(f.logs, "continue-calls"), "utf8").split("\n").filter(Boolean).length : 0;
+
+function unfinished(): Fixture {
+  const f = prepared();
+  fakeClaude(f, SESSION_REPLY);
+  assertStopped(run(f, ["implement", "--worktree", worktreeOf(f)]), "not-done");
+  return f;
+}
+
+function gateDisabled(f: Fixture): void {
+  rmSync(join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "config.json"));
+  const status = gateStatus(worktreeOf(f));
+  assert.equal(status.status, 2, status.stderr);
+}
+
+type Continued = Record<string, unknown> & { continues: Record<string, unknown>[] };
+
+const CONTINUED: Turn = { check: true, reply: { session_id: "s-1", result: "continued", total_cost_usd: 0.4, duration_ms: 800 } };
+const CONTINUED_UNCHECKED: Turn = { reply: { session_id: "s-1", result: "continued", total_cost_usd: 0.4, duration_ms: 800 } };
+
+test("continue on a worktree whose implement stopped with not-done resumes the implement session without a fork and passes the full prompt on stdin", () => {
+  const f = unfinished();
+  const implementArgs = readFileSync(join(f.logs, "args"), "utf8").split("\n");
+  fakeContinuer(f, PASS_CHECK + CONTINUE_REPLY);
+  const result = continueWork(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readFileSync(join(f.logs, "continue-cwd"), "utf8").trim(), realpathSync(worktreeOf(f)));
+  const args = readFileSync(join(f.logs, "continue-args"), "utf8").split("\n");
+  assert.equal(flagValue(args, "--resume"), "s-1");
+  assert.ok(!args.includes("--fork-session"));
+  assert.ok(!args.includes("--json-schema"));
+  assert.equal(flagValue(args, "--allowedTools"), flagValue(implementArgs, "--allowedTools"));
+  assert.equal(flagValue(args, "--model"), "opus");
+  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), CONTINUE_PROMPT);
+});
+
+test("continue reports ok, appends round 1 to continues with done true, and passes --model when the child passes the check", () => {
+  const f = unfinished();
+  const before = launchRecord(worktreeOf(f)) as Record<string, unknown> & { implement: Record<string, unknown> };
+  fakeContinuer(f, EDIT_FILE + PASS_CHECK + CONTINUE_REPLY);
+  const result = continueWork(f, "--model", "sonnet");
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(flagValue(readFileSync(join(f.logs, "continue-args"), "utf8").split("\n"), "--model"), "sonnet");
+  const out = outputOf(result);
+  assert.equal(typeof out.tree, "string");
+  assert.notEqual(out.tree, before.implement.tree);
+  assert.deepEqual(out, {
+    action: "continue",
+    ok: true,
+    round: 1,
+    session_id: "s-1",
+    tree: out.tree,
+    changed: true,
+    result: "continued",
+    cost_usd: 0.4,
+    duration_ms: 800,
+  });
+  const { continues, ...rest } = launchRecord(worktreeOf(f)) as Continued;
+  assert.deepEqual(rest, before);
+  assert.ok(!Number.isNaN(Date.parse(String(continues[0]?.at))));
+  assert.deepEqual(continues, [
+    { round: 1, session_id: "s-1", tree: out.tree, changed: true, done: true, reply: "continued", at: continues[0].at },
+  ]);
+});
+
+test("continue stops with not-done and appends a record with done false, with changed true when the child edits and false when it does not", () => {
+  for (const [label, body, changed] of [
+    ["edits", EDIT_FILE + CONTINUE_REPLY, true],
+    ["no edit", CONTINUE_REPLY, false],
+  ] as const) {
+    const f = unfinished();
+    fakeContinuer(f, body);
+    const out = assertStopped(continueWork(f), "not-done");
+    assert.match(String(out.detail), /^done_gate\.ts status is not done: /, label);
+    assert.deepEqual(
+      Object.keys(out).sort(),
+      ["action", "changed", "cost_usd", "detail", "duration_ms", "ok", "reason", "result", "round", "session_id", "tree"],
+      label,
+    );
+    assert.equal(out.action, "continue", label);
+    assert.equal(out.changed, changed, label);
+    const { continues } = launchRecord(worktreeOf(f)) as Continued;
+    assert.equal(continues.length, 1, label);
+    assert.equal(continues[0].done, false, label);
+    assert.equal(continues[0].changed, changed, label);
+    assert.equal(continues[0].tree, out.tree, label);
+  }
+});
+
+test("continue records round 1 when continues is not an array, and an empty reply when the child's result is not a string", () => {
+  const f = unfinished();
+  rewriteLaunch(f, (stored) => ({ ...stored, continues: { round: 5 } }));
+  fakeContinuer(f, `${PASS_CHECK}echo '{"session_id":"s-1","result":7,"total_cost_usd":0.4,"duration_ms":800}'\n`);
+  const result = continueWork(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(outputOf(result).round, 1);
+  const { continues } = launchRecord(worktreeOf(f)) as Continued;
+  assert.equal(continues.length, 1);
+  assert.equal(continues[0].round, 1);
+  assert.equal(continues[0].reply, "");
+});
+
+test("continue on a worktree whose status is done stops with nothing-to-continue and starts no claude, also when the Issue changed", () => {
+  for (const issue of [ISSUE_REPLY, CHANGED_BODY]) {
+    const f = implemented();
+    const before = launchFile(f);
+    fakeGh(f, issue);
+    fakeContinuer(f, PASS_CHECK + CONTINUE_REPLY);
+    assertStopped(continueWork(f), "nothing-to-continue");
+    assert.equal(continueCalls(f), 0);
+    assert.equal(launchFile(f), before);
+  }
+});
+
+test("continue stops with not-prepared, not-implemented, gate-unreadable, requirements-changed, issue-unreadable, or child-failed and leaves launch.json as it was", () => {
+  const unprepared = fixture();
+  fakeContinuer(unprepared, CONTINUE_REPLY);
+  assertStopped(run(unprepared, ["continue", "--worktree", unprepared.repo]), "not-prepared");
+  assert.equal(continueCalls(unprepared), 0);
+
+  const withGh = (reply: Record<string, unknown> | null) => () => {
+    const f = unfinished();
+    fakeGh(f, reply);
+    return f;
+  };
+  const withGateOff = () => {
+    const f = unfinished();
+    gateDisabled(f);
+    return f;
+  };
+  const cases: [string, () => Fixture, string, number][] = [
+    ["not-implemented", prepared, CONTINUE_REPLY, 0],
+    ["gate-unreadable", withGateOff, CONTINUE_REPLY, 0],
+    ["requirements-changed", withGh(CHANGED_BODY), CONTINUE_REPLY, 0],
+    ["issue-unreadable", withGh(null), CONTINUE_REPLY, 0],
+    ["child-failed", unfinished, `${CONTINUE_REPLY}exit 3\n`, 1],
+    ["child-failed", unfinished, "echo 'not json'\n", 1],
+    ["child-failed", unfinished, `echo '{"result":"continued"}'\n`, 1],
+  ];
+  for (const [reason, arrange, body, calls] of cases) {
+    const f = arrange();
+    const before = launchFile(f);
+    fakeContinuer(f, body);
+    const out = assertStopped(continueWork(f), reason);
+    assert.equal(out.action, "continue", reason);
+    assert.equal(continueCalls(f), calls, reason);
+    assert.equal(launchFile(f), before, reason);
+    if (reason === "gate-unreadable") assert.match(String(out.detail), /not on in this worktree/);
+  }
+});
+
+test("continue starts claude when called directly after a continue that ended with done false and left the tree unchanged", () => {
+  const f = unfinished();
+  fakeContinuer(f, CONTINUE_REPLY);
+  assertStopped(continueWork(f), "not-done");
+  const result = continueWork(f);
+  assert.equal(continueCalls(f), 2);
+  assertStopped(result, "not-done");
+  const { continues } = launchRecord(worktreeOf(f)) as Continued;
+  assert.deepEqual(continues.map((entry) => entry.round), [1, 2]);
+});
+
+test("run on a worktree whose implement stopped with not-done continues, reviews, and completes", () => {
+  const f = unfinished();
+  fakeRounds(f, { continue: [CONTINUED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.equal(out.verdict, "accepted");
+  assert.deepEqual(actionsOf(out), ["continue", "review"]);
+  assert.deepEqual(out.steps[0], { action: "continue", ok: true, round: 1, changed: false, cost_usd: 0.4, duration_ms: 800 });
+  const first = JSON.parse(result.stderr.split("\n")[0]);
+  assert.deepEqual(Object.keys(first).sort(), ["action", "changed", "cost_usd", "duration_ms", "ok", "round", "total_cost_usd"]);
+  assert.equal(first.total_cost_usd, 0.4);
+});
+
+test("run on a worktree whose repair stopped with not-done continues and then reviews the earlier findings with the judging schema", () => {
+  const f = rejected();
+  fakeRepairer(f, EDIT_FILE + REPAIR_REPLY);
+  assertStopped(repair(f), "not-done");
+  fakeRounds(f, {
+    continue: [CONTINUED],
+    self: [judged("self-2", allStates("fixed"))],
+    independent: [judged("ind-2", allStates("fixed"))],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(actionsOf(runOut(result)), ["continue", "review"]);
+  const self = roundCalls(f).find((call) => call.role === "self");
+  assert.ok(self);
+  assert.deepEqual(JSON.parse(flagValue(self.args, "--json-schema")), JUDGING_SCHEMA);
+});
+
+test("run on a worktree whose repair child edited a file and then failed continues and then reviews", () => {
+  const f = rejected();
+  fakeRepairer(f, `${EDIT_FILE}exit 3\n`);
+  assertStopped(repair(f), "child-failed");
+  fakeRounds(f, {
+    continue: [CONTINUED],
+    self: [judged("self-2", allStates("fixed"))],
+    independent: [judged("ind-2", allStates("fixed"))],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(actionsOf(runOut(result)), ["continue", "review"]);
+});
+
+test("run on an accepted worktree edited outside run without a check starts with continue", () => {
+  const f = accepted();
+  writeFileSync(join(worktreeOf(f), "README.md"), "edited outside run\n");
+  fakeRounds(f, { continue: [CONTINUED], self: [{ reply: shaped("self-2") }], independent: [{ reply: shaped("ind-2") }] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(runOut(result).steps[0].action, "continue");
+});
+
+test("run on an accepted worktree with an unchanged tree completes without starting claude after the gate is disabled", () => {
+  const f = accepted();
+  gateDisabled(f);
+  fakeRounds(f, { continue: [CONTINUED] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.equal(out.ok, true);
+  assert.deepEqual(out.steps, []);
+  assert.deepEqual(roundCalls(f), []);
+});
+
+test("run after agree on a worktree whose check has not passed starts with reread and does not continue", () => {
+  const f = agreedAfterChange(unfinished);
+  fakeRounds(f, {
+    reread: [REREAD_EDITED],
+    continue: [CONTINUED],
+    self: [{ reply: shaped("self-1") }],
+    independent: [{ reply: shaped("ind-1") }],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(actionsOf(runOut(result)), ["reread", "review"]);
+  assert.ok(!roundCalls(f).some((call) => call.role === "continue"));
+});
+
+test("run stops with not-done after a continue that edits nothing and passes no check, and a second run stops with not-done and starts no claude", () => {
+  const f = unfinished();
+  fakeRounds(f, { continue: [CONTINUED_UNCHECKED, CONTINUED_UNCHECKED] });
+  const first = assertStopped(runLaunch(f), "not-done") as unknown as RunOut;
+  assert.deepEqual(actionsOf(first), ["continue"]);
+  assert.equal(roundCalls(f).length, 1);
+  const before = launchFile(f);
+  const second = assertStopped(runLaunch(f), "not-done") as unknown as RunOut;
+  assert.deepEqual(second.steps, []);
+  assert.match(String(second.detail), /continue round 1\b/);
+  assert.equal(roundCalls(f).length, 1);
+  assert.equal(launchFile(f), before);
+});
+
+test("run starts with continue when the last continue ended with done false and the tree was edited outside run since", () => {
+  const f = unfinished();
+  fakeRounds(f, { continue: [CONTINUED_UNCHECKED, CONTINUED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  assertStopped(runLaunch(f), "not-done");
+  writeFileSync(join(worktreeOf(f), "README.md"), "edited outside run\n");
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.deepEqual(actionsOf(out), ["continue", "review"]);
+  assert.equal(out.steps[0].round, 2);
+});
+
+test("continue ends claude and its child, exits 143, and keeps launch.json on SIGTERM", async () => {
+  const f = unfinished();
+  const before = launchFile(f);
+  const result = await signalWhileClaudeWaits(f, ["continue", "--worktree", worktreeOf(f)], "SIGTERM", 1);
+  assertEndedBySignal(result, 1);
+  assert.equal(launchFile(f), before);
+});
+
+test("the usage has the continue line, and a continue call without --worktree or with a relative path prints the usage and nothing on stdout, and exits 2", () => {
+  const f = fixture();
+  const bare = run(f, []);
+  assert.ok(bare.stderr.includes("launch.ts continue --worktree <abs path> [--model <name>]\n"), bare.stderr);
+  for (const args of [["continue"], ["continue", "--model", "opus"], ["continue", "--worktree", "relative/worktree"]]) {
+    const result = run(f, args);
+    assert.equal(result.status, 2, args.join(" "));
+    assert.equal(result.stdout, "", args.join(" "));
+    assert.match(result.stderr, /^usage: /, args.join(" "));
+  }
 });
