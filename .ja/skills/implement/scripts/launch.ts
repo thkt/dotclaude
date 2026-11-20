@@ -6,7 +6,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type GateLocation, gateLocation, git, readJson, treeHash } from "../../../hooks/_lib/gate_record.ts";
-import { type ChildOutcome, type ChildRun, GIVE_REPLY, runClaudeOnce } from "../../../workflows/_lib/claude-run.ts";
+import { type ChildOutcome, type ChildRun, endAll, GIVE_REPLY, runClaudeOnce } from "../../../workflows/_lib/claude-run.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
 export const TYPE_BY_PREFIX: Record<string, string> = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
@@ -788,8 +788,18 @@ const ACTIONS: Record<string, (argv: string[]) => Result | null | Promise<Result
   run: runRounds,
 };
 
+const ENDS_CLAUDE_ON_SIGNAL = new Set(["implement", "review", "repair", "run"]);
+
+const endClaudeAndExit = () => {
+  endAll();
+  process.exit(143);
+};
+
 export async function launch(argv: string[]): Promise<number> {
   const [action, ...rest] = argv;
+  if (ENDS_CLAUDE_ON_SIGNAL.has(action ?? "")) {
+    for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) process.on(name, endClaudeAndExit);
+  }
   const result = Object.hasOwn(ACTIONS, action ?? "") ? await ACTIONS[action](rest) : null;
   if (result === null) {
     process.stderr.write(USAGE);
