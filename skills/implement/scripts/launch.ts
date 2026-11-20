@@ -18,7 +18,8 @@ const DESCRIPTION = /^[a-z0-9]+(-[a-z0-9]+){1,3}$/;
 const USAGE =
   "usage: launch.ts prepare --repo <abs path> --issue <number> [--description <words>] [--gate-mode record|enforce]\n" +
   "       launch.ts implement --worktree <abs path> [--model <name>]\n" +
-  "       launch.ts review --worktree <abs path> [--model <name>]\n";
+  "       launch.ts review --worktree <abs path> [--model <name>]\n" +
+  "       launch.ts repair --worktree <abs path> [--model <name>]\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
   `Implement GitHub Issue #${issue} of ${repository} in this worktree.
@@ -31,6 +32,20 @@ const promptFor = (issue: number, repository: string, doneGate: string): string 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
 When you are done, reply with: the files you changed, what \`${doneGate} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
+`;
+
+const repairPrompt = (issue: number, findings: string, doneGate: string): string =>
+  `The reviews of your uncommitted change for Issue #${issue} reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests.
+
+${findings}
+
+1. For each finding, read the code it names and reproduce the problem, and judge whether the finding holds. Fix each finding that holds, and add or change a test that fails without the fix. Do not change the scope of the Issue.
+2. Run \`${doneGate} check\`. Fix what fails and run it again.
+3. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+
+When you are done, reply with: for each finding, what you changed, or why you changed nothing; the files you changed; and what \`${doneGate} status\` printed.
 `;
 
 const REVIEW_TOOLS = "Read,Glob,Grep,LS";
@@ -282,6 +297,28 @@ const preparedAt = (worktree: string): Prepared | null => {
 
 const notPrepared = (worktree: string): string => `${worktree} has no launch.json that prepare wrote.`;
 
+const notImplemented = (worktree: string): string => `launch.json of ${worktree} has no implement.session_id.`;
+
+const replyOf = (outcome: ChildOutcome): Record<string, unknown> | string => {
+  const tail = oneLine(outcome.stderr.split("\n").slice(-3).join(" "));
+  if (outcome.timedOut) return `claude -p was ended at its ${CHILD_TIMEOUT_MS} ms limit. ${tail}`;
+  if (outcome.code !== 0) return `claude -p exited ${outcome.code}. ${tail}`;
+  return parseObject(outcome.stdout) ?? `claude -p printed no JSON object. ${tail}`;
+};
+
+const sessionReplyOf = (outcome: ChildOutcome): (Record<string, unknown> & { session_id: string }) | string => {
+  const reply = replyOf(outcome);
+  if (typeof reply === "string") return reply;
+  if (typeof reply.session_id !== "string") return "the JSON claude -p printed has no session_id string.";
+  return reply as Record<string, unknown> & { session_id: string };
+};
+
+const shownOf = (reply: Record<string, unknown>) => ({
+  result: reply.result,
+  cost_usd: reply.total_cost_usd,
+  duration_ms: reply.duration_ms,
+});
+
 const implement = async (argv: string[]): Promise<Result | null> => {
   const call = worktreeCall(argv);
   if (call === null) return null;
@@ -293,20 +330,17 @@ const implement = async (argv: string[]): Promise<Result | null> => {
   if (prepared === null) return stop("not-prepared", notPrepared(worktree));
   const { gate, launchPath, launch } = prepared;
 
-  const outcome = await runClaudeOnce({
-    prompt: promptFor(launch.issue, launch.repository, DONE_GATE),
-    model,
-    effort: undefined,
-    schema: undefined,
-    cwd: worktree,
-    timeoutMs: CHILD_TIMEOUT_MS,
-  });
-  const tail = oneLine(outcome.stderr.split("\n").slice(-3).join(" "));
-  if (outcome.timedOut) return stop("child-failed", `claude -p was ended at its ${CHILD_TIMEOUT_MS} ms limit. ${tail}`);
-  if (outcome.code !== 0) return stop("child-failed", `claude -p exited ${outcome.code}. ${tail}`);
-  const reply = parseObject(outcome.stdout);
-  if (reply === null) return stop("child-failed", `claude -p printed no JSON object. ${tail}`);
-  if (typeof reply.session_id !== "string") return stop("child-failed", "the JSON claude -p printed has no session_id string.");
+  const reply = sessionReplyOf(
+    await runClaudeOnce({
+      prompt: promptFor(launch.issue, launch.repository, DONE_GATE),
+      model,
+      effort: undefined,
+      schema: undefined,
+      cwd: worktree,
+      timeoutMs: CHILD_TIMEOUT_MS,
+    }),
+  );
+  if (typeof reply === "string") return stop("child-failed", reply);
 
   const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
   const tree = treeHash(gate.root);
@@ -314,13 +348,7 @@ const implement = async (argv: string[]): Promise<Result | null> => {
     launchPath,
     `${JSON.stringify({ ...launch, implement: { session_id: reply.session_id, tree, at: new Date().toISOString() } }, null, 2)}\n`,
   );
-  const shown = {
-    session_id: reply.session_id,
-    tree,
-    result: reply.result,
-    cost_usd: reply.total_cost_usd,
-    duration_ms: reply.duration_ms,
-  };
+  const shown = { session_id: reply.session_id, tree, ...shownOf(reply) };
   if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
   return { action: "implement", ok: true, ...shown };
 };
@@ -338,13 +366,6 @@ interface Review {
 }
 
 const verdictOf = (rejected: boolean): Verdict => (rejected ? "rejected" : "accepted");
-
-const replyOf = (outcome: ChildOutcome): Record<string, unknown> | string => {
-  const tail = oneLine(outcome.stderr.split("\n").slice(-3).join(" "));
-  if (outcome.timedOut) return `claude -p was ended at its ${CHILD_TIMEOUT_MS} ms limit. ${tail}`;
-  if (outcome.code !== 0) return `claude -p exited ${outcome.code}. ${tail}`;
-  return parseObject(outcome.stdout) ?? `claude -p printed no JSON object. ${tail}`;
-};
 
 const reviewOf = (reply: Record<string, unknown>): Review | null => {
   const output = objectOf(reply.structured_output);
@@ -388,7 +409,7 @@ const review = async (argv: string[]): Promise<Result | null> => {
   if (prepared === null) return stop("not-prepared", notPrepared(worktree));
   const { gate, launchPath, stored, launch } = prepared;
   const implemented = objectOf(stored.implement)?.session_id;
-  if (!nonEmpty(implemented)) return stop("not-implemented", `launch.json of ${worktree} has no implement.session_id.`);
+  if (!nonEmpty(implemented)) return stop("not-implemented", notImplemented(worktree));
   const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
   if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`);
 
@@ -426,10 +447,82 @@ const review = async (argv: string[]): Promise<Result | null> => {
   return { action: "review", ok: true, round, tree, verdict, reviews };
 };
 
+const SIDES: readonly Side[] = ["self", "independent"];
+
+const requiredFindings = (record: Record<string, unknown>): string =>
+  SIDES.flatMap((side) => {
+    const findings = objectOf(record[side])?.findings;
+    return (Array.isArray(findings) ? findings : [])
+      .map(objectOf)
+      .filter((finding) => finding?.required === true)
+      .map((finding) => {
+        const { location, condition, problem, action } = finding as Record<string, unknown>;
+        return JSON.stringify({ side, location, condition, problem, action });
+      });
+  }).join("\n");
+
+const repair = async (argv: string[]): Promise<Result | null> => {
+  const call = worktreeCall(argv);
+  if (call === null) return null;
+  const { worktree, model } = call;
+  const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
+    stopped("repair", reason, detail, extra);
+
+  const prepared = preparedAt(worktree);
+  if (prepared === null) return stop("not-prepared", notPrepared(worktree));
+  const { gate, launchPath, stored, launch } = prepared;
+  const implemented = objectOf(stored.implement)?.session_id;
+  if (!nonEmpty(implemented)) return stop("not-implemented", notImplemented(worktree));
+  const reviews = stored.reviews;
+  if (!Array.isArray(reviews) || reviews.length === 0) {
+    return stop("not-reviewed", `launch.json of ${worktree} has no review record.`);
+  }
+  const last = objectOf(reviews[reviews.length - 1]) ?? {};
+  if (last.verdict !== "rejected") {
+    return stop("nothing-to-repair", `The last review of ${worktree} is ${String(last.verdict)}, not rejected.`);
+  }
+  const before = treeHash(gate.root);
+  if (before !== last.tree) {
+    return stop("review-stale", `The last review saw the working tree ${String(last.tree)}, and it is ${before} now.`);
+  }
+
+  const reply = sessionReplyOf(
+    await runClaudeOnce({
+      prompt: repairPrompt(launch.issue, requiredFindings(last), DONE_GATE),
+      model,
+      effort: undefined,
+      schema: undefined,
+      cwd: worktree,
+      timeoutMs: CHILD_TIMEOUT_MS,
+      resume: implemented,
+    }),
+  );
+  if (typeof reply === "string") return stop("child-failed", reply);
+
+  const tree = treeHash(gate.root);
+  const earlier = Array.isArray(stored.repairs) ? stored.repairs : [];
+  const record = {
+    round: earlier.length + 1,
+    review_round: last.round,
+    session_id: reply.session_id,
+    tree,
+    changed: tree !== before,
+  };
+  writeFileSync(
+    launchPath,
+    `${JSON.stringify({ ...stored, repairs: [...earlier, { ...record, at: new Date().toISOString() }] }, null, 2)}\n`,
+  );
+  const shown = { ...record, ...shownOf(reply) };
+  const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
+  if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
+  return { action: "repair", ok: true, ...shown };
+};
+
 const ACTIONS: Record<string, (argv: string[]) => Result | null | Promise<Result | null>> = {
   prepare,
   implement,
   review,
+  repair,
 };
 
 export async function launch(argv: string[]): Promise<number> {
