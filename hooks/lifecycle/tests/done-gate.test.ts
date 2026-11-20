@@ -804,3 +804,145 @@ test("T-599 red copies the content of a changed test file that is a symlink to a
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(readRecordFile(dir, RED_FILE).tests, ["tests/ln.sh"]);
 });
+
+test("T-614 check passes a check that reads a new untracked file from the index, and status prints done", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "git ls-files --error-unmatch new.txt"}' });
+  gate(dir, "on");
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+
+  const result = gate(dir, "check");
+  assert.equal(result.status, 0, result.stderr);
+  const status = gate(dir, "status");
+  assert.equal(status.stdout, "done\n");
+});
+
+test("T-615 after check, a new untracked file shows as intent-to-add and nothing is staged", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(dir, "on");
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+
+  assert.equal(gate(dir, "check").status, 0);
+  const line = git(dir, "status", "--porcelain")
+    .split("\n")
+    .find((entry) => entry.endsWith("new.txt"));
+  assert.equal(line, " A new.txt");
+  assert.equal(git(dir, "diff", "--cached", "--name-only"), "");
+});
+
+test("T-616 check leaves an edit to a tracked file unstaged", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
+  gate(dir, "on");
+  writeFileSync(path.join(dir, "tracked.txt"), "two\n");
+
+  assert.equal(gate(dir, "check").status, 0);
+  assert.equal(git(dir, "diff", "--cached", "--name-only"), "");
+});
+
+test("T-617 check leaves a file .gitignore excludes out of the index and puts a new file in a subdirectory into it", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', ".gitignore": "*.log\n" });
+  gate(dir, "on");
+  writeFileSync(path.join(dir, "build.log"), "ignored\n");
+  mkdirSync(path.join(dir, "sub", "deeper"), { recursive: true });
+  writeFileSync(path.join(dir, "sub", "deeper", "nested.txt"), "untracked\n");
+
+  assert.equal(gate(dir, "check").status, 0);
+  const indexed = git(dir, "ls-files").split("\n");
+  assert.equal(indexed.includes("build.log"), false);
+  assert.equal(indexed.includes("sub/deeper/nested.txt"), true);
+});
+
+test("T-618 check run twice in a row with a new untracked file exits 0 both times", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(dir, "on");
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+
+  const first = gate(dir, "check");
+  assert.equal(first.status, 0, first.stderr);
+  const second = gate(dir, "check");
+  assert.equal(second.status, 0, second.stderr);
+});
+
+test("T-619 when untracked files cannot be marked intent-to-add, check exits 2 with one stderr line, does not run the check and leaves check.json as it was", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "touch ran.marker"}', ".gitignore": "*.marker\n" });
+  gate(dir, "on");
+  assert.equal(gate(dir, "check").status, 0);
+  rmSync(path.join(dir, "ran.marker"));
+  const recordBefore = readFileSync(path.join(gateDir(dir), CHECK_FILE), "utf8");
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+  const lock = path.resolve(dir, git(dir, "rev-parse", "--git-path", "index.lock").trim());
+  writeFileSync(lock, "");
+
+  const result = gate(dir, "check");
+  rmSync(lock);
+  assert.equal(result.status, 2, result.stdout);
+  assert.equal(result.stderr, "done_gate: could not mark untracked files as intent-to-add\n");
+  assert.equal(existsSync(path.join(dir, "ran.marker")), false);
+  assert.equal(readFileSync(path.join(gateDir(dir), CHECK_FILE), "utf8"), recordBefore);
+});
+
+test("T-620 check leaves the deletion of a tracked file unstaged", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
+  gate(dir, "on");
+  rmSync(path.join(dir, "tracked.txt"));
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+
+  assert.equal(gate(dir, "check").status, 0);
+  assert.equal(git(dir, "diff", "--cached", "--name-only"), "");
+  const line = git(dir, "status", "--porcelain")
+    .split("\n")
+    .find((entry) => entry.endsWith("tracked.txt"));
+  assert.match(line ?? "", /^ D /);
+  assert.equal(git(dir, "ls-files", "new.txt"), "new.txt\n");
+});
+
+test("T-621 check leaves the index entries of a file with an unresolved merge conflict as they were and marks a new file", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "conflict.txt": "base\n" });
+  git(dir, "checkout", "-q", "-b", "other");
+  writeFileSync(path.join(dir, "conflict.txt"), "other\n");
+  git(dir, "commit", "-q", "--no-verify", "-am", "other side");
+  git(dir, "checkout", "-q", "-");
+  writeFileSync(path.join(dir, "conflict.txt"), "main\n");
+  git(dir, "commit", "-q", "--no-verify", "-am", "main side");
+  const merge = spawnSync("git", ["merge", "-q", "other"], { cwd: dir, env: isolatedEnv(), encoding: "utf8" });
+  assert.notEqual(merge.status, 0, "the merge must stop on a conflict");
+  gate(dir, "on");
+  writeFileSync(path.join(dir, "new.txt"), "untracked\n");
+  const unmergedBefore = git(dir, "ls-files", "-u");
+  assert.notEqual(unmergedBefore, "");
+
+  gate(dir, "check");
+  assert.equal(git(dir, "ls-files", "-u"), unmergedBefore);
+  assert.equal(git(dir, "ls-files", "new.txt"), "new.txt\n");
+});
+
+test("T-622 check marks an untracked file whose name contains a space", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
+  gate(dir, "on");
+  writeFileSync(path.join(dir, "with space.txt"), "untracked\n");
+
+  assert.equal(gate(dir, "check").status, 0);
+  assert.equal(git(dir, "ls-files", "with space.txt"), "with space.txt\n");
+});
+
+test("T-623 with no untracked file, check exits with the exit code of the configured check", () => {
+  for (const expected of [0, 3]) {
+    const dir = repo({ ".dotagents.json": `{"check": "exit ${expected}"}` });
+    gate(dir, "on");
+    assert.equal(git(dir, "ls-files", "--others", "--exclude-standard"), "");
+
+    const result = gate(dir, "check");
+    assert.equal(result.status, expected, result.stderr);
+    assert.equal(readRecordFile(dir, CHECK_FILE).exitCode, expected);
+  }
+});
+
+test("T-624 an untracked file named * is marked by name only and leaves the deletion of a tracked file unstaged", () => {
+  const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
+  gate(dir, "on");
+  rmSync(path.join(dir, "tracked.txt"));
+  writeFileSync(path.join(dir, "*"), "untracked\n");
+
+  assert.equal(gate(dir, "check").status, 0);
+  assert.equal(git(dir, "diff", "--cached", "--name-only"), "");
+  assert.equal(git(dir, "ls-files").split("\n").includes("*"), true);
+});

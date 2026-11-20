@@ -128,10 +128,24 @@ function runCommand(
   return result.status;
 }
 
+function markUntrackedIntentToAdd(root: string): boolean {
+  const untracked = git(["ls-files", "-z", "--others", "--exclude-standard"], root);
+  if (untracked === null) {
+    return false;
+  }
+  if (untracked === "") {
+    return true;
+  }
+  return git(["--literal-pathspecs", "add", "-N", "--pathspec-from-file=-", "--pathspec-file-nul"], root, undefined, untracked) !== null;
+}
+
 function check(gate: GateLocation): number {
   const command = storedConfig(gate)?.check ?? null;
   if (command === null) {
     return fail("not on in this worktree; run `done_gate.ts on` first");
+  }
+  if (!markUntrackedIntentToAdd(gate.root)) {
+    return fail("could not mark untracked files as intent-to-add");
   }
   const before = treeHash(gate.root);
   if (before === null) {

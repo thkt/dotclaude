@@ -89,7 +89,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 | statusline.sh    | statusLine        | fail-open  | ステータスライン表示と、自身が持つセッション単位 state の TTL 掃除          |
 | recall_index.ts  | SessionStart      | fail-open  | recall のクロスセッション索引をバックグラウンド更新。いまは SessionStart に配線していない |
 | failure-alert.sh | Stop, StopFailure | fail-open  | 悪い終わり方をしたターンを音で知らせる。end_turn と subagent では鳴らさない |
-| done_gate.ts | Stop | fail-open | `done_gate.ts on` を済ませた作業ツリーで、`check` が今のツリーで通った記録があるかを判定する。mode が `record` のときは判定を記録して停止を許す。`enforce` のときは、記録がない間、停止を差し止める。`on --require red` をした作業ツリーでは、変更が足したテストが base で落ちた記録も求める |
+| done_gate.ts | Stop | fail-open | `done_gate.ts on` を済ませた作業ツリーで、`check` が今のツリーで通った記録があるかを判定する。mode が `record` のときは判定を記録して停止を許す。`enforce` のときは、記録がない間、停止を差し止める。`on --require red` をした作業ツリーでは、変更が足したテストが base で落ちた記録も求める。`done_gate.ts check` は、`check` を走らせる前に、untracked のファイルを `git add -N` で index に載せる |
 
 ### integrations/
 
