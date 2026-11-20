@@ -738,3 +738,249 @@ test("review stops with not-prepared, not-implemented, or not-done and starts no
   assert.match(String(out.detail), /No check result is recorded/);
   assert.deepEqual(callsOf(unchecked), []);
 });
+
+const SELF_REQUIRED = { required: true, location: "a.ts:1", condition: "c1", problem: "p1", action: "a1" };
+const SELF_OPTIONAL = { required: false, location: "a.ts:2", condition: "c2", problem: "p2", action: "a2" };
+const INDEPENDENT_REQUIRED = { required: true, location: "", condition: "c3", problem: "p3", action: "a3" };
+
+const REJECTED: Record<string, Step> = {
+  self: { reply: shaped("self-1", [SELF_REQUIRED, SELF_OPTIONAL]) },
+  independent: { reply: shaped("ind-1", [INDEPENDENT_REQUIRED]) },
+};
+
+const REPAIR_PROMPT = `The reviews of your uncommitted change for Issue #42 reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests.
+
+{"side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1"}
+{"side":"independent","location":"","condition":"c3","problem":"p3","action":"a3"}
+
+1. For each finding, read the code it names and reproduce the problem, and judge whether the finding holds. Fix each finding that holds, and add or change a test that fails without the fix. Do not change the scope of the Issue.
+2. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
+3. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+
+When you are done, reply with: for each finding, what you changed, or why you changed nothing; the files you changed; and what \`${DONE_GATE} status\` printed.
+`;
+
+const REPAIR_REPLY = `echo '{"session_id":"s-1","result":"repaired","total_cost_usd":0.7,"duration_ms":900}'\n`;
+const EDIT_FILE = "echo fixed >> README.md\n";
+
+function fakeRepairer(f: Fixture, body: string): void {
+  writeFileSync(
+    join(f.bin, "claude"),
+    `#!/bin/sh\necho call >> "$LOGS/repair-calls"\npwd -P > "$LOGS/repair-cwd"\nprintf '%s\\n' "$@" > "$LOGS/repair-args"\ncat > "$LOGS/repair-stdin"\n${body}`,
+    { mode: 0o755 },
+  );
+}
+
+const repairCalls = (f: Fixture): number =>
+  existsSync(join(f.logs, "repair-calls")) ? readFileSync(join(f.logs, "repair-calls"), "utf8").split("\n").filter(Boolean).length : 0;
+
+const repair = (f: Fixture, ...extra: string[]) => run(f, ["repair", "--worktree", worktreeOf(f), ...extra]);
+
+function rejected(): Fixture {
+  const f = implemented();
+  fakeReviewer(f, REJECTED);
+  const result = review(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(outputOf(result).verdict, "rejected");
+  return f;
+}
+
+type Stored = Record<string, unknown> & { reviews: Record<string, unknown>[]; repairs: Record<string, unknown>[] };
+
+test("repair resumes the implement session, appends round 1 to repairs, and reports ok with changed true when the child edits and passes the check", () => {
+  const f = rejected();
+  const before = launchRecord(worktreeOf(f)) as Stored;
+  fakeRepairer(f, EDIT_FILE + PASS_CHECK + REPAIR_REPLY);
+  const result = repair(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result);
+  assert.equal(typeof out.tree, "string");
+  assert.notEqual(out.tree, before.reviews[0].tree);
+  assert.deepEqual(out, {
+    action: "repair",
+    ok: true,
+    round: 1,
+    review_round: 1,
+    session_id: "s-1",
+    tree: out.tree,
+    changed: true,
+    result: "repaired",
+    cost_usd: 0.7,
+    duration_ms: 900,
+  });
+  const after = launchRecord(worktreeOf(f)) as Stored;
+  const { repairs, ...rest } = after;
+  assert.deepEqual(rest, before);
+  assert.equal(repairs.length, 1);
+  assert.ok(!Number.isNaN(Date.parse(String(repairs[0].at))));
+  assert.deepEqual(repairs[0], {
+    round: 1,
+    review_round: 1,
+    session_id: "s-1",
+    tree: out.tree,
+    changed: true,
+    at: repairs[0].at,
+  });
+});
+
+test("repair starts claude in the worktree resuming the implement session without a fork or a schema, with implement's tools and model", () => {
+  const f = rejected();
+  const implementArgs = readFileSync(join(f.logs, "args"), "utf8").split("\n");
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  assert.equal(readFileSync(join(f.logs, "repair-cwd"), "utf8").trim(), realpathSync(worktreeOf(f)));
+  const args = readFileSync(join(f.logs, "repair-args"), "utf8").split("\n");
+  assert.equal(flagValue(args, "--resume"), "s-1");
+  assert.ok(!args.includes("--fork-session"));
+  assert.ok(!args.includes("--json-schema"));
+  assert.equal(flagValue(args, "--allowedTools"), flagValue(implementArgs, "--allowedTools"));
+  assert.equal(flagValue(args, "--model"), "opus");
+});
+
+test("repair passes --model to claude", () => {
+  const f = rejected();
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f, "--model", "sonnet").status, 0);
+  assert.equal(flagValue(readFileSync(join(f.logs, "repair-args"), "utf8").split("\n"), "--model"), "sonnet");
+});
+
+test("repair passes only the required findings, self first, as JSON lines in the full prompt", () => {
+  const f = rejected();
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), REPAIR_PROMPT);
+});
+
+test("repair reports ok with changed false and records the round when the child changes nothing", () => {
+  const f = rejected();
+  fakeRepairer(f, REPAIR_REPLY);
+  const result = repair(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result);
+  assert.equal(out.ok, true);
+  assert.equal(out.changed, false);
+  const stored = launchRecord(worktreeOf(f)) as Stored;
+  assert.equal(stored.repairs.length, 1);
+  assert.equal(stored.repairs[0].changed, false);
+  assert.equal(out.tree, stored.reviews[0].tree);
+});
+
+test("repair stops with not-done and still records the round when the child edits without passing the check", () => {
+  const f = rejected();
+  fakeRepairer(f, EDIT_FILE + REPAIR_REPLY);
+  const out = assertStopped(repair(f), "not-done");
+  assert.equal(out.action, "repair");
+  assert.equal(out.changed, true);
+  assert.equal(out.round, 1);
+  assert.deepEqual(Object.keys(out).sort(), [
+    "action",
+    "changed",
+    "cost_usd",
+    "detail",
+    "duration_ms",
+    "ok",
+    "reason",
+    "result",
+    "review_round",
+    "round",
+    "session_id",
+    "tree",
+  ]);
+  const stored = launchRecord(worktreeOf(f)) as Stored;
+  assert.equal(stored.repairs.length, 1);
+  assert.equal(stored.repairs[0].changed, true);
+});
+
+test("repair run again after a repair that changed the tree stops with review-stale and starts no claude", () => {
+  const f = rejected();
+  fakeRepairer(f, EDIT_FILE + PASS_CHECK + REPAIR_REPLY);
+  const first = outputOf(repair(f));
+  assert.equal(repairCalls(f), 1);
+  const before = launchRecord(worktreeOf(f));
+  const out = assertStopped(repair(f), "review-stale");
+  const reviewed = String((before as Stored).reviews[0].tree);
+  assert.ok(String(out.detail).includes(reviewed));
+  assert.ok(String(out.detail).includes(String(first.tree)));
+  assert.equal(repairCalls(f), 1);
+  assert.deepEqual(launchRecord(worktreeOf(f)), before);
+});
+
+test("repair after a new rejected review is round 2 and leaves two records in repairs", () => {
+  const f = rejected();
+  fakeRepairer(f, EDIT_FILE + PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  fakeReviewer(f, REJECTED);
+  assert.equal(outputOf(review(f)).round, 2);
+  fakeRepairer(f, EDIT_FILE + PASS_CHECK + REPAIR_REPLY);
+  const result = repair(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result);
+  assert.equal(out.round, 2);
+  assert.equal(out.review_round, 2);
+  const repairs = (launchRecord(worktreeOf(f)) as Stored).repairs;
+  assert.deepEqual(repairs.map((entry) => [entry.round, entry.review_round]), [[1, 1], [2, 2]]);
+});
+
+test("repair stops with not-prepared, not-implemented, not-reviewed, or nothing-to-repair, starts no claude, and keeps launch.json", () => {
+  const unprepared = fixture();
+  fakeRepairer(unprepared, REPAIR_REPLY);
+  assertStopped(run(unprepared, ["repair", "--worktree", unprepared.repo]), "not-prepared");
+  assert.equal(repairCalls(unprepared), 0);
+
+  const prepared = fixture();
+  assert.equal(prepare(prepared).status, 0);
+  const preparedRecord = launchRecord(worktreeOf(prepared));
+  fakeRepairer(prepared, REPAIR_REPLY);
+  assertStopped(repair(prepared), "not-implemented");
+  assert.equal(repairCalls(prepared), 0);
+  assert.deepEqual(launchRecord(worktreeOf(prepared)), preparedRecord);
+
+  const unreviewed = implemented();
+  const unreviewedRecord = launchRecord(worktreeOf(unreviewed));
+  fakeRepairer(unreviewed, REPAIR_REPLY);
+  assertStopped(repair(unreviewed), "not-reviewed");
+  assert.equal(repairCalls(unreviewed), 0);
+  assert.deepEqual(launchRecord(worktreeOf(unreviewed)), unreviewedRecord);
+
+  const accepted = implemented();
+  fakeReviewer(accepted, CLEAN);
+  assert.equal(review(accepted).status, 0);
+  const acceptedRecord = launchRecord(worktreeOf(accepted));
+  fakeRepairer(accepted, REPAIR_REPLY);
+  assertStopped(repair(accepted), "nothing-to-repair");
+  assert.equal(repairCalls(accepted), 0);
+  assert.deepEqual(launchRecord(worktreeOf(accepted)), acceptedRecord);
+});
+
+test("repair stops with not-reviewed when reviews is not an array or is empty", () => {
+  for (const reviews of [{}, []]) {
+    const f = implemented();
+    const dir = git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate");
+    writeFileSync(join(dir, "launch.json"), `${JSON.stringify({ ...launchRecord(worktreeOf(f)), reviews })}\n`);
+    fakeRepairer(f, REPAIR_REPLY);
+    assertStopped(repair(f), "not-reviewed");
+    assert.equal(repairCalls(f), 0);
+  }
+});
+
+test("repair stops with child-failed and keeps launch.json when claude exits non-zero, prints no JSON, or gives no session_id", () => {
+  for (const body of [`${REPAIR_REPLY}exit 3\n`, "echo 'not json'\n", `echo '{"result":"repaired"}'\n`]) {
+    const f = rejected();
+    const before = launchRecord(worktreeOf(f));
+    fakeRepairer(f, body);
+    assertStopped(repair(f), "child-failed");
+    assert.deepEqual(launchRecord(worktreeOf(f)), before, body);
+  }
+});
+
+test("a repair call without --worktree or with a relative path prints the usage and nothing on stdout, and exits 2", () => {
+  const f = fixture();
+  for (const args of [["repair"], ["repair", "--model", "opus"], ["repair", "--worktree", "relative/worktree"]]) {
+    const result = run(f, args);
+    assert.equal(result.status, 2, args.join(" "));
+    assert.equal(result.stdout, "", args.join(" "));
+    assert.match(result.stderr, /^usage: /, args.join(" "));
+  }
+});
