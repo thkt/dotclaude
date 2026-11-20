@@ -380,3 +380,54 @@ test("T-610 a cd <dir> inside a brace group judges the git push after it at <dir
   assert.equal(logLines(gated).length, 1);
   assert.deepEqual(logLines(plain), []);
 });
+
+test("T-611 a publish command inside or after a subshell appends its line to the working tree the subshell leaves in effect", () => {
+  const a = gatedRepo();
+  const b = gatedRepo();
+  const c = gatedRepo();
+  const cases: Array<[string, string]> = [
+    ["(git push)", a],
+    [`(cd ${b} && git push)`, b],
+    [`(cd ${b} && true); git push`, a],
+    [`(\ncd ${b}\n)\ngit push`, a],
+    [`x=$(cd ${b} && git rev-parse HEAD); git push`, a],
+    ['(cd "$X" && true); git push', a],
+    [`cd ${b} && (cd "$X" && true); git push`, b],
+    [`(cd ${b}; (cd ${c}; true); git push)`, b],
+    ["case x in a) git push;; esac", a],
+    [`f() { cd ${b}; }; git push`, b],
+  ];
+  for (const [command, expected] of cases) {
+    const before = [a, b, c].map((dir) => logLines(dir).length);
+    assert.equal(bash(command, a).stdout, "", command);
+    const after = [a, b, c].map((dir) => logLines(dir).length);
+    const grown = [a, b, c].filter((_, index) => after[index] === before[index] + 1);
+    assert.deepEqual(grown, [expected], command);
+    const lines = logLines(expected);
+    const last = lines[lines.length - 1];
+    assert.equal(last.command, "git push", command);
+    assert.equal(last.unresolved, undefined, command);
+    assert.equal(typeof last.tree, "string", command);
+  }
+});
+
+test("T-612 an unresolved cd before a subshell stays unresolved after the subshell closes and appends an unresolved line to the event cwd", () => {
+  const a = gatedRepo();
+  const b = gatedRepo();
+  bash(`cd "$X"; (cd ${b} && true); git push`, a);
+  const lines = logLines(a);
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].unresolved, true);
+  assert.deepEqual(logLines(b), []);
+});
+
+test("T-613 in mode enforce a push inside a subshell is judged at the subshell cd target and a push after the subshell at the event cwd", () => {
+  const a = gatedRepo("enforce");
+  const b = gatedRepo("enforce");
+  passCheck(a);
+  const denied = JSON.parse(bash(`(cd ${b} && git push)`, a).stdout) as {
+    hookSpecificOutput: { permissionDecision: string };
+  };
+  assert.equal(denied.hookSpecificOutput.permissionDecision, "deny");
+  assert.equal(bash(`(cd ${b} && true); git push`, a).stdout, "");
+});

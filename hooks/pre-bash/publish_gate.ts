@@ -71,15 +71,35 @@ function applyDir(current: string | null, arg: string): string | null {
   return current === null ? null : path.resolve(current, arg);
 }
 
+function isAlone(tokens: readonly string[], word: string): boolean {
+  return tokens.length === 1 && tokens[0] === word;
+}
+
+function dirAfter(
+  tokens: readonly string[],
+  current: string | null,
+  saved: Array<string | null>,
+): string | null {
+  if (isAlone(tokens, "(")) {
+    saved.push(current);
+    return current;
+  }
+  if (isAlone(tokens, ")")) {
+    return saved.length > 0 ? (saved.pop() as string | null) : current;
+  }
+  if (tokens[0] === "cd") {
+    return tokens.length === 2 ? applyDir(current, tokens[1]) : null;
+  }
+  return current;
+}
+
 function publishTarget(command: string, cwd: string): PublishTarget | null {
   let current: string | null = cwd;
+  const saved: Array<string | null> = [];
   for (const tokens of commands(command)) {
-    if (tokens[0] === "cd") {
-      current = tokens.length === 2 ? applyDir(current, tokens[1]) : null;
-      continue;
-    }
     const kind = publishKind(tokens);
     if (kind === null) {
+      current = dirAfter(tokens, current, saved);
       continue;
     }
     let dir = current;
