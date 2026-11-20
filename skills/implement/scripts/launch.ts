@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 import { type SpawnSyncReturns, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +15,7 @@ const DONE_GATE = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "
 const LAUNCH_FILE = "launch.json";
 const CHILD_TIMEOUT_MS = 3_600_000;
 const DESCRIPTION = /^[a-z0-9]+(-[a-z0-9]+){1,3}$/;
+const DIGEST = /^[0-9a-f]{64}$/;
 
 const USAGE =
   "usage: launch.ts prepare --repo <abs path> --issue <number> [--description <words>] [--gate-mode record|enforce]\n" +
@@ -139,6 +141,7 @@ interface Launch {
   repository: string;
   branch: string;
   base: string;
+  issue_digest: string;
 }
 
 const readFlags = (argv: string[], allowed: readonly string[]): Flags | null => {
@@ -223,6 +226,7 @@ interface Plan {
   baseBranch: string;
   branch: string;
   worktree: string;
+  issueDigest: string;
 }
 
 const prepareCall = (argv: string[]): PrepareCall | null => {
@@ -242,6 +246,28 @@ const prepareCall = (argv: string[]): PrepareCall | null => {
   return fits ? call : null;
 };
 
+type ViewedIssue = Record<string, unknown> & { title: string; state: string };
+
+const viewIssue = (issue: number, repository: string, fields: string, cwd: string): ViewedIssue | string => {
+  const viewed = runQuiet("gh", ["issue", "view", String(issue), "--repo", repository, "--json", fields], cwd);
+  const found = viewed.status === 0 ? parseObject(viewed.stdout) : null;
+  if (!found || typeof found.title !== "string" || typeof found.state !== "string") {
+    return `gh could not read Issue #${issue} of ${repository}: ${outputOf(viewed)}`;
+  }
+  return found as ViewedIssue;
+};
+
+const digestOf = ({ title, body, state }: Record<string, unknown>): string =>
+  createHash("sha256").update(JSON.stringify([title, body, state])).digest("hex");
+
+const issueChange = ({ issue, repository, issue_digest }: Launch, worktree: string): { reason: string; detail: string } | null => {
+  const found = viewIssue(issue, repository, "title,body,state", worktree);
+  if (typeof found === "string") return { reason: "issue-unreadable", detail: found };
+  if (digestOf(found) === issue_digest) return null;
+  const detail = `The title, body, or state of Issue #${issue} of ${repository} changed after prepare recorded it.`;
+  return { reason: "requirements-changed", detail };
+};
+
 const prepareStop = (issue: number, reason: string, detail: string): Result =>
   stopped("prepare", reason, detail, { issue });
 
@@ -251,11 +277,8 @@ const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
     return prepareStop(issue, "no-config", `HEAD of ${repo} has no .dotagents.json with non-empty repository, remote, and baseBranch strings.`);
   }
   const { repository, remote, baseBranch } = config;
-  const viewed = runQuiet("gh", ["issue", "view", String(issue), "--repo", repository, "--json", "number,title,body,state"], repo);
-  const found = viewed.status === 0 ? parseObject(viewed.stdout) : null;
-  if (!found || typeof found.title !== "string" || typeof found.state !== "string") {
-    return prepareStop(issue, "issue-unreadable", `gh could not read Issue #${issue} of ${repository}: ${outputOf(viewed)}`);
-  }
+  const found = viewIssue(issue, repository, "number,title,body,state", repo);
+  if (typeof found === "string") return prepareStop(issue, "issue-unreadable", found);
   if (found.state !== "OPEN") return prepareStop(issue, "issue-not-open", `Issue #${issue} is ${found.state}, not OPEN.`);
   const prefix = (/^\[(\w+)\]/.exec(found.title)?.[1] ?? "").toLowerCase();
   if (!Object.hasOwn(TYPE_BY_PREFIX, prefix)) {
@@ -267,7 +290,8 @@ const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
     return prepareStop(issue, "no-description", `The title of Issue #${issue} has fewer than 2 English words; pass --description.`);
   }
   const branch = `${TYPE_BY_PREFIX[prefix]}/${issue}-${words}`;
-  return { repository, remote, baseBranch, branch, worktree: join(repo, ".claude", "worktrees", `implement-${issue}`) };
+  const worktree = join(repo, ".claude", "worktrees", `implement-${issue}`);
+  return { repository, remote, baseBranch, branch, worktree, issueDigest: digestOf(found) };
 };
 
 const createWorktree = ({ repo, issue }: PrepareCall, { remote, baseBranch, branch, worktree }: Plan): string | Result => {
@@ -290,14 +314,14 @@ const prepare = (argv: string[]): Result | null => {
   const base = createWorktree(call, plan);
   if (typeof base !== "string") return base;
   const { issue, gateMode } = call;
-  const { repository, branch, worktree } = plan;
+  const { repository, branch, worktree, issueDigest } = plan;
   const kept = `The worktree ${worktree} and the branch ${branch} are left in place.`;
   const setupFailure = runSetup(worktree);
   if (setupFailure !== null) return prepareStop(issue, "setup-failed", `${setupFailure}. ${kept}`);
   const gateOn = runShown(process.execPath, [DONE_GATE, "on", "--mode", gateMode], worktree);
   const gate = gateOn.status === 0 ? gateLocation(worktree) : null;
   if (gate === null) return prepareStop(issue, "gate-failed", `done_gate.ts on --mode ${gateMode} ${exitOf(gateOn)}. ${kept}`);
-  const launch: Launch = { issue, repository, branch, base };
+  const launch: Launch = { issue, repository, branch, base, issue_digest: issueDigest };
   writeFileSync(join(gate.dir, LAUNCH_FILE), `${JSON.stringify(launch, null, 2)}\n`);
   return { action: "prepare", ok: true, issue, branch, worktree, base, gate_mode: gateMode };
 };
@@ -305,9 +329,10 @@ const prepare = (argv: string[]): Result | null => {
 const launchOf = (value: unknown): Launch | null => {
   const fields = objectOf(value);
   if (!fields) return null;
-  const { issue, repository, branch, base } = fields;
+  const { issue, repository, branch, base, issue_digest } = fields;
   if (!Number.isInteger(issue) || !nonEmpty(repository) || !nonEmpty(branch) || !nonEmpty(base)) return null;
-  return { issue: issue as number, repository, branch, base };
+  if (typeof issue_digest !== "string" || !DIGEST.test(issue_digest)) return null;
+  return { issue: issue as number, repository, branch, base, issue_digest };
 };
 
 const worktreeCall = (argv: string[]): { worktree: string; model: string } | null => {
@@ -366,6 +391,8 @@ const implement = async (argv: string[]): Promise<Result | null> => {
   const prepared = preparedAt(worktree);
   if (prepared === null) return stop("not-prepared", notPrepared(worktree));
   const { gate, launchPath, launch } = prepared;
+  const changed = issueChange(launch, worktree);
+  if (changed !== null) return stop(changed.reason, changed.detail);
 
   const reply = sessionReplyOf(
     await runClaudeOnce({
@@ -504,6 +531,11 @@ const requiredAfter = (round: number, earlier: Record<string, unknown>[], review
   return [...carried, ...reported];
 };
 
+const changeDuringReviews = (tree: string | null, after: string | null, launch: Launch, worktree: string): { reason: string; detail: string } | null =>
+  after === tree
+    ? issueChange(launch, worktree)
+    : { reason: "tree-changed", detail: `The working tree was ${tree} before the reviews and ${after} after them.` };
+
 const review = async (argv: string[]): Promise<Result | null> => {
   const call = worktreeCall(argv);
   if (call === null) return null;
@@ -518,6 +550,8 @@ const review = async (argv: string[]): Promise<Result | null> => {
   if (!nonEmpty(implemented)) return stop("not-implemented", notImplemented(worktree));
   const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
   if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`);
+  const changedBefore = issueChange(launch, worktree);
+  if (changedBefore !== null) return stop(changedBefore.reason, changedBefore.detail);
 
   const earlier = Array.isArray(stored.reviews) ? stored.reviews : [];
   const round = earlier.length + 1;
@@ -545,10 +579,8 @@ const review = async (argv: string[]): Promise<Result | null> => {
     return stop("review-failed", detail, { reviews: readable });
   }
   const reviews = readable as Record<Side, Review>;
-  const after = treeHash(gate.root);
-  if (after !== tree) {
-    return stop("tree-changed", `The working tree was ${tree} before the reviews and ${after} after them.`, { reviews });
-  }
+  const changedAfter = changeDuringReviews(tree, treeHash(gate.root), launch, worktree);
+  if (changedAfter !== null) return stop(changedAfter.reason, changedAfter.detail, { reviews });
 
   const required = requiredAfter(round, judged, reviews);
   const verdict = verdictOf(required.length > 0);
@@ -598,6 +630,8 @@ const repair = async (argv: string[]): Promise<Result | null> => {
   if (before !== last.tree) {
     return stop("review-stale", `The last review saw the working tree ${String(last.tree)}, and it is ${before} now.`);
   }
+  const changed = issueChange(launch, worktree);
+  if (changed !== null) return stop(changed.reason, changed.detail);
 
   const reply = sessionReplyOf(
     await runClaudeOnce({
@@ -680,13 +714,16 @@ const convergenceStop = (stored: Record<string, unknown>, current: { required: u
 const nextOf = (worktree: string): Next => {
   const prepared = preparedAt(worktree);
   if (prepared === null) return { kind: "stop", reason: "not-prepared", detail: notPrepared(worktree) };
-  const { gate, stored } = prepared;
+  const { gate, stored, launch } = prepared;
   if (!nonEmpty(objectOf(stored.implement)?.session_id)) return { kind: "call", action: "implement" };
   const current = currentReviewOf(stored);
   if (current === null) return { kind: "call", action: "review" };
   if (repairAnswering(stored, current.round) !== null) return { kind: "call", action: "review" };
   if (treeHash(gate.root) !== current.tree) return { kind: "call", action: "review" };
-  if (current.required.length === 0) return { kind: "done" };
+  if (current.required.length === 0) {
+    const changed = issueChange(launch, worktree);
+    return changed === null ? { kind: "done" } : { kind: "stop", ...changed };
+  }
   return convergenceStop(stored, current) ?? { kind: "call", action: "repair" };
 };
 

@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
 import { type SpawnSyncReturns, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   accessSync,
   constants,
@@ -24,6 +25,10 @@ const ISSUE = 42;
 const FEATURE_TITLE = "[Feature] publish_gate.ts が、サブシェルの中の公開を見つける";
 
 const CONFIG = { repository: "owner/repo", remote: "origin", baseBranch: "main", check: "true" };
+const ISSUE_REPLY = { number: ISSUE, title: FEATURE_TITLE, body: "body", state: "OPEN" };
+
+const digestOf = ({ title, body, state }: Record<string, unknown>): string =>
+  createHash("sha256").update(JSON.stringify([title, body, state])).digest("hex");
 
 function isolatedEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {
@@ -76,12 +81,15 @@ function fixture(config: Record<string, unknown> | null = CONFIG): Fixture {
   commitFile(repo, "README.md", "readme\n");
   if (config !== null) commitFile(repo, ".dotagents.json", `${JSON.stringify(config)}\n`);
   git(repo, "push", "-q", "origin", "main");
-  fakeGh({ bin, logs, root, origin, repo }, { number: ISSUE, title: FEATURE_TITLE, body: "body", state: "OPEN" });
+  fakeGh({ bin, logs, root, origin, repo }, ISSUE_REPLY);
   return { root, origin, repo, bin, logs };
 }
 
+const ghReplyPath = (f: Fixture): string => join(f.logs, "gh-reply.json");
+
 function fakeGh(f: Fixture, reply: Record<string, unknown> | null): void {
-  const body = reply === null ? "echo 'not found' >&2\nexit 1\n" : `cat <<'JSON'\n${JSON.stringify(reply)}\nJSON\n`;
+  if (reply !== null) writeFileSync(ghReplyPath(f), JSON.stringify(reply));
+  const body = reply === null ? "echo 'not found' >&2\nexit 1\n" : `cat '${ghReplyPath(f)}'\n`;
   writeFileSync(join(f.bin, "gh"), `#!/bin/sh\n${body}`, { mode: 0o755 });
 }
 
@@ -169,6 +177,7 @@ test("prepare creates the branch and a worktree at origin's base commit, turns t
     repository: "owner/repo",
     branch: `feat/${ISSUE}-publish-gate-ts`,
     base,
+    issue_digest: digestOf(ISSUE_REPLY),
   });
 });
 
@@ -473,6 +482,7 @@ interface Step {
   reply?: Record<string, unknown> | string;
   exit?: number;
   edit?: string;
+  issue?: Record<string, unknown>;
 }
 
 const FINDING = { location: "a.ts:1", condition: "c", problem: "p", action: "a" };
@@ -510,6 +520,7 @@ if (name === "self" || name === "independent") {
 }
 const step = JSON.parse(fs.readFileSync(logs + "/plan.json", "utf8"))[name] || {};
 if (step.edit) fs.writeFileSync(step.edit, "changed by the reviewer\\n");
+if (step.issue) fs.writeFileSync(logs + "/gh-reply.json", JSON.stringify(step.issue));
 if (step.reply !== undefined) process.stdout.write(typeof step.reply === "string" ? step.reply : JSON.stringify(step.reply));
 process.exit(step.exit || 0);
 `,
@@ -1346,6 +1357,7 @@ interface Turn {
   exit?: number;
   edit?: boolean;
   check?: boolean;
+  issue?: Record<string, unknown>;
 }
 
 type Script = Partial<Record<"implement" | "self" | "independent" | "repair", Turn[]>>;
@@ -1369,6 +1381,7 @@ fs.appendFileSync(log, role + " " + JSON.stringify(args) + "\\n");
 const turn = (JSON.parse(fs.readFileSync(logs + "/script.json", "utf8"))[role] || [])[index] || {};
 if (turn.edit) fs.appendFileSync("README.md", role + " " + index + "\\n");
 if (turn.check) spawnSync(process.env.NODE, [process.env.DONE_GATE, "check"], { stdio: "ignore" });
+if (turn.issue) fs.writeFileSync(logs + "/gh-reply.json", JSON.stringify(turn.issue));
 if (turn.reply !== undefined) process.stdout.write(typeof turn.reply === "string" ? turn.reply : JSON.stringify(turn.reply));
 process.exit(turn.exit || 0);
 `,
@@ -1709,4 +1722,128 @@ test("run calls implement once and stops with no-progress when the implement chi
   assert.deepEqual(out.steps, [{ action: "implement", ok: true, cost_usd: 0.5, duration_ms: 1200 }]);
   assert.match(String(out.detail), /\bimplement\b/);
   assert.deepEqual(roundCalls(f).map((call) => call.role), ["implement"]);
+});
+
+const CHANGED_BODY = { ...ISSUE_REPLY, body: "body changed after prepare" };
+
+test("prepare records issue_digest as the sha256 of the title, body, and state that gh returned", () => {
+  const f = fixture();
+  const reply = { number: ISSUE, title: FEATURE_TITLE, body: "本文 with \"quotes\"\nand lines", state: "OPEN" };
+  fakeGh(f, reply);
+  assert.equal(prepare(f).status, 0);
+  const digest = launchRecord(worktreeOf(f)).issue_digest;
+  assert.equal(digest, createHash("sha256").update(JSON.stringify([reply.title, reply.body, reply.state])).digest("hex"));
+  assert.match(String(digest), /^[0-9a-f]{64}$/);
+});
+
+test("implement stops with requirements-changed, starts no claude, and keeps launch.json when the body, title, or state changed after prepare", () => {
+  const changes: [string, Record<string, unknown>][] = [
+    ["body", CHANGED_BODY],
+    ["title", { ...ISSUE_REPLY, title: `${FEATURE_TITLE} again` }],
+    ["state", { ...ISSUE_REPLY, state: "CLOSED" }],
+  ];
+  for (const [label, reply] of changes) {
+    const f = prepared();
+    const before = launchRecord(worktreeOf(f));
+    fakeGh(f, reply);
+    fakeRounds(f, { implement: [IMPLEMENTED] });
+    const out = assertStopped(run(f, ["implement", "--worktree", worktreeOf(f)]), "requirements-changed");
+    assert.equal(out.action, "implement", label);
+    assert.match(String(out.detail), /Issue #42 of owner\/repo/, label);
+    assert.deepEqual(roundCalls(f), [], label);
+    assert.deepEqual(launchRecord(worktreeOf(f)), before, label);
+  }
+});
+
+test("implement, review, and repair stop with issue-unreadable and start no claude when gh fails after prepare", () => {
+  const cases: [string, () => Fixture][] = [
+    ["implement", prepared],
+    ["review", implemented],
+    ["repair", rejected],
+  ];
+  for (const [action, arrange] of cases) {
+    const f = arrange();
+    const before = launchRecord(worktreeOf(f));
+    fakeGh(f, null);
+    fakeRounds(f, { implement: [IMPLEMENTED], repair: [REPAIRED] });
+    const out = assertStopped(run(f, [action, "--worktree", worktreeOf(f)]), "issue-unreadable");
+    assert.equal(out.action, action);
+    assert.match(String(out.detail), /Issue #42 of owner\/repo: not found/, action);
+    assert.deepEqual(roundCalls(f), [], action);
+    assert.deepEqual(launchRecord(worktreeOf(f)), before, action);
+  }
+});
+
+test("review stops with requirements-changed, starts no claude, and keeps launch.json when the body changed after implement", () => {
+  const f = implemented();
+  const before = launchRecord(worktreeOf(f));
+  fakeGh(f, CHANGED_BODY);
+  fakeReviewer(f, CLEAN);
+  const out = assertStopped(review(f), "requirements-changed");
+  assert.equal(out.action, "review");
+  assert.deepEqual(callsOf(f), []);
+  assert.deepEqual(launchRecord(worktreeOf(f)), before);
+});
+
+test("review stops with requirements-changed, records nothing, and returns both reviews when the body changes while the reviews run", () => {
+  const f = implemented();
+  const before = launchRecord(worktreeOf(f));
+  fakeReviewer(f, { ...CLEAN, self: { ...CLEAN.self, issue: CHANGED_BODY } });
+  const out = assertStopped(review(f), "requirements-changed") as { reviews: Record<string, Record<string, unknown>> };
+  assert.deepEqual(Object.keys(out.reviews).sort(), ["independent", "self"]);
+  assert.equal(out.reviews.self.session_id, "self-1");
+  assert.equal(out.reviews.independent.session_id, "ind-1");
+  assert.deepEqual(launchRecord(worktreeOf(f)), before);
+});
+
+test("repair stops with requirements-changed, starts no claude, and keeps launch.json when the body changed after a rejected review", () => {
+  const f = rejected();
+  const before = launchRecord(worktreeOf(f));
+  fakeGh(f, CHANGED_BODY);
+  fakeRepairer(f, EDIT_FILE + PASS_CHECK + REPAIR_REPLY);
+  const out = assertStopped(repair(f), "requirements-changed");
+  assert.equal(out.action, "repair");
+  assert.equal(repairCalls(f), 0);
+  assert.deepEqual(launchRecord(worktreeOf(f)), before);
+});
+
+test("run on an accepted worktree stops with requirements-changed and no steps when the body changed, and starts no claude", () => {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  fakeGh(f, CHANGED_BODY);
+  fakeRounds(f, {});
+  const out = assertStopped(runLaunch(f), "requirements-changed") as unknown as RunOut;
+  assert.equal(out.action, "run");
+  assert.deepEqual(out.steps, []);
+  assert.equal(out.verdict, "accepted");
+  assert.equal(out.rounds, 1);
+  assert.deepEqual(roundCalls(f), []);
+});
+
+test("run stops at the review after implement with requirements-changed when the body changes while the implement child runs", () => {
+  const f = prepared();
+  fakeRounds(f, { implement: [{ ...IMPLEMENTED, issue: CHANGED_BODY }], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const out = assertStopped(runLaunch(f), "requirements-changed") as unknown as RunOut;
+  assert.deepEqual(actionsOf(out), ["implement", "review"]);
+  assert.equal(out.steps[out.steps.length - 1].ok, false);
+  assert.equal(out.steps[out.steps.length - 1].reason, "requirements-changed");
+  assert.deepEqual(roundCalls(f).map((call) => call.role), ["implement"]);
+});
+
+test("implement, review, repair, and run stop with not-prepared and start no claude when issue_digest is missing or not 64 lowercase hex characters", () => {
+  const digest = digestOf(ISSUE_REPLY);
+  const values: unknown[] = [undefined, digest.toUpperCase(), digest.slice(1), `${digest}0`, 42];
+  for (const value of values) {
+    const f = rejected();
+    rewriteLaunch(f, ({ issue_digest: _digest, ...rest }) => (value === undefined ? rest : { ...rest, issue_digest: value }));
+    const before = launchRecord(worktreeOf(f));
+    fakeRounds(f, { implement: [IMPLEMENTED], repair: [REPAIRED] });
+    for (const action of ["implement", "review", "repair", "run"]) {
+      const out = assertStopped(run(f, [action, "--worktree", worktreeOf(f)]), "not-prepared");
+      assert.equal(out.action, action, String(value));
+    }
+    assert.deepEqual(roundCalls(f), [], String(value));
+    assert.deepEqual(launchRecord(worktreeOf(f)), before, String(value));
+  }
 });
