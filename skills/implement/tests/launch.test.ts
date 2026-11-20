@@ -1340,3 +1340,373 @@ test("repair records the child's result as reply, and an empty string when the r
     assert.equal((launchRecord(worktreeOf(f)) as Stored).repairs[0].reply, reply, body);
   }
 });
+
+interface Turn {
+  reply?: Record<string, unknown> | string;
+  exit?: number;
+  edit?: boolean;
+  check?: boolean;
+}
+
+type Script = Partial<Record<"implement" | "self" | "independent" | "repair", Turn[]>>;
+
+function fakeRounds(f: Fixture, script: Script): void {
+  writeFileSync(join(f.logs, "script.json"), JSON.stringify(script));
+  writeFileSync(
+    join(f.bin, "claude"),
+    `#!/usr/bin/env node
+const fs = require("node:fs");
+const { spawnSync } = require("node:child_process");
+const logs = process.env.LOGS;
+const args = process.argv.slice(2);
+fs.readFileSync(0, "utf8");
+const schema = args.includes("--json-schema");
+const resumed = args.includes("--resume");
+const role = schema ? (resumed ? (args.includes("--fork-session") ? "self" : "again") : "independent") : resumed ? "repair" : "implement";
+const log = logs + "/run-calls";
+const index = (fs.existsSync(log) ? fs.readFileSync(log, "utf8").split("\\n") : []).filter((line) => line.startsWith(role + " ")).length;
+fs.appendFileSync(log, role + " " + JSON.stringify(args) + "\\n");
+const turn = (JSON.parse(fs.readFileSync(logs + "/script.json", "utf8"))[role] || [])[index] || {};
+if (turn.edit) fs.appendFileSync("README.md", role + " " + index + "\\n");
+if (turn.check) spawnSync(process.env.NODE, [process.env.DONE_GATE, "check"], { stdio: "ignore" });
+if (turn.reply !== undefined) process.stdout.write(typeof turn.reply === "string" ? turn.reply : JSON.stringify(turn.reply));
+process.exit(turn.exit || 0);
+`,
+    { mode: 0o755 },
+  );
+}
+
+const roundCalls = (f: Fixture): { role: string; args: string[] }[] =>
+  existsSync(join(f.logs, "run-calls"))
+    ? readFileSync(join(f.logs, "run-calls"), "utf8")
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => ({ role: line.slice(0, line.indexOf(" ")), args: JSON.parse(line.slice(line.indexOf(" ") + 1)) }))
+    : [];
+
+const IMPLEMENTED: Turn = { check: true, reply: { session_id: "s-1", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
+const REPAIRED: Turn = { edit: true, check: true, reply: { session_id: "s-1", result: "repaired", total_cost_usd: 0.25, duration_ms: 900 } };
+const UNCHANGED: Turn = { reply: { session_id: "s-1", result: "nothing to change", total_cost_usd: 0.25, duration_ms: 900 } };
+
+const judged = (session: string, states: Record<string, string>, findings: Record<string, unknown>[] = []): Turn => ({
+  reply: judging(session, states, findings),
+});
+
+const runLaunch = (f: Fixture, ...extra: string[]) => run(f, ["run", "--worktree", worktreeOf(f), ...extra]);
+
+type RunOut = {
+  action: string;
+  ok: boolean;
+  verdict: string | null;
+  required: Record<string, unknown>[];
+  rounds: number;
+  steps: Record<string, unknown>[];
+  cost_usd: number;
+  reason?: string;
+  detail?: string;
+};
+
+const runOut = (result: SpawnSyncReturns<string>): RunOut => outputOf(result) as unknown as RunOut;
+
+const actionsOf = (out: RunOut): unknown[] => out.steps.map((step) => step.action);
+
+const prepared = (): Fixture => {
+  const f = fixture();
+  assert.equal(prepare(f).status, 0);
+  return f;
+};
+
+test("run on a prepared worktree implements, reviews, and completes with accepted round 1 when both reviews find nothing", () => {
+  const f = prepared();
+  fakeRounds(f, { implement: [IMPLEMENTED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.deepEqual(
+    { action: out.action, ok: out.ok, verdict: out.verdict, required: out.required, rounds: out.rounds },
+    { action: "run", ok: true, verdict: "accepted", required: [], rounds: 1 },
+  );
+  assert.deepEqual(Object.keys(out), ["action", "ok", "verdict", "required", "rounds", "steps", "cost_usd"]);
+  assert.deepEqual(out.steps, [
+    { action: "implement", ok: true, cost_usd: 0.5, duration_ms: 1200 },
+    { action: "review", ok: true, round: 1, verdict: "accepted", required_keys: [], cost_usd: 2 },
+  ]);
+  assert.equal(out.cost_usd, 2.5);
+});
+
+const REJECTED_SCRIPT: Script = {
+  implement: [IMPLEMENTED],
+  self: [REJECTED.self as Turn],
+  independent: [REJECTED.independent as Turn],
+};
+
+test("run repairs a rejected round and completes when the next review judges every finding fixed, summing the cost of each step", () => {
+  const f = prepared();
+  fakeRounds(f, {
+    ...REJECTED_SCRIPT,
+    self: [REJECTED.self as Turn, judged("self-2", allStates("fixed"))],
+    independent: [REJECTED.independent as Turn, judged("ind-2", allStates("fixed"))],
+    repair: [REPAIRED],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.equal(out.ok, true);
+  assert.equal(out.verdict, "accepted");
+  assert.equal(out.rounds, 2);
+  assert.deepEqual(out.steps, [
+    { action: "implement", ok: true, cost_usd: 0.5, duration_ms: 1200 },
+    { action: "review", ok: true, round: 1, verdict: "rejected", required_keys: EARLIER_KEYS, cost_usd: 2 },
+    { action: "repair", ok: true, round: 1, changed: true, cost_usd: 0.25, duration_ms: 900 },
+    { action: "review", ok: true, round: 2, verdict: "accepted", required_keys: [], cost_usd: 2 },
+  ]);
+  assert.equal(out.cost_usd, 0.5 + 2 + 0.25 + 2);
+});
+
+test("run writes one JSON line per action to stderr with the running total, and the last total equals the stdout cost", () => {
+  const f = prepared();
+  fakeRounds(f, {
+    ...REJECTED_SCRIPT,
+    self: [REJECTED.self as Turn, judged("self-2", allStates("fixed"))],
+    independent: [REJECTED.independent as Turn, judged("ind-2", allStates("fixed"))],
+    repair: [REPAIRED],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  const lines = result.stderr.split("\n").filter(Boolean).map((line) => JSON.parse(line));
+  let total = 0;
+  assert.deepEqual(
+    lines,
+    out.steps.map((step) => {
+      total += step.cost_usd as number;
+      return { ...step, total_cost_usd: total };
+    }),
+  );
+  assert.equal(lines.length, 4);
+  assert.equal(lines[lines.length - 1].total_cost_usd, out.cost_usd);
+});
+
+test("run stops with disagreement after one repair when the repair changes nothing and the next review keeps the finding open", () => {
+  const f = prepared();
+  fakeRounds(f, {
+    ...REJECTED_SCRIPT,
+    self: [REJECTED.self as Turn, BOTH_OPEN.self as Turn],
+    independent: [REJECTED.independent as Turn, BOTH_OPEN.independent as Turn],
+    repair: [UNCHANGED, UNCHANGED],
+  });
+  const out = assertStopped(runLaunch(f), "disagreement") as unknown as RunOut;
+  assert.equal(out.action, "run");
+  assert.deepEqual(out.required.map((entry) => entry.key), EARLIER_KEYS);
+  assert.equal(out.verdict, "rejected");
+  assert.equal(out.rounds, 2);
+  assert.deepEqual(actionsOf(out), ["implement", "review", "repair", "review"]);
+  assert.equal(roundCalls(f).filter((call) => call.role === "repair").length, 1);
+});
+
+test("run completes when the repair changes nothing and the next review withdraws every finding", () => {
+  const f = prepared();
+  fakeRounds(f, {
+    ...REJECTED_SCRIPT,
+    self: [REJECTED.self as Turn, judged("self-2", allStates("withdrawn"))],
+    independent: [REJECTED.independent as Turn, judged("ind-2", allStates("withdrawn"))],
+    repair: [UNCHANGED],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.equal(out.verdict, "accepted");
+  assert.deepEqual(actionsOf(out), ["implement", "review", "repair", "review"]);
+  assert.equal(out.steps[2].changed, false);
+});
+
+test("run repairs again without stopping when the repair changes nothing and the next review withdraws the finding but reports a new one", () => {
+  const f = prepared();
+  fakeRounds(f, {
+    ...REJECTED_SCRIPT,
+    self: [
+      REJECTED.self as Turn,
+      judged("self-2", allStates("withdrawn"), [SELF_REQUIRED]),
+      judged("self-3", { "2-self-1": "fixed" }),
+    ],
+    independent: [
+      REJECTED.independent as Turn,
+      judged("ind-2", allStates("withdrawn")),
+      judged("ind-3", { "2-self-1": "fixed" }),
+    ],
+    repair: [UNCHANGED, REPAIRED],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.deepEqual(actionsOf(out), ["implement", "review", "repair", "review", "repair", "review"]);
+  assert.deepEqual(out.steps[3].required_keys, ["2-self-1"]);
+  assert.equal(out.rounds, 3);
+});
+
+test("run stops with not-converging after round 3 when the same finding stays open after two repairs that changed the tree", () => {
+  const f = prepared();
+  fakeRounds(f, {
+    ...REJECTED_SCRIPT,
+    self: [REJECTED.self as Turn, BOTH_OPEN.self as Turn, judged("self-3", allStates("open"))],
+    independent: [REJECTED.independent as Turn, BOTH_OPEN.independent as Turn, judged("ind-3", allStates("open"))],
+    repair: [REPAIRED, REPAIRED, REPAIRED],
+  });
+  const out = assertStopped(runLaunch(f), "not-converging") as unknown as RunOut;
+  assert.deepEqual(actionsOf(out), ["implement", "review", "repair", "review", "repair", "review"]);
+  assert.equal(out.rounds, 3);
+  assert.deepEqual(out.required.map((entry) => entry.key), EARLIER_KEYS);
+});
+
+test("run keeps repairing while each round reports a required finding under a new key, and completes when round 4 accepts", () => {
+  const f = prepared();
+  const newFinding = (round: number) => ({ ...SELF_REQUIRED, condition: `c${round}` });
+  fakeRounds(f, {
+    implement: [IMPLEMENTED],
+    self: [
+      { reply: shaped("self-1", [SELF_REQUIRED]) },
+      judged("self-2", { "1-self-1": "fixed" }, [newFinding(2)]),
+      judged("self-3", { "2-self-1": "fixed" }, [newFinding(3)]),
+      judged("self-4", { "3-self-1": "fixed" }),
+    ],
+    independent: [
+      { reply: shaped("ind-1") },
+      judged("ind-2", { "1-self-1": "fixed" }),
+      judged("ind-3", { "2-self-1": "fixed" }),
+      judged("ind-4", { "3-self-1": "fixed" }),
+    ],
+    repair: [REPAIRED, REPAIRED, REPAIRED],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.equal(out.verdict, "accepted");
+  assert.equal(out.rounds, 4);
+  assert.deepEqual(
+    out.steps.filter((step) => step.action === "review").map((step) => step.required_keys),
+    [["1-self-1"], ["2-self-1"], ["3-self-1"], []],
+  );
+});
+
+test("run stops with the reason and detail of an implement that fails, and implement is the last step", () => {
+  const f = prepared();
+  fakeRounds(f, { implement: [{ exit: 3 }, { exit: 3 }] });
+  const out = assertStopped(runLaunch(f), "child-failed") as unknown as RunOut;
+  assert.deepEqual(out.steps, [{ action: "implement", ok: false, reason: "child-failed" }]);
+  assert.equal(out.verdict, null);
+  assert.deepEqual(out.required, []);
+  assert.equal(out.rounds, 0);
+  assert.equal(out.cost_usd, 0);
+  assert.equal(out.detail, outputOf(run(f, ["implement", "--worktree", worktreeOf(f)])).detail);
+});
+
+test("run stops with the reason and detail of a review that fails, and review is the last step", () => {
+  const f = prepared();
+  fakeRounds(f, {
+    implement: [IMPLEMENTED],
+    self: [{ reply: shaped("self-1") }, { reply: shaped("self-1") }],
+    independent: [{ reply: "not json" }, { reply: "not json" }],
+  });
+  const out = assertStopped(runLaunch(f), "review-failed") as unknown as RunOut;
+  assert.deepEqual(out.steps[out.steps.length - 1], { action: "review", ok: false, cost_usd: 1, reason: "review-failed" });
+  assert.equal(out.rounds, 0);
+  assert.equal(out.detail, outputOf(review(f)).detail);
+});
+
+test("run stops with the reason and detail of a repair that ends without passing the check, and repair is the last step", () => {
+  const f = prepared();
+  fakeRounds(f, { ...REJECTED_SCRIPT, repair: [{ ...REPAIRED, check: false }] });
+  const out = assertStopped(runLaunch(f), "not-done") as unknown as RunOut;
+  const last = out.steps[out.steps.length - 1];
+  assert.deepEqual(last, { action: "repair", ok: false, round: 1, changed: true, cost_usd: 0.25, duration_ms: 900, reason: "not-done" });
+  assert.match(String(out.detail), /^done_gate\.ts status is not done: /);
+  assert.equal(out.verdict, "rejected");
+});
+
+test("run on a worktree whose round 1 was rejected starts with repair", () => {
+  const f = rejected();
+  fakeRounds(f, {
+    self: [judged("self-2", allStates("fixed"))],
+    independent: [judged("ind-2", allStates("fixed"))],
+    repair: [REPAIRED],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(actionsOf(runOut(result)), ["repair", "review"]);
+});
+
+test("run on an accepted worktree completes with no steps and zero cost, and starts no claude", () => {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  fakeRounds(f, {});
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.equal(out.ok, true);
+  assert.equal(out.verdict, "accepted");
+  assert.equal(out.rounds, 1);
+  assert.deepEqual(out.steps, []);
+  assert.equal(out.cost_usd, 0);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(roundCalls(f), []);
+});
+
+test("run starts with review when the tree changed and passed the check after the last review", () => {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  writeFileSync(join(worktreeOf(f), "README.md"), "edited outside run\n");
+  const checked = spawnSync(process.execPath, [DONE_GATE, "check"], { cwd: worktreeOf(f), env: isolatedEnv(), encoding: "utf8" });
+  assert.equal(checked.status, 0, checked.stderr);
+  fakeRounds(f, { self: [{ reply: shaped("self-2") }], independent: [{ reply: shaped("ind-2") }] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.deepEqual(actionsOf(out), ["review"]);
+  assert.equal(out.rounds, 2);
+});
+
+test("run stops with not-prepared in a worktree that prepare did not set up, and starts no claude", () => {
+  const f = fixture();
+  fakeRounds(f, { implement: [IMPLEMENTED] });
+  const out = assertStopped(run(f, ["run", "--worktree", f.repo]), "not-prepared") as unknown as RunOut;
+  assert.deepEqual(out.steps, []);
+  assert.equal(out.rounds, 0);
+  assert.equal(out.verdict, null);
+  assert.deepEqual(roundCalls(f), []);
+});
+
+test("run passes --model to every claude it starts", () => {
+  const f = prepared();
+  fakeRounds(f, {
+    ...REJECTED_SCRIPT,
+    self: [REJECTED.self as Turn, judged("self-2", allStates("fixed"))],
+    independent: [REJECTED.independent as Turn, judged("ind-2", allStates("fixed"))],
+    repair: [REPAIRED],
+  });
+  assert.equal(runLaunch(f, "--model", "sonnet").status, 0);
+  const calls = roundCalls(f);
+  assert.deepEqual(calls.map((call) => call.role).sort(), ["implement", "independent", "independent", "repair", "self", "self"]);
+  for (const call of calls) assert.equal(flagValue(call.args, "--model"), "sonnet", call.role);
+});
+
+test("a run call without --worktree or with a relative path prints the usage and nothing on stdout, and exits 2", () => {
+  const f = fixture();
+  for (const args of [["run"], ["run", "--model", "opus"], ["run", "--worktree", "relative/worktree"]]) {
+    const result = run(f, args);
+    assert.equal(result.status, 2, args.join(" "));
+    assert.equal(result.stdout, "", args.join(" "));
+    assert.match(result.stderr, /^usage: /, args.join(" "));
+  }
+});
+
+test("run calls implement once and stops with no-progress when the implement child returns an empty session_id and exits 0", () => {
+  const f = prepared();
+  const empty: Turn = { ...IMPLEMENTED, reply: { session_id: "", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
+  fakeRounds(f, { implement: [empty, empty, empty] });
+  const out = assertStopped(runLaunch(f), "no-progress") as unknown as RunOut;
+  assert.deepEqual(out.steps, [{ action: "implement", ok: true, cost_usd: 0.5, duration_ms: 1200 }]);
+  assert.match(String(out.detail), /\bimplement\b/);
+  assert.deepEqual(roundCalls(f).map((call) => call.role), ["implement"]);
+});
