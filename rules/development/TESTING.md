@@ -54,6 +54,8 @@ Start from perspectives, and use coverage only to detect gaps.
 3. Write tests that satisfy the conditions (Step 1) and perspectives (Step 2)
 4. Run coverage; for any uncovered branch / condition, add a test using the matching perspective
 
+Take the expected value of each test Step 4 adds from the spec read in Step 1. Finding an input that reaches an uncovered branch means reading the implementation, so the value that implementation returns is easy to adopt as the expected value. An expected value taken from the implementation locks the implementation's bug in as the right answer. When the spec does not define how that branch behaves, do not decide an expected value; ask a human about the gap in the spec.
+
 ### Perspective Checklist
 
 | Perspective    | What to check                                                                                                        |
