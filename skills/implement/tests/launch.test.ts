@@ -575,6 +575,7 @@ test("review returns accepted round 1 and appends its record to launch.json when
   assert.deepEqual(reviews[0], {
     round: 1,
     tree: out.tree,
+    issue_digest: digestOf(ISSUE_REPLY),
     at: reviews[0].at,
     verdict: "accepted",
     required: [],
@@ -1360,7 +1361,7 @@ interface Turn {
   issue?: Record<string, unknown>;
 }
 
-type Script = Partial<Record<"implement" | "self" | "independent" | "repair", Turn[]>>;
+type Script = Partial<Record<"implement" | "self" | "independent" | "repair" | "reread", Turn[]>>;
 
 function fakeRounds(f: Fixture, script: Script): void {
   writeFileSync(join(f.logs, "script.json"), JSON.stringify(script));
@@ -1371,10 +1372,20 @@ const fs = require("node:fs");
 const { spawnSync } = require("node:child_process");
 const logs = process.env.LOGS;
 const args = process.argv.slice(2);
-fs.readFileSync(0, "utf8");
+const stdin = fs.readFileSync(0, "utf8");
 const schema = args.includes("--json-schema");
 const resumed = args.includes("--resume");
-const role = schema ? (resumed ? (args.includes("--fork-session") ? "self" : "again") : "independent") : resumed ? "repair" : "implement";
+const role = schema
+  ? resumed
+    ? args.includes("--fork-session")
+      ? "self"
+      : "again"
+    : "independent"
+  : stdin.startsWith("GitHub Issue #")
+    ? "reread"
+    : resumed
+      ? "repair"
+      : "implement";
 const log = logs + "/run-calls";
 const index = (fs.existsSync(log) ? fs.readFileSync(log, "utf8").split("\\n") : []).filter((line) => line.startsWith(role + " ")).length;
 fs.appendFileSync(log, role + " " + JSON.stringify(args) + "\\n");
@@ -1962,4 +1973,401 @@ test("run ends the claude of the action it called, exits 143, and starts no clau
   const result = await signalWhileClaudeWaits(f, ["run", "--worktree", worktreeOf(f)], "SIGTERM", 1);
   assertEndedBySignal(result, 1);
   assert.equal(pidsIn(f, "hanging-claude-pids").length, 1);
+});
+
+const agree = (f: Fixture, ...extra: string[]) => run(f, ["agree", "--worktree", worktreeOf(f), ...extra]);
+
+const reread = (f: Fixture, ...extra: string[]) => run(f, ["reread", "--worktree", worktreeOf(f), ...extra]);
+
+const AGREED_DIGEST = digestOf(CHANGED_BODY);
+
+const REREAD_PROMPT = `GitHub Issue #42 of owner/repo changed after you last read it. The Issue as it is now is the agreed requirement.
+
+1. Read the Issue again with \`gh issue view 42 --repo owner/repo --json title,body\`, and find what changed from the version you read before.
+2. Compare every requirement, done condition, and out-of-scope item of the Issue with your uncommitted change. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
+3. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
+4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+
+When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; and what \`${DONE_GATE} status\` printed.
+`;
+
+const REREAD_REPLY = `echo '{"session_id":"s-1","result":"reread","total_cost_usd":0.3,"duration_ms":700}'\n`;
+
+function fakeRereader(f: Fixture, body: string): void {
+  writeFileSync(
+    join(f.bin, "claude"),
+    `#!/bin/sh\necho call >> "$LOGS/reread-calls"\npwd -P > "$LOGS/reread-cwd"\nprintf '%s\\n' "$@" > "$LOGS/reread-args"\ncat > "$LOGS/reread-stdin"\n${body}`,
+    { mode: 0o755 },
+  );
+}
+
+const rereadCalls = (f: Fixture): number =>
+  existsSync(join(f.logs, "reread-calls")) ? readFileSync(join(f.logs, "reread-calls"), "utf8").split("\n").filter(Boolean).length : 0;
+
+function agreedAfterChange(arrange: () => Fixture = implemented): Fixture {
+  const f = arrange();
+  fakeGh(f, CHANGED_BODY);
+  const result = agree(f);
+  assert.equal(result.status, 0, result.stderr);
+  return f;
+}
+
+function accepted(): Fixture {
+  const f = implemented();
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  return f;
+}
+
+const REREAD_EDITED: Turn = { edit: true, check: true, reply: { session_id: "s-1", result: "reread", total_cost_usd: 0.3, duration_ms: 700 } };
+const REREAD_UNCHANGED: Turn = { reply: { session_id: "s-1", result: "reread", total_cost_usd: 0.3, duration_ms: 700 } };
+
+test("implement records the agreed issue_digest in launch.json's implement, and review records it in its round", () => {
+  const f = implemented();
+  assert.equal((launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement.issue_digest, digestOf(ISSUE_REPLY));
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  assert.equal(lastReview(f).issue_digest, digestOf(ISSUE_REPLY));
+});
+
+test("agree after the body changed returns changed true with the title and body gh returned, rewrites only issue_digest, and starts no claude", () => {
+  const f = implemented();
+  const before = launchRecord(worktreeOf(f));
+  fakeGh(f, CHANGED_BODY);
+  fakeRounds(f, {});
+  const result = agree(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(outputOf(result), {
+    action: "agree",
+    ok: true,
+    issue: ISSUE,
+    issue_digest: AGREED_DIGEST,
+    changed: true,
+    title: CHANGED_BODY.title,
+    body: CHANGED_BODY.body,
+  });
+  assert.deepEqual(launchRecord(worktreeOf(f)), { ...before, issue_digest: AGREED_DIGEST });
+  assert.deepEqual(roundCalls(f), []);
+});
+
+test("agree on an unchanged Issue succeeds with changed false and leaves launch.json as it was", () => {
+  const f = implemented();
+  const before = launchFile(f);
+  fakeRounds(f, {});
+  const result = agree(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result);
+  assert.equal(out.changed, false);
+  assert.equal(out.issue_digest, digestOf(ISSUE_REPLY));
+  assert.equal(launchFile(f), before);
+  assert.deepEqual(roundCalls(f), []);
+});
+
+test("agree stops with not-prepared, issue-unreadable, or issue-not-open and leaves launch.json as it was", () => {
+  const unprepared = fixture();
+  assertStopped(run(unprepared, ["agree", "--worktree", unprepared.repo]), "not-prepared");
+
+  const cases: [string, Record<string, unknown> | null][] = [
+    ["issue-unreadable", null],
+    ["issue-unreadable", { number: ISSUE, title: FEATURE_TITLE, state: "OPEN" }],
+    ["issue-not-open", { ...CHANGED_BODY, state: "CLOSED" }],
+  ];
+  for (const [reason, reply] of cases) {
+    const f = implemented();
+    const before = launchFile(f);
+    fakeGh(f, reply);
+    const out = assertStopped(agree(f), reason);
+    assert.equal(out.action, "agree", reason);
+    assert.equal(launchFile(f), before, reason);
+    if (reason === "issue-not-open") assert.match(String(out.detail), /CLOSED/);
+  }
+});
+
+test("reread after agree resumes the implement session without a fork in the worktree and passes the full prompt on stdin", () => {
+  const f = agreedAfterChange();
+  fakeRereader(f, PASS_CHECK + REREAD_REPLY);
+  const result = reread(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(readFileSync(join(f.logs, "reread-cwd"), "utf8").trim(), realpathSync(worktreeOf(f)));
+  const args = readFileSync(join(f.logs, "reread-args"), "utf8").split("\n");
+  assert.equal(flagValue(args, "--resume"), "s-1");
+  assert.ok(!args.includes("--fork-session"));
+  assert.ok(!args.includes("--json-schema"));
+  assert.equal(flagValue(args, "--model"), "opus");
+  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), REREAD_PROMPT);
+});
+
+test("reread passes --model to claude", () => {
+  const f = agreedAfterChange();
+  fakeRereader(f, REREAD_REPLY);
+  assert.equal(reread(f, "--model", "sonnet").status, 0);
+  assert.equal(flagValue(readFileSync(join(f.logs, "reread-args"), "utf8").split("\n"), "--model"), "sonnet");
+});
+
+test("reread appends round 1 to rereads and reports it, with changed true when the child edits and false when it does not", () => {
+  const cases: [string, string, boolean][] = [
+    ["edits", EDIT_FILE + PASS_CHECK + REREAD_REPLY, true],
+    ["no edit", REREAD_REPLY, false],
+  ];
+  for (const [label, body, changed] of cases) {
+    const f = agreedAfterChange();
+    const before = launchRecord(worktreeOf(f)) as Record<string, unknown> & { implement: Record<string, unknown> };
+    fakeRereader(f, body);
+    const result = reread(f);
+    assert.equal(result.status, 0, result.stderr);
+    const out = outputOf(result);
+    assert.deepEqual(
+      out,
+      {
+        action: "reread",
+        ok: true,
+        round: 1,
+        session_id: "s-1",
+        tree: out.tree,
+        changed,
+        issue_digest: AGREED_DIGEST,
+        result: "reread",
+        cost_usd: 0.3,
+        duration_ms: 700,
+      },
+      label,
+    );
+    assert.equal(out.tree === before.implement.tree, !changed, label);
+    const { rereads, ...rest } = launchRecord(worktreeOf(f)) as Record<string, unknown> & { rereads: Record<string, unknown>[] };
+    assert.deepEqual(rest, before, label);
+    assert.ok(!Number.isNaN(Date.parse(String(rereads[0]?.at))), label);
+    assert.deepEqual(
+      rereads,
+      [{ round: 1, session_id: "s-1", tree: out.tree, changed, issue_digest: AGREED_DIGEST, reply: "reread", at: rereads[0].at }],
+      label,
+    );
+  }
+});
+
+test("reread stops with nothing-to-reread and starts no claude when the session read the agreed version, also right after a reread", () => {
+  const f = implemented();
+  fakeRereader(f, REREAD_REPLY);
+  assertStopped(reread(f), "nothing-to-reread");
+  assert.equal(rereadCalls(f), 0);
+
+  const g = agreedAfterChange();
+  fakeRereader(g, REREAD_REPLY);
+  assert.equal(reread(g).status, 0);
+  const before = launchFile(g);
+  const out = assertStopped(reread(g), "nothing-to-reread");
+  assert.equal(out.action, "reread");
+  assert.equal(rereadCalls(g), 1);
+  assert.equal(launchFile(g), before);
+});
+
+test("reread stops with requirements-changed and starts no claude when the Issue changed again after agree", () => {
+  const f = agreedAfterChange();
+  const before = launchFile(f);
+  fakeGh(f, { ...CHANGED_BODY, body: "changed once more" });
+  fakeRereader(f, REREAD_REPLY);
+  const out = assertStopped(reread(f), "requirements-changed");
+  assert.equal(out.detail, "The title, body, or state of Issue #42 of owner/repo changed after the agreed version was recorded.");
+  assert.equal(rereadCalls(f), 0);
+  assert.equal(launchFile(f), before);
+});
+
+test("reread stops with not-prepared, not-implemented, issue-unreadable, child-failed, or not-done and leaves launch.json as it was", () => {
+  const unprepared = fixture();
+  fakeRereader(unprepared, REREAD_REPLY);
+  assertStopped(run(unprepared, ["reread", "--worktree", unprepared.repo]), "not-prepared");
+  assert.equal(rereadCalls(unprepared), 0);
+
+  const cases: [string, () => Fixture, string][] = [
+    ["not-implemented", () => agreedAfterChange(prepared), REREAD_REPLY],
+    [
+      "issue-unreadable",
+      () => {
+        const f = agreedAfterChange();
+        fakeGh(f, null);
+        return f;
+      },
+      REREAD_REPLY,
+    ],
+    ["child-failed", agreedAfterChange, `${REREAD_REPLY}exit 3\n`],
+    ["child-failed", agreedAfterChange, "echo 'not json'\n"],
+    ["child-failed", agreedAfterChange, `echo '{"result":"reread"}'\n`],
+    ["not-done", agreedAfterChange, EDIT_FILE + REREAD_REPLY],
+  ];
+  for (const [reason, arrange, body] of cases) {
+    const f = arrange();
+    const before = launchFile(f);
+    fakeRereader(f, body);
+    const out = assertStopped(reread(f), reason);
+    assert.equal(out.action, "reread", reason);
+    assert.equal(launchFile(f), before, reason);
+    if (reason === "not-done") {
+      assert.deepEqual(Object.keys(out).sort(), [
+        "action",
+        "changed",
+        "cost_usd",
+        "detail",
+        "duration_ms",
+        "issue_digest",
+        "ok",
+        "reason",
+        "result",
+        "round",
+        "session_id",
+        "tree",
+      ]);
+      assert.equal(out.changed, true);
+      assert.equal(out.round, 1);
+      assert.equal(out.issue_digest, AGREED_DIGEST);
+    }
+  }
+});
+
+test("run on a worktree whose reread stopped with not-done starts with reread", () => {
+  const f = agreedAfterChange();
+  fakeRereader(f, EDIT_FILE + REREAD_REPLY);
+  assertStopped(reread(f), "not-done");
+  fakeRounds(f, { reread: [REREAD_EDITED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(actionsOf(runOut(result)), ["reread", "review"]);
+});
+
+test("run starts with reread when implement wrote no issue_digest, and with review when only the current review lacks it", () => {
+  const f = implemented();
+  rewriteLaunch(f, (stored) => {
+    const { issue_digest: _digest, ...implement } = stored.implement as Record<string, unknown>;
+    return { ...stored, implement };
+  });
+  fakeRounds(f, { reread: [REREAD_UNCHANGED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const fromImplement = runLaunch(f);
+  assert.equal(fromImplement.status, 0, fromImplement.stderr);
+  assert.equal(runOut(fromImplement).steps[0].action, "reread");
+
+  const g = accepted();
+  rewriteLaunch(g, (stored) => {
+    const reviews = stored.reviews as Record<string, unknown>[];
+    const { issue_digest: _digest, ...last } = reviews[reviews.length - 1];
+    return { ...stored, reviews: [...reviews.slice(0, -1), last] };
+  });
+  fakeRounds(g, { self: [{ reply: shaped("self-2") }], independent: [{ reply: shaped("ind-2") }] });
+  const fromReview = runLaunch(g);
+  assert.equal(fromReview.status, 0, fromReview.stderr);
+  assert.deepEqual(actionsOf(runOut(fromReview)), ["review"]);
+});
+
+test("repair names the working tree in review-stale when both the tree and issue_digest differ from the last review", () => {
+  const f = agreedAfterChange(rejected);
+  writeFileSync(join(worktreeOf(f), "README.md"), "edited after the review\n");
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  const out = assertStopped(repair(f), "review-stale");
+  assert.match(String(out.detail), /^The last review saw the working tree /);
+  assert.equal(repairCalls(f), 0);
+});
+
+test("repair stops with review-stale and starts no claude when the last review judged another version of the Issue than the agreed one", () => {
+  const f = agreedAfterChange(rejected);
+  const before = launchFile(f);
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  const out = assertStopped(repair(f), "review-stale");
+  assert.match(String(out.detail), /Issue #42/);
+  assert.doesNotMatch(String(out.detail), /working tree/);
+  assert.equal(repairCalls(f), 0);
+  assert.equal(launchFile(f), before);
+});
+
+test("the usage printed for a call with no arguments has the agree and reread lines", () => {
+  const result = run(fixture(), []);
+  assert.equal(result.status, 2);
+  assert.ok(result.stderr.includes("launch.ts agree --worktree <abs path>\n"), result.stderr);
+  assert.ok(result.stderr.includes("launch.ts reread --worktree <abs path> [--model <name>]\n"), result.stderr);
+});
+
+test("an agree or reread call without --worktree, with a relative path, or agree with --model prints the usage and nothing on stdout, and exits 2", () => {
+  const f = fixture();
+  const calls = [
+    ["agree"],
+    ["agree", "--worktree", "relative/worktree"],
+    ["agree", "--worktree", worktreeOf(f), "--model", "opus"],
+    ["reread"],
+    ["reread", "--model", "opus"],
+    ["reread", "--worktree", "relative/worktree"],
+  ];
+  for (const args of calls) {
+    const result = run(f, args);
+    assert.equal(result.status, 2, args.join(" "));
+    assert.equal(result.stdout, "", args.join(" "));
+    assert.match(result.stderr, /^usage: /, args.join(" "));
+  }
+});
+
+test("reread ends claude and its child, exits 143, and keeps launch.json on SIGTERM", async () => {
+  const f = agreedAfterChange();
+  const before = launchFile(f);
+  const result = await signalWhileClaudeWaits(f, ["reread", "--worktree", worktreeOf(f)], "SIGTERM", 1);
+  assertEndedBySignal(result, 1);
+  assert.equal(launchFile(f), before);
+});
+
+test("run after agree on an accepted worktree rereads, reviews again, and completes, whether or not the reread edits", () => {
+  for (const turn of [REREAD_EDITED, REREAD_UNCHANGED]) {
+    const label = turn.edit ? "edited" : "unchanged";
+    const f = agreedAfterChange(accepted);
+    fakeRounds(f, { reread: [turn], self: [{ reply: shaped("self-2") }], independent: [{ reply: shaped("ind-2") }] });
+    const result = runLaunch(f);
+    assert.equal(result.status, 0, `${label}: ${result.stderr}`);
+    const out = runOut(result);
+    assert.equal(out.verdict, "accepted", label);
+    assert.equal(out.rounds, 2, label);
+    assert.deepEqual(actionsOf(out), ["reread", "review"], label);
+    assert.deepEqual(out.steps[0], { action: "reread", ok: true, round: 1, changed: turn.edit === true, cost_usd: 0.3, duration_ms: 700 }, label);
+    const first = JSON.parse(result.stderr.split("\n")[0]);
+    assert.deepEqual(Object.keys(first).sort(), ["action", "changed", "cost_usd", "duration_ms", "ok", "round", "total_cost_usd"], label);
+  }
+});
+
+test("run after agree on a rejected worktree rereads first and then reviews the earlier findings with the judging schema", () => {
+  const f = agreedAfterChange(rejected);
+  fakeRounds(f, {
+    reread: [REREAD_EDITED],
+    self: [judged("self-2", allStates("fixed"))],
+    independent: [judged("ind-2", allStates("fixed"))],
+  });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(actionsOf(runOut(result)), ["reread", "review"]);
+  const self = roundCalls(f).find((call) => call.role === "self");
+  assert.ok(self);
+  assert.deepEqual(JSON.parse(flagValue(self.args, "--json-schema")), JUDGING_SCHEMA);
+});
+
+test("run after agree before implement starts with implement and does not reread", () => {
+  const f = agreedAfterChange(prepared);
+  fakeRounds(f, { implement: [IMPLEMENTED], reread: [REREAD_UNCHANGED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(actionsOf(runOut(result)), ["implement", "review"]);
+  assert.ok(!roundCalls(f).some((call) => call.role === "reread"));
+});
+
+test("run without agree after the body changed stops with requirements-changed and starts no claude on an accepted or a rejected worktree", () => {
+  for (const [label, arrange] of [
+    ["accepted", accepted],
+    ["rejected", rejected],
+  ] as const) {
+    const f = arrange();
+    fakeGh(f, CHANGED_BODY);
+    fakeRounds(f, { reread: [REREAD_UNCHANGED], repair: [REPAIRED] });
+    assertStopped(runLaunch(f), "requirements-changed");
+    assert.deepEqual(roundCalls(f), [], label);
+  }
+});
+
+test("run stops with the reason and detail of a reread that fails, and reread is the last step", () => {
+  const f = agreedAfterChange();
+  fakeRounds(f, { reread: [{ exit: 3 }, { exit: 3 }] });
+  const out = assertStopped(runLaunch(f), "child-failed") as unknown as RunOut;
+  assert.equal(out.steps[out.steps.length - 1].action, "reread");
+  assert.equal(out.detail, outputOf(reread(f)).detail);
 });

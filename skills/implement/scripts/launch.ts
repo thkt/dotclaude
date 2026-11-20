@@ -22,6 +22,8 @@ const USAGE =
   "       launch.ts implement --worktree <abs path> [--model <name>]\n" +
   "       launch.ts review --worktree <abs path> [--model <name>]\n" +
   "       launch.ts repair --worktree <abs path> [--model <name>]\n" +
+  "       launch.ts agree --worktree <abs path>\n" +
+  "       launch.ts reread --worktree <abs path> [--model <name>]\n" +
   "       launch.ts run --worktree <abs path> [--model <name>]\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
@@ -49,6 +51,19 @@ ${findings}
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
 When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; and what \`${doneGate} status\` printed.
+`;
+
+const rereadPrompt = (issue: number, repository: string, doneGate: string): string =>
+  `GitHub Issue #${issue} of ${repository} changed after you last read it. The Issue as it is now is the agreed requirement.
+
+1. Read the Issue again with \`gh issue view ${issue} --repo ${repository} --json title,body\`, and find what changed from the version you read before.
+2. Compare every requirement, done condition, and out-of-scope item of the Issue with your uncommitted change. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
+3. Run \`${doneGate} check\`. Fix what fails and run it again.
+4. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+
+When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; and what \`${doneGate} status\` printed.
 `;
 
 const REVIEW_TOOLS = "Read,Glob,Grep,LS";
@@ -264,7 +279,7 @@ const issueChange = ({ issue, repository, issue_digest }: Launch, worktree: stri
   const found = viewIssue(issue, repository, "title,body,state", worktree);
   if (typeof found === "string") return { reason: "issue-unreadable", detail: found };
   if (digestOf(found) === issue_digest) return null;
-  const detail = `The title, body, or state of Issue #${issue} of ${repository} changed after prepare recorded it.`;
+  const detail = `The title, body, or state of Issue #${issue} of ${repository} changed after the agreed version was recorded.`;
   return { reason: "requirements-changed", detail };
 };
 
@@ -410,7 +425,7 @@ const implement = async (argv: string[]): Promise<Result | null> => {
   const tree = treeHash(gate.root);
   writeFileSync(
     launchPath,
-    `${JSON.stringify({ ...launch, implement: { session_id: reply.session_id, tree, at: new Date().toISOString() } }, null, 2)}\n`,
+    `${JSON.stringify({ ...launch, implement: { session_id: reply.session_id, tree, issue_digest: launch.issue_digest, at: new Date().toISOString() } }, null, 2)}\n`,
   );
   const shown = { session_id: reply.session_id, tree, ...shownOf(reply) };
   if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
@@ -587,6 +602,7 @@ const review = async (argv: string[]): Promise<Result | null> => {
   const record = {
     round,
     tree,
+    issue_digest: launch.issue_digest,
     at: new Date().toISOString(),
     verdict,
     required,
@@ -630,6 +646,9 @@ const repair = async (argv: string[]): Promise<Result | null> => {
   if (before !== last.tree) {
     return stop("review-stale", `The last review saw the working tree ${String(last.tree)}, and it is ${before} now.`);
   }
+  if (last.issue_digest !== launch.issue_digest) {
+    return stop("review-stale", `The last review judged a version of Issue #${launch.issue} other than the agreed one.`);
+  }
   const changed = issueChange(launch, worktree);
   if (changed !== null) return stop(changed.reason, changed.detail);
 
@@ -665,13 +684,90 @@ const repair = async (argv: string[]): Promise<Result | null> => {
   return { action: "repair", ok: true, ...shown };
 };
 
-type StepAction = "implement" | "review" | "repair";
+const agree = (argv: string[]): Result | null => {
+  const worktree = readFlags(argv, ["--worktree"])?.["--worktree"];
+  if (!worktree || !isAbsolute(worktree)) return null;
+  const stop = (reason: string, detail: string) => stopped("agree", reason, detail);
+
+  const prepared = preparedAt(worktree);
+  if (prepared === null) return stop("not-prepared", notPrepared(worktree));
+  const { launchPath, stored, launch } = prepared;
+  const found = viewIssue(launch.issue, launch.repository, "title,body,state", worktree);
+  if (typeof found === "string") return stop("issue-unreadable", found);
+  if (typeof found.body !== "string") {
+    return stop("issue-unreadable", `gh returned no body string for Issue #${launch.issue} of ${launch.repository}.`);
+  }
+  if (found.state !== "OPEN") return stop("issue-not-open", `Issue #${launch.issue} is ${found.state}, not OPEN.`);
+  const digest = digestOf(found);
+  const changed = digest !== launch.issue_digest;
+  if (changed) writeFileSync(launchPath, `${JSON.stringify({ ...stored, issue_digest: digest }, null, 2)}\n`);
+  return { action: "agree", ok: true, issue: launch.issue, issue_digest: digest, changed, title: found.title, body: found.body };
+};
+
+const readDigestOf = (stored: Record<string, unknown>): unknown => {
+  const rereads = Array.isArray(stored.rereads) ? stored.rereads : [];
+  return rereads.length > 0 ? objectOf(rereads[rereads.length - 1])?.issue_digest : objectOf(stored.implement)?.issue_digest;
+};
+
+const reread = async (argv: string[]): Promise<Result | null> => {
+  const call = worktreeCall(argv);
+  if (call === null) return null;
+  const { worktree, model } = call;
+  const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
+    stopped("reread", reason, detail, extra);
+
+  const prepared = preparedAt(worktree);
+  if (prepared === null) return stop("not-prepared", notPrepared(worktree));
+  const { gate, launchPath, stored, launch } = prepared;
+  const implemented = objectOf(stored.implement)?.session_id;
+  if (!nonEmpty(implemented)) return stop("not-implemented", notImplemented(worktree));
+  if (readDigestOf(stored) === launch.issue_digest) {
+    return stop("nothing-to-reread", `The implementing session of ${worktree} has already read the agreed version of Issue #${launch.issue}.`);
+  }
+  const issueChanged = issueChange(launch, worktree);
+  if (issueChanged !== null) return stop(issueChanged.reason, issueChanged.detail);
+
+  const before = treeHash(gate.root);
+  const reply = sessionReplyOf(
+    await runClaudeOnce({
+      prompt: rereadPrompt(launch.issue, launch.repository, DONE_GATE),
+      model,
+      effort: undefined,
+      schema: undefined,
+      cwd: worktree,
+      timeoutMs: CHILD_TIMEOUT_MS,
+      resume: implemented,
+    }),
+  );
+  if (typeof reply === "string") return stop("child-failed", reply);
+
+  const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
+  const tree = treeHash(gate.root);
+  const earlier = Array.isArray(stored.rereads) ? stored.rereads : [];
+  const record = {
+    round: earlier.length + 1,
+    session_id: reply.session_id,
+    tree,
+    changed: tree !== before,
+    issue_digest: launch.issue_digest,
+  };
+  const shown = { ...record, ...shownOf(reply) };
+  if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
+  writeFileSync(
+    launchPath,
+    `${JSON.stringify({ ...stored, rereads: [...earlier, { ...record, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] }, null, 2)}\n`,
+  );
+  return { action: "reread", ok: true, ...shown };
+};
+
+type StepAction = "implement" | "reread" | "review" | "repair";
 type Next = { kind: "call"; action: StepAction } | { kind: "done" } | { kind: "stop"; reason: string; detail: string };
 
-const STEP_ACTIONS: Record<StepAction, (argv: string[]) => Promise<Result | null>> = { implement, review, repair };
+const STEP_ACTIONS: Record<StepAction, (argv: string[]) => Promise<Result | null>> = { implement, reread, review, repair };
 
 const STEP_FIELDS: Record<StepAction, readonly string[]> = {
   implement: ["action", "ok", "cost_usd", "duration_ms", "reason"],
+  reread: ["action", "ok", "round", "changed", "cost_usd", "duration_ms", "reason"],
   review: ["action", "ok", "round", "verdict", "required_keys", "cost_usd", "reason"],
   repair: ["action", "ok", "round", "changed", "cost_usd", "duration_ms", "reason"],
 };
@@ -716,10 +812,12 @@ const nextOf = (worktree: string): Next => {
   if (prepared === null) return { kind: "stop", reason: "not-prepared", detail: notPrepared(worktree) };
   const { gate, stored, launch } = prepared;
   if (!nonEmpty(objectOf(stored.implement)?.session_id)) return { kind: "call", action: "implement" };
+  if (readDigestOf(stored) !== launch.issue_digest) return { kind: "call", action: "reread" };
   const current = currentReviewOf(stored);
   if (current === null) return { kind: "call", action: "review" };
   if (repairAnswering(stored, current.round) !== null) return { kind: "call", action: "review" };
   if (treeHash(gate.root) !== current.tree) return { kind: "call", action: "review" };
+  if (current.issue_digest !== launch.issue_digest) return { kind: "call", action: "review" };
   if (current.required.length === 0) {
     const changed = issueChange(launch, worktree);
     return changed === null ? { kind: "done" } : { kind: "stop", ...changed };
@@ -785,10 +883,12 @@ const ACTIONS: Record<string, (argv: string[]) => Result | null | Promise<Result
   implement,
   review,
   repair,
+  agree,
+  reread,
   run: runRounds,
 };
 
-const ENDS_CLAUDE_ON_SIGNAL = new Set(["implement", "review", "repair", "run"]);
+const ENDS_CLAUDE_ON_SIGNAL = new Set(["implement", "reread", "review", "repair", "run"]);
 
 const endClaudeAndExit = () => {
   endAll();
