@@ -20,16 +20,16 @@ const USAGE =
   "       launch.ts implement --worktree <abs path> [--model <name>]\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
-  `この worktree で、${repository} の GitHub Issue #${issue} を実装してください。
+  `Implement GitHub Issue #${issue} of ${repository} in this worktree.
 
-1. \`gh issue view ${issue} --repo ${repository} --json title,body\` で Issue を読んでください。Issue は合意済みの要件です。範囲を変えず、範囲外に挙げたことは行わないでください。
-2. Issue が求める変更を、触るファイルに当てはまる repository の規則に従って行ってください。
-3. \`${doneGate} check\` を走らせてください。repository の全体の検査を走らせ、今の作業ツリーに対する結果を記録します。失敗したところを直し、もう一度走らせてください。
-4. \`${doneGate} status\` が \`done\` を出したら完了です。検査が通った後に編集すると記録が古くなるので、最後の編集の後にもう一度検査を走らせてください。
+1. Read the Issue with \`gh issue view ${issue} --repo ${repository} --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
+2. Make the change the Issue asks for, following the repository's rules that apply to the files you touch.
+3. Run \`${doneGate} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
+4. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
 
-commit、push、pull request の作成はしないでください。この worktree の外のファイルは編集しないでください。
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-完了したら、次を返してください。変更したファイル、\`${doneGate} status\` が出した内容、Issue に書かれていない点についてあなたが決めたこと、Issue が名前を挙げた人に引き渡す手順。
+When you are done, reply with: the files you changed, what \`${doneGate} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
 `;
 
 type Flags = Record<string, string>;
