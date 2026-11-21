@@ -24,6 +24,7 @@ const USAGE =
   "       launch.ts repair --worktree <abs path> [--model <name>]\n" +
   "       launch.ts agree --worktree <abs path>\n" +
   "       launch.ts reread --worktree <abs path> [--model <name>]\n" +
+  "       launch.ts continue --worktree <abs path> [--model <name>]\n" +
   "       launch.ts run --worktree <abs path> [--model <name>]\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
@@ -64,6 +65,18 @@ const rereadPrompt = (issue: number, repository: string, doneGate: string): stri
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
 When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; and what \`${doneGate} status\` printed.
+`;
+
+const continuePrompt = (issue: number, repository: string, doneGate: string): string =>
+  `Your work on GitHub Issue #${issue} of ${repository} in this worktree is not finished. \`${doneGate} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
+
+1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the uncommitted changes that are in the worktree, and finish that work.
+2. Run \`${doneGate} check\`. Fix what fails and run it again.
+3. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+
+When you are done, reply with: what was unfinished; what you changed; the files you changed; and what \`${doneGate} status\` printed.
 `;
 
 const REVIEW_TOOLS = "Read,Glob,Grep,LS";
@@ -760,16 +773,76 @@ const reread = async (argv: string[]): Promise<Result | null> => {
   return { action: "reread", ok: true, ...shown };
 };
 
-type StepAction = "implement" | "reread" | "review" | "repair";
+const gateStatusOf = (worktree: string): SpawnSyncReturns<string> => runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
+
+const continueWork = async (argv: string[]): Promise<Result | null> => {
+  const call = worktreeCall(argv);
+  if (call === null) return null;
+  const { worktree, model } = call;
+  const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
+    stopped("continue", reason, detail, extra);
+
+  const prepared = preparedAt(worktree);
+  if (prepared === null) return stop("not-prepared", notPrepared(worktree));
+  const { gate, launchPath, stored, launch } = prepared;
+  const implemented = objectOf(stored.implement)?.session_id;
+  if (!nonEmpty(implemented)) return stop("not-implemented", notImplemented(worktree));
+  const gateBefore = gateStatusOf(worktree);
+  if (gateBefore.status === 0) {
+    return stop("nothing-to-continue", `done_gate.ts status of ${worktree} is already done, so no work is left to finish.`);
+  }
+  if (gateBefore.status !== 1) {
+    const exit = gateBefore.status ?? gateBefore.signal;
+    return stop("gate-unreadable", `done_gate.ts status exited ${exit}, which resuming the implementing session cannot fix: ${outputOf(gateBefore)}`);
+  }
+  const issueChanged = issueChange(launch, worktree);
+  if (issueChanged !== null) return stop(issueChanged.reason, issueChanged.detail);
+
+  const before = treeHash(gate.root);
+  const reply = sessionReplyOf(
+    await runClaudeOnce({
+      prompt: continuePrompt(launch.issue, launch.repository, DONE_GATE),
+      model,
+      effort: undefined,
+      schema: undefined,
+      cwd: worktree,
+      timeoutMs: CHILD_TIMEOUT_MS,
+      resume: implemented,
+    }),
+  );
+  if (typeof reply === "string") return stop("child-failed", reply);
+
+  const status = gateStatusOf(worktree);
+  const tree = treeHash(gate.root);
+  const earlier = Array.isArray(stored.continues) ? stored.continues : [];
+  const record = { round: earlier.length + 1, session_id: reply.session_id, tree, changed: tree !== before };
+  const done = status.status === 0;
+  writeFileSync(
+    launchPath,
+    `${JSON.stringify({ ...stored, continues: [...earlier, { ...record, done, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] }, null, 2)}\n`,
+  );
+  const shown = { ...record, ...shownOf(reply) };
+  if (!done) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
+  return { action: "continue", ok: true, ...shown };
+};
+
+type StepAction = "implement" | "reread" | "review" | "repair" | "continue";
 type Next = { kind: "call"; action: StepAction } | { kind: "done" } | { kind: "stop"; reason: string; detail: string };
 
-const STEP_ACTIONS: Record<StepAction, (argv: string[]) => Promise<Result | null>> = { implement, reread, review, repair };
+const STEP_ACTIONS: Record<StepAction, (argv: string[]) => Promise<Result | null>> = {
+  implement,
+  reread,
+  review,
+  repair,
+  continue: continueWork,
+};
 
 const STEP_FIELDS: Record<StepAction, readonly string[]> = {
   implement: ["action", "ok", "cost_usd", "duration_ms", "reason"],
   reread: ["action", "ok", "round", "changed", "cost_usd", "duration_ms", "reason"],
   review: ["action", "ok", "round", "verdict", "required_keys", "cost_usd", "reason"],
   repair: ["action", "ok", "round", "changed", "cost_usd", "duration_ms", "reason"],
+  continue: ["action", "ok", "round", "changed", "cost_usd", "duration_ms", "reason"],
 };
 
 const amountOf = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) ? value : 0);
@@ -807,17 +880,29 @@ const convergenceStop = (stored: Record<string, unknown>, current: { required: u
   return { kind: "stop", reason: "not-converging", detail };
 };
 
+const reviewOrContinue = (worktree: string, { gate, stored }: Prepared): Next => {
+  if (gateStatusOf(worktree).status === 0) return { kind: "call", action: "review" };
+  const continues = Array.isArray(stored.continues) ? stored.continues : [];
+  const last = objectOf(continues[continues.length - 1]);
+  if (last !== null && last.done === false && last.tree === treeHash(gate.root)) {
+    const detail = `continue round ${String(last.round)} ended without passing the check, and the working tree has not changed since. Call continue directly to try again.`;
+    return { kind: "stop", reason: "not-done", detail };
+  }
+  return { kind: "call", action: "continue" };
+};
+
 const nextOf = (worktree: string): Next => {
   const prepared = preparedAt(worktree);
   if (prepared === null) return { kind: "stop", reason: "not-prepared", detail: notPrepared(worktree) };
   const { gate, stored, launch } = prepared;
   if (!nonEmpty(objectOf(stored.implement)?.session_id)) return { kind: "call", action: "implement" };
   if (readDigestOf(stored) !== launch.issue_digest) return { kind: "call", action: "reread" };
+  const toReview = () => reviewOrContinue(worktree, prepared);
   const current = currentReviewOf(stored);
-  if (current === null) return { kind: "call", action: "review" };
-  if (repairAnswering(stored, current.round) !== null) return { kind: "call", action: "review" };
-  if (treeHash(gate.root) !== current.tree) return { kind: "call", action: "review" };
-  if (current.issue_digest !== launch.issue_digest) return { kind: "call", action: "review" };
+  if (current === null) return toReview();
+  if (repairAnswering(stored, current.round) !== null) return toReview();
+  if (treeHash(gate.root) !== current.tree) return toReview();
+  if (current.issue_digest !== launch.issue_digest) return toReview();
   if (current.required.length === 0) {
     const changed = issueChange(launch, worktree);
     return changed === null ? { kind: "done" } : { kind: "stop", ...changed };
@@ -885,10 +970,11 @@ const ACTIONS: Record<string, (argv: string[]) => Result | null | Promise<Result
   repair,
   agree,
   reread,
+  continue: continueWork,
   run: runRounds,
 };
 
-const ENDS_CLAUDE_ON_SIGNAL = new Set(["implement", "reread", "review", "repair", "run"]);
+const ENDS_CLAUDE_ON_SIGNAL = new Set(["implement", "reread", "review", "repair", "continue", "run"]);
 
 const endClaudeAndExit = () => {
   endAll();
