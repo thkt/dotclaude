@@ -382,8 +382,10 @@ test("implement reports ok and records the session and tree when the child passe
     duration_ms: 1200,
   });
   const record = launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> };
+  assert.deepEqual(Object.keys(record.implement).sort(), ["at", "issue_digest", "session_id", "tree"]);
   assert.equal(record.implement.session_id, "s-1");
   assert.equal(record.implement.tree, out.tree);
+  assert.equal(record.implement.issue_digest, digestOf(ISSUE_REPLY));
   assert.equal(typeof record.implement.at, "string");
 });
 
@@ -420,7 +422,10 @@ test("implement stops with child-failed when claude exits non-zero, prints no JS
     assert.equal(prepare(f).status, 0);
     fakeClaude(f, body);
     assertStopped(run(f, ["implement", "--worktree", worktreeOf(f)]), "child-failed");
-    assert.equal((launchRecord(worktreeOf(f)) as Record<string, unknown>).implement, undefined);
+    const record = (launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement;
+    assert.deepEqual(Object.keys(record).sort(), ["issue_digest", "session_id", "started_at"], body);
+    const args = readFileSync(join(f.logs, "args"), "utf8").split("\n");
+    assert.equal(record.session_id, args[args.indexOf("--session-id") + 1], body);
   }
 });
 
@@ -1386,9 +1391,11 @@ const role = schema
     ? "reread"
     : stdin.startsWith("Your work on GitHub Issue #")
       ? "continue"
-      : resumed
-        ? "repair"
-        : "implement";
+      : stdin.startsWith("Your turn implementing")
+        ? "implement"
+        : resumed
+          ? "repair"
+          : "implement";
 const log = logs + "/run-calls";
 const index = (fs.existsSync(log) ? fs.readFileSync(log, "utf8").split("\\n") : []).filter((line) => line.startsWith(role + " ")).length;
 fs.appendFileSync(log, role + " " + JSON.stringify(args) + "\\n");
@@ -1865,7 +1872,7 @@ test("implement, review, repair, and run stop with not-prepared and start no cla
 function fakeHangingClaude(f: Fixture): void {
   writeFileSync(
     join(f.bin, "claude"),
-    `#!/bin/sh\necho $$ >> "$LOGS/hanging-claude-pids"\nsleep 60 &\necho $! >> "$LOGS/hanging-sleep-pids"\nwait\n`,
+    `#!/bin/sh\nprintf '%s\\n' "$@" > "$LOGS/hanging-args"\necho $$ >> "$LOGS/hanging-claude-pids"\nsleep 60 &\necho $! >> "$LOGS/hanging-sleep-pids"\nwait\n`,
     { mode: 0o755 },
   );
 }
@@ -1946,12 +1953,18 @@ const launchFile = (f: Fixture): string =>
   readFileSync(join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json"), "utf8");
 
 for (const signal of ["SIGTERM", "SIGINT", "SIGHUP"] as const) {
-  test(`implement ends claude and its child, exits 143, prints nothing, and keeps launch.json on ${signal}`, async () => {
+  test(`implement ends claude and its child, exits 143, prints nothing, and keeps the record written before the launch on ${signal}`, async () => {
     const f = prepared();
-    const before = launchFile(f);
+    const before = JSON.parse(launchFile(f));
     const result = await signalWhileClaudeWaits(f, ["implement", "--worktree", worktreeOf(f)], signal, 1);
     assertEndedBySignal(result, 1);
-    assert.equal(launchFile(f), before);
+    const after = JSON.parse(launchFile(f));
+    const args = readFileSync(join(f.logs, "hanging-args"), "utf8").split("\n");
+    assert.equal(typeof after.implement.started_at, "string");
+    assert.deepEqual(after, {
+      ...before,
+      implement: { session_id: args[args.indexOf("--session-id") + 1], issue_digest: before.issue_digest, started_at: after.implement.started_at },
+    });
   });
 }
 
@@ -2685,4 +2698,344 @@ test("the usage has the continue line, and a continue call without --worktree or
     assert.equal(result.stdout, "", args.join(" "));
     assert.match(result.stderr, /^usage: /, args.join(" "));
   }
+});
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+const IMPLEMENT_PROMPT = `Implement GitHub Issue #42 of owner/repo in this worktree.
+
+1. Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
+2. Make the change the Issue asks for, following the repository's rules that apply to the files you touch.
+3. Run \`${DONE_GATE} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
+4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+
+When you are done, reply with: the files you changed, what \`${DONE_GATE} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
+`;
+
+const RESUME_PROMPT = `Your turn implementing GitHub Issue #42 of owner/repo in this worktree was interrupted before you replied.
+
+1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you had done and what was left. Keep the uncommitted changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view 42 --repo owner/repo --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
+2. Finish the change the Issue asks for, following the repository's rules that apply to the files you touch.
+3. Run \`${DONE_GATE} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
+4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+
+Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+
+When you are done, reply with: the files you changed, what \`${DONE_GATE} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
+`;
+
+interface ImplementTurn {
+  exit?: number;
+  stderr?: string;
+  check?: boolean;
+  reply?: Record<string, unknown>;
+}
+
+interface ImplementCall {
+  args: string[];
+  stdin: string;
+  launch: Record<string, unknown>;
+}
+
+const NO_SESSION = (id: string): string => `No conversation found with session ID: ${id}\n`;
+const FINISHED: ImplementTurn = { check: true, reply: { session_id: "s-2", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
+const UNCHECKED: ImplementTurn = { reply: { session_id: "s-2", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
+
+const launchPathOf = (f: Fixture): string =>
+  join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json");
+
+function fakeImplementer(f: Fixture, turns: ImplementTurn[]): void {
+  writeFileSync(join(f.logs, "implement-plan.json"), JSON.stringify(turns));
+  rmSync(join(f.logs, "implement-calls"), { force: true });
+  writeFileSync(
+    join(f.bin, "claude"),
+    `#!/usr/bin/env node
+const fs = require("node:fs");
+const { spawnSync } = require("node:child_process");
+const logs = process.env.LOGS;
+const args = process.argv.slice(2);
+const stdin = fs.readFileSync(0, "utf8");
+const log = logs + "/implement-calls";
+const index = fs.existsSync(log) ? fs.readFileSync(log, "utf8").split("\\n").filter(Boolean).length : 0;
+const launch = JSON.parse(fs.readFileSync(${JSON.stringify(launchPathOf(f))}, "utf8"));
+fs.appendFileSync(log, JSON.stringify({ args, stdin, launch }) + "\\n");
+const turn = JSON.parse(fs.readFileSync(logs + "/implement-plan.json", "utf8"))[index] || {};
+if (turn.check) spawnSync(process.env.NODE, [process.env.DONE_GATE, "check"], { stdio: "ignore" });
+if (turn.stderr) process.stderr.write(turn.stderr);
+if (turn.reply !== undefined) process.stdout.write(JSON.stringify(turn.reply));
+process.exit(turn.exit || 0);
+`,
+    { mode: 0o755 },
+  );
+}
+
+const implementCalls = (f: Fixture): ImplementCall[] =>
+  existsSync(join(f.logs, "implement-calls"))
+    ? readFileSync(join(f.logs, "implement-calls"), "utf8")
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => JSON.parse(line))
+    : [];
+
+const implementAt = (f: Fixture, ...extra: string[]) => run(f, ["implement", "--worktree", worktreeOf(f), ...extra]);
+
+const implementRecordOf = (f: Fixture): Record<string, unknown> => (launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement;
+
+function interrupted(): Fixture {
+  const f = prepared();
+  fakeImplementer(f, [{ exit: 3 }]);
+  assertStopped(implementAt(f), "child-failed");
+  fakeImplementer(f, []);
+  return f;
+}
+
+const interruptedId = (f: Fixture): string => String(implementRecordOf(f).session_id);
+
+test("implement on a prepared worktree starts a new session with --session-id set to a UUID and no --resume, and passes the implement prompt", () => {
+  const f = prepared();
+  fakeImplementer(f, [FINISHED]);
+  assert.equal(implementAt(f).status, 0);
+  const [call] = implementCalls(f);
+  assert.ok(!call.args.includes("--resume"));
+  assert.match(flagValue(call.args, "--session-id"), UUID);
+  assert.equal(call.stdin, IMPLEMENT_PROMPT);
+});
+
+test("while the new session runs, launch.json holds the agreed fields and an implement record of session_id, issue_digest, and started_at only", () => {
+  const f = prepared();
+  fakeImplementer(f, [FINISHED]);
+  assert.equal(implementAt(f).status, 0);
+  const [{ args, launch }] = implementCalls(f);
+  const record = launch.implement as Record<string, unknown>;
+  assert.deepEqual(Object.keys(launch).sort(), ["base", "branch", "implement", "issue", "issue_digest", "repository"]);
+  assert.deepEqual(Object.keys(record).sort(), ["issue_digest", "session_id", "started_at"]);
+  assert.equal(record.session_id, flagValue(args, "--session-id"));
+  assert.equal(record.issue_digest, digestOf(ISSUE_REPLY));
+  assert.ok(!Number.isNaN(Date.parse(String(record.started_at))));
+});
+
+test("implement on an unfinished worktree resumes the recorded session with --model and the resume prompt, and no --session-id or --fork-session", () => {
+  const f = interrupted();
+  const id = interruptedId(f);
+  fakeImplementer(f, [FINISHED]);
+  assert.equal(implementAt(f, "--model", "sonnet").status, 0);
+  const calls = implementCalls(f);
+  assert.equal(calls.length, 1);
+  assert.equal(flagValue(calls[0].args, "--resume"), id);
+  assert.ok(!calls[0].args.includes("--session-id"));
+  assert.ok(!calls[0].args.includes("--fork-session"));
+  assert.equal(flagValue(calls[0].args, "--model"), "sonnet");
+  assert.equal(calls[0].stdin, RESUME_PROMPT);
+});
+
+test("a resumed implement that passes the check returns resumed true, keeps launch.json while it runs, and records the digest the session started with", () => {
+  const f = interrupted();
+  rewriteLaunch(f, (stored) => ({ ...stored, implement: { ...(stored.implement as Record<string, unknown>), issue_digest: "a".repeat(64) } }));
+  const started = launchRecord(worktreeOf(f));
+  fakeImplementer(f, [FINISHED]);
+  const result = implementAt(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result);
+  assert.equal(out.resumed, true);
+  assert.equal(out.session_id, "s-2");
+  assert.deepEqual(implementCalls(f)[0].launch, started);
+  const record = implementRecordOf(f);
+  assert.deepEqual(Object.keys(record).sort(), ["at", "issue_digest", "session_id", "tree"]);
+  assert.equal(record.issue_digest, "a".repeat(64));
+  assert.equal(record.session_id, "s-2");
+});
+
+test("a resumed implement that ends without passing the check stops with not-done, resumed true, and writes the finished record", () => {
+  const f = interrupted();
+  fakeImplementer(f, [UNCHECKED]);
+  const out = assertStopped(implementAt(f), "not-done");
+  assert.equal(out.resumed, true);
+  const record = implementRecordOf(f);
+  assert.equal(record.session_id, "s-2");
+  assert.equal(typeof record.at, "string");
+});
+
+test("run on an unfinished worktree whose Issue changed and was agreed resumes implement and then rereads", () => {
+  const f = interrupted();
+  fakeGh(f, CHANGED_BODY);
+  assert.equal(agree(f).status, 0);
+  fakeRounds(f, { implement: [IMPLEMENTED], reread: [REREAD_UNCHANGED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const out = runOut(runLaunch(f));
+  assert.deepEqual(actionsOf(out).slice(0, 2), ["implement", "reread"]);
+  assert.ok(roundCalls(f)[0].args.includes("--resume"));
+});
+
+test("a resumed implement that fails without the no-session message stops with child-failed, keeps launch.json, and the next call resumes the same session", () => {
+  const f = interrupted();
+  const id = interruptedId(f);
+  const text = readFileSync(launchPathOf(f), "utf8");
+  fakeImplementer(f, [{ exit: 3, stderr: "boom\n" }, { exit: 3, stderr: "boom\n" }]);
+  assertStopped(implementAt(f), "child-failed");
+  assert.equal(readFileSync(launchPathOf(f), "utf8"), text);
+  assert.equal(implementCalls(f).length, 1);
+  assertStopped(implementAt(f), "child-failed");
+  assert.equal(flagValue(implementCalls(f)[1].args, "--resume"), id);
+});
+
+test("when the recorded session does not exist, implement starts a new session with a new id and the implement prompt in the same call", () => {
+  const f = interrupted();
+  const id = interruptedId(f);
+  fakeImplementer(f, [{ exit: 1, stderr: NO_SESSION(id) }, FINISHED]);
+  const result = implementAt(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(outputOf(result).resumed, undefined);
+  const calls = implementCalls(f);
+  assert.equal(calls.length, 2);
+  const fresh = flagValue(calls[1].args, "--session-id");
+  assert.match(fresh, UUID);
+  assert.notEqual(fresh, id);
+  assert.ok(!calls[1].args.includes("--resume"));
+  assert.equal(calls[1].stdin, IMPLEMENT_PROMPT);
+});
+
+test("a new session started for a missing session after an agreed Issue change records the agreed digest, and run then reviews without rereading", () => {
+  const f = interrupted();
+  fakeGh(f, CHANGED_BODY);
+  assert.equal(agree(f).status, 0);
+  fakeImplementer(f, [{ exit: 1, stderr: NO_SESSION(interruptedId(f)) }, FINISHED]);
+  assert.equal(implementAt(f).status, 0);
+  assert.equal(implementRecordOf(f).issue_digest, AGREED_DIGEST);
+  fakeRounds(f, { self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(actionsOf(runOut(result)), ["review"]);
+});
+
+test("when the new session for a missing session also reports no session, implement stops with child-failed after two claude calls and keeps the new record", () => {
+  const f = interrupted();
+  const id = interruptedId(f);
+  fakeImplementer(f, [
+    { exit: 1, stderr: NO_SESSION(id) },
+    { exit: 1, stderr: NO_SESSION("other") },
+  ]);
+  assertStopped(implementAt(f), "child-failed");
+  const calls = implementCalls(f);
+  assert.equal(calls.length, 2);
+  const record = implementRecordOf(f);
+  assert.deepEqual(Object.keys(record).sort(), ["issue_digest", "session_id", "started_at"]);
+  assert.equal(record.session_id, flagValue(calls[1].args, "--session-id"));
+  assert.notEqual(record.session_id, id);
+});
+
+test("a resumed implement that exits 0 with the no-session message and a JSON session_id is taken as resumed", () => {
+  const f = interrupted();
+  fakeImplementer(f, [{ ...FINISHED, stderr: NO_SESSION(interruptedId(f)) }]);
+  const result = implementAt(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(outputOf(result).resumed, true);
+  assert.equal(implementCalls(f).length, 1);
+});
+
+test("implement on an unfinished worktree stops with requirements-changed and starts no claude when the Issue changed", () => {
+  const f = interrupted();
+  fakeGh(f, CHANGED_BODY);
+  assertStopped(implementAt(f), "requirements-changed");
+  assert.deepEqual(implementCalls(f), []);
+});
+
+test("implement --fresh on an unfinished worktree starts a new session with a new id and the implement prompt", () => {
+  const f = interrupted();
+  const id = interruptedId(f);
+  fakeImplementer(f, [FINISHED]);
+  assert.equal(implementAt(f, "--fresh").status, 0);
+  const [call] = implementCalls(f);
+  assert.ok(!call.args.includes("--resume"));
+  assert.match(flagValue(call.args, "--session-id"), UUID);
+  assert.notEqual(flagValue(call.args, "--session-id"), id);
+  assert.equal(call.stdin, IMPLEMENT_PROMPT);
+});
+
+test("implement on a finished worktree stops with already-implemented, starts no claude, and keeps launch.json, also when the Issue changed", () => {
+  for (const changeIssue of [false, true]) {
+    const f = implemented();
+    if (changeIssue) fakeGh(f, CHANGED_BODY);
+    const text = readFileSync(launchPathOf(f), "utf8");
+    fakeImplementer(f, [FINISHED]);
+    const out = assertStopped(implementAt(f), "already-implemented");
+    assert.equal(
+      out.detail,
+      `The implementing session of ${worktreeOf(f)} has finished. Call implement with --fresh to discard its records and start a new session.`,
+    );
+    assert.deepEqual(implementCalls(f), [], String(changeIssue));
+    assert.equal(readFileSync(launchPathOf(f), "utf8"), text);
+  }
+});
+
+test("implement --fresh on a reviewed worktree starts a new session and drops reviews, repairs, rereads, and continues while it runs", () => {
+  const f = accepted();
+  rewriteLaunch(f, (stored) => ({ ...stored, repairs: [], rereads: [], continues: [] }));
+  fakeImplementer(f, [FINISHED]);
+  const result = implementAt(f, "--fresh");
+  assert.equal(result.status, 0, result.stderr);
+  const [{ args, launch }] = implementCalls(f);
+  assert.match(flagValue(args, "--session-id"), UUID);
+  for (const key of ["reviews", "repairs", "rereads", "continues"]) assert.ok(!(key in launch), key);
+});
+
+test("--fresh twice, --fresh with a value, or --fresh on another action prints the usage and nothing on stdout, and exits 2", () => {
+  const f = prepared();
+  const w = worktreeOf(f);
+  const calls = [
+    ["implement", "--worktree", w, "--fresh", "--fresh"],
+    ["implement", "--worktree", w, "--fresh", "yes"],
+    ["review", "--worktree", w, "--fresh"],
+    ["repair", "--worktree", w, "--fresh"],
+    ["agree", "--worktree", w, "--fresh"],
+    ["reread", "--worktree", w, "--fresh"],
+    ["continue", "--worktree", w, "--fresh"],
+    ["run", "--worktree", w, "--fresh"],
+    ["prepare", "--repo", f.repo, "--issue", String(ISSUE), "--fresh"],
+  ];
+  fakeImplementer(f, []);
+  for (const args of calls) {
+    const result = run(f, args);
+    assert.equal(result.status, 2, args.join(" "));
+    assert.equal(result.stdout, "", args.join(" "));
+    assert.match(result.stderr, /^usage: /, args.join(" "));
+  }
+  assert.deepEqual(implementCalls(f), []);
+  assert.ok(run(f, []).stderr.includes("launch.ts implement --worktree <abs path> [--model <name>] [--fresh]\n"));
+});
+
+test("review, repair, reread, and continue on an unfinished worktree stop with not-implemented naming the unfinished session, start no claude, and keep launch.json", () => {
+  const f = interrupted();
+  const text = readFileSync(launchPathOf(f), "utf8");
+  for (const action of ["review", "repair", "reread", "continue"]) {
+    const out = assertStopped(run(f, [action, "--worktree", worktreeOf(f)]), "not-implemented");
+    assert.equal(out.detail, `The implementing session of ${worktreeOf(f)} has not finished. Call implement or run to resume it.`, action);
+    assert.deepEqual(implementCalls(f), [], action);
+    assert.equal(readFileSync(launchPathOf(f), "utf8"), text, action);
+  }
+});
+
+test("run on an unfinished worktree resumes implement, reviews, and completes, with resumed true in the implement step and its stderr line", () => {
+  const f = interrupted();
+  const id = interruptedId(f);
+  fakeRounds(f, { implement: [IMPLEMENTED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const result = runLaunch(f);
+  assert.equal(result.status, 0, result.stderr);
+  const out = runOut(result);
+  assert.deepEqual(actionsOf(out), ["implement", "review"]);
+  assert.equal(out.steps[0].resumed, true);
+  assert.equal(JSON.parse(result.stderr.split("\n")[0]).resumed, true);
+  assert.equal(flagValue(roundCalls(f)[0].args, "--resume"), id);
+});
+
+test("run stopped by SIGTERM while implement waits resumes the same session on the next run", async () => {
+  const f = prepared();
+  const result = await signalWhileClaudeWaits(f, ["run", "--worktree", worktreeOf(f)], "SIGTERM", 1);
+  assertEndedBySignal(result, 1);
+  const first = readFileSync(join(f.logs, "hanging-args"), "utf8").split("\n");
+  fakeRounds(f, { implement: [IMPLEMENTED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const again = runLaunch(f);
+  assert.equal(again.status, 0, again.stderr);
+  assert.equal(runOut(again).steps[0].resumed, true);
+  assert.equal(flagValue(roundCalls(f)[0].args, "--resume"), flagValue(first, "--session-id"));
 });

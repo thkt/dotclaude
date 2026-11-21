@@ -50,6 +50,7 @@ export interface ChildRun {
   resume?: string;
   fork?: boolean;
   tools?: string;
+  sessionId?: string;
 }
 export interface ChildOutcome {
   code: number | null;
@@ -70,25 +71,22 @@ export const endAll = () => {
   for (const pid of runningChildren) endGroup(pid, "SIGTERM");
 };
 
-export const runClaudeOnce = ({
-  prompt,
-  model,
-  effort,
-  schema,
-  cwd,
-  timeoutMs,
-  resume,
-  fork,
-  tools,
-}: ChildRun): Promise<ChildOutcome> =>
+const claudeArgv = ({ model, effort, schema, resume, fork, tools, sessionId }: ChildRun): string[] => {
+  const argv = ["-p", "--model", model, "--output-format", "json", "--allowedTools", tools ?? CHILD_TOOLS];
+  argv.push("--disallowedTools", CHILD_DENIED);
+  if (effort) argv.push("--effort", effort);
+  if (resume) argv.push("--resume", resume);
+  if (resume && fork) argv.push("--fork-session");
+  if (sessionId) argv.push("--session-id", sessionId);
+  if (schema) argv.push("--json-schema", JSON.stringify(schema));
+  if (process.env.CLAUDE_RUN_SETTINGS) argv.push("--settings", process.env.CLAUDE_RUN_SETTINGS);
+  return argv;
+};
+
+export const runClaudeOnce = (run: ChildRun): Promise<ChildOutcome> =>
   new Promise((done) => {
-    const argv = ["-p", "--model", model, "--output-format", "json", "--allowedTools", tools ?? CHILD_TOOLS];
-    argv.push("--disallowedTools", CHILD_DENIED);
-    if (effort) argv.push("--effort", effort);
-    if (resume) argv.push("--resume", resume);
-    if (resume && fork) argv.push("--fork-session");
-    if (schema) argv.push("--json-schema", JSON.stringify(schema));
-    if (process.env.CLAUDE_RUN_SETTINGS) argv.push("--settings", process.env.CLAUDE_RUN_SETTINGS);
+    const { prompt, cwd, timeoutMs } = run;
+    const argv = claudeArgv(run);
     const child = spawn("claude", argv, { cwd, stdio: ["pipe", "pipe", "pipe"], detached: true });
     const pid = child.pid ?? 0;
     if (pid) runningChildren.add(pid);
