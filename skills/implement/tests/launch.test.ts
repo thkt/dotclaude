@@ -140,6 +140,9 @@ function assertStopped(result: SpawnSyncReturns<string>, reason: string): Record
 
 const worktreeOf = (f: Fixture) => join(f.repo, ".claude", "worktrees", `implement-${ISSUE}`);
 
+const launchPathOf = (f: Fixture): string =>
+  join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json");
+
 function launchRecord(worktree: string): Record<string, unknown> {
   const dir = git(worktree, "rev-parse", "--path-format=absolute", "--git-path", "agent-gate");
   return JSON.parse(readFileSync(join(dir, "launch.json"), "utf8"));
@@ -368,7 +371,7 @@ test("implement passes --model to claude", () => {
 test("implement reports ok and records the session and tree when the child passes the check", () => {
   const f = fixture();
   assert.equal(prepare(f).status, 0);
-  fakeClaude(f, PASS_CHECK + SESSION_REPLY);
+  fakeClaude(f, PASS_CHECK + SESSION_REPLY.replace('"result":"finished"', '"result":"pass reply"'));
   const result = run(f, ["implement", "--worktree", worktreeOf(f)]);
   assert.equal(result.status, 0, result.stderr);
   const out = outputOf(result);
@@ -378,12 +381,13 @@ test("implement reports ok and records the session and tree when the child passe
     ok: true,
     session_id: "s-1",
     tree: out.tree,
-    result: "finished",
+    result: "pass reply",
     cost_usd: 0.5,
     duration_ms: 1200,
   });
   const record = launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> };
-  assert.deepEqual(Object.keys(record.implement).sort(), ["at", "issue_digest", "session_id", "tree"]);
+  assert.deepEqual(Object.keys(record.implement).sort(), ["at", "issue_digest", "reply", "session_id", "tree"]);
+  assert.equal(record.implement.reply, "pass reply");
   assert.equal(record.implement.session_id, "s-1");
   assert.equal(record.implement.tree, out.tree);
   assert.equal(record.implement.issue_digest, digestOf(ISSUE_REPLY));
@@ -408,13 +412,34 @@ test("implement prints its JSON line whole through a pipe when the child's resul
 test("implement stops with not-done and still records the session when the child ends without passing the check", () => {
   const f = fixture();
   assert.equal(prepare(f).status, 0);
-  fakeClaude(f, SESSION_REPLY);
+  fakeClaude(f, SESSION_REPLY.replace('"result":"finished"', '"result":"not-done reply"'));
   const out = assertStopped(run(f, ["implement", "--worktree", worktreeOf(f)]), "not-done");
   assert.equal(out.action, "implement");
   assert.equal(out.session_id, "s-1");
   assert.match(String(out.detail), /No check result is recorded/);
   const record = launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> };
   assert.equal(record.implement.session_id, "s-1");
+  assert.equal(record.implement.reply, "not-done reply");
+});
+
+test("implement exits 0 without result in its JSON and records an empty reply when the child that passes the check gives no result", () => {
+  const f = fixture();
+  assert.equal(prepare(f).status, 0);
+  fakeClaude(f, `${PASS_CHECK}echo '{"session_id":"s-1"}'\n`);
+  const result = run(f, ["implement", "--worktree", worktreeOf(f)]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(!("result" in outputOf(result)));
+  assert.equal((launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement.reply, "");
+});
+
+test("implement exits 0 with the number result in its JSON and records an empty reply when the child that passes the check gives the result 3", () => {
+  const f = fixture();
+  assert.equal(prepare(f).status, 0);
+  fakeClaude(f, `${PASS_CHECK}echo '{"session_id":"s-1","result":3}'\n`);
+  const result = run(f, ["implement", "--worktree", worktreeOf(f)]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(outputOf(result).result, 3);
+  assert.equal((launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement.reply, "");
 });
 
 test("implement stops with child-failed when claude exits non-zero, prints no JSON, or gives no session_id", () => {
@@ -1437,6 +1462,7 @@ type RunOut = {
   rounds: number;
   steps: Record<string, unknown>[];
   cost_usd: number;
+  launch_file: string | null;
   reason?: string;
   detail?: string;
 };
@@ -1453,7 +1479,8 @@ const prepared = (): Fixture => {
 
 test("run on a prepared worktree implements, reviews, and completes with accepted round 1 when both reviews find nothing", () => {
   const f = prepared();
-  fakeRounds(f, { implement: [IMPLEMENTED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  const implemented: Turn = { ...IMPLEMENTED, reply: { session_id: "s-1", result: "run implement reply", total_cost_usd: 0.5, duration_ms: 1200 } };
+  fakeRounds(f, { implement: [implemented], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
   const result = runLaunch(f);
   assert.equal(result.status, 0, result.stderr);
   const out = runOut(result);
@@ -1461,7 +1488,9 @@ test("run on a prepared worktree implements, reviews, and completes with accepte
     { action: out.action, ok: out.ok, verdict: out.verdict, required: out.required, rounds: out.rounds },
     { action: "run", ok: true, verdict: "accepted", required: [], rounds: 1 },
   );
-  assert.deepEqual(Object.keys(out), ["action", "ok", "verdict", "required", "rounds", "steps", "cost_usd"]);
+  assert.deepEqual(Object.keys(out), ["action", "ok", "verdict", "required", "rounds", "steps", "cost_usd", "launch_file"]);
+  assert.equal(out.launch_file, launchPathOf(f));
+  assert.equal(JSON.parse(readFileSync(String(out.launch_file), "utf8")).implement.reply, "run implement reply");
   assert.deepEqual(out.steps, [
     { action: "implement", ok: true, cost_usd: 0.5, duration_ms: 1200 },
     { action: "review", ok: true, round: 1, verdict: "accepted", required_keys: [], cost_usd: 2 },
@@ -1632,6 +1661,7 @@ test("run stops with the reason and detail of an implement that fails, and imple
   assert.deepEqual(out.required, []);
   assert.equal(out.rounds, 0);
   assert.equal(out.cost_usd, 0);
+  assert.equal(out.launch_file, launchPathOf(f));
   assert.equal(out.detail, outputOf(run(f, ["implement", "--worktree", worktreeOf(f)])).detail);
 });
 
@@ -1709,7 +1739,21 @@ test("run stops with not-prepared in a worktree that prepare did not set up, and
   assert.deepEqual(out.steps, []);
   assert.equal(out.rounds, 0);
   assert.equal(out.verdict, null);
+  assert.equal(out.launch_file, join(git(f.repo, "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json"));
+  assert.ok(!existsSync(String(out.launch_file)));
   assert.deepEqual(roundCalls(f), []);
+});
+
+test("run stops with not-prepared and a null launch_file when --worktree names a path that does not exist", () => {
+  const f = fixture();
+  const out = assertStopped(run(f, ["run", "--worktree", join(f.root, "missing")]), "not-prepared") as unknown as RunOut;
+  assert.equal(out.launch_file, null);
+});
+
+test("run stops with not-prepared and a null launch_file when --worktree names a directory outside any git work tree", () => {
+  const f = fixture();
+  const out = assertStopped(run(f, ["run", "--worktree", f.logs]), "not-prepared") as unknown as RunOut;
+  assert.equal(out.launch_file, null);
 });
 
 test("run passes --model to every claude it starts", () => {
@@ -2744,9 +2788,6 @@ const NO_SESSION = (id: string): string => `No conversation found with session I
 const FINISHED: ImplementTurn = { check: true, reply: { session_id: "s-2", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
 const UNCHECKED: ImplementTurn = { reply: { session_id: "s-2", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
 
-const launchPathOf = (f: Fixture): string =>
-  join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json");
-
 function fakeImplementer(f: Fixture, turns: ImplementTurn[]): void {
   writeFileSync(join(f.logs, "implement-plan.json"), JSON.stringify(turns));
   rmSync(join(f.logs, "implement-calls"), { force: true });
@@ -2835,7 +2876,7 @@ test("a resumed implement that passes the check returns resumed true, keeps laun
   const f = interrupted();
   rewriteLaunch(f, (stored) => ({ ...stored, implement: { ...(stored.implement as Record<string, unknown>), issue_digest: "a".repeat(64) } }));
   const started = launchRecord(worktreeOf(f));
-  fakeImplementer(f, [FINISHED]);
+  fakeImplementer(f, [{ ...FINISHED, reply: { ...FINISHED.reply, result: "resumed reply" } }]);
   const result = implementAt(f);
   assert.equal(result.status, 0, result.stderr);
   const out = outputOf(result);
@@ -2843,7 +2884,8 @@ test("a resumed implement that passes the check returns resumed true, keeps laun
   assert.equal(out.session_id, "s-2");
   assert.deepEqual(implementCalls(f)[0].launch, started);
   const record = implementRecordOf(f);
-  assert.deepEqual(Object.keys(record).sort(), ["at", "issue_digest", "session_id", "tree"]);
+  assert.deepEqual(Object.keys(record).sort(), ["at", "issue_digest", "reply", "session_id", "tree"]);
+  assert.equal(record.reply, "resumed reply");
   assert.equal(record.issue_digest, "a".repeat(64));
   assert.equal(record.session_id, "s-2");
 });
@@ -2883,10 +2925,14 @@ test("a resumed implement that fails without the no-session message stops with c
 test("when the recorded session does not exist, implement starts a new session with a new id and the implement prompt in the same call", () => {
   const f = interrupted();
   const id = interruptedId(f);
-  fakeImplementer(f, [{ exit: 1, stderr: NO_SESSION(id) }, FINISHED]);
+  fakeImplementer(f, [
+    { exit: 1, stderr: NO_SESSION(id), reply: { session_id: "s-old", result: "resumed reply" } },
+    { ...FINISHED, reply: { ...FINISHED.reply, result: "new session reply" } },
+  ]);
   const result = implementAt(f);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(outputOf(result).resumed, undefined);
+  assert.equal(implementRecordOf(f).reply, "new session reply");
   const calls = implementCalls(f);
   assert.equal(calls.length, 2);
   const fresh = flagValue(calls[1].args, "--session-id");
@@ -3140,6 +3186,8 @@ test("each of the seven actions called while implement waits stops with busy nam
         assert.deepEqual(out.steps, []);
         assert.equal(out.cost_usd, 0);
         for (const key of ["verdict", "required", "rounds"]) assert.ok(key in out, key);
+        assert.deepEqual(Object.keys(out).slice(-5), ["cost_usd", "launch_file", "holder", "reason", "detail"]);
+        assert.equal(out.launch_file, launchPathOf(f));
       }
       assert.equal(pidsIn(f, "hanging-claude-pids").length, 1, action);
       assert.equal(launchFile(f), text, action);

@@ -509,7 +509,13 @@ const implement = async ({ worktree, model, fresh }: WorktreeCall): Promise<Resu
 
   const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
   const tree = treeHash(gate.root);
-  const finished = { session_id: reply.session_id, tree, issue_digest: child.issueDigest, at: new Date().toISOString() };
+  const finished = {
+    session_id: reply.session_id,
+    tree,
+    issue_digest: child.issueDigest,
+    reply: typeof reply.result === "string" ? reply.result : "",
+    at: new Date().toISOString(),
+  };
   writeFileSync(launchPath, `${JSON.stringify({ ...child.base, implement: finished }, null, 2)}\n`);
   const shown = { session_id: reply.session_id, tree, ...shownOf(reply), ...(child.resumed ? { resumed: true } : {}) };
   if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
@@ -980,6 +986,11 @@ const stepOf = (action: StepAction, result: Result): Record<string, unknown> => 
   return Object.fromEntries(STEP_FIELDS[action].filter((name) => fields[name] !== undefined).map((name) => [name, fields[name]]));
 };
 
+const launchFileOf = (worktree: string): string | null => {
+  const gate = existsSync(worktree) ? gateLocation(worktree) : null;
+  return gate === null ? null : join(gate.dir, LAUNCH_FILE);
+};
+
 const runFields = (worktree: string, steps: Record<string, unknown>[], cost: number): Record<string, unknown> => {
   const stored = preparedAt(worktree)?.stored ?? {};
   const current = currentReviewOf(stored);
@@ -989,6 +1000,7 @@ const runFields = (worktree: string, steps: Record<string, unknown>[], cost: num
     rounds: Array.isArray(stored.reviews) ? stored.reviews.length : 0,
     steps,
     cost_usd: cost,
+    launch_file: launchFileOf(worktree),
   };
 };
 
