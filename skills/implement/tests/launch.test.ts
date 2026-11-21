@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { type SpawnSyncReturns, spawn, spawnSync } from "node:child_process";
+import { type ChildProcess, type SpawnSyncReturns, spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   accessSync,
@@ -8,6 +8,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   realpathSync,
   rmSync,
@@ -3038,4 +3039,352 @@ test("run stopped by SIGTERM while implement waits resumes the same session on t
   assert.equal(again.status, 0, again.stderr);
   assert.equal(runOut(again).steps[0].resumed, true);
   assert.equal(flagValue(roundCalls(f)[0].args, "--resume"), flagValue(first, "--session-id"));
+});
+
+const holdersOf = (f: Fixture): string =>
+  join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch-holders");
+
+const recordFilesOf = (f: Fixture): string[] =>
+  existsSync(holdersOf(f)) ? readdirSync(holdersOf(f)).filter((name) => /^\d+(\.children)?\.json$/.test(name)).sort() : [];
+
+const holderFile = (f: Fixture, pid: number, kind = ""): string => join(holdersOf(f), `${pid}${kind}.json`);
+
+const readHolder = (f: Fixture, pid: number, kind = ""): unknown => JSON.parse(readFileSync(holderFile(f, pid, kind), "utf8"));
+
+const groupRunning = (pid: number): boolean => isRunning(-pid);
+
+const deadPid = (): number => spawnSync("true").pid as number;
+
+interface Waiting {
+  pid: number;
+  closed: Promise<{ code: number | null; signal: NodeJS.Signals | null }>;
+  child: ChildProcess;
+}
+
+async function startWaiting(f: Fixture, args: string[], claudes = 1): Promise<Waiting> {
+  const child = spawn(SCRIPT, args, {
+    stdio: ["ignore", "ignore", "pipe"],
+    env: isolatedEnv({ PATH: `${f.bin}:${process.env.PATH}`, LOGS: f.logs, NODE: process.execPath, DONE_GATE }),
+  });
+  let stderr = "";
+  child.stderr?.setEncoding("utf8").on("data", (chunk: string) => {
+    stderr += chunk;
+  });
+  const closed = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((done) =>
+    child.on("close", (code, signal) => done({ code, signal })),
+  );
+  const started = await waitFor(() => pidsIn(f, "hanging-sleep-pids").length >= claudes, 20_000);
+  assert.ok(started, `${claudes} claude started: ${stderr}`);
+  return { pid: child.pid as number, closed, child };
+}
+
+function endWaiting(f: Fixture, waiting: Waiting): void {
+  if (waiting.child.exitCode === null && waiting.child.signalCode === null) waiting.child.kill("SIGKILL");
+  for (const pid of pidsIn(f, "hanging-claude-pids")) {
+    try {
+      process.kill(-pid, "SIGKILL");
+    } catch {}
+  }
+  for (const pid of pidsIn(f, "hanging-sleep-pids")) {
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {}
+  }
+}
+
+async function implementWaiting(f: Fixture): Promise<Waiting> {
+  fakeHangingClaude(f);
+  return startWaiting(f, ["implement", "--worktree", worktreeOf(f)]);
+}
+
+const busyDetail = (pid: number, action: string, at: unknown, worktree: string, file: string): string =>
+  `launch.ts ${action} (pid ${pid}, started ${at}) is working on ${worktree}. Wait for it to end, or end it, and call again. Its record is ${file}. Delete the record only when \`ps -p ${pid} -o command=\`, run outside any sandbox, shows a process that is not launch.ts.`;
+
+const leftDetail = (pid: number, action: string, at: unknown, worktree: string, ids: string, file: string): string =>
+  `launch.ts ${action} (pid ${pid}, started ${at}) ended and left claude running on ${worktree}. Process group ids still running: ${ids}. A claude that launch.ts ended on a signal is gone within a second, so call again first. If the groups stay, list their processes with \`ps -axo pid,pgid,command\`, run outside any sandbox, end each group that is claude with \`kill -TERM -- -<id>\`, and call again. Its record is ${file}. Delete the record only when ps shows that no process in those groups is claude.`;
+
+const unreadableDetail = (file: string, worktree: string): string =>
+  `The record ${file} of a launch.ts working on ${worktree} cannot be read. Confirm with \`ps -axo pid,pgid,command\`, run outside any sandbox, that no launch.ts and no claude it started is running on ${worktree}. Then delete ${file} and call again.`;
+
+const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run"];
+
+test("while implement waits for claude, launch-holders holds its pid record of pid, action, and at only, and a children record of that claude's pid only", async () => {
+  const f = prepared();
+  const waiting = await implementWaiting(f);
+  try {
+    assert.deepEqual(recordFilesOf(f), [`${waiting.pid}.children.json`, `${waiting.pid}.json`].sort());
+    const record = readHolder(f, waiting.pid) as Record<string, unknown>;
+    assert.deepEqual(Object.keys(record).sort(), ["action", "at", "pid"]);
+    assert.equal(record.pid, waiting.pid);
+    assert.equal(record.action, "implement");
+    assert.ok(!Number.isNaN(Date.parse(String(record.at))));
+    assert.deepEqual(readHolder(f, waiting.pid, ".children"), pidsIn(f, "hanging-claude-pids"));
+  } finally {
+    endWaiting(f, waiting);
+  }
+});
+
+test("each of the seven actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
+  const f = prepared();
+  const waiting = await implementWaiting(f);
+  try {
+    const record = readHolder(f, waiting.pid) as Record<string, unknown>;
+    const text = launchFile(f);
+    const file = holderFile(f, waiting.pid);
+    for (const action of HELD_CALLS) {
+      const out = assertStopped(run(f, [action, "--worktree", worktreeOf(f)]), "busy");
+      assert.equal(out.action, action);
+      assert.equal(out.detail, busyDetail(waiting.pid, "implement", record.at, worktreeOf(f), file), action);
+      assert.deepEqual(out.holder, { file, pid: waiting.pid, action: "implement", at: record.at }, action);
+      if (action === "run") {
+        assert.deepEqual(out.steps, []);
+        assert.equal(out.cost_usd, 0);
+        for (const key of ["verdict", "required", "rounds"]) assert.ok(key in out, key);
+      }
+      assert.equal(pidsIn(f, "hanging-claude-pids").length, 1, action);
+      assert.equal(launchFile(f), text, action);
+      assert.deepEqual(readdirSync(holdersOf(f)).sort(), [`${waiting.pid}.children.json`, `${waiting.pid}.json`].sort(), action);
+    }
+  } finally {
+    endWaiting(f, waiting);
+  }
+});
+
+test("an action called with a usage error while implement waits exits 2 and prints nothing on stdout", async () => {
+  const f = prepared();
+  const waiting = await implementWaiting(f);
+  try {
+    for (const action of HELD_CALLS) {
+      const result = run(f, [action, "--worktree", worktreeOf(f), "--unknown", "x"]);
+      assert.equal(result.status, 2, action);
+      assert.equal(result.stdout, "", action);
+    }
+    assert.deepEqual(recordFilesOf(f), [`${waiting.pid}.children.json`, `${waiting.pid}.json`].sort());
+  } finally {
+    endWaiting(f, waiting);
+  }
+});
+
+test("while run waits for the implement claude, its record has action run and holds that claude's pid, and agree stops with busy naming run", async () => {
+  const f = prepared();
+  fakeHangingClaude(f);
+  const waiting = await startWaiting(f, ["run", "--worktree", worktreeOf(f)]);
+  try {
+    assert.equal((readHolder(f, waiting.pid) as Record<string, unknown>).action, "run");
+    assert.deepEqual(readHolder(f, waiting.pid, ".children"), pidsIn(f, "hanging-claude-pids"));
+    assert.deepEqual(recordFilesOf(f), [`${waiting.pid}.children.json`, `${waiting.pid}.json`].sort());
+    const out = assertStopped(agree(f), "busy");
+    assert.equal((out.holder as Record<string, unknown>).action, "run");
+  } finally {
+    endWaiting(f, waiting);
+  }
+});
+
+test("while run waits for the two review claudes after implement, its children record holds those two pids and not the implement claude's", async () => {
+  const f = prepared();
+  writeFileSync(
+    join(f.bin, "claude"),
+    `#!/bin/sh
+prompt=$(cat)
+case "$prompt" in
+  "Implement GitHub Issue"*)
+    echo $$ > "$LOGS/implement-pid"
+    "$NODE" "$DONE_GATE" check >&2
+    echo '{"session_id":"s-1","result":"finished","total_cost_usd":0.5,"duration_ms":1200}'
+    exit 0;;
+esac
+echo $$ >> "$LOGS/hanging-claude-pids"
+sleep 60 &
+echo $! >> "$LOGS/hanging-sleep-pids"
+wait
+`,
+    { mode: 0o755 },
+  );
+  const waiting = await startWaiting(f, ["run", "--worktree", worktreeOf(f)], 2);
+  try {
+    const children = readHolder(f, waiting.pid, ".children") as number[];
+    assert.deepEqual([...children].sort(), [...pidsIn(f, "hanging-claude-pids")].sort());
+    assert.equal(children.length, 2);
+    assert.ok(!children.includes(pidsIn(f, "implement-pid")[0]));
+  } finally {
+    endWaiting(f, waiting);
+  }
+});
+
+test("no record is left after an action succeeds, an action stops, run completes, or agree ends", () => {
+  const succeeded = prepared();
+  fakeClaude(succeeded, PASS_CHECK + SESSION_REPLY);
+  assert.equal(run(succeeded, ["implement", "--worktree", worktreeOf(succeeded)]).status, 0);
+  assert.deepEqual(recordFilesOf(succeeded), []);
+
+  const stoppedOne = prepared();
+  assertStopped(review(stoppedOne), "not-implemented");
+  assert.deepEqual(recordFilesOf(stoppedOne), []);
+
+  const completed = prepared();
+  fakeRounds(completed, { implement: [IMPLEMENTED], self: [{ reply: shaped("self-1") }], independent: [{ reply: shaped("ind-1") }] });
+  assert.equal(runLaunch(completed).status, 0);
+  assert.deepEqual(recordFilesOf(completed), []);
+
+  const agreed = prepared();
+  assert.equal(agree(agreed).status, 0);
+  assert.deepEqual(recordFilesOf(agreed), []);
+  assert.ok(existsSync(holdersOf(agreed)));
+});
+
+test("implement ended by SIGTERM leaves its two records, and agree after claude and its child end succeeds and leaves no record", async () => {
+  const f = prepared();
+  const result = await signalWhileClaudeWaits(f, ["implement", "--worktree", worktreeOf(f)], "SIGTERM", 1);
+  assertEndedBySignal(result, 1);
+  assert.equal(recordFilesOf(f).length, 2);
+  assert.equal(agree(f).status, 0);
+  assert.deepEqual(recordFilesOf(f), []);
+});
+
+async function killedLaunch(f: Fixture): Promise<Waiting> {
+  const waiting = await implementWaiting(f);
+  waiting.child.kill("SIGKILL");
+  await waiting.closed;
+  return waiting;
+}
+
+test("after launch.ts alone is killed by SIGKILL, implement stops with claude-left-running naming the claude still running, starts no claude, and keeps launch.json and both records", async () => {
+  const f = prepared();
+  const waiting = await killedLaunch(f);
+  try {
+    const record = readHolder(f, waiting.pid) as Record<string, unknown>;
+    const claude = pidsIn(f, "hanging-claude-pids");
+    const text = launchFile(f);
+    const file = holderFile(f, waiting.pid);
+    const out = assertStopped(run(f, ["implement", "--worktree", worktreeOf(f)]), "claude-left-running");
+    assert.equal(out.detail, leftDetail(waiting.pid, "implement", record.at, worktreeOf(f), claude.join(", "), file));
+    assert.deepEqual(out.holder, { file, pid: waiting.pid, action: "implement", at: record.at, claude });
+    assert.equal(pidsIn(f, "hanging-claude-pids").length, 1);
+    assert.equal(launchFile(f), text);
+    assert.deepEqual(recordFilesOf(f), [`${waiting.pid}.children.json`, `${waiting.pid}.json`].sort());
+  } finally {
+    endWaiting(f, waiting);
+  }
+});
+
+test("after launch.ts is killed and then its claude process alone ends while the child in its group runs, an action stops with claude-left-running", async () => {
+  const f = prepared();
+  const waiting = await killedLaunch(f);
+  try {
+    const [claude] = pidsIn(f, "hanging-claude-pids");
+    process.kill(claude, "SIGKILL");
+    assert.ok(await waitFor(() => !isRunning(claude), 5_000));
+    assert.ok(groupRunning(claude));
+    assertStopped(agree(f), "claude-left-running");
+  } finally {
+    endWaiting(f, waiting);
+  }
+});
+
+test("after launch.ts is killed and its claude's process group is ended, agree succeeds and leaves no record", async () => {
+  const f = prepared();
+  const waiting = await killedLaunch(f);
+  try {
+    const [claude] = pidsIn(f, "hanging-claude-pids");
+    process.kill(-claude, "SIGKILL");
+    assert.ok(await waitFor(() => !groupRunning(claude), 5_000));
+    assert.equal(agree(f).status, 0);
+    assert.deepEqual(recordFilesOf(f), []);
+  } finally {
+    endWaiting(f, waiting);
+  }
+});
+
+test("a record of an ended process, with no children record or an empty one, lets the action return its result and is removed", () => {
+  for (const children of [null, []]) {
+    const f = prepared();
+    const pid = deadPid();
+    mkdirSync(holdersOf(f), { recursive: true });
+    writeFileSync(holderFile(f, pid), JSON.stringify({ pid, action: "implement", at: "2026-11-21T00:00:00.000Z" }));
+    if (children !== null) writeFileSync(holderFile(f, pid, ".children"), JSON.stringify(children));
+    const result = agree(f);
+    assert.equal(result.status, 0, result.stdout);
+    assert.equal(outputOf(result).action, "agree");
+    assert.deepEqual(recordFilesOf(f), [], String(children));
+  }
+});
+
+test("with a killed launch.ts's record and a record of a running process, the action stops with busy naming the running one", async () => {
+  const f = prepared();
+  const waiting = await killedLaunch(f);
+  try {
+    writeFileSync(holderFile(f, process.pid), JSON.stringify({ pid: process.pid, action: "review", at: "2026-11-21T00:00:00.000Z" }));
+    const out = assertStopped(agree(f), "busy");
+    assert.equal((out.holder as Record<string, unknown>).pid, process.pid);
+  } finally {
+    rmSync(holderFile(f, process.pid), { force: true });
+    endWaiting(f, waiting);
+  }
+});
+
+test("a record of an ended process that is not JSON, names another pid, or lacks action stops the action with holder-unreadable naming that file, which is kept", () => {
+  const contents = (pid: number): string[] => [
+    "not json",
+    JSON.stringify({ pid: pid + 1, action: "implement", at: "2026-11-21T00:00:00.000Z" }),
+    JSON.stringify({ pid, at: "2026-11-21T00:00:00.000Z" }),
+  ];
+  for (const index of [0, 1, 2]) {
+    const f = prepared();
+    const pid = deadPid();
+    mkdirSync(holdersOf(f), { recursive: true });
+    const file = holderFile(f, pid);
+    writeFileSync(file, contents(pid)[index]);
+    const out = assertStopped(agree(f), "holder-unreadable");
+    assert.equal(out.detail, unreadableDetail(file, worktreeOf(f)), String(index));
+    assert.deepEqual(out.holder, { file }, String(index));
+    assert.ok(existsSync(file), String(index));
+  }
+});
+
+test("a children record of an ended process that is not an array stops the action with holder-unreadable naming the children file", () => {
+  const f = prepared();
+  const pid = deadPid();
+  mkdirSync(holdersOf(f), { recursive: true });
+  writeFileSync(holderFile(f, pid), JSON.stringify({ pid, action: "implement", at: "2026-11-21T00:00:00.000Z" }));
+  writeFileSync(holderFile(f, pid, ".children"), JSON.stringify({ pid }));
+  const out = assertStopped(agree(f), "holder-unreadable");
+  assert.deepEqual(out.holder, { file: holderFile(f, pid, ".children") });
+});
+
+test("files in launch-holders whose names are not records are neither read nor removed, and the action returns its result", () => {
+  const f = prepared();
+  mkdirSync(holdersOf(f), { recursive: true });
+  for (const name of ["notes.txt", "1.json.tmp"]) writeFileSync(join(holdersOf(f), name), "not json");
+  assert.equal(agree(f).status, 0);
+  for (const name of ["notes.txt", "1.json.tmp"]) assert.ok(existsSync(join(holdersOf(f), name)), name);
+});
+
+test("a file named launch-holders that is not a directory stops the action with holder-write-failed and no holder, starting no claude and keeping launch.json", () => {
+  const f = prepared();
+  writeFileSync(holdersOf(f), "not a directory");
+  fakeImplementer(f, [FINISHED]);
+  const text = launchFile(f);
+  const out = assertStopped(implementAt(f), "holder-write-failed");
+  assert.ok(String(out.detail).startsWith(`launch.ts could not write its record under ${holdersOf(f)}: `), String(out.detail));
+  assert.ok(!("holder" in out));
+  assert.deepEqual(implementCalls(f), []);
+  assert.equal(launchFile(f), text);
+});
+
+test("an action on a repo with no record directory stops with not-prepared and creates no directory", () => {
+  const f = fixture();
+  const gateDir = git(f.repo, "rev-parse", "--path-format=absolute", "--git-path", "agent-gate");
+  for (const action of HELD_CALLS) assertStopped(run(f, [action, "--worktree", f.repo]), "not-prepared");
+  assert.ok(!existsSync(gateDir));
+});
+
+test("agree on another fixture's worktree succeeds while implement waits on one worktree", async () => {
+  const f = prepared();
+  const other = prepared();
+  const waiting = await implementWaiting(f);
+  try {
+    assert.equal(agree(other).status, 0);
+  } finally {
+    endWaiting(f, waiting);
+  }
 });

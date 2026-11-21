@@ -51,6 +51,7 @@ export interface ChildRun {
   fork?: boolean;
   tools?: string;
   sessionId?: string;
+  onStart?: (pid: number) => void;
 }
 export interface ChildOutcome {
   code: number | null;
@@ -90,6 +91,7 @@ export const runClaudeOnce = (run: ChildRun): Promise<ChildOutcome> =>
     const child = spawn("claude", argv, { cwd, stdio: ["pipe", "pipe", "pipe"], detached: true });
     const pid = child.pid ?? 0;
     if (pid) runningChildren.add(pid);
+    if (pid) run.onStart?.(pid);
     let stdout = "";
     let stderr = "";
     let timedOut = false;

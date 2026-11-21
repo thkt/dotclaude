@@ -2,12 +2,13 @@
 /// <reference types="node" />
 import { type SpawnSyncReturns, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type GateLocation, gateLocation, git, readJson, treeHash } from "../../../hooks/_lib/gate_record.ts";
 import { type ChildOutcome, type ChildRun, endAll, GIVE_REPLY, runClaudeOnce } from "../../../workflows/_lib/claude-run.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { type HolderStop, type Holding, hold } from "./holders.ts";
 
 export const TYPE_BY_PREFIX: Record<string, string> = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
 
@@ -383,8 +384,16 @@ const launchOf = (value: unknown): Launch | null => {
   return { issue: issue as number, repository, branch, base, issue_digest };
 };
 
-const worktreeCall = (argv: string[], switches: readonly string[] = []): { worktree: string; model: string; fresh: boolean } | null => {
-  const flags = readFlags(argv, ["--worktree", "--model"], switches);
+interface WorktreeCall {
+  worktree: string;
+  model: string;
+  fresh: boolean;
+}
+
+const MODEL_FLAGS = ["--worktree", "--model"];
+
+const worktreeCall = (argv: string[], allowed: readonly string[], switches: readonly string[] = []): WorktreeCall | null => {
+  const flags = readFlags(argv, allowed, switches);
   const worktree = flags?.["--worktree"];
   if (!flags || !worktree || !isAbsolute(worktree)) return null;
   return { worktree, model: flags["--model"] ?? "opus", fresh: Object.hasOwn(flags, "--fresh") };
@@ -457,10 +466,15 @@ interface ImplementChild {
   base: Record<string, unknown>;
 }
 
-const implement = async (argv: string[]): Promise<Result | null> => {
-  const call = worktreeCall(argv, ["--fresh"]);
-  if (call === null) return null;
-  const { worktree, model, fresh } = call;
+let holding: Holding | null = null;
+
+const runChild = async (run: ChildRun): Promise<ChildOutcome> => {
+  const outcome = await runClaudeOnce({ ...run, onStart: (pid) => holding?.started(pid) });
+  holding?.ended();
+  return outcome;
+};
+
+const implement = async ({ worktree, model, fresh }: WorktreeCall): Promise<Result> => {
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("implement", reason, detail, extra);
 
@@ -477,12 +491,12 @@ const implement = async (argv: string[]): Promise<Result | null> => {
     const sessionId = randomUUID();
     const base = { ...launch, implement: { session_id: sessionId, issue_digest: launch.issue_digest, started_at: new Date().toISOString() } };
     writeFileSync(launchPath, `${JSON.stringify(base, null, 2)}\n`);
-    const outcome = await runClaudeOnce({ ...common, prompt: promptFor(launch.issue, launch.repository, DONE_GATE), sessionId });
+    const outcome = await runChild({ ...common, prompt: promptFor(launch.issue, launch.repository, DONE_GATE), sessionId });
     return { outcome, resumed: false, issueDigest: launch.issue_digest, base };
   };
   const resume = async (): Promise<ImplementChild> => {
     const earlier = objectOf(stored.implement) ?? {};
-    const outcome = await runClaudeOnce({
+    const outcome = await runChild({
       ...common,
       prompt: resumePrompt(launch.issue, launch.repository, DONE_GATE),
       resume: earlier.session_id as string,
@@ -554,12 +568,12 @@ const unshapedOf = (keys: readonly string[] | null): string =>
 
 const runReview = async (run: ChildRun, keys: readonly string[] | null): Promise<Review | string> => {
   const unshaped = unshapedOf(keys);
-  const first = replyOf(await runClaudeOnce(run));
+  const first = replyOf(await runChild(run));
   if (typeof first === "string") return first;
   const review = reviewOf(first, keys);
   if (review !== null) return review;
   if (!nonEmpty(first.session_id)) return `${unshaped}, and the JSON has no session_id to ask again in.`;
-  const again = replyOf(await runClaudeOnce({ ...run, prompt: GIVE_REPLY, resume: first.session_id, fork: undefined }));
+  const again = replyOf(await runChild({ ...run, prompt: GIVE_REPLY, resume: first.session_id, fork: undefined }));
   if (typeof again === "string") return `${unshaped}; asked once more, ${again}`;
   return reviewOf(again, keys) ?? `${unshaped}, also after asking once more.`;
 };
@@ -621,10 +635,7 @@ const changeDuringReviews = (tree: string | null, after: string | null, launch: 
     ? issueChange(launch, worktree)
     : { reason: "tree-changed", detail: `The working tree was ${tree} before the reviews and ${after} after them.` };
 
-const review = async (argv: string[]): Promise<Result | null> => {
-  const call = worktreeCall(argv);
-  if (call === null) return null;
-  const { worktree, model } = call;
+const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("review", reason, detail, extra);
 
@@ -688,10 +699,7 @@ const repairLine = (entry: unknown): string => {
   return JSON.stringify({ key, side, location, condition, problem, action, reopened });
 };
 
-const repair = async (argv: string[]): Promise<Result | null> => {
-  const call = worktreeCall(argv);
-  if (call === null) return null;
-  const { worktree, model } = call;
+const repair = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("repair", reason, detail, extra);
 
@@ -723,7 +731,7 @@ const repair = async (argv: string[]): Promise<Result | null> => {
   if (changed !== null) return stop(changed.reason, changed.detail);
 
   const reply = sessionReplyOf(
-    await runClaudeOnce({
+    await runChild({
       prompt: repairPrompt(launch.issue, required.map(repairLine).join("\n"), DONE_GATE),
       model,
       effort: undefined,
@@ -754,9 +762,7 @@ const repair = async (argv: string[]): Promise<Result | null> => {
   return { action: "repair", ok: true, ...shown };
 };
 
-const agree = (argv: string[]): Result | null => {
-  const worktree = readFlags(argv, ["--worktree"])?.["--worktree"];
-  if (!worktree || !isAbsolute(worktree)) return null;
+const agree = ({ worktree }: WorktreeCall): Result => {
   const stop = (reason: string, detail: string) => stopped("agree", reason, detail);
 
   const prepared = preparedAt(worktree);
@@ -779,10 +785,7 @@ const readDigestOf = (stored: Record<string, unknown>): unknown => {
   return rereads.length > 0 ? objectOf(rereads[rereads.length - 1])?.issue_digest : objectOf(stored.implement)?.issue_digest;
 };
 
-const reread = async (argv: string[]): Promise<Result | null> => {
-  const call = worktreeCall(argv);
-  if (call === null) return null;
-  const { worktree, model } = call;
+const reread = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("reread", reason, detail, extra);
 
@@ -799,7 +802,7 @@ const reread = async (argv: string[]): Promise<Result | null> => {
 
   const before = treeHash(gate.root);
   const reply = sessionReplyOf(
-    await runClaudeOnce({
+    await runChild({
       prompt: rereadPrompt(launch.issue, launch.repository, DONE_GATE),
       model,
       effort: undefined,
@@ -832,10 +835,7 @@ const reread = async (argv: string[]): Promise<Result | null> => {
 
 const gateStatusOf = (worktree: string): SpawnSyncReturns<string> => runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
 
-const continueWork = async (argv: string[]): Promise<Result | null> => {
-  const call = worktreeCall(argv);
-  if (call === null) return null;
-  const { worktree, model } = call;
+const continueWork = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("continue", reason, detail, extra);
 
@@ -857,7 +857,7 @@ const continueWork = async (argv: string[]): Promise<Result | null> => {
 
   const before = treeHash(gate.root);
   const reply = sessionReplyOf(
-    await runClaudeOnce({
+    await runChild({
       prompt: continuePrompt(launch.issue, launch.repository, DONE_GATE),
       model,
       effort: undefined,
@@ -886,7 +886,7 @@ const continueWork = async (argv: string[]): Promise<Result | null> => {
 type StepAction = "implement" | "reread" | "review" | "repair" | "continue";
 type Next = { kind: "call"; action: StepAction } | { kind: "done" } | { kind: "stop"; reason: string; detail: string };
 
-const STEP_ACTIONS: Record<StepAction, (argv: string[]) => Promise<Result | null>> = {
+const STEP_ACTIONS: Record<StepAction, (call: WorktreeCall) => Promise<Result>> = {
   implement,
   reread,
   review,
@@ -980,24 +980,25 @@ const stepOf = (action: StepAction, result: Result): Record<string, unknown> => 
   return Object.fromEntries(STEP_FIELDS[action].filter((name) => fields[name] !== undefined).map((name) => [name, fields[name]]));
 };
 
-const runOutput = (worktree: string, steps: Record<string, unknown>[], cost: number, stop: Next | null): Result => {
+const runFields = (worktree: string, steps: Record<string, unknown>[], cost: number): Record<string, unknown> => {
   const stored = preparedAt(worktree)?.stored ?? {};
   const current = currentReviewOf(stored);
-  const fields = {
+  return {
     verdict: current?.verdict ?? null,
     required: current?.required ?? [],
     rounds: Array.isArray(stored.reviews) ? stored.reviews.length : 0,
     steps,
     cost_usd: cost,
   };
+};
+
+const runOutput = (worktree: string, steps: Record<string, unknown>[], cost: number, stop: Next | null): Result => {
+  const fields = runFields(worktree, steps, cost);
   return stop?.kind === "stop" ? stopped("run", stop.reason, stop.detail, fields) : { action: "run", ok: true, ...fields };
 };
 
-const runRounds = async (argv: string[]): Promise<Result | null> => {
-  const call = worktreeCall(argv);
-  if (call === null) return null;
-  const { worktree, model } = call;
-  const childArgv = ["--worktree", worktree, "--model", model];
+const runRounds = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
+  const childCall = { worktree, model, fresh: false };
   const steps: Record<string, unknown>[] = [];
   let cost = 0;
   let previous: StepAction | null = null;
@@ -1009,7 +1010,7 @@ const runRounds = async (argv: string[]): Promise<Result | null> => {
       return runOutput(worktree, steps, cost, { kind: "stop", reason: "no-progress", detail });
     }
     previous = next.action;
-    const result = (await STEP_ACTIONS[next.action](childArgv)) as Result;
+    const result = await STEP_ACTIONS[next.action](childCall);
     const step = stepOf(next.action, result);
     steps.push(step);
     cost += amountOf(step.cost_usd);
@@ -1020,15 +1021,45 @@ const runRounds = async (argv: string[]): Promise<Result | null> => {
   }
 };
 
-const ACTIONS: Record<string, (argv: string[]) => Result | null | Promise<Result | null>> = {
-  prepare,
-  implement,
-  review,
-  repair,
-  agree,
-  reread,
-  continue: continueWork,
-  run: runRounds,
+interface HeldAction {
+  parse: (argv: string[]) => WorktreeCall | null;
+  act: (call: WorktreeCall) => Result | Promise<Result>;
+}
+
+const HELD_ACTIONS: Record<string, HeldAction> = {
+  implement: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS, ["--fresh"]), act: implement },
+  review: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: review },
+  repair: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: repair },
+  agree: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: agree },
+  reread: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: reread },
+  continue: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: continueWork },
+  run: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: runRounds },
+};
+
+const gateDirOf = (worktree: string): string | null => {
+  const gate = existsSync(worktree) ? gateLocation(worktree) : null;
+  return gate !== null && statSync(gate.dir, { throwIfNoEntry: false })?.isDirectory() ? gate.dir : null;
+};
+
+const holderStopped = (action: string, worktree: string, { reason, detail, holder }: HolderStop): Result => {
+  const extra = action === "run" ? runFields(worktree, [], 0) : {};
+  return stopped(action, reason, detail, holder === undefined ? extra : { ...extra, holder });
+};
+
+const actOn = async (action: string, argv: string[]): Promise<Result | null> => {
+  if (action === "prepare") return prepare(argv);
+  if (!Object.hasOwn(HELD_ACTIONS, action)) return null;
+  const { parse, act } = HELD_ACTIONS[action];
+  const call = parse(argv);
+  if (call === null) return null;
+  const gateDir = gateDirOf(call.worktree);
+  if (gateDir === null) return act(call);
+  const held = hold(gateDir, action, call.worktree);
+  if ("reason" in held) return holderStopped(action, call.worktree, held);
+  holding = held;
+  const result = await act(call);
+  held.release();
+  return result;
 };
 
 const ENDS_CLAUDE_ON_SIGNAL = new Set(["implement", "reread", "review", "repair", "continue", "run"]);
@@ -1043,7 +1074,7 @@ export async function launch(argv: string[]): Promise<number> {
   if (ENDS_CLAUDE_ON_SIGNAL.has(action ?? "")) {
     for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) process.on(name, endClaudeAndExit);
   }
-  const result = Object.hasOwn(ACTIONS, action ?? "") ? await ACTIONS[action](rest) : null;
+  const result = await actOn(action ?? "", rest);
   if (result === null) {
     process.stderr.write(USAGE);
     return 2;
