@@ -337,6 +337,13 @@ test("runClaudeOnce puts --fork-session right after --resume <id> when fork and 
   assert.ok(!(await argvOfOnce({ resume: "s-7" })).includes("--fork-session"));
 });
 
+test("runClaudeOnce passes --session-id with the sessionId value when it is given, and no --session-id when it is not", async () => {
+  const given = await argvOfOnce({ sessionId: "0b5c1f3e-2a4d-4e6f-8a9b-1c2d3e4f5a6b" });
+  const at = given.indexOf("--session-id");
+  assert.deepEqual(given.slice(at, at + 2), ["--session-id", "0b5c1f3e-2a4d-4e6f-8a9b-1c2d3e4f5a6b"]);
+  assert.ok(!(await argvOfOnce({})).includes("--session-id"));
+});
+
 test("runClaudeOnce uses tools as the --allowedTools value when it is passed", async () => {
   const argv = await argvOfOnce({ tools: "Read,Glob,Grep,LS" });
   assert.equal(argv[argv.indexOf("--allowedTools") + 1], "Read,Glob,Grep,LS");
