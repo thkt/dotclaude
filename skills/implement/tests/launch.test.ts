@@ -804,7 +804,7 @@ ${lines}
 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; and what \`${DONE_GATE} status\` printed.
+When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
 const REPAIR_PROMPT = repairPromptWith(`{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}
@@ -2051,7 +2051,7 @@ const REREAD_PROMPT = `GitHub Issue #42 of owner/repo changed after you last rea
 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; and what \`${DONE_GATE} status\` printed.
+When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
 const REREAD_REPLY = `echo '{"session_id":"s-1","result":"reread","total_cost_usd":0.3,"duration_ms":700}'\n`;
@@ -2443,7 +2443,7 @@ const CONTINUE_PROMPT = `Your work on GitHub Issue #42 of owner/repo in this wor
 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-When you are done, reply with: what was unfinished; what you changed; the files you changed; and what \`${DONE_GATE} status\` printed.
+When you are done, reply with: what was unfinished; what you changed; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
 const CONTINUE_REPLY = `echo '{"session_id":"s-1","result":"continued","total_cost_usd":0.4,"duration_ms":800}'\n`;

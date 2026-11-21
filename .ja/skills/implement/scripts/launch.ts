@@ -65,7 +65,7 @@ ${findings}
 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; and what \`${doneGate} status\` printed.
+When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
 const rereadPrompt = (issue: number, repository: string, doneGate: string): string =>
@@ -78,7 +78,7 @@ const rereadPrompt = (issue: number, repository: string, doneGate: string): stri
 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; and what \`${doneGate} status\` printed.
+When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
 const continuePrompt = (issue: number, repository: string, doneGate: string): string =>
@@ -90,7 +90,7 @@ const continuePrompt = (issue: number, repository: string, doneGate: string): st
 
 Do not commit, push, or open a pull request. Do not edit files outside this worktree.
 
-When you are done, reply with: what was unfinished; what you changed; the files you changed; and what \`${doneGate} status\` printed.
+When you are done, reply with: what was unfinished; what you changed; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
 const REVIEW_TOOLS = "Read,Glob,Grep,LS";
