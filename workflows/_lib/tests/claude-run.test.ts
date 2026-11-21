@@ -349,6 +349,31 @@ test("runClaudeOnce uses tools as the --allowedTools value when it is passed", a
   assert.equal(argv[argv.indexOf("--allowedTools") + 1], "Read,Glob,Grep,LS");
 });
 
+test("runClaudeOnce calls onStart once with the pid of the child it started, which is the pid the child reports for itself", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "claude-run-start-"));
+  const bin = join(dir, "bin");
+  mkdirSync(bin);
+  writeFileSync(join(bin, "claude"), "#!/usr/bin/env node\nconsole.log(JSON.stringify({ pid: process.pid }));\n", { mode: 0o755 });
+  const before = process.env.PATH;
+  process.env.PATH = `${bin}:${before}`;
+  try {
+    const started: number[] = [];
+    const outcome = await runClaudeOnce({
+      prompt: "p",
+      model: "opus",
+      effort: undefined,
+      schema: undefined,
+      cwd: dir,
+      timeoutMs: 60_000,
+      onStart: (pid) => started.push(pid),
+    });
+    assert.equal(outcome.code, 0, outcome.stderr);
+    assert.deepEqual(started, [JSON.parse(outcome.stdout).pid]);
+  } finally {
+    process.env.PATH = before;
+  }
+});
+
 test("a state file held by a running process is refused, and one left by a process that is gone is taken over", () => {
   const dir = mkdtempSync(join(tmpdir(), "claude-run-lock-"));
   const state = join(dir, "calls.jsonl");
