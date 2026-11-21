@@ -251,6 +251,49 @@ const setupSteps = (setup: unknown): string[][] | null => {
   return Array.isArray(setup) && setup.every(isArgv) ? setup : null;
 };
 
+const CONFIG_KEYS = ["repository", "remote", "baseBranch", "setup", "check", "feedbackCheck", "ciChecks", "capture"];
+
+const isCommandArgv = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.length > 0 && value.every((part) => typeof part === "string") && value[0].trim() !== "";
+
+const isShellOrArgv = (value: unknown): boolean => nonEmpty(value) || isCommandArgv(value);
+
+const isRepoRelative = (path: unknown): boolean =>
+  nonEmpty(path) && !path.startsWith("/") && !path.split("/").includes("..");
+
+const isCapture = (value: unknown): boolean => {
+  if (value === null) return true;
+  const capture = objectOf(value);
+  return capture !== null && isCommandArgv(capture.command) && isRepoRelative(capture.destination) && typeof capture.required === "boolean";
+};
+
+const CONFIG_RULES: [(config: Record<string, unknown>) => boolean, string][] = [
+  [(c) => Object.keys(c).every((key) => CONFIG_KEYS.includes(key)), `only these fields are allowed: ${CONFIG_KEYS.join(", ")}`],
+  [(c) => typeof c.repository === "string" && /^[\w.-]+\/[\w.-]+$/.test(c.repository), "repository must be owner/name"],
+  [(c) => typeof c.remote === "string" && /^[\w.-]+$/.test(c.remote), "remote must be a remote name"],
+  [(c) => typeof c.baseBranch === "string" && /^[\w][\w./-]*$/.test(c.baseBranch), "baseBranch must be a branch name"],
+  [
+    (c) => nonEmpty(c.setup) || (Array.isArray(c.setup) && c.setup.every(isCommandArgv)),
+    "setup must be a shell string or an array of argv arrays ([] when none)",
+  ],
+  [(c) => isShellOrArgv(c.check), "check must be a shell string or a non-empty argv array"],
+  [
+    (c) => c.feedbackCheck === undefined || isShellOrArgv(c.feedbackCheck),
+    "feedbackCheck must be omitted, a shell string, or a non-empty argv array",
+  ],
+  [
+    (c) => Array.isArray(c.ciChecks) && c.ciChecks.every(nonEmpty) && new Set(c.ciChecks).size === c.ciChecks.length,
+    "ciChecks must be an array of unique non-empty check names",
+  ],
+  [
+    (c) => "capture" in c && isCapture(c.capture),
+    "capture must be null or {command, destination, required} (null when no media is needed)",
+  ],
+];
+
+const configProblems = (config: Record<string, unknown> | null): string[] =>
+  config === null ? [".dotagents.json is not a JSON object"] : CONFIG_RULES.filter(([holds]) => !holds(config)).map(([, message]) => message);
+
 const runSetup = (worktree: string): string | null => {
   const config = parseObject(existsSync(join(worktree, ".dotagents.json")) ? readFileSync(join(worktree, ".dotagents.json"), "utf8") : "");
   const steps = setupSteps(config?.setup);
@@ -321,11 +364,22 @@ const prepareStop = (issue: number, reason: string, detail: string): Result =>
   stopped("prepare", reason, detail, { issue });
 
 const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
-  const config = parseObject(runQuiet("git", ["-C", repo, "show", "HEAD:.dotagents.json"], repo).stdout ?? "");
-  if (!config || !nonEmpty(config.repository) || !nonEmpty(config.remote) || !nonEmpty(config.baseBranch)) {
-    return prepareStop(issue, "no-config", `HEAD of ${repo} has no .dotagents.json with non-empty repository, remote, and baseBranch strings.`);
+  const status = runQuiet("git", ["-C", repo, "status", "--porcelain", "--untracked-files=all", "--", ".dotagents.json"], repo);
+  if (status.status === 0 && status.stdout !== "") {
+    const detail = `.dotagents.json of ${repo} has uncommitted changes. launch.ts reads the committed file, and neither stashes the changes nor carries them over.`;
+    return prepareStop(issue, "uncommitted-start-inputs", detail);
   }
-  const { repository, remote, baseBranch } = config;
+  const shown = runQuiet("git", ["-C", repo, "show", "HEAD:.dotagents.json"], repo);
+  if (shown.status !== 0) return prepareStop(issue, "no-config", `HEAD of ${repo} has no .dotagents.json.`);
+  const config = parseObject(shown.stdout);
+  const problems = configProblems(config);
+  if (config === null || problems.length > 0) {
+    return prepareStop(issue, "invalid-config", `.dotagents.json at HEAD of ${repo} is not valid: ${problems.join("; ")}.`);
+  }
+  const { repository, remote, baseBranch, ciChecks } = config as { repository: string; remote: string; baseBranch: string; ciChecks: string[] };
+  if (ciChecks.length === 0) {
+    return prepareStop(issue, "no-ci-checks", `ciChecks in .dotagents.json of ${repo} is empty, so no check can confirm the published change.`);
+  }
   const found = viewIssue(issue, repository, "number,title,body,state", repo);
   if (typeof found === "string") return prepareStop(issue, "issue-unreadable", found);
   if (found.state !== "OPEN") return prepareStop(issue, "issue-not-open", `Issue #${issue} is ${found.state}, not OPEN.`);
@@ -346,6 +400,12 @@ const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
 const createWorktree = ({ repo, issue }: PrepareCall, { remote, baseBranch, branch, worktree }: Plan): string | Result => {
   const fetched = runShown("git", ["-C", repo, "fetch", remote, baseBranch], repo);
   if (fetched.status !== 0) return prepareStop(issue, "fetch-failed", `git fetch ${remote} ${baseBranch} ${exitOf(fetched)}.`);
+  const headConfig = git(["rev-parse", "--verify", "--quiet", "HEAD:.dotagents.json"], repo);
+  const baseConfig = git(["rev-parse", "--verify", "--quiet", `refs/remotes/${remote}/${baseBranch}:.dotagents.json`], repo);
+  if (headConfig === null || headConfig !== baseConfig) {
+    const detail = `.dotagents.json at HEAD of ${repo} is not the file at ${remote}/${baseBranch}. The worktree is created from ${remote}/${baseBranch}, so push or pull until the two are the same.`;
+    return prepareStop(issue, "config-differs", detail);
+  }
   if (git(["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`], repo) !== null) {
     return prepareStop(issue, "branch-exists", `The branch ${branch} already exists in ${repo}.`);
   }

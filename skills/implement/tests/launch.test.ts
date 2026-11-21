@@ -26,7 +26,15 @@ const DONE_GATE = resolve(HERE, "..", "..", "..", "hooks", "lifecycle", "done_ga
 const ISSUE = 42;
 const FEATURE_TITLE = "[Feature] publish_gate.ts が、サブシェルの中の公開を見つける";
 
-const CONFIG = { repository: "owner/repo", remote: "origin", baseBranch: "main", check: "true" };
+const CONFIG = {
+  repository: "owner/repo",
+  remote: "origin",
+  baseBranch: "main",
+  setup: [],
+  check: "true",
+  ciChecks: ["test"],
+  capture: null,
+};
 const ISSUE_REPLY = { number: ISSUE, title: FEATURE_TITLE, body: "body", state: "OPEN" };
 
 const digestOf = ({ title, body, state }: Record<string, unknown>): string =>
@@ -241,9 +249,148 @@ test("prepare cuts the branch description from a title of five or more English w
   assert.equal(outputOf(result).branch, `fix/${ISSUE}-alpha-beta-gamma-delta`);
 });
 
-test("prepare stops with no-config when HEAD has no .dotagents.json or it lacks a required field", () => {
-  assertStopped(prepare(fixture(null)), "no-config");
-  assertStopped(prepare(fixture({ ...CONFIG, baseBranch: "" })), "no-config");
+const branchOf = (f: Fixture): string => git(f.repo, "branch", "--list", `feat/${ISSUE}-publish-gate-ts`);
+
+function assertNothingCreated(f: Fixture): void {
+  assert.equal(existsSync(worktreeOf(f)), false, "no worktree is created");
+  assert.equal(branchOf(f), "", "no branch is created");
+}
+
+function withoutField(field: string): Record<string, unknown> {
+  const { [field]: _dropped, ...rest } = CONFIG as Record<string, unknown>;
+  return rest;
+}
+
+function commitAndPush(f: Fixture, content: string): void {
+  commitFile(f.repo, ".dotagents.json", content);
+  git(f.repo, "push", "-q", "origin", "main");
+}
+
+test("prepare stops with no-config when HEAD has no .dotagents.json", () => {
+  const f = fixture(null);
+  const out = assertStopped(prepare(f), "no-config");
+  assert.equal(out.detail, `HEAD of ${f.repo} has no .dotagents.json.`);
+  assertNothingCreated(f);
+});
+
+test("prepare stops with uncommitted-start-inputs when .dotagents.json has unstaged or staged changes, before reading the Issue", () => {
+  const detailOf = (f: Fixture) =>
+    `.dotagents.json of ${f.repo} has uncommitted changes. launch.ts reads the committed file, and neither stashes the changes nor carries them over.`;
+  const unstaged = fixture();
+  writeFileSync(join(unstaged.repo, ".dotagents.json"), `${JSON.stringify({ ...CONFIG, check: "false" })}\n`);
+  assert.equal(assertStopped(prepare(unstaged), "uncommitted-start-inputs").detail, detailOf(unstaged));
+  assertNothingCreated(unstaged);
+  fakeGh(unstaged, null);
+  assertStopped(prepare(unstaged), "uncommitted-start-inputs");
+  const staged = fixture();
+  writeFileSync(join(staged.repo, ".dotagents.json"), `${JSON.stringify({ ...CONFIG, check: "false" })}\n`);
+  git(staged.repo, "add", ".dotagents.json");
+  assert.equal(assertStopped(prepare(staged), "uncommitted-start-inputs").detail, detailOf(staged));
+  assertNothingCreated(staged);
+});
+
+test("prepare stops with invalid-config naming only the one rule a config breaks, and creates nothing", () => {
+  const cases: [Record<string, unknown>, string][] = [
+    [{ ...CONFIG, extra: 1 }, "only these fields are allowed: repository, remote, baseBranch, setup, check, feedbackCheck, ciChecks, capture"],
+    [{ ...CONFIG, repository: "owner" }, "repository must be owner/name"],
+    [withoutField("repository"), "repository must be owner/name"],
+    [{ ...CONFIG, remote: "has space" }, "remote must be a remote name"],
+    [{ ...CONFIG, baseBranch: "" }, "baseBranch must be a branch name"],
+    [{ ...CONFIG, baseBranch: "-main" }, "baseBranch must be a branch name"],
+    [withoutField("setup"), "setup must be a shell string or an array of argv arrays ([] when none)"],
+    [{ ...CONFIG, setup: "  " }, "setup must be a shell string or an array of argv arrays ([] when none)"],
+    [{ ...CONFIG, setup: [[" ", "x"]] }, "setup must be a shell string or an array of argv arrays ([] when none)"],
+    [withoutField("check"), "check must be a shell string or a non-empty argv array"],
+    [{ ...CONFIG, check: [] }, "check must be a shell string or a non-empty argv array"],
+    [{ ...CONFIG, feedbackCheck: "" }, "feedbackCheck must be omitted, a shell string, or a non-empty argv array"],
+    [{ ...CONFIG, ciChecks: ["test", "test"] }, "ciChecks must be an array of unique non-empty check names"],
+    [{ ...CONFIG, ciChecks: [" "] }, "ciChecks must be an array of unique non-empty check names"],
+    [withoutField("ciChecks"), "ciChecks must be an array of unique non-empty check names"],
+    [withoutField("capture"), "capture must be null or {command, destination, required} (null when no media is needed)"],
+    [
+      { ...CONFIG, capture: { command: ["shot"], destination: "../out", required: true } },
+      "capture must be null or {command, destination, required} (null when no media is needed)",
+    ],
+    [
+      { ...CONFIG, capture: { command: ["shot"], destination: "out.png", required: "yes" } },
+      "capture must be null or {command, destination, required} (null when no media is needed)",
+    ],
+  ];
+  for (const [config, message] of cases) {
+    const f = fixture(config);
+    const out = assertStopped(prepare(f), "invalid-config");
+    assert.equal(out.detail, `.dotagents.json at HEAD of ${f.repo} is not valid: ${message}.`, JSON.stringify(config));
+    assertNothingCreated(f);
+  }
+  const unreadable = fixture({ ...CONFIG, repository: "owner" });
+  fakeGh(unreadable, null);
+  assertStopped(prepare(unreadable), "invalid-config");
+});
+
+test("prepare joins the messages of two broken rules in the order of the rules", () => {
+  const f = fixture({ ...CONFIG, check: "", repository: "" });
+  const out = assertStopped(prepare(f), "invalid-config");
+  assert.equal(
+    out.detail,
+    `.dotagents.json at HEAD of ${f.repo} is not valid: repository must be owner/name; check must be a shell string or a non-empty argv array.`,
+  );
+});
+
+test("prepare stops with invalid-config when .dotagents.json is not JSON or is a JSON array", () => {
+  for (const content of ["{", "[]\n"]) {
+    const f = fixture(null);
+    commitAndPush(f, content);
+    const out = assertStopped(prepare(f), "invalid-config");
+    assert.equal(out.detail, `.dotagents.json at HEAD of ${f.repo} is not valid: .dotagents.json is not a JSON object.`);
+    assertNothingCreated(f);
+  }
+});
+
+test("prepare accepts an argv check, a feedbackCheck, and a capture object", () => {
+  const configs = [
+    { ...CONFIG, check: ["true"] },
+    { ...CONFIG, feedbackCheck: "true" },
+    { ...CONFIG, capture: { command: ["shot"], destination: "media/out.png", required: false } },
+  ];
+  for (const config of configs) {
+    const result = prepare(fixture(config));
+    assert.equal(result.status, 0, `${JSON.stringify(config)}\n${result.stdout}\n${result.stderr}`);
+  }
+});
+
+test("prepare stops with no-ci-checks when ciChecks is empty, and creates nothing", () => {
+  const f = fixture({ ...CONFIG, ciChecks: [] });
+  const out = assertStopped(prepare(f), "no-ci-checks");
+  assert.equal(out.detail, `ciChecks in .dotagents.json of ${f.repo} is empty, so no check can confirm the published change.`);
+  assertNothingCreated(f);
+  fakeGh(f, null);
+  assertStopped(prepare(f), "no-ci-checks");
+});
+
+test("prepare stops with config-differs when HEAD has an unpushed change to .dotagents.json, and creates nothing", () => {
+  const f = fixture();
+  commitFile(f.repo, ".dotagents.json", `${JSON.stringify({ ...CONFIG, check: "false" })}\n`);
+  const out = assertStopped(prepare(f), "config-differs");
+  assert.equal(
+    out.detail,
+    `.dotagents.json at HEAD of ${f.repo} is not the file at origin/main. The worktree is created from origin/main, so push or pull until the two are the same.`,
+  );
+  assertNothingCreated(f);
+});
+
+test("prepare stops with config-differs when origin's base branch has no .dotagents.json", () => {
+  const f = fixture(null);
+  commitFile(f.repo, ".dotagents.json", `${JSON.stringify(CONFIG)}\n`);
+  assertStopped(prepare(f), "config-differs");
+  assertNothingCreated(f);
+});
+
+test("prepare succeeds when HEAD has an unpushed commit that leaves .dotagents.json unchanged", () => {
+  const f = fixture();
+  commitFile(f.repo, "LOCAL.md", "local\n");
+  const result = prepare(f);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(outputOf(result).base, git(f.origin, "rev-parse", "main"));
 });
 
 test("prepare stops with issue-unreadable when gh cannot read the Issue", () => {
@@ -306,8 +453,7 @@ test("prepare stops with setup-failed for a failing shell or argv setup, and lea
 });
 
 test("prepare stops with gate-failed when done_gate.ts on fails, and leaves the worktree and branch", () => {
-  const { check: _check, ...noCheck } = CONFIG;
-  const f = fixture(noCheck);
+  const f = fixture({ ...CONFIG, setup: "printf '{' > .dotagents.json" });
   const out = assertStopped(prepare(f), "gate-failed");
   assert.ok(existsSync(worktreeOf(f)));
   assert.ok(String(out.detail).includes(worktreeOf(f)));
