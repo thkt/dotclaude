@@ -36,6 +36,12 @@ const CONFIG = {
   capture: null,
 };
 const ISSUE_REPLY = { number: ISSUE, title: FEATURE_TITLE, body: "body", state: "OPEN" };
+const REPO_REPLY = { nameWithOwner: "owner/repo", viewerPermission: "WRITE" };
+const REAL_GIT = spawnSync("/bin/sh", ["-c", "command -v git"], { encoding: "utf8" }).stdout.trim();
+
+const remotesOf = (name: string, fetchUrl: string, pushUrl = fetchUrl): string =>
+  `${name}\t${fetchUrl} (fetch)\n${name}\t${pushUrl} (push)\n`;
+const DEFAULT_REMOTES = remotesOf("origin", "https://github.com/owner/repo.git");
 
 const digestOf = ({ title, body, state }: Record<string, unknown>): string =>
   createHash("sha256").update(JSON.stringify([title, body, state])).digest("hex");
@@ -49,12 +55,11 @@ function isolatedEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
     GIT_AUTHOR_EMAIL: "launch-test@example.invalid",
     GIT_COMMITTER_NAME: "launch-test",
     GIT_COMMITTER_EMAIL: "launch-test@example.invalid",
-    ...extra,
   };
-  for (const key of ["GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE", "GIT_OBJECT_DIRECTORY", "GIT_COMMON_DIR"]) {
+  for (const key of ["GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE", "GIT_OBJECT_DIRECTORY", "GIT_COMMON_DIR", "GH_HOST"]) {
     delete env[key];
   }
-  return env;
+  return { ...env, ...extra };
 }
 
 function git(cwd: string, ...args: string[]): string {
@@ -91,16 +96,33 @@ function fixture(config: Record<string, unknown> | null = CONFIG): Fixture {
   commitFile(repo, "README.md", "readme\n");
   if (config !== null) commitFile(repo, ".dotagents.json", `${JSON.stringify(config)}\n`);
   git(repo, "push", "-q", "origin", "main");
-  fakeGh({ bin, logs, root, origin, repo }, ISSUE_REPLY);
-  return { root, origin, repo, bin, logs };
+  const f = { root, origin, repo, bin, logs };
+  fakeGh(f, ISSUE_REPLY);
+  fakeGit(f, DEFAULT_REMOTES);
+  return f;
 }
 
 const ghReplyPath = (f: Fixture): string => join(f.logs, "gh-reply.json");
+const ghRepoReplyPath = (f: Fixture): string => join(f.logs, "gh-repo-reply.json");
+const remotesPath = (f: Fixture): string => join(f.logs, "git-remotes.txt");
+const FAIL = "echo 'not found' >&2\nexit 1\n";
 
-function fakeGh(f: Fixture, reply: Record<string, unknown> | null): void {
+const onAdjacent = (first: string, second: string, body: string): string =>
+  `prev=""\nfor arg in "$@"; do\n  if [ "$prev" = "${first}" ] && [ "$arg" = "${second}" ]; then\n${body}  fi\n  prev="$arg"\ndone\n`;
+
+function fakeGh(f: Fixture, reply: Record<string, unknown> | null, repoReply: Record<string, unknown> | null = REPO_REPLY): void {
   if (reply !== null) writeFileSync(ghReplyPath(f), JSON.stringify(reply));
-  const body = reply === null ? "echo 'not found' >&2\nexit 1\n" : `cat '${ghReplyPath(f)}'\n`;
-  writeFileSync(join(f.bin, "gh"), `#!/bin/sh\n${body}`, { mode: 0o755 });
+  if (repoReply !== null) writeFileSync(ghRepoReplyPath(f), JSON.stringify(repoReply));
+  const repoBody = reply === null || repoReply === null ? FAIL : `cat '${ghRepoReplyPath(f)}'\nexit 0\n`;
+  const body = reply === null ? FAIL : `cat '${ghReplyPath(f)}'\n`;
+  writeFileSync(join(f.bin, "gh"), `#!/bin/sh\n${onAdjacent("repo", "view", repoBody)}${body}`, { mode: 0o755 });
+}
+
+function fakeGit(f: Fixture, remotes: string | null): void {
+  if (remotes === null) rmSync(remotesPath(f), { force: true });
+  else writeFileSync(remotesPath(f), remotes);
+  const answer = `if [ -f '${remotesPath(f)}' ]; then cat '${remotesPath(f)}'; exit 0; fi\nexit 1\n`;
+  writeFileSync(join(f.bin, "git"), `#!/bin/sh\n${onAdjacent("remote", "-v", answer)}exec '${REAL_GIT}' "$@"\n`, { mode: 0o755 });
 }
 
 function fakeClaude(f: Fixture, body: string): void {
@@ -114,7 +136,7 @@ function fakeClaude(f: Fixture, body: string): void {
 const SESSION_REPLY = `echo '{"session_id":"s-1","result":"finished","total_cost_usd":0.5,"duration_ms":1200}'\n`;
 const PASS_CHECK = `"$NODE" "$DONE_GATE" check >&2\n`;
 
-function run(f: Fixture, args: string[]): SpawnSyncReturns<string> {
+function run(f: Fixture, args: string[], env: Record<string, string> = {}): SpawnSyncReturns<string> {
   return spawnSync(SCRIPT, args, {
     encoding: "utf8",
     maxBuffer: 64 * 1024 * 1024,
@@ -123,12 +145,17 @@ function run(f: Fixture, args: string[]): SpawnSyncReturns<string> {
       LOGS: f.logs,
       NODE: process.execPath,
       DONE_GATE,
+      ...env,
     }),
   });
 }
 
 function prepare(f: Fixture, ...extra: string[]): SpawnSyncReturns<string> {
   return run(f, ["prepare", "--repo", f.repo, "--issue", String(ISSUE), ...extra]);
+}
+
+function prepareWithHost(f: Fixture, host: string): SpawnSyncReturns<string> {
+  return run(f, ["prepare", "--repo", f.repo, "--issue", String(ISSUE)], { GH_HOST: host });
 }
 
 function outputOf(result: SpawnSyncReturns<string>): Record<string, unknown> {
@@ -419,7 +446,127 @@ test("prepare stops with no-description when the title gives fewer than 2 Englis
 });
 
 test("prepare stops with fetch-failed when the remote cannot be fetched", () => {
-  assertStopped(prepare(fixture({ ...CONFIG, remote: "nowhere" })), "fetch-failed");
+  const f = fixture({ ...CONFIG, remote: "nowhere" });
+  fakeGit(f, remotesOf("nowhere", "https://github.com/owner/repo.git"));
+  assertStopped(prepare(f), "fetch-failed");
+});
+
+test("prepare stops with gh-host when GH_HOST points at another host, even when gh fails", () => {
+  for (const ghWorks of [true, false]) {
+    const f = fixture();
+    if (!ghWorks) fakeGh(f, null);
+    const out = assertStopped(prepareWithHost(f, " ghe.example.com "), "gh-host");
+    assert.equal(out.detail, "GH_HOST points at ghe.example.com. launch.ts handles only github.com.");
+    assertNothingCreated(f);
+  }
+});
+
+test("prepare succeeds when GH_HOST is github.com or only whitespace", () => {
+  for (const host of ["github.com", "  "]) {
+    const f = fixture();
+    const result = prepareWithHost(f, host);
+    assert.equal(result.status, 0, `${host}: ${result.stdout}${result.stderr}`);
+  }
+});
+
+test("prepare succeeds when the remote URLs name the repository in https, scp-like ssh, or ssh form", () => {
+  for (const url of ["https://github.com/owner/repo", "git@github.com:owner/repo.git", "ssh://git@github.com/owner/repo.git"]) {
+    const f = fixture();
+    fakeGit(f, remotesOf("origin", url));
+    const result = prepare(f);
+    assert.equal(result.status, 0, `${url}: ${result.stdout}${result.stderr}`);
+  }
+});
+
+test("prepare stops with remote-mismatch when the remote does not point at the repository on github.com", () => {
+  const cases: Record<string, string | null> = {
+    "fetch URL names another repo": remotesOf("origin", "https://github.com/other/repo.git", "https://github.com/owner/repo.git"),
+    "push URL names another repo": remotesOf("origin", "https://github.com/owner/repo.git", "https://github.com/other/repo.git"),
+    "URL names another host": remotesOf("origin", "https://example.com/owner/repo.git"),
+    "URL is a directory path": remotesOf("origin", "/tmp/launch-origin.git"),
+    "the remote has no push line": "origin\thttps://github.com/owner/repo.git (fetch)\n",
+    "only another remote is listed": remotesOf("upstream", "https://github.com/owner/repo.git"),
+    "git remote -v exits 1": null,
+  };
+  for (const [name, remotes] of Object.entries(cases)) {
+    const f = fixture();
+    fakeGit(f, remotes);
+    const out = assertStopped(prepare(f), "remote-mismatch");
+    assert.equal(
+      out.detail,
+      `The fetch and push URLs of remote origin in ${f.repo} do not all point at owner/repo on github.com. Fix .dotagents.json or the remote.`,
+      name,
+    );
+    assertNothingCreated(f);
+  }
+});
+
+test("prepare stops with remote-mismatch even when gh fails", () => {
+  const f = fixture();
+  fakeGh(f, null);
+  fakeGit(f, remotesOf("origin", "https://github.com/other/repo.git"));
+  assertStopped(prepare(f), "remote-mismatch");
+});
+
+test("prepare stops with repo-unreadable when gh cannot read the repository but can read the Issue", () => {
+  const f = fixture();
+  fakeGh(f, ISSUE_REPLY, null);
+  const out = assertStopped(prepare(f), "repo-unreadable");
+  assert.ok(String(out.detail).startsWith("gh could not read the repository owner/repo: "), String(out.detail));
+  assert.match(String(out.detail), /not found/);
+  assertNothingCreated(f);
+});
+
+test("prepare stops with repo-unreadable when the repository reply has no nameWithOwner", () => {
+  const f = fixture();
+  fakeGh(f, ISSUE_REPLY, { viewerPermission: "WRITE" });
+  assertStopped(prepare(f), "repo-unreadable");
+});
+
+test("prepare stops with repository-mismatch when GitHub names the repository differently", () => {
+  const f = fixture();
+  fakeGh(f, ISSUE_REPLY, { nameWithOwner: "other/repo", viewerPermission: "WRITE" });
+  const out = assertStopped(prepare(f), "repository-mismatch");
+  assert.equal(
+    out.detail,
+    "GitHub names the repository other/repo, which differs from repository owner/repo in .dotagents.json.",
+  );
+  assertNothingCreated(f);
+});
+
+test("prepare stops with no-permission when the gh user cannot push, naming the permission or unknown", () => {
+  for (const [reply, shown] of [
+    [{ nameWithOwner: "owner/repo", viewerPermission: "READ" }, "READ"],
+    [{ nameWithOwner: "owner/repo" }, "unknown"],
+  ] as const) {
+    const f = fixture();
+    fakeGh(f, ISSUE_REPLY, reply);
+    const out = assertStopped(prepare(f), "no-permission");
+    assert.equal(out.detail, `The permission of the gh user on owner/repo is ${shown}, which cannot push.`);
+    assertNothingCreated(f);
+  }
+});
+
+test("prepare succeeds when the gh user has ADMIN or MAINTAIN permission", () => {
+  for (const viewerPermission of ["ADMIN", "MAINTAIN"]) {
+    const f = fixture();
+    fakeGh(f, ISSUE_REPLY, { nameWithOwner: "owner/repo", viewerPermission });
+    const result = prepare(f);
+    assert.equal(result.status, 0, `${viewerPermission}: ${result.stdout}${result.stderr}`);
+  }
+});
+
+test("prepare does not fetch when the publish target check stops it", () => {
+  const f = fixture();
+  const before = git(f.repo, "rev-parse", "refs/remotes/origin/main");
+  const other = join(f.root, "other");
+  git(f.root, "clone", "-q", f.origin, other);
+  commitFile(other, "NEW.md", "new\n");
+  git(other, "push", "-q", "origin", "main");
+  assert.notEqual(git(other, "rev-parse", "HEAD"), before);
+  fakeGh(f, ISSUE_REPLY, { nameWithOwner: "owner/repo", viewerPermission: "READ" });
+  assertStopped(prepare(f), "no-permission");
+  assert.equal(git(f.repo, "rev-parse", "refs/remotes/origin/main"), before);
 });
 
 test("prepare stops with branch-exists when the branch is already local", () => {

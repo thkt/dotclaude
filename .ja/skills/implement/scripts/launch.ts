@@ -363,6 +363,46 @@ const issueChange = ({ issue, repository, issue_digest }: Launch, worktree: stri
 const prepareStop = (issue: number, reason: string, detail: string): Result =>
   stopped("prepare", reason, detail, { issue });
 
+const REMOTE_LINE = /^(\S+)\s+(\S+)\s+\((fetch|push)\)$/;
+const GITHUB_URL = /^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([\w.-]+\/[\w.-]+?)(?:\.git)?$/;
+const PUSH_PERMISSIONS = ["ADMIN", "MAINTAIN", "WRITE"];
+
+const remotePointsAt = (repo: string, remote: string, repository: string): boolean => {
+  const listed = runQuiet("git", ["-C", repo, "remote", "-v"], repo);
+  const lines = (listed.status === 0 ? listed.stdout : "")
+    .split("\n")
+    .map((line) => REMOTE_LINE.exec(line.trim()))
+    .filter((match): match is RegExpExecArray => match !== null && match[1] === remote);
+  const kinds = new Set(lines.map((match) => match[3]));
+  return kinds.has("fetch") && kinds.has("push") && lines.every((match) => GITHUB_URL.exec(match[2])?.[1] === repository);
+};
+
+const remoteStop = (issue: number, repo: string, remote: string, repository: string): Result | null => {
+  const host = (process.env.GH_HOST ?? "").trim();
+  if (host !== "" && host !== "github.com") {
+    return prepareStop(issue, "gh-host", `GH_HOST points at ${host}. launch.ts handles only github.com.`);
+  }
+  if (remotePointsAt(repo, remote, repository)) return null;
+  const detail = `The fetch and push URLs of remote ${remote} in ${repo} do not all point at ${repository} on github.com. Fix .dotagents.json or the remote.`;
+  return prepareStop(issue, "remote-mismatch", detail);
+};
+
+const publishTargetStop = (issue: number, repository: string, repo: string): Result | null => {
+  const viewed = runQuiet("gh", ["repo", "view", repository, "--json", "nameWithOwner,viewerPermission"], repo);
+  const found = viewed.status === 0 ? parseObject(viewed.stdout) : null;
+  if (!found || typeof found.nameWithOwner !== "string") {
+    return prepareStop(issue, "repo-unreadable", `gh could not read the repository ${repository}: ${outputOf(viewed)}`);
+  }
+  const { nameWithOwner, viewerPermission } = found;
+  if (nameWithOwner !== repository) {
+    const detail = `GitHub names the repository ${nameWithOwner}, which differs from repository ${repository} in .dotagents.json.`;
+    return prepareStop(issue, "repository-mismatch", detail);
+  }
+  if (typeof viewerPermission === "string" && PUSH_PERMISSIONS.includes(viewerPermission)) return null;
+  const permission = typeof viewerPermission === "string" && viewerPermission !== "" ? viewerPermission : "unknown";
+  return prepareStop(issue, "no-permission", `The permission of the gh user on ${repository} is ${permission}, which cannot push.`);
+};
+
 const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
   const status = runQuiet("git", ["-C", repo, "status", "--porcelain", "--untracked-files=all", "--", ".dotagents.json"], repo);
   if (status.status === 0 && status.stdout !== "") {
@@ -380,6 +420,8 @@ const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
   if (ciChecks.length === 0) {
     return prepareStop(issue, "no-ci-checks", `ciChecks in .dotagents.json of ${repo} is empty, so no check can confirm the published change.`);
   }
+  const sourceStop = remoteStop(issue, repo, remote, repository);
+  if (sourceStop !== null) return sourceStop;
   const found = viewIssue(issue, repository, "number,title,body,state", repo);
   if (typeof found === "string") return prepareStop(issue, "issue-unreadable", found);
   if (found.state !== "OPEN") return prepareStop(issue, "issue-not-open", `Issue #${issue} is ${found.state}, not OPEN.`);
@@ -392,6 +434,8 @@ const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
   if (words === null) {
     return prepareStop(issue, "no-description", `The title of Issue #${issue} has fewer than 2 English words; pass --description.`);
   }
+  const targetStop = publishTargetStop(issue, repository, repo);
+  if (targetStop !== null) return targetStop;
   const branch = `${TYPE_BY_PREFIX[prefix]}/${issue}-${words}`;
   const worktree = join(repo, ".claude", "worktrees", `implement-${issue}`);
   return { repository, remote, baseBranch, branch, worktree, issueDigest: digestOf(found) };
