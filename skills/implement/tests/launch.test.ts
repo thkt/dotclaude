@@ -3518,7 +3518,7 @@ const leftDetail = (pid: number, action: string, at: unknown, worktree: string, 
 const unreadableDetail = (file: string, worktree: string): string =>
   `The record ${file} of a launch.ts working on ${worktree} cannot be read. Confirm with \`ps -axo pid,pgid,command\`, run outside any sandbox, that no launch.ts and no claude it started is running on ${worktree}. Then delete ${file} and call again.`;
 
-const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run", "publishable"];
+const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run", "publishable", "published"];
 
 test("while implement waits for claude, launch-holders holds its pid record of pid, action, and at only, and a children record of that claude's pid only", async () => {
   const f = prepared();
@@ -3536,7 +3536,7 @@ test("while implement waits for claude, launch-holders holds its pid record of p
   }
 });
 
-test("each of the eight actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
+test("each of the nine actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
   const f = prepared();
   const waiting = await implementWaiting(f);
   try {
@@ -4074,4 +4074,360 @@ test("the usage has the publishable line after the run line, and a publishable c
       result.stderr,
     );
   }
+});
+
+const PR_URL = "https://github.com/owner/repo/pull/9";
+
+const matchingPull = (f: Fixture, extra: Record<string, unknown> = {}): Record<string, unknown> => ({
+  number: 9,
+  html_url: PR_URL,
+  state: "open",
+  draft: true,
+  user: { login: "launch-test" },
+  head: { ref: BRANCH, sha: git(worktreeOf(f), "rev-parse", "HEAD"), repo: { full_name: "owner/repo" } },
+  base: { ref: "main", repo: { full_name: "owner/repo" } },
+  ...extra,
+});
+
+const forkPull = (f: Fixture): Record<string, unknown> =>
+  matchingPull(f, {
+    number: 10,
+    html_url: "https://github.com/owner/repo/pull/10",
+    head: { ref: BRANCH, sha: git(worktreeOf(f), "rev-parse", "HEAD"), repo: { full_name: "fork/repo" } },
+  });
+
+const withPulls = (f: Fixture, pulls: unknown): void => fakeGh(f, ISSUE_REPLY, REPO_REPLY, { pulls: JSON.stringify(pulls) });
+
+function publishedReady(): Fixture {
+  const f = committed();
+  withPulls(f, [matchingPull(f)]);
+  return f;
+}
+
+const published = (f: Fixture, env: Record<string, string> = {}) => run(f, ["published", "--worktree", worktreeOf(f)], env);
+
+const launchTextAt = (worktree: string): string | null => {
+  const path = join(git(worktree, "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json");
+  return existsSync(path) ? readFileSync(path, "utf8") : null;
+};
+
+const noPrDetail = (f: Fixture): string =>
+  `No open pull request of owner/repo uses the branch ${BRANCH}. If the commit ${git(worktreeOf(f), "rev-parse", "HEAD")} is not published yet, push it and open a draft pull request into main, then call again.`;
+
+const PULL_UNREADABLE_DETAIL = `gh listed an open pull request for the branch ${BRANCH} that lacks a positive integer number or a non-empty html_url.`;
+
+const mismatchDetail = (names: string): string =>
+  `The pull request ${PR_URL} differs from what launch.ts confirmed before the push: ${names}. Reconcile it on GitHub, then call again.`;
+
+function assertPublishedStops(f: Fixture, reason: string): Record<string, unknown> {
+  const before = launchFile(f);
+  const out = assertStopped(published(f), reason);
+  assert.equal(out.action, "published");
+  assert.equal(launchFile(f), before, reason);
+  return out;
+}
+
+test("published on a committed worktree whose open draft pull request matches succeeds with the fifteen fields in order, appends one publication to launch.json, starts no claude, and keeps HEAD", () => {
+  const f = publishedReady();
+  const worktree = worktreeOf(f);
+  fakeRounds(f, {});
+  const before = launchRecord(worktree);
+  const head = git(worktree, "rev-parse", "HEAD");
+  const result = published(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  const out = outputOf(result);
+  const at = String(out.at);
+  assert.equal(new Date(at).toISOString(), at);
+  assert.deepEqual(Object.entries(out), [
+    ["action", "published"],
+    ["ok", true],
+    ["issue", ISSUE],
+    ["repository", "owner/repo"],
+    ["remote", "origin"],
+    ["base_branch", "main"],
+    ["branch", BRANCH],
+    ["base", before.base],
+    ["commit", head],
+    ["tree", lastReview(f).tree],
+    ["actor", "launch-test"],
+    ["number", 9],
+    ["url", PR_URL],
+    ["at", at],
+    ["launch_file", launchPathOf(f)],
+  ]);
+  const after = launchRecord(worktree);
+  assert.deepEqual(Object.keys(after), [...Object.keys(before), "publications"]);
+  const record = { number: 9, url: PR_URL, commit: head, tree: lastReview(f).tree, base_branch: "main", actor: "launch-test", at };
+  assert.deepEqual(after, { ...before, publications: [record] });
+  const [stored] = after.publications as Record<string, unknown>[];
+  assert.deepEqual(Object.keys(stored), ["number", "url", "commit", "tree", "base_branch", "actor", "at"]);
+  assert.deepEqual(roundCalls(f), []);
+  assert.equal(git(worktree, "rev-parse", "HEAD"), head);
+});
+
+test("published leaves no file under launch-holders after it succeeds", () => {
+  const f = publishedReady();
+  assert.equal(published(f).status, 0);
+  assert.deepEqual(existsSync(holdersOf(f)) ? readdirSync(holdersOf(f)) : [], []);
+});
+
+test("published succeeding twice keeps two publications and leaves the first one unchanged", () => {
+  const f = publishedReady();
+  assert.equal(published(f).status, 0);
+  const [first] = launchRecord(worktreeOf(f)).publications as unknown[];
+  const again = published(f);
+  assert.equal(again.status, 0, again.stdout);
+  const publications = launchRecord(worktreeOf(f)).publications as Record<string, unknown>[];
+  assert.equal(publications.length, 2);
+  assert.deepEqual(publications[0], first);
+  assert.equal(publications[1].at, outputOf(again).at);
+});
+
+test("published replaces a publications value that is not an array with one publication and keeps its key position", () => {
+  const f = publishedReady();
+  rewriteLaunch(f, ({ implement, ...rest }) => ({ ...rest, publications: "not an array", implement }));
+  const keys = Object.keys(launchRecord(worktreeOf(f)));
+  const result = published(f);
+  assert.equal(result.status, 0, result.stdout);
+  const after = launchRecord(worktreeOf(f));
+  assert.deepEqual(Object.keys(after), keys);
+  const publications = after.publications as Record<string, unknown>[];
+  assert.equal(publications.length, 1);
+  assert.equal(publications[0].at, outputOf(result).at);
+});
+
+test("published stops with the reason and detail publishable gives for each state publishable rejects before reading the actor, and keeps launch.json", () => {
+  const withConfigless = (): Fixture => {
+    const f = acceptedWithChanges();
+    const worktree = worktreeOf(f);
+    const bare = git(worktree, "rev-parse", `${launchRecord(worktree).base}^`);
+    const commit = git(worktree, "commit-tree", String(lastReview(f).tree), "-p", bare, "-m", "reviewed change");
+    git(worktree, "reset", "-q", "--soft", commit);
+    rewriteLaunch(f, (stored) => ({ ...stored, base: bare }));
+    return f;
+  };
+  const cases: [string, () => { f: Fixture; worktree: string; env?: Record<string, string> }][] = [
+    [
+      "not-prepared",
+      () => {
+        const f = fixture();
+        return { f, worktree: f.repo };
+      },
+    ],
+    [
+      "not-accepted",
+      () => {
+        const f = fixture();
+        assert.equal(prepare(f).status, 0);
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "requirements-changed",
+      () => {
+        const f = publishedReady();
+        fakeGh(f, CHANGED_BODY);
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "not-done",
+      () => {
+        const f = publishedReady();
+        gateDisabled(f);
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "commit-mismatch",
+      () => {
+        const f = acceptedWithChanges();
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "no-config",
+      () => {
+        const f = withConfigless();
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "gh-host",
+      () => {
+        const f = publishedReady();
+        return { f, worktree: worktreeOf(f), env: { GH_HOST: "ghe.example.com" } };
+      },
+    ],
+    [
+      "remote-mismatch",
+      () => {
+        const f = publishedReady();
+        fakeGit(f, remotesOf("origin", "https://github.com/other/repo.git"));
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "repo-unreadable",
+      () => {
+        const f = committed();
+        fakeGh(f, ISSUE_REPLY, null, { pulls: JSON.stringify([matchingPull(f)]) });
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "repository-mismatch",
+      () => {
+        const f = committed();
+        fakeGh(f, ISSUE_REPLY, { nameWithOwner: "other/repo", viewerPermission: "WRITE" }, { pulls: JSON.stringify([matchingPull(f)]) });
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "no-permission",
+      () => {
+        const f = committed();
+        fakeGh(f, ISSUE_REPLY, { nameWithOwner: "owner/repo", viewerPermission: "READ" }, { pulls: JSON.stringify([matchingPull(f)]) });
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+    [
+      "no-actor",
+      () => {
+        const f = committed();
+        fakeGh(f, ISSUE_REPLY, REPO_REPLY, { user: null, pulls: JSON.stringify([matchingPull(f)]) });
+        return { f, worktree: worktreeOf(f) };
+      },
+    ],
+  ];
+  for (const [reason, arrange] of cases) {
+    const { f, worktree, env = {} } = arrange();
+    const before = launchTextAt(worktree);
+    const out = assertStopped(run(f, ["published", "--worktree", worktree], env), reason);
+    assert.equal(launchTextAt(worktree), before, reason);
+    const expected = outputOf(run(f, ["publishable", "--worktree", worktree], env));
+    assert.deepEqual(out, { ...expected, action: "published" }, reason);
+  }
+});
+
+test("published stops with pulls-unreadable and the detail publishable gives when listing the open pull requests fails or returns a JSON object", () => {
+  for (const pulls of [null, '{"message":"Not Found"}']) {
+    const f = committed();
+    fakeGh(f, ISSUE_REPLY, REPO_REPLY, { pulls });
+    const out = assertPublishedStops(f, "pulls-unreadable");
+    assert.deepEqual(out, { ...outputOf(publishable(f)), action: "published" }, String(pulls));
+  }
+});
+
+test("published stops with no-pr when no open pull request of the repository uses the branch", () => {
+  const arrangements: ((f: Fixture) => unknown[])[] = [
+    () => [],
+    (f) => [forkPull(f)],
+    (f) => [matchingPull(f, { head: { ref: "feat/1-other-branch", sha: git(worktreeOf(f), "rev-parse", "HEAD"), repo: { full_name: "owner/repo" } } })],
+  ];
+  for (const pullsOf of arrangements) {
+    const f = committed();
+    withPulls(f, pullsOf(f));
+    const out = assertPublishedStops(f, "no-pr");
+    assert.equal(out.detail, noPrDetail(f));
+  }
+});
+
+test("published stops with several-prs naming the selected html_urls in list order, with unknown for one that is not a string", () => {
+  const second = "https://github.com/owner/repo/pull/11";
+  const f = committed();
+  withPulls(f, [matchingPull(f), forkPull(f), matchingPull(f, { number: 11, html_url: second })]);
+  assert.equal(
+    assertPublishedStops(f, "several-prs").detail,
+    `2 open pull requests of owner/repo use the branch ${BRANCH}: ${PR_URL}, ${second}. Close all but the one this launch opened, then call again.`,
+  );
+  const missing = committed();
+  withPulls(missing, [matchingPull(missing), matchingPull(missing, { number: 11, html_url: undefined })]);
+  assert.equal(
+    assertPublishedStops(missing, "several-prs").detail,
+    `2 open pull requests of owner/repo use the branch ${BRANCH}: ${PR_URL}, unknown. Close all but the one this launch opened, then call again.`,
+  );
+});
+
+test("published stops with pulls-unreadable when the one selected pull request lacks a positive integer number or a non-empty html_url", () => {
+  const changes: Record<string, unknown>[] = [{ number: undefined }, { number: 0 }, { html_url: "" }, { html_url: "  " }];
+  for (const change of changes) {
+    const f = committed();
+    withPulls(f, [matchingPull(f, change)]);
+    assert.equal(assertPublishedStops(f, "pulls-unreadable").detail, PULL_UNREADABLE_DETAIL, JSON.stringify(change));
+  }
+});
+
+test("published stops with pr-mismatch naming only the one field that differs", () => {
+  const cases: [string, Record<string, unknown>][] = [
+    ["draft", { draft: false }],
+    ["draft", { draft: undefined }],
+    ["author", { user: { login: "someone-else" } }],
+    ["head", { head: { ref: BRANCH, sha: "0".repeat(40), repo: { full_name: "owner/repo" } } }],
+    ["base", { base: { ref: "develop", repo: { full_name: "owner/repo" } } }],
+    ["base", { base: { ref: "main", repo: { full_name: "other/repo" } } }],
+  ];
+  for (const [name, change] of cases) {
+    const f = committed();
+    withPulls(f, [matchingPull(f, change)]);
+    assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail(name), JSON.stringify(change));
+  }
+});
+
+test("published names every differing field as draft, author, head, base in that order", () => {
+  const f = committed();
+  withPulls(f, [
+    matchingPull(f, {
+      draft: false,
+      user: { login: "someone-else" },
+      head: { ref: BRANCH, sha: "0".repeat(40), repo: { full_name: "owner/repo" } },
+      base: { ref: "develop", repo: { full_name: "owner/repo" } },
+    }),
+  ]);
+  assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail("draft, author, head, base"));
+});
+
+test("the usage has the published line after the publishable line, and a published call without --worktree, with a relative path, or with --model prints the usage and nothing on stdout, and exits 2", () => {
+  const f = fixture();
+  const calls = [
+    ["published"],
+    ["published", "--worktree", "relative/worktree"],
+    ["published", "--worktree", worktreeOf(f), "--model", "opus"],
+  ];
+  for (const args of calls) {
+    const result = run(f, args);
+    assert.equal(result.status, 2, args.join(" "));
+    assert.equal(result.stdout, "", args.join(" "));
+    assert.match(result.stderr, /^usage: /, args.join(" "));
+    assert.ok(
+      result.stderr.includes("launch.ts publishable --worktree <abs path>\n       launch.ts published --worktree <abs path>\n"),
+      result.stderr,
+    );
+  }
+});
+
+const SESSION_KEYS = ["issue", "repository", "branch", "base", "issue_digest"];
+
+test("implement --fresh after published keeps publications unchanged between the prepare keys and implement, while claude runs and after it ends", () => {
+  const f = publishedReady();
+  assert.equal(published(f).status, 0);
+  const { publications } = launchRecord(worktreeOf(f));
+  fakeImplementer(f, [FINISHED]);
+  const result = implementAt(f, "--fresh");
+  assert.equal(result.status, 0, result.stdout);
+  const [{ launch }] = implementCalls(f);
+  const after = launchRecord(worktreeOf(f));
+  for (const stored of [launch, after]) {
+    assert.deepEqual(Object.keys(stored), [...SESSION_KEYS, "publications", "implement"]);
+    assert.deepEqual(stored.publications, publications);
+  }
+});
+
+test("implement --fresh on a launch.json without publications keeps only the prepare keys and implement, while claude runs and after it ends", () => {
+  const f = accepted();
+  fakeImplementer(f, [FINISHED]);
+  const result = implementAt(f, "--fresh");
+  assert.equal(result.status, 0, result.stdout);
+  const [{ launch }] = implementCalls(f);
+  for (const stored of [launch, launchRecord(worktreeOf(f))]) assert.deepEqual(Object.keys(stored), [...SESSION_KEYS, "implement"]);
 });
