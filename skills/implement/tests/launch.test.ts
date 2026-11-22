@@ -3740,7 +3740,7 @@ const leftDetail = (pid: number, action: string, at: unknown, worktree: string, 
 const unreadableDetail = (file: string, worktree: string): string =>
   `The record ${file} of a launch.ts working on ${worktree} cannot be read. Confirm with \`ps -axo pid,pgid,command\`, run outside any sandbox, that no launch.ts and no claude it started is running on ${worktree}. Then delete ${file} and call again.`;
 
-const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run", "publishable", "published"];
+const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run", "publishable", "published", "body"];
 
 test("while implement waits for claude, launch-holders holds its pid record of pid, action, and at only, and a children record of that claude's pid only", async () => {
   const f = prepared();
@@ -3758,7 +3758,7 @@ test("while implement waits for claude, launch-holders holds its pid record of p
   }
 });
 
-test("each of the nine actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
+test("each of the ten actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
   const f = prepared();
   const waiting = await implementWaiting(f);
   try {
@@ -4029,19 +4029,19 @@ const BRANCH = `feat/${ISSUE}-publish-gate-ts`;
 
 const publishable = (f: Fixture, env: Record<string, string> = {}) => run(f, ["publishable", "--worktree", worktreeOf(f)], env);
 
-function acceptedWithChanges(): Fixture {
-  const f = fixture();
+function acceptedWithChanges(config: Record<string, unknown> = CONFIG, plan: Record<string, Step> = CLEAN): Fixture {
+  const f = fixture(config);
   assert.equal(prepare(f).status, 0);
   fakeClaude(f, `echo changed >> README.md\necho new > NEW.md\n${PASS_CHECK}${SESSION_REPLY}`);
   assert.equal(run(f, ["implement", "--worktree", worktreeOf(f)]).status, 0);
-  fakeReviewer(f, CLEAN);
+  fakeReviewer(f, plan);
   assert.equal(review(f).status, 0);
   assert.equal(lastReview(f).verdict, "accepted");
   return f;
 }
 
-function committed(): Fixture {
-  const f = acceptedWithChanges();
+function committed(config: Record<string, unknown> = CONFIG, plan: Record<string, Step> = CLEAN): Fixture {
+  const f = acceptedWithChanges(config, plan);
   git(worktreeOf(f), "add", "-A");
   git(worktreeOf(f), "commit", "-q", "-m", "reviewed change");
   return f;
@@ -5070,4 +5070,304 @@ test("the next round's independent review gets the repair's replies of both turn
   reviewOut(f);
   const paragraph = `The implementing session replied to the earlier findings as follows. Treat the reply as a claim to check, not as a fact.\n\n${JOINED_REPLY}`;
   assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), paragraph));
+});
+
+const writeBody = (f: Fixture, worktree = worktreeOf(f)) => run(f, ["body", "--worktree", worktree]);
+
+const bodyFileOf = (f: Fixture): string => join(dirname(launchPathOf(f)), "pr-body.md");
+
+interface ExpectedBody {
+  commit: string;
+  check?: string;
+  code?: string;
+  findings?: string[];
+  documents?: string[];
+  handoff?: string[];
+}
+
+const expectedBody = ({ commit, check = '"true"', code = "code reason", findings = [], documents = [], handoff = [] }: ExpectedBody): string =>
+  `${[
+    "Closes #42",
+    "## Changes and rationale",
+    code,
+    "## Requirements coverage",
+    "requirements reason",
+    "## Verification and unverified items",
+    `Target commit: ${commit}`,
+    `launch.ts: the target commit holds the tree that the last review round accepted. The local check (${check}) passed. Self review: accepted. Independent review: accepted.`,
+    "tests reason",
+    ...(findings.length > 0 ? ["## Findings and responses", ...findings] : []),
+    "## Documents and sources",
+    "documentation reason",
+    ...documents,
+    "## Remaining work and owners",
+    "When this body was written, the draft publication, CI, the body check, the switch to ready, and human approval were not complete.",
+    "- Assigned AI: publish this PR as a draft and confirm that CI on the same head (test) registers and succeeds.",
+    ...handoff,
+    "- Assigned AI: compare the latest public body with the Issue, the target commit, the accepted review, and the verification results (published_body_check). After confirming the body and CI on the same head, recheck, switch to ready, and read it back (mark_ready). Keep the draft while anything is unconfirmed.",
+    "- Human: decide any change to requirements or permissions, and decide review, approval, and merge.",
+  ].join("\n\n")}\n`;
+
+const headOf = (f: Fixture): string => git(worktreeOf(f), "rev-parse", "HEAD");
+
+function bodyText(f: Fixture): string {
+  const result = writeBody(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  assert.equal(outputOf(result).commit, headOf(f));
+  return readFileSync(bodyFileOf(f), "utf8");
+}
+
+function rewriteLastIndependent(f: Fixture, change: (independent: Record<string, unknown>) => Record<string, unknown>): void {
+  rewriteLaunch(f, (stored) => {
+    const reviews = [...(stored.reviews as Record<string, unknown>[])];
+    const last = reviews[reviews.length - 1];
+    reviews[reviews.length - 1] = { ...last, independent: change(last.independent as Record<string, unknown>) };
+    return { ...stored, reviews };
+  });
+}
+
+test("body on an accepted and committed worktree writes the body to pr-body.md in the gate directory, returns the ten fields in order, starts no claude, and keeps launch.json and HEAD", () => {
+  const f = committed();
+  fakeRounds(f, {});
+  const before = launchFile(f);
+  const head = headOf(f);
+  const result = writeBody(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  const text = expectedBody({ commit: head });
+  assert.deepEqual(Object.entries(outputOf(result)), [
+    ["action", "body"],
+    ["ok", true],
+    ["issue", ISSUE],
+    ["repository", "owner/repo"],
+    ["branch", BRANCH],
+    ["commit", head],
+    ["tree", lastReview(f).tree],
+    ["body_file", bodyFileOf(f)],
+    ["body_digest", createHash("sha256").update(readFileSync(bodyFileOf(f))).digest("hex")],
+    ["launch_file", launchPathOf(f)],
+  ]);
+  assert.equal(readFileSync(bodyFileOf(f), "utf8"), text);
+  assert.equal(outputOf(result).body_digest, createHash("sha256").update(text).digest("hex"));
+  assert.ok(!text.includes("## Findings and responses"));
+  assert.deepEqual(roundCalls(f), []);
+  assert.equal(launchFile(f), before);
+  assert.equal(headOf(f), head);
+  assert.deepEqual(existsSync(holdersOf(f)) ? readdirSync(holdersOf(f)) : [], []);
+});
+
+test("body writes the check of the base .dotagents.json as its JSON text when check is an argv array", () => {
+  const f = committed({ ...CONFIG, check: ["true"] });
+  assert.equal(bodyText(f), expectedBody({ commit: headOf(f), check: '["true"]' }));
+});
+
+test("body lists each document with a link whose path segments are URI-encoded, and each handoff step, in record order", () => {
+  const f = committed();
+  rewriteLastIndependent(f, (independent) => ({
+    ...independent,
+    documents: [
+      { path: "docs/a b.md", role: "proposal", reason: "first reason" },
+      { path: "README.md", role: "historical", reason: "second reason" },
+    ],
+    handoff: ["first step", "second step"],
+  }));
+  const head = headOf(f);
+  assert.equal(
+    bodyText(f),
+    expectedBody({
+      commit: head,
+      documents: [
+        `- [docs/a b.md](https://github.com/owner/repo/blob/${head}/docs/a%20b.md) (proposal): first reason`,
+        `- [README.md](https://github.com/owner/repo/blob/${head}/README.md) (historical): second reason`,
+      ],
+      handoff: ["- first step", "- second step"],
+    }),
+  );
+});
+
+test("body lists the optional findings of the last round's independent review and leaves out those of the self review", () => {
+  const f = committed(CONFIG, {
+    self: { reply: shaped("self-1", [SELF_OPTIONAL]) },
+    independent: { reply: shaped("ind-1", [{ required: false, location: "b.ts:3", condition: "c5", problem: "p5", action: "a5" }]) },
+  });
+  assert.equal(
+    bodyText(f),
+    expectedBody({ commit: headOf(f), findings: ["- concern: c5 Problem: p5 Suggested action: a5"] }),
+  );
+});
+
+const REPAIRED_JUDGMENTS = { "1-self-1": "fixed", "1-independent-1": "withdrawn" };
+
+function acceptedAfterRepair(roundOne: Record<string, Step> = REJECTED): Fixture {
+  const f = implemented();
+  fakeReviewer(f, roundOne);
+  assert.equal(reviewOut(f).verdict, "rejected");
+  fakeRepairer(f, EDIT_FILE + PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  fakeReviewer(f, {
+    self: { reply: judging("self-2", allStates("fixed")) },
+    independent: { reply: judging("ind-2", REPAIRED_JUDGMENTS) },
+  });
+  assert.equal(reviewOut(f).verdict, "accepted");
+  git(worktreeOf(f), "add", "-A");
+  git(worktreeOf(f), "commit", "-q", "-m", "repaired change");
+  return f;
+}
+
+test("body lists the required findings in the order their keys first appear, with the side that reported each and the independent review's state and reason", () => {
+  const f = acceptedAfterRepair();
+  assert.equal(
+    bodyText(f),
+    expectedBody({
+      commit: headOf(f),
+      findings: [
+        "- reported by self / fixed: ind-2 saw 1-self-1 fixed",
+        "- reported by independent / withdrawn: ind-2 saw 1-independent-1 withdrawn",
+      ],
+    }),
+  );
+});
+
+test("body uses the problem of a required finding whose judgment reason is only whitespace", () => {
+  const f = acceptedAfterRepair();
+  rewriteLastIndependent(f, (independent) => ({
+    ...independent,
+    previous: (independent.previous as Record<string, unknown>[]).map((judgment) =>
+      judgment.key === "1-self-1" ? { ...judgment, reason: " \n " } : judgment,
+    ),
+  }));
+  assert.equal(
+    bodyText(f),
+    expectedBody({
+      commit: headOf(f),
+      findings: ["- reported by self / fixed: p1", "- reported by independent / withdrawn: ind-2 saw 1-independent-1 withdrawn"],
+    }),
+  );
+});
+
+test("body marks a required finding that no round judged as unjudged with its problem, and still writes the body", () => {
+  const f = acceptedAfterRepair();
+  rewriteLastIndependent(f, (independent) => ({ ...independent, previous: [] }));
+  assert.equal(
+    bodyText(f),
+    expectedBody({
+      commit: headOf(f),
+      findings: ["- reported by self / unjudged: p1", "- reported by independent / unjudged: p3"],
+    }),
+  );
+});
+
+test("body leaves out an optional finding that only an earlier round reported", () => {
+  const f = acceptedAfterRepair({
+    ...REJECTED,
+    independent: { reply: shaped("ind-1", [INDEPENDENT_REQUIRED, { required: false, location: "", condition: "c6", problem: "p6", action: "a6" }]) },
+  });
+  assert.equal(
+    bodyText(f),
+    expectedBody({
+      commit: headOf(f),
+      findings: [
+        "- reported by self / fixed: ind-2 saw 1-self-1 fixed",
+        "- reported by independent / withdrawn: ind-2 saw 1-independent-1 withdrawn",
+      ],
+    }),
+  );
+});
+
+test("body replaces paths under the worktree and the repo root, file:///, ~/, and drive paths with the omission text, and keeps a path that only shares a prefix or follows a letter", () => {
+  const f = committed();
+  const omitted = "(internal path omitted)";
+  const code = [
+    `${worktreeOf(f)}/a.ts:1`,
+    `${f.repo}/README.md`,
+    "file:///tmp/x",
+    "~/notes.md",
+    "C:\\dir\\x",
+    `${f.repo}-other/x`,
+    "a~/b",
+    "xC:\\dir\\x",
+  ].join(" ");
+  rewriteLastIndependent(f, (independent) => ({ ...independent, assessments: { ...ASSESSMENTS, code } }));
+  const expected = [omitted, omitted, omitted, omitted, omitted, `${f.repo}-other/x`, "a~/b", "xC:\\dir\\x"].join(" ");
+  assert.equal(bodyText(f), expectedBody({ commit: headOf(f), code: expected }));
+});
+
+test("body stops with the reason and detail publishable gives when the worktree is not prepared, not accepted, or not committed, and writes no file", () => {
+  const cases: [string, () => Fixture, string | null][] = [
+    ["not-prepared", fixture, null],
+    ["not-accepted", rejected, "worktree"],
+    ["commit-mismatch", acceptedWithChanges, "worktree"],
+  ];
+  for (const [reason, arrange, at] of cases) {
+    const f = arrange();
+    const worktree = at === null ? f.repo : worktreeOf(f);
+    const expected = assertStopped(run(f, ["publishable", "--worktree", worktree]), reason);
+    const out = assertStopped(writeBody(f, worktree), reason);
+    assert.equal(out.action, "body", reason);
+    assert.equal(out.detail, expected.detail, reason);
+    const gateDir = git(worktree, "rev-parse", "--path-format=absolute", "--git-path", "agent-gate");
+    assert.ok(!existsSync(join(gateDir, "pr-body.md")), reason);
+  }
+});
+
+test("body stops with no-assessments and writes no file when the last independent review lacks assessments or its handoff is a string", () => {
+  const changes: [string, (independent: Record<string, unknown>) => Record<string, unknown>][] = [
+    ["no assessments", ({ assessments: _, ...rest }) => rest],
+    ["string handoff", (independent) => ({ ...independent, handoff: "a step" })],
+  ];
+  for (const [label, change] of changes) {
+    const f = committed();
+    rewriteLastIndependent(f, change);
+    const out = assertStopped(writeBody(f), "no-assessments");
+    assert.equal(out.action, "body", label);
+    assert.equal(
+      out.detail,
+      `The last review round of ${worktreeOf(f)} has no assessments, documents, and handoff from the independent review. Call review to record them.`,
+      label,
+    );
+    assert.ok(!existsSync(bodyFileOf(f)), label);
+  }
+});
+
+test("body stops with no-config when the base commit's .dotagents.json has no ciChecks", () => {
+  const f = publishedOnce();
+  const { ciChecks: _, ...withoutCi } = CONFIG;
+  git(f.repo, "checkout", "-q", "-b", "no-ci");
+  commitFile(f.repo, ".dotagents.json", `${JSON.stringify(withoutCi)}\n`);
+  const base = git(f.repo, "rev-parse", "HEAD");
+  git(f.repo, "checkout", "-q", "main");
+  rewriteLaunch(f, (stored) => ({ ...stored, base }));
+  const out = assertStopped(writeBody(f), "no-config");
+  assert.equal(out.action, "body");
+  assert.equal(out.detail, `The base commit ${base} of ${worktreeOf(f)} has no .dotagents.json with check and ciChecks.`);
+  assert.ok(!existsSync(bodyFileOf(f)));
+});
+
+test("body called twice rewrites the file with the second call's body", () => {
+  const f = committed();
+  bodyText(f);
+  rewriteLastIndependent(f, (independent) => ({ ...independent, handoff: ["a later step"] }));
+  assert.equal(bodyText(f), expectedBody({ commit: headOf(f), handoff: ["- a later step"] }));
+});
+
+test("body succeeds on the published commit and on a commit stacked on it, with the HEAD of each as the target commit", () => {
+  const once = publishedOnce();
+  assert.equal(bodyText(once), expectedBody({ commit: headOf(once) }));
+  const { f, published: first } = stacked();
+  assert.notEqual(headOf(f), first);
+  assert.equal(bodyText(f), expectedBody({ commit: headOf(f) }));
+});
+
+test("the usage has the body line after the published line, and a body call without --worktree, with a relative path, or with --model prints the usage and nothing on stdout, and exits 2", () => {
+  const f = fixture();
+  const calls = [["body"], ["body", "--worktree", "relative/worktree"], ["body", "--worktree", worktreeOf(f), "--model", "opus"]];
+  for (const args of calls) {
+    const result = run(f, args);
+    assert.equal(result.status, 2, args.join(" "));
+    assert.equal(result.stdout, "", args.join(" "));
+    assert.match(result.stderr, /^usage: /, args.join(" "));
+    assert.ok(
+      result.stderr.includes("launch.ts published --worktree <abs path>\n       launch.ts body --worktree <abs path>\n"),
+      result.stderr,
+    );
+  }
 });

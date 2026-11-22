@@ -28,7 +28,8 @@ const USAGE =
   "       launch.ts continue --worktree <abs path> [--model <name>]\n" +
   "       launch.ts run --worktree <abs path> [--model <name>]\n" +
   "       launch.ts publishable --worktree <abs path>\n" +
-  "       launch.ts published --worktree <abs path>\n";
+  "       launch.ts published --worktree <abs path>\n" +
+  "       launch.ts body --worktree <abs path>\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
   `Implement GitHub Issue #${issue} of ${repository} in this worktree.
@@ -316,7 +317,10 @@ const isCommandArgv = (value: unknown): value is string[] =>
 
 const isShellOrArgv = (value: unknown): boolean => nonEmpty(value) || isCommandArgv(value);
 
-const isRepoRelative = (path: unknown): boolean =>
+const isUniqueNames = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every(nonEmpty) && new Set(value).size === value.length;
+
+const isRepoRelative =(path: unknown): boolean =>
   nonEmpty(path) && !path.startsWith("/") && !path.split("/").includes("..");
 
 const isCapture = (value: unknown): boolean => {
@@ -340,7 +344,7 @@ const CONFIG_RULES: [(config: Record<string, unknown>) => boolean, string][] = [
     "feedbackCheck must be omitted, a shell string, or a non-empty argv array",
   ],
   [
-    (c) => Array.isArray(c.ciChecks) && c.ciChecks.every(nonEmpty) && new Set(c.ciChecks).size === c.ciChecks.length,
+    (c) => isUniqueNames(c.ciChecks),
     "ciChecks must be an array of unique non-empty check names",
   ],
   [
@@ -758,26 +762,29 @@ const regularFileIn = (root: string, tree: string | null, path: string): boolean
   return (mode === "100644" || mode === "100755") && entry.slice(entry.indexOf("\t") + 1) === path;
 };
 
-const documentsOf = (value: unknown, root: string, tree: string | null): boolean => {
+const documentsOf = (value: unknown, holds: (path: string) => boolean): boolean => {
   if (!Array.isArray(value)) return false;
   const documents = value.map(objectOf);
   const paths = documents.map((document) => document?.path);
   const shaped = documents.every(
     (document) =>
-      typeof document?.path === "string" &&
-      ROLES.includes(document.role) &&
-      nonEmpty(document.reason) &&
-      regularFileIn(root, tree, document.path),
+      typeof document?.path === "string" && ROLES.includes(document.role) && nonEmpty(document.reason) && holds(document.path),
   );
   return shaped && new Set(paths).size === paths.length;
 };
 
 const handoffOf = (value: unknown): boolean => Array.isArray(value) && value.every(nonEmpty);
 
+const publishedFieldsOf = (
+  { assessments, documents, handoff }: Record<string, unknown>,
+  holds: (path: string) => boolean,
+): Published | null =>
+  assessedOf(assessments) && documentsOf(documents, holds) && handoffOf(handoff) ? { assessments, documents, handoff } : null;
+
 const publishedCheck =
   (root: string, tree: string | null): PublishedCheck =>
-  ({ assessments, documents, handoff }) =>
-    assessedOf(assessments) && documentsOf(documents, root, tree) && handoffOf(handoff) ? { assessments, documents, handoff } : null;
+  (output) =>
+    publishedFieldsOf(output, (path) => regularFileIn(root, tree, path));
 
 const reviewOf = (reply: Record<string, unknown>, keys: readonly string[] | null, published: PublishedCheck | null): Review | null => {
   const output = objectOf(reply.structured_output);
@@ -1555,6 +1562,179 @@ const published = ({ worktree }: WorktreeCall): Result => {
   };
 };
 
+const BODY_FILE = "pr-body.md";
+const OMITTED = "(internal path omitted)";
+const PATH_SUFFIX = /[A-Za-z0-9_./\\:@%+~=-]*/.source;
+const HOME_OR_DRIVE = new RegExp(`(?<![\\w/:])(?:file:///|~/|[A-Za-z]:\\\\)${PATH_SUFFIX}`, "g");
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const publicTextOf =
+  (roots: string[]) =>
+  (value: string): string =>
+    roots
+      .reduce(
+        (text, root) => text.replace(new RegExp(`(?<![\\w/:])${escapeRegExp(root)}(?![\\w.-])${PATH_SUFFIX}`, "g"), OMITTED),
+        value,
+      )
+      .replace(HOME_OR_DRIVE, OMITTED);
+
+const repoRootOf = (worktree: string): string[] => {
+  const common = git(["rev-parse", "--path-format=absolute", "--git-common-dir"], worktree);
+  return common === null ? [] : [dirname(common)];
+};
+
+interface BodyConfig {
+  check: unknown;
+  ciChecks: string[];
+}
+
+const bodyConfigOf = (worktree: string, base: string): BodyConfig | Problem => {
+  const shown = runQuiet("git", ["show", `${base}:.dotagents.json`], worktree);
+  const config = shown.status === 0 ? parseObject(shown.stdout) : null;
+  const ciChecks = config?.ciChecks;
+  if (config !== null && isShellOrArgv(config.check) && isUniqueNames(ciChecks) && ciChecks.length > 0) {
+    return { check: config.check, ciChecks };
+  }
+  const detail = `The base commit ${base} of ${worktree} has no .dotagents.json with check and ciChecks.`;
+  return { reason: "no-config", detail };
+};
+
+interface BodyDocument {
+  path: string;
+  role: string;
+  reason: string;
+}
+
+interface BodyFields {
+  assessments: Record<(typeof ASSESSED)[number], string>;
+  documents: BodyDocument[];
+  handoff: string[];
+  findings: unknown[];
+}
+
+const bodyFieldsOf = (worktree: string, stored: Record<string, unknown>): BodyFields | Problem => {
+  const independent = objectOf(currentReviewOf(stored)?.independent);
+  const fields = independent === null ? null : publishedFieldsOf(independent, (path) => path !== "");
+  if (independent !== null && fields !== null) {
+    return { ...(fields as Omit<BodyFields, "findings">), findings: Array.isArray(independent.findings) ? independent.findings : [] };
+  }
+  const detail = `The last review round of ${worktree} has no assessments, documents, and handoff from the independent review. Call review to record them.`;
+  return { reason: "no-assessments", detail };
+};
+
+const textOf = (value: unknown): string => (typeof value === "string" ? value : "");
+
+interface RequiredFirst {
+  side: unknown;
+  problem: string;
+}
+
+const requiredLines = (stored: Record<string, unknown>, publicText: (value: string) => string): string[] => {
+  const reviews = (Array.isArray(stored.reviews) ? stored.reviews : []).map((entry) => objectOf(entry) ?? {});
+  const firsts = new Map<string, RequiredFirst>();
+  for (const record of reviews) {
+    for (const entry of Array.isArray(record.required) ? record.required : []) {
+      const { key, side, problem } = objectOf(entry) ?? {};
+      if (typeof key === "string" && !firsts.has(key)) firsts.set(key, { side, problem: textOf(problem) });
+    }
+  }
+  const judgmentOf = (key: string): Record<string, unknown> | undefined =>
+    reviews
+      .map((record) => {
+        const previous = objectOf(record.independent)?.previous;
+        return (Array.isArray(previous) ? previous : []).map((judgment) => objectOf(judgment)).find((judgment) => judgment?.key === key);
+      })
+      .filter((judgment): judgment is Record<string, unknown> => judgment !== undefined && judgment !== null)
+      .at(-1);
+  return [...firsts].map(([key, { side, problem }]) => {
+    const judgment = judgmentOf(key);
+    const state = judgment === undefined ? "unjudged" : String(judgment.state);
+    const reason = judgment !== undefined && nonEmpty(judgment.reason) ? judgment.reason : problem;
+    return `- reported by ${String(side)} / ${state}: ${publicText(reason)}`;
+  });
+};
+
+const concernLines = (findings: unknown[], publicText: (value: string) => string): string[] =>
+  findings
+    .map(objectOf)
+    .filter((finding): finding is Record<string, unknown> => finding?.required === false)
+    .map(
+      ({ condition, problem, action }) =>
+        `- concern: ${publicText(textOf(condition))} Problem: ${publicText(textOf(problem))} Suggested action: ${publicText(textOf(action))}`,
+    );
+
+interface BodyInput {
+  issue: number;
+  repository: string;
+  commit: string;
+  config: BodyConfig;
+  fields: BodyFields;
+  findingLines: string[];
+  publicText: (value: string) => string;
+}
+
+const documentLink = (repository: string, commit: string, path: string): string =>
+  `https://github.com/${repository}/blob/${commit}/${path.split("/").map(encodeURIComponent).join("/")}`;
+
+const bodyOf = ({ issue, repository, commit, config, fields, findingLines, publicText }: BodyInput): string =>
+  `${[
+    `Closes #${issue}`,
+    "## Changes and rationale",
+    publicText(fields.assessments.code),
+    "## Requirements coverage",
+    publicText(fields.assessments.requirements),
+    "## Verification and unverified items",
+    `Target commit: ${commit}`,
+    `launch.ts: the target commit holds the tree that the last review round accepted. The local check (${publicText(JSON.stringify(config.check))}) passed. Self review: accepted. Independent review: accepted.`,
+    publicText(fields.assessments.tests),
+    ...(findingLines.length > 0 ? ["## Findings and responses", ...findingLines] : []),
+    "## Documents and sources",
+    publicText(fields.assessments.documentation),
+    ...fields.documents.map(
+      ({ path, role, reason }) => `- [${path}](${documentLink(repository, commit, path)}) (${role}): ${publicText(reason)}`,
+    ),
+    "## Remaining work and owners",
+    "When this body was written, the draft publication, CI, the body check, the switch to ready, and human approval were not complete.",
+    `- Assigned AI: publish this PR as a draft and confirm that CI on the same head (${config.ciChecks.join(", ")}) registers and succeeds.`,
+    ...fields.handoff.map((step) => `- ${publicText(step)}`),
+    "- Assigned AI: compare the latest public body with the Issue, the target commit, the accepted review, and the verification results (published_body_check). After confirming the body and CI on the same head, recheck, switch to ready, and read it back (mark_ready). Keep the draft while anything is unconfirmed.",
+    "- Human: decide any change to requirements or permissions, and decide review, approval, and merge.",
+  ].join("\n\n")}\n`;
+
+const body = ({ worktree }: WorktreeCall): Result => {
+  const stop = ({ reason, detail }: Problem) => stopped("body", reason, detail);
+
+  const facts = publishFactsOf(worktree);
+  if ("reason" in facts) return stop(facts);
+  const { gate, launchPath, stored, launch } = facts.prepared;
+  const config = bodyConfigOf(worktree, launch.base);
+  if ("reason" in config) return stop(config);
+  const fields = bodyFieldsOf(worktree, stored);
+  if ("reason" in fields) return stop(fields);
+  const commit = String(facts.head);
+  const publicText = publicTextOf([worktree, ...repoRootOf(worktree)]);
+  const findingLines = [...requiredLines(stored, publicText), ...concernLines(fields.findings, publicText)];
+  const bytes = Buffer.from(
+    bodyOf({ issue: launch.issue, repository: launch.repository, commit, config, fields, findingLines, publicText }),
+    "utf8",
+  );
+  const bodyFile = join(gate.dir, BODY_FILE);
+  writeFileSync(bodyFile, bytes);
+  return {
+    action: "body",
+    ok: true,
+    issue: launch.issue,
+    repository: launch.repository,
+    branch: launch.branch,
+    commit,
+    tree: facts.tree,
+    body_file: bodyFile,
+    body_digest: createHash("sha256").update(bytes).digest("hex"),
+    launch_file: launchPath,
+  };
+};
+
 interface HeldAction {
   parse: (argv: string[]) => WorktreeCall | null;
   act: (call: WorktreeCall) => Result | Promise<Result>;
@@ -1570,6 +1750,7 @@ const HELD_ACTIONS: Record<string, HeldAction> = {
   run: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: runRounds },
   publishable: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: publishable },
   published: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: published },
+  body: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: body },
 };
 
 const gateDirOf = (worktree: string): string | null => {
