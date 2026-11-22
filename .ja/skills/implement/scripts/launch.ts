@@ -1289,6 +1289,7 @@ interface Publication {
   commit: string;
   number: number;
   url: string;
+  bodyDigest: unknown;
 }
 
 type HeadState = "first" | "published" | "stacked";
@@ -1300,7 +1301,7 @@ const lastPublicationOf = ({ stored, launchPath }: Prepared): Publication | null
   if (!Array.isArray(publications) || publications.length === 0) return null;
   const last = objectOf(publications[publications.length - 1]);
   if (last !== null && nonEmpty(last.commit) && isPositiveInteger(last.number) && nonEmpty(last.url)) {
-    return { commit: last.commit, number: last.number, url: last.url };
+    return { commit: last.commit, number: last.number, url: last.url, bodyDigest: last.body_digest };
   }
   const detail = `The last entry of publications in ${launchPath} lacks a commit, a positive integer number, or a url. launch.ts does not repair it.`;
   return { reason: "publications-unreadable", detail };
@@ -1446,6 +1447,10 @@ const differingOf = (pull: Record<string, unknown>, facts: PublishFacts, commit:
   return PULL_FIELDS.filter(([, same]) => !same(pull, expected)).map(([name]) => name);
 };
 
+const sha256Of = (text: string): string => createHash("sha256").update(text, "utf8").digest("hex");
+
+const isDigest = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
+
 const headShaOf = (pull: Record<string, unknown>): unknown => objectOf(pull.head)?.sha;
 
 const selectedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<string, unknown> } | Problem => {
@@ -1480,10 +1485,14 @@ const stackedPullOf = (worktree: string, facts: PublishFacts, last: Publication)
     return { reason: "already-pushed", detail: `The pull request ${pull.html_url} already has the commit ${facts.head} as its head. Call published.` };
   }
   const differing = differingOf(pull, facts, last.commit);
-  if (differing.length === 0) return { pull };
-  const { repository } = facts.prepared.launch;
-  const detail = `The pull request ${pull.html_url} differs from the publication launch.json records: ${differing.join(", ")}. Reconcile it on GitHub, then call again. A pull request marked ready is turned back to a draft with \`gh pr ready ${pull.number} --undo --repo ${repository}\`.`;
-  return { reason: "pr-mismatch", detail };
+  if (differing.length > 0) {
+    const { repository } = facts.prepared.launch;
+    const detail = `The pull request ${pull.html_url} differs from the publication launch.json records: ${differing.join(", ")}. Reconcile it on GitHub, then call again. A pull request marked ready is turned back to a draft with \`gh pr ready ${pull.number} --undo --repo ${repository}\`.`;
+    return { reason: "pr-mismatch", detail };
+  }
+  if (!isDigest(last.bodyDigest) || (typeof pull.body === "string" && sha256Of(pull.body) === last.bodyDigest)) return { pull };
+  const detail = `The body of the pull request ${pull.html_url} changed after launch.ts recorded it. launch.ts does not overwrite a change someone else made. A human decides how to keep it.`;
+  return { reason: "body-changed", detail };
 };
 
 const publishableAt = (worktree: string, facts: PublishFacts): { fields: Record<string, unknown> } | Problem => {
@@ -1514,7 +1523,7 @@ const publishable = ({ worktree }: WorktreeCall): Result => {
   };
 };
 
-const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<string, unknown> } | Problem => {
+const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<string, unknown>; text: string } | Problem => {
   const found = selectedPullOf(worktree, facts);
   if ("reason" in found) return found;
   const { pull } = found;
@@ -1524,8 +1533,10 @@ const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<
     const detail = `The pull request ${pull.html_url} still has the published commit ${last.commit} as its head. Push the commit ${facts.head} to the branch ${branch} of ${facts.config.remote}, then call again.`;
     return { reason: "not-pushed", detail };
   }
-  const differing = differingOf(pull, facts, facts.head);
-  if (differing.length === 0) return { pull };
+  const text = bodyTextOf(worktree, facts);
+  if (typeof text !== "string") return text;
+  const differing = [...differingOf(pull, facts, facts.head), ...(pull.body === text ? [] : ["body"])];
+  if (differing.length === 0) return { pull, text };
   const detail = `The pull request ${pull.html_url} differs from what launch.ts confirmed before the push: ${differing.join(", ")}. Reconcile it on GitHub, then call again.`;
   return { reason: "pr-mismatch", detail };
 };
@@ -1538,7 +1549,7 @@ const published = ({ worktree }: WorktreeCall): Result => {
   const commit = facts.head;
   const found = publishedPullOf(worktree, facts);
   if ("reason" in found) return stop(found);
-  const { pull } = found;
+  const { pull, text } = found;
   const { launchPath, stored } = facts.prepared;
   const record = {
     number: pull.number,
@@ -1547,6 +1558,7 @@ const published = ({ worktree }: WorktreeCall): Result => {
     tree: facts.tree,
     base_branch: facts.config.baseBranch,
     actor: facts.actor,
+    body_digest: sha256Of(text),
     at: new Date().toISOString(),
   };
   const publications = Array.isArray(stored.publications) ? [...stored.publications, record] : [record];
@@ -1557,6 +1569,7 @@ const published = ({ worktree }: WorktreeCall): Result => {
     ...publishFields(facts, commit),
     number: record.number,
     url: record.url,
+    body_digest: record.body_digest,
     at: record.at,
     launch_file: launchPath,
   };
@@ -1702,35 +1715,37 @@ const bodyOf = ({ issue, repository, commit, config, fields, findingLines, publi
     "- Human: decide any change to requirements or permissions, and decide review, approval, and merge.",
   ].join("\n\n")}\n`;
 
+const bodyTextOf = (worktree: string, facts: PublishFacts): string | Problem => {
+  const { stored, launch } = facts.prepared;
+  const config = bodyConfigOf(worktree, launch.base);
+  if ("reason" in config) return config;
+  const fields = bodyFieldsOf(worktree, stored);
+  if ("reason" in fields) return fields;
+  const publicText = publicTextOf([worktree, ...repoRootOf(worktree)]);
+  const findingLines = [...requiredLines(stored, publicText), ...concernLines(fields.findings, publicText)];
+  return bodyOf({ issue: launch.issue, repository: launch.repository, commit: String(facts.head), config, fields, findingLines, publicText });
+};
+
 const body = ({ worktree }: WorktreeCall): Result => {
   const stop = ({ reason, detail }: Problem) => stopped("body", reason, detail);
 
   const facts = publishFactsOf(worktree);
   if ("reason" in facts) return stop(facts);
-  const { gate, launchPath, stored, launch } = facts.prepared;
-  const config = bodyConfigOf(worktree, launch.base);
-  if ("reason" in config) return stop(config);
-  const fields = bodyFieldsOf(worktree, stored);
-  if ("reason" in fields) return stop(fields);
-  const commit = String(facts.head);
-  const publicText = publicTextOf([worktree, ...repoRootOf(worktree)]);
-  const findingLines = [...requiredLines(stored, publicText), ...concernLines(fields.findings, publicText)];
-  const bytes = Buffer.from(
-    bodyOf({ issue: launch.issue, repository: launch.repository, commit, config, fields, findingLines, publicText }),
-    "utf8",
-  );
+  const { gate, launchPath, launch } = facts.prepared;
+  const text = bodyTextOf(worktree, facts);
+  if (typeof text !== "string") return stop(text);
   const bodyFile = join(gate.dir, BODY_FILE);
-  writeFileSync(bodyFile, bytes);
+  writeFileSync(bodyFile, text, "utf8");
   return {
     action: "body",
     ok: true,
     issue: launch.issue,
     repository: launch.repository,
     branch: launch.branch,
-    commit,
+    commit: String(facts.head),
     tree: facts.tree,
     body_file: bodyFile,
-    body_digest: createHash("sha256").update(bytes).digest("hex"),
+    body_digest: sha256Of(text),
     launch_file: launchPath,
   };
 };
