@@ -27,7 +27,8 @@ const USAGE =
   "       launch.ts reread --worktree <abs path> [--model <name>]\n" +
   "       launch.ts continue --worktree <abs path> [--model <name>]\n" +
   "       launch.ts run --worktree <abs path> [--model <name>]\n" +
-  "       launch.ts publishable --worktree <abs path>\n";
+  "       launch.ts publishable --worktree <abs path>\n" +
+  "       launch.ts published --worktree <abs path>\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
   `Implement GitHub Issue #${issue} of ${repository} in this worktree.
@@ -608,7 +609,9 @@ const implement = async ({ worktree, model, fresh }: WorktreeCall): Promise<Resu
   const common = { model, effort: undefined, schema: undefined, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS };
   const startNew = async (): Promise<ImplementChild> => {
     const sessionId = randomUUID();
-    const base = { ...launch, implement: { session_id: sessionId, issue_digest: launch.issue_digest, started_at: new Date().toISOString() } };
+    const kept = Object.hasOwn(stored, "publications") ? { publications: stored.publications } : {};
+    const implementRecord = { session_id: sessionId, issue_digest: launch.issue_digest, started_at: new Date().toISOString() };
+    const base = { ...launch, ...kept, implement: implementRecord };
     writeFileSync(launchPath, `${JSON.stringify(base, null, 2)}\n`);
     const outcome = await runChild({ ...common, prompt: promptFor(launch.issue, launch.repository, DONE_GATE), sessionId });
     return { outcome, resumed: false, issueDigest: launch.issue_digest, base };
@@ -1176,61 +1179,168 @@ const actorOf = (worktree: string): string | Problem => {
   return { reason: "no-actor", detail: "gh api user returned no login. Fix the gh authentication." };
 };
 
-const branchPullProblem = (worktree: string, repository: string, branch: string): Problem | null => {
+const openPullsOf = (worktree: string, repository: string, branch: string): unknown[] | Problem => {
   const owner = repository.slice(0, repository.indexOf("/"));
   const args = ["api", `repos/${repository}/pulls`, "--method", "GET", "-f", "state=open", "-f", `head=${owner}:${branch}`];
   const listed = runQuiet("gh", args, worktree);
   const pulls = listed.status === 0 ? parseArray(listed.stdout) : null;
-  if (pulls === null) {
-    const detail = `gh could not list the open pull requests of ${repository} for the branch ${branch}: ${outputOf(listed)}`;
-    return { reason: "pulls-unreadable", detail };
-  }
-  const found = pulls.map(objectOf).find((pull) => {
-    const head = objectOf(pull?.head);
-    return head?.ref === branch && objectOf(head?.repo)?.full_name === repository;
-  });
-  if (found === undefined) return null;
-  const url = typeof found?.html_url === "string" ? found.html_url : "unknown";
-  return { reason: "branch-pr-exists", detail: `An open pull request already uses the branch ${branch}: ${url}.` };
+  if (pulls !== null) return pulls;
+  const detail = `gh could not list the open pull requests of ${repository} for the branch ${branch}: ${outputOf(listed)}`;
+  return { reason: "pulls-unreadable", detail };
 };
+
+const branchPullsOf = (pulls: unknown[], repository: string, branch: string): Record<string, unknown>[] =>
+  pulls
+    .map(objectOf)
+    .filter((pull): pull is Record<string, unknown> => {
+      const head = objectOf(pull?.head);
+      return head?.ref === branch && objectOf(head?.repo)?.full_name === repository;
+    });
+
+const urlOf = (pull: Record<string, unknown>): string => (typeof pull.html_url === "string" ? pull.html_url : "unknown");
+
+const branchPullProblem = (worktree: string, repository: string, branch: string): Problem | null => {
+  const pulls = openPullsOf(worktree, repository, branch);
+  if (!Array.isArray(pulls)) return pulls;
+  const [found] = branchPullsOf(pulls, repository, branch);
+  if (found === undefined) return null;
+  return { reason: "branch-pr-exists", detail: `An open pull request already uses the branch ${branch}: ${urlOf(found)}.` };
+};
+
+interface PublishFacts {
+  prepared: Prepared;
+  tree: unknown;
+  config: { remote: string; baseBranch: string };
+  actor: string;
+}
+
+const publishFactsOf = (worktree: string): PublishFacts | Problem => {
+  const prepared = preparedAt(worktree);
+  if (prepared === null) return { reason: "not-prepared", detail: notPrepared(worktree) };
+  const { stored, launch } = prepared;
+  const next = nextOf(worktree);
+  if (next.kind === "stop") return { reason: next.reason, detail: next.detail };
+  if (next.kind === "call") {
+    const detail = `run would call ${next.action} next for ${worktree}, so the current working tree has no accepted review against the agreed Issue. Call run first.`;
+    return { reason: "not-accepted", detail };
+  }
+  const status = gateStatusOf(worktree);
+  if (status.status !== 0) return { reason: "not-done", detail: `done_gate.ts status is not done: ${outputOf(status)}` };
+  const tree = currentReviewOf(stored)?.tree;
+  const head = headProblem(worktree, launch.base, tree);
+  if (head !== null) return head;
+  const config = publishConfigOf(worktree, launch);
+  if ("reason" in config) return config;
+  const target = remoteProblem(worktree, config.remote, launch.repository) ?? publishTargetProblem(launch.repository, worktree);
+  if (target !== null) return target;
+  const actor = actorOf(worktree);
+  if (typeof actor !== "string") return actor;
+  return { prepared, tree, config, actor };
+};
+
+const publishFields = ({ prepared: { launch }, config, tree, actor }: PublishFacts, commit: string | null) => ({
+  issue: launch.issue,
+  repository: launch.repository,
+  remote: config.remote,
+  base_branch: config.baseBranch,
+  branch: launch.branch,
+  base: launch.base,
+  commit,
+  tree,
+  actor,
+});
 
 const publishable = ({ worktree }: WorktreeCall): Result => {
   const stop = ({ reason, detail }: Problem) => stopped("publishable", reason, detail);
 
-  const prepared = preparedAt(worktree);
-  if (prepared === null) return stop({ reason: "not-prepared", detail: notPrepared(worktree) });
-  const { launchPath, stored, launch } = prepared;
-  const next = nextOf(worktree);
-  if (next.kind === "stop") return stop(next);
-  if (next.kind === "call") {
-    const detail = `run would call ${next.action} next for ${worktree}, so the current working tree has no accepted review against the agreed Issue. Call run first.`;
-    return stop({ reason: "not-accepted", detail });
-  }
-  const status = gateStatusOf(worktree);
-  if (status.status !== 0) return stop({ reason: "not-done", detail: `done_gate.ts status is not done: ${outputOf(status)}` });
-  const tree = currentReviewOf(stored)?.tree;
-  const head = headProblem(worktree, launch.base, tree);
-  if (head !== null) return stop(head);
-  const config = publishConfigOf(worktree, launch);
-  if ("reason" in config) return stop(config);
-  const target = remoteProblem(worktree, config.remote, launch.repository) ?? publishTargetProblem(launch.repository, worktree);
-  if (target !== null) return stop(target);
-  const actor = actorOf(worktree);
-  if (typeof actor !== "string") return stop(actor);
+  const facts = publishFactsOf(worktree);
+  if ("reason" in facts) return stop(facts);
+  const { launch, launchPath } = facts.prepared;
   const pull = branchPullProblem(worktree, launch.repository, launch.branch);
   if (pull !== null) return stop(pull);
   return {
     action: "publishable",
     ok: true,
-    issue: launch.issue,
-    repository: launch.repository,
-    remote: config.remote,
-    base_branch: config.baseBranch,
-    branch: launch.branch,
-    base: launch.base,
-    commit: git(["rev-parse", "HEAD"], worktree),
-    tree,
-    actor,
+    ...publishFields(facts, git(["rev-parse", "HEAD"], worktree)),
+    launch_file: launchPath,
+  };
+};
+
+interface Expected {
+  actor: string;
+  commit: string | null;
+  baseBranch: string;
+  repository: string;
+}
+
+const PULL_FIELDS: [string, (pull: Record<string, unknown>, expected: Expected) => boolean][] = [
+  ["draft", (pull) => pull.draft === true],
+  ["author", (pull, { actor }) => objectOf(pull.user)?.login === actor],
+  ["head", (pull, { commit }) => objectOf(pull.head)?.sha === commit],
+  [
+    "base",
+    (pull, { baseBranch, repository }) => {
+      const base = objectOf(pull.base);
+      return base?.ref === baseBranch && objectOf(base?.repo)?.full_name === repository;
+    },
+  ],
+];
+
+const isPositiveInteger = (value: unknown): value is number => Number.isInteger(value) && (value as number) > 0;
+
+const publishedPullOf = (worktree: string, facts: PublishFacts, commit: string | null): { pull: Record<string, unknown> } | Problem => {
+  const { repository, branch } = facts.prepared.launch;
+  const pulls = openPullsOf(worktree, repository, branch);
+  if (!Array.isArray(pulls)) return pulls;
+  const selected = branchPullsOf(pulls, repository, branch);
+  if (selected.length === 0) {
+    const detail = `No open pull request of ${repository} uses the branch ${branch}. If the commit ${commit} is not published yet, push it and open a draft pull request into ${facts.config.baseBranch}, then call again.`;
+    return { reason: "no-pr", detail };
+  }
+  if (selected.length > 1) {
+    const detail = `${selected.length} open pull requests of ${repository} use the branch ${branch}: ${selected.map(urlOf).join(", ")}. Close all but the one this launch opened, then call again.`;
+    return { reason: "several-prs", detail };
+  }
+  const [pull] = selected;
+  if (!isPositiveInteger(pull.number) || !nonEmpty(pull.html_url)) {
+    const detail = `gh listed an open pull request for the branch ${branch} that lacks a positive integer number or a non-empty html_url.`;
+    return { reason: "pulls-unreadable", detail };
+  }
+  const expected = { actor: facts.actor, commit, baseBranch: facts.config.baseBranch, repository };
+  const differing = PULL_FIELDS.filter(([, same]) => !same(pull, expected)).map(([name]) => name);
+  if (differing.length === 0) return { pull };
+  const detail = `The pull request ${pull.html_url} differs from what launch.ts confirmed before the push: ${differing.join(", ")}. Reconcile it on GitHub, then call again.`;
+  return { reason: "pr-mismatch", detail };
+};
+
+const published = ({ worktree }: WorktreeCall): Result => {
+  const stop = ({ reason, detail }: Problem) => stopped("published", reason, detail);
+
+  const facts = publishFactsOf(worktree);
+  if ("reason" in facts) return stop(facts);
+  const commit = git(["rev-parse", "HEAD"], worktree);
+  const found = publishedPullOf(worktree, facts, commit);
+  if ("reason" in found) return stop(found);
+  const { pull } = found;
+  const { launchPath, stored } = facts.prepared;
+  const record = {
+    number: pull.number,
+    url: pull.html_url,
+    commit,
+    tree: facts.tree,
+    base_branch: facts.config.baseBranch,
+    actor: facts.actor,
+    at: new Date().toISOString(),
+  };
+  const publications = Array.isArray(stored.publications) ? [...stored.publications, record] : [record];
+  writeFileSync(launchPath, `${JSON.stringify({ ...stored, publications }, null, 2)}\n`);
+  return {
+    action: "published",
+    ok: true,
+    ...publishFields(facts, commit),
+    number: record.number,
+    url: record.url,
+    at: record.at,
     launch_file: launchPath,
   };
 };
@@ -1249,6 +1359,7 @@ const HELD_ACTIONS: Record<string, HeldAction> = {
   continue: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: continueWork },
   run: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: runRounds },
   publishable: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: publishable },
+  published: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: published },
 };
 
 const gateDirOf = (worktree: string): string | null => {
