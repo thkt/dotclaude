@@ -143,6 +143,43 @@ const JUDGING_SCHEMA = {
 
 const STATES: readonly unknown[] = PREVIOUS_SCHEMA.items.properties.state.enum;
 
+const ASSESSED = ["code", "requirements", "tests", "documentation"] as const;
+
+const PUBLISHED_PROPERTIES = {
+  assessments: {
+    type: "object",
+    additionalProperties: false,
+    required: [...ASSESSED],
+    properties: Object.fromEntries(ASSESSED.map((name) => [name, { type: "string" }])),
+  },
+  documents: {
+    type: "array",
+    items: {
+      type: "object",
+      additionalProperties: false,
+      required: ["path", "role", "reason"],
+      properties: {
+        path: { type: "string" },
+        role: { type: "string", enum: ["current", "historical", "proposal"] },
+        reason: { type: "string" },
+      },
+    },
+  },
+  handoff: { type: "array", items: { type: "string" } },
+};
+
+const ROLES: readonly unknown[] = PUBLISHED_PROPERTIES.documents.items.properties.role.enum;
+
+const publishing = <Schema extends typeof REVIEW_SCHEMA>(schema: Schema) => ({
+  ...schema,
+  required: [...schema.required, ...Object.keys(PUBLISHED_PROPERTIES)],
+  properties: { ...schema.properties, ...PUBLISHED_PROPERTIES },
+});
+
+const INDEPENDENT_REVIEW_SCHEMA = publishing(REVIEW_SCHEMA);
+
+const INDEPENDENT_JUDGING_SCHEMA = publishing(JUDGING_SCHEMA);
+
 const REVIEW_POINTS = `Assess four separate things:
 1. Code: correctness at the input boundaries, state written to disk, behavior when something fails, and concrete redundancy (the same file read or the same judgment computed twice).
 2. Requirements and scope: every item the Issue scopes is present and behaves as the Issue's tables say, and nothing the Issue lists as out of scope changed. Check each sentence the Issue says to insert verbatim against the Issue mechanically.
@@ -152,6 +189,16 @@ const REVIEW_POINTS = `Assess four separate things:
 const REVIEW_CLOSING = `Do not edit any file in this worktree. Do not commit. Scratch files go under the directory in $TMPDIR.
 
 Give the result through the structured output. \`findings\` lists every finding. Set \`required\` to true only for a defect you demonstrated or a requirement of the Issue that is not met, which must be fixed before the change is published. Set it to false for every other concern. \`location\` is \`file:line\`, or an empty string when no line applies. \`condition\` is the input or state that triggers the finding, \`problem\` is what goes wrong, and \`action\` is what to do. \`verified\` says what you checked and how. An empty \`findings\` is a valid result.`;
+
+const PUBLISHED_FIELDS = `The pull request body publishes these fields of your result: \`assessments\`, \`documents\`, \`handoff\`, the \`reason\` of each judgment in \`previous\`, and \`condition\`, \`problem\`, and \`action\` of each finding that is not required.
+
+Give each explanation one home. \`assessments.code\` explains the final change and why. \`assessments.requirements\` maps the change to the behavior the Issue agreed. \`assessments.tests\` states what was actually verified and the limits of that verification. \`assessments.documentation\` explains which documents and sources apply, where they agree with the change, and which premises changed. Give a substantive reason in all four, also when one of them does not apply. Do not repeat the same change, conclusion, or caveat across them, and do not retell the history of review rounds and repairs.
+
+For a judgment of \`fixed\` or \`withdrawn\`, \`reason\` is the complete public response: name the problem and its conditions, and the current resolution or why the finding did not hold.
+
+In \`documents\`, list the principal repository documents you actually consulted. \`path\` is relative to the repository root and must be a regular file in this worktree. \`role\` is \`current\` for a document that states what holds now, \`historical\` for a record of the past, and \`proposal\` for something not adopted. \`reason\` says why you consulted it.
+
+\`handoff\` lists only what is specific to this Issue: conditions left unverified, required follow-up, and steps handed to a named owner. The publishing side adds the routine tasks itself (publication, CI, the check of the published body, and human review, approval, and merge), so do not repeat them. Return \`[]\` when nothing remains.`;
 
 const selfOpening = (issue: number, base: string): string =>
   `Before your change for Issue #${issue} is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.`;
@@ -174,8 +221,8 @@ ${reply}`;
 const JUDGE_EARLIER =
   "Judge each earlier finding against the current change. In `previous`, return exactly one entry for every `key`. `state` is `fixed` when the problem no longer occurs, `open` when it still occurs, and `withdrawn` when you now judge that the finding did not hold. `reason` says what you checked and what you saw. Do not repeat an earlier finding in `findings`. `findings` is for problems the earlier rounds did not report.";
 
-const reviewPrompt = (opening: string, judging: string[]): string =>
-  [opening, ...judging, REVIEW_POINTS, REVIEW_CLOSING].join("\n\n");
+const reviewPrompt = (opening: string, judging: string[], published: string[]): string =>
+  [opening, ...judging, REVIEW_POINTS, ...published, REVIEW_CLOSING].join("\n\n");
 
 type Flags = Record<string, string>;
 type Result = Record<string, unknown> & { ok: boolean };
@@ -676,7 +723,14 @@ interface Review {
   session_id: unknown;
   cost_usd: unknown;
   duration_ms: unknown;
+  assessments?: unknown;
+  documents?: unknown;
+  handoff?: unknown;
 }
+
+type Published = Pick<Review, "assessments" | "documents" | "handoff">;
+
+type PublishedCheck = (output: Record<string, unknown>) => Published | null;
 
 const verdictOf = (rejected: boolean): Verdict => (rejected ? "rejected" : "accepted");
 
@@ -689,7 +743,43 @@ const previousOf = (value: unknown, keys: readonly string[]): Record<string, unk
   return shaped && sameKeys ? (judged as Record<string, unknown>[]) : null;
 };
 
-const reviewOf = (reply: Record<string, unknown>, keys: readonly string[] | null): Review | null => {
+const assessedOf = (value: unknown): boolean => {
+  const assessments = objectOf(value);
+  return assessments !== null && ASSESSED.every((name) => nonEmpty(assessments[name]));
+};
+
+const regularFileIn = (root: string, tree: string | null, path: string): boolean => {
+  if (tree === null) return false;
+  const listed = git(["ls-tree", "-z", tree, "--", path], root);
+  const entries = (listed ?? "").split("\0").filter((entry) => entry !== "");
+  if (entries.length !== 1) return false;
+  const [entry] = entries;
+  const mode = entry.slice(0, entry.indexOf(" "));
+  return (mode === "100644" || mode === "100755") && entry.slice(entry.indexOf("\t") + 1) === path;
+};
+
+const documentsOf = (value: unknown, root: string, tree: string | null): boolean => {
+  if (!Array.isArray(value)) return false;
+  const documents = value.map(objectOf);
+  const paths = documents.map((document) => document?.path);
+  const shaped = documents.every(
+    (document) =>
+      typeof document?.path === "string" &&
+      ROLES.includes(document.role) &&
+      nonEmpty(document.reason) &&
+      regularFileIn(root, tree, document.path),
+  );
+  return shaped && new Set(paths).size === paths.length;
+};
+
+const handoffOf = (value: unknown): boolean => Array.isArray(value) && value.every(nonEmpty);
+
+const publishedCheck =
+  (root: string, tree: string | null): PublishedCheck =>
+  ({ assessments, documents, handoff }) =>
+    assessedOf(assessments) && documentsOf(documents, root, tree) && handoffOf(handoff) ? { assessments, documents, handoff } : null;
+
+const reviewOf = (reply: Record<string, unknown>, keys: readonly string[] | null, published: PublishedCheck | null): Review | null => {
   const output = objectOf(reply.structured_output);
   const findings = output?.findings;
   if (!output || !Array.isArray(findings)) return null;
@@ -697,6 +787,8 @@ const reviewOf = (reply: Record<string, unknown>, keys: readonly string[] | null
   if (!shaped.every((finding) => typeof finding?.required === "boolean")) return null;
   const previous = keys === null ? [] : previousOf(output.previous, keys);
   if (previous === null) return null;
+  const publishedFields = published === null ? {} : published(output);
+  if (publishedFields === null) return null;
   return {
     verdict: verdictOf(findings.some((finding) => finding.required === true) || previous.some((judgment) => judgment.state === "open")),
     findings,
@@ -705,32 +797,39 @@ const reviewOf = (reply: Record<string, unknown>, keys: readonly string[] | null
     session_id: reply.session_id,
     cost_usd: reply.total_cost_usd,
     duration_ms: reply.duration_ms,
+    ...publishedFields,
   };
 };
 
-const unshapedOf = (keys: readonly string[] | null): string =>
-  keys === null
-    ? "its structured_output is not an object whose findings array has a boolean required in every element"
-    : "its structured_output is not an object whose findings array has a boolean required in every element and whose previous array judges each earlier key exactly once as fixed, open, or withdrawn";
+const unshapedOf = (keys: readonly string[] | null, published: PublishedCheck | null): string => {
+  const shape =
+    keys === null
+      ? "its structured_output is not an object whose findings array has a boolean required in every element"
+      : "its structured_output is not an object whose findings array has a boolean required in every element and whose previous array judges each earlier key exactly once as fixed, open, or withdrawn";
+  return published === null ? shape : `${shape} and whose assessments, documents, and handoff are as the prompt asks`;
+};
 
-const runReview = async (run: ChildRun, keys: readonly string[] | null): Promise<Review | string> => {
-  const unshaped = unshapedOf(keys);
+const runReview = async (run: ChildRun, keys: readonly string[] | null, published: PublishedCheck | null): Promise<Review | string> => {
+  const unshaped = unshapedOf(keys, published);
   const first = replyOf(await runChild(run));
   if (typeof first === "string") return first;
-  const review = reviewOf(first, keys);
+  const review = reviewOf(first, keys, published);
   if (review !== null) return review;
   if (!nonEmpty(first.session_id)) return `${unshaped}, and the JSON has no session_id to ask again in.`;
   const again = replyOf(await runChild({ ...run, prompt: GIVE_REPLY, resume: first.session_id, fork: undefined }));
   if (typeof again === "string") return `${unshaped}; asked once more, ${again}`;
-  return reviewOf(again, keys) ?? `${unshaped}, also after asking once more.`;
+  return reviewOf(again, keys, published) ?? `${unshaped}, also after asking once more.`;
 };
 
-const recordOf = ({ session_id, verdict, findings, previous, verified }: Review) => ({
+const recordOf = ({ session_id, verdict, findings, previous, verified, assessments, documents, handoff }: Review) => ({
   session_id,
   verdict,
   findings,
   previous,
   verified,
+  assessments,
+  documents,
+  handoff,
 });
 
 const earlierRequired = (records: unknown[]): Record<string, unknown>[] | null => {
@@ -805,14 +904,16 @@ const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const closing = keys === null ? [] : [JUDGE_EARLIER];
 
   const tree = treeHash(gate.root);
-  const schema = keys === null ? REVIEW_SCHEMA : JUDGING_SCHEMA;
-  const common = { model, effort: undefined, schema, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, tools: REVIEW_TOOLS };
-  const selfPrompt = reviewPrompt(selfOpening(launch.issue, launch.base), [...judging, ...closing]);
+  const common = { model, effort: undefined, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, tools: REVIEW_TOOLS };
+  const selfSchema = keys === null ? REVIEW_SCHEMA : JUDGING_SCHEMA;
+  const independentSchema = keys === null ? INDEPENDENT_REVIEW_SCHEMA : INDEPENDENT_JUDGING_SCHEMA;
+  const selfPrompt = reviewPrompt(selfOpening(launch.issue, launch.base), [...judging, ...closing], []);
   const independentJudging = [...judging, ...(reply === null ? [] : [replyParagraph(reply)]), ...closing];
-  const independentPrompt = reviewPrompt(independentOpening(launch.issue, launch.repository, launch.base), independentJudging);
+  const independentOpened = independentOpening(launch.issue, launch.repository, launch.base);
+  const independentPrompt = reviewPrompt(independentOpened, independentJudging, [PUBLISHED_FIELDS]);
   const [self, independent] = await Promise.all([
-    runReview({ ...common, prompt: selfPrompt, resume: implemented, fork: true }, keys),
-    runReview({ ...common, prompt: independentPrompt }, keys),
+    runReview({ ...common, schema: selfSchema, prompt: selfPrompt, resume: implemented, fork: true }, keys, null),
+    runReview({ ...common, schema: independentSchema, prompt: independentPrompt }, keys, publishedCheck(gate.root, tree)),
   ]);
   const results: Record<Side, Review | string> = { self, independent };
   const readable = Object.fromEntries(Object.entries(results).filter(([, result]) => typeof result !== "string"));

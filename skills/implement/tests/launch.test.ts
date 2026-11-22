@@ -846,6 +846,40 @@ const REVIEW_SCHEMA = {
   },
 };
 
+const PUBLISHED_PROPERTIES = {
+  assessments: {
+    type: "object",
+    additionalProperties: false,
+    required: ["code", "requirements", "tests", "documentation"],
+    properties: {
+      code: { type: "string" },
+      requirements: { type: "string" },
+      tests: { type: "string" },
+      documentation: { type: "string" },
+    },
+  },
+  documents: {
+    type: "array",
+    items: {
+      type: "object",
+      additionalProperties: false,
+      required: ["path", "role", "reason"],
+      properties: {
+        path: { type: "string" },
+        role: { type: "string", enum: ["current", "historical", "proposal"] },
+        reason: { type: "string" },
+      },
+    },
+  },
+  handoff: { type: "array", items: { type: "string" } },
+};
+
+const INDEPENDENT_REVIEW_SCHEMA = {
+  ...REVIEW_SCHEMA,
+  required: ["findings", "verified", "assessments", "documents", "handoff"],
+  properties: { ...REVIEW_SCHEMA.properties, ...PUBLISHED_PROPERTIES },
+};
+
 const POINTS = `Assess four separate things:
 1. Code: correctness at the input boundaries, state written to disk, behavior when something fails, and concrete redundancy (the same file read or the same judgment computed twice).
 2. Requirements and scope: every item the Issue scopes is present and behaves as the Issue's tables say, and nothing the Issue lists as out of scope changed. Check each sentence the Issue says to insert verbatim against the Issue mechanically.
@@ -855,6 +889,16 @@ const POINTS = `Assess four separate things:
 const CLOSING = `Do not edit any file in this worktree. Do not commit. Scratch files go under the directory in $TMPDIR.
 
 Give the result through the structured output. \`findings\` lists every finding. Set \`required\` to true only for a defect you demonstrated or a requirement of the Issue that is not met, which must be fixed before the change is published. Set it to false for every other concern. \`location\` is \`file:line\`, or an empty string when no line applies. \`condition\` is the input or state that triggers the finding, \`problem\` is what goes wrong, and \`action\` is what to do. \`verified\` says what you checked and how. An empty \`findings\` is a valid result.`;
+
+const PUBLISHED_FIELDS = `The pull request body publishes these fields of your result: \`assessments\`, \`documents\`, \`handoff\`, the \`reason\` of each judgment in \`previous\`, and \`condition\`, \`problem\`, and \`action\` of each finding that is not required.
+
+Give each explanation one home. \`assessments.code\` explains the final change and why. \`assessments.requirements\` maps the change to the behavior the Issue agreed. \`assessments.tests\` states what was actually verified and the limits of that verification. \`assessments.documentation\` explains which documents and sources apply, where they agree with the change, and which premises changed. Give a substantive reason in all four, also when one of them does not apply. Do not repeat the same change, conclusion, or caveat across them, and do not retell the history of review rounds and repairs.
+
+For a judgment of \`fixed\` or \`withdrawn\`, \`reason\` is the complete public response: name the problem and its conditions, and the current resolution or why the finding did not hold.
+
+In \`documents\`, list the principal repository documents you actually consulted. \`path\` is relative to the repository root and must be a regular file in this worktree. \`role\` is \`current\` for a document that states what holds now, \`historical\` for a record of the past, and \`proposal\` for something not adopted. \`reason\` says why you consulted it.
+
+\`handoff\` lists only what is specific to this Issue: conditions left unverified, required follow-up, and steps handed to a named owner. The publishing side adds the routine tasks itself (publication, CI, the check of the published body, and human review, approval, and merge), so do not repeat them. Return \`[]\` when nothing remains.`;
 
 const selfPrompt = (base: string): string => `Before your change for Issue #42 is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
 
@@ -868,6 +912,8 @@ Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, th
 
 ${POINTS}
 
+${PUBLISHED_FIELDS}
+
 ${CLOSING}`;
 
 interface Step {
@@ -879,9 +925,13 @@ interface Step {
 
 const FINDING = { location: "a.ts:1", condition: "c", problem: "p", action: "a" };
 
+const ASSESSMENTS = { code: "code reason", requirements: "requirements reason", tests: "tests reason", documentation: "documentation reason" };
+
+const PUBLISHED = { assessments: ASSESSMENTS, documents: [], handoff: [] };
+
 const shaped = (session: string, findings: Record<string, unknown>[] = [], cost = 1): Record<string, unknown> => ({
   session_id: session,
-  structured_output: { findings, verified: `${session} checked` },
+  structured_output: { findings, verified: `${session} checked`, ...PUBLISHED },
   total_cost_usd: cost,
   duration_ms: 10,
 });
@@ -920,10 +970,10 @@ process.exit(step.exit || 0);
   );
 }
 
-function implemented(): Fixture {
+function implemented(beforeCheck = ""): Fixture {
   const f = fixture();
   assert.equal(prepare(f).status, 0);
-  fakeClaude(f, PASS_CHECK + SESSION_REPLY);
+  fakeClaude(f, beforeCheck + PASS_CHECK + SESSION_REPLY);
   assert.equal(run(f, ["implement", "--worktree", worktreeOf(f)]).status, 0);
   return f;
 }
@@ -955,7 +1005,16 @@ test("review returns accepted round 1 and appends its record to launch.json when
     required: [],
     reviews: {
       self: { verdict: "accepted", findings: [], previous: [], verified: "self-1 checked", session_id: "self-1", cost_usd: 1, duration_ms: 10 },
-      independent: { verdict: "accepted", findings: [], previous: [], verified: "ind-1 checked", session_id: "ind-1", cost_usd: 1, duration_ms: 10 },
+      independent: {
+        verdict: "accepted",
+        findings: [],
+        previous: [],
+        verified: "ind-1 checked",
+        session_id: "ind-1",
+        cost_usd: 1,
+        duration_ms: 10,
+        ...PUBLISHED,
+      },
     },
   });
   const after = launchRecord(worktreeOf(f)) as Record<string, unknown> & { reviews: Record<string, unknown>[] };
@@ -972,7 +1031,7 @@ test("review returns accepted round 1 and appends its record to launch.json when
     verdict: "accepted",
     required: [],
     self: { session_id: "self-1", verdict: "accepted", findings: [], previous: [], verified: "self-1 checked" },
-    independent: { session_id: "ind-1", verdict: "accepted", findings: [], previous: [], verified: "ind-1 checked" },
+    independent: { session_id: "ind-1", verdict: "accepted", findings: [], previous: [], verified: "ind-1 checked", ...PUBLISHED },
   });
 });
 
@@ -988,9 +1047,10 @@ test("review starts self as a fork of the implement session and independent as a
   for (const call of [self, independent]) {
     assert.equal(call.cwd, realpathSync(worktreeOf(f)));
     assert.equal(flagValue(call.args, "--allowedTools"), "Read,Glob,Grep,LS");
-    assert.deepEqual(JSON.parse(flagValue(call.args, "--json-schema")), REVIEW_SCHEMA);
     assert.equal(flagValue(call.args, "--model"), "opus");
   }
+  assert.deepEqual(JSON.parse(flagValue(self.args, "--json-schema")), REVIEW_SCHEMA);
+  assert.deepEqual(JSON.parse(flagValue(independent.args, "--json-schema")), INDEPENDENT_REVIEW_SCHEMA);
   assert.deepEqual(callsOf(f).sort(), ["independent", "self"]);
 });
 
@@ -1423,6 +1483,7 @@ const judging = (
     findings,
     verified: `${session} checked`,
     previous: Object.entries(states).map(([key, state]) => ({ key, state, reason: `${session} saw ${key} ${state}` })),
+    ...PUBLISHED,
   },
   total_cost_usd: 1,
   duration_ms: 10,
@@ -1456,6 +1517,12 @@ const JUDGING_SCHEMA = {
   },
 };
 
+const INDEPENDENT_JUDGING_SCHEMA = {
+  ...JUDGING_SCHEMA,
+  required: ["findings", "verified", "previous", "assessments", "documents", "handoff"],
+  properties: { ...JUDGING_SCHEMA.properties, ...PUBLISHED_PROPERTIES },
+};
+
 const EARLIER = `An earlier review round reported the findings below as required, and the change may have been repaired since. Each line is one finding as a JSON object with its \`key\`.
 
 {"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1"}
@@ -1486,6 +1553,8 @@ ${EARLIER}
 ${reply === null ? "" : `${reply}\n\n`}${JUDGE}
 
 ${POINTS}
+
+${PUBLISHED_FIELDS}
 
 ${CLOSING}`;
 
@@ -1552,9 +1621,13 @@ test("review gives the round-1 prompts and schema when the last record has no re
     arrange(f);
     fakeReviewer(f, CLEAN);
     reviewOut(f);
-    for (const [name, prompt] of [["self", selfPrompt(baseOf(f))], ["independent", independentPrompt(baseOf(f))]]) {
+    const expected: [string, string, Record<string, unknown>][] = [
+      ["self", selfPrompt(baseOf(f)), REVIEW_SCHEMA],
+      ["independent", independentPrompt(baseOf(f)), INDEPENDENT_REVIEW_SCHEMA],
+    ];
+    for (const [name, prompt, schema] of expected) {
       assert.equal(callOf(f, name).stdin, prompt, label);
-      assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), REVIEW_SCHEMA, label);
+      assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), schema, label);
     }
   }
 });
@@ -1565,9 +1638,8 @@ test("a review after a round with required findings gives both reviews the earli
   reviewOut(f);
   assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)));
   assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), null));
-  for (const name of ["self", "independent"]) {
-    assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), JUDGING_SCHEMA, name);
-  }
+  assert.deepEqual(JSON.parse(flagValue(callOf(f, "self").args, "--json-schema")), JUDGING_SCHEMA);
+  assert.deepEqual(JSON.parse(flagValue(callOf(f, "independent").args, "--json-schema")), INDEPENDENT_JUDGING_SCHEMA);
 });
 
 test("the implementing session's reply to the last reviewed round reaches only the independent review", () => {
@@ -1685,7 +1757,7 @@ test("in round 2 the earlier finding still open comes before the new required fi
 test("a judging review whose previous is missing, misses a key, names an unknown key, repeats a key, or gives an unknown state is asked once more, then stops with review-failed", () => {
   const withPrevious = (previous: unknown): Record<string, unknown> => ({
     session_id: "ind-2",
-    structured_output: { findings: [], verified: "v", ...(previous === undefined ? {} : { previous }) },
+    structured_output: { findings: [], verified: "v", ...PUBLISHED, ...(previous === undefined ? {} : { previous }) },
   });
   const entry = (key: string, state = "fixed") => ({ key, state, reason: "r" });
   const cases: [string, unknown][] = [
@@ -1702,7 +1774,106 @@ test("a judging review whose previous is missing, misses a key, names an unknown
     const out = assertStopped(review(f), "review-failed") as { detail: string };
     assert.match(out.detail, /independent/, label);
     assert.deepEqual(callsOf(f).filter((name) => name.startsWith("again-")), ["again-ind-2"], label);
-    assert.deepEqual(JSON.parse(flagValue(callOf(f, "again-ind-2").args, "--json-schema")), JUDGING_SCHEMA, label);
+    assert.deepEqual(JSON.parse(flagValue(callOf(f, "again-ind-2").args, "--json-schema")), INDEPENDENT_JUDGING_SCHEMA, label);
+    assert.deepEqual(launchRecord(worktreeOf(f)), before, label);
+  }
+});
+
+const independentReply = (published: Record<string, unknown>): Record<string, unknown> => ({
+  session_id: "ind-1",
+  structured_output: { findings: [], verified: "ind-1 checked", ...published },
+  total_cost_usd: 1,
+  duration_ms: 10,
+});
+
+const DOCUMENT = { path: "README.md", role: "current", reason: "states what the fixture holds" };
+
+const PATH_KINDS = "mkdir -p docs\nprintf 'doc\\n' > docs/new.md\nln -s README.md link.md\nprintf 'ignored.md\\n' > .gitignore\nprintf 'ignored\\n' > ignored.md\n";
+
+const UNSHAPED_INDEPENDENT =
+  "its structured_output is not an object whose findings array has a boolean required in every element and whose assessments, documents, and handoff are as the prompt asks";
+
+test("an accepted review records the independent review's assessments, documents, and handoff after its other keys as returned, and self has none of them", () => {
+  const f = implemented();
+  const published: Record<string, unknown> = {
+    assessments: ASSESSMENTS,
+    documents: [{ ...DOCUMENT, extra: "kept" }],
+    handoff: ["confirm the first real run"],
+  };
+  fakeReviewer(f, { self: CLEAN.self, independent: { reply: independentReply(published) } });
+  const out = reviewOut(f) as unknown as { reviews: Record<string, Record<string, unknown>> };
+  const record = lastReview(f) as unknown as Record<string, Record<string, unknown>>;
+  assert.deepEqual(Object.keys(record.independent), ["session_id", "verdict", "findings", "previous", "verified", "assessments", "documents", "handoff"]);
+  for (const key of ["assessments", "documents", "handoff"]) {
+    assert.deepEqual(record.independent[key], published[key], key);
+    assert.deepEqual(out.reviews.independent[key], published[key], key);
+    assert.ok(!Object.hasOwn(record.self, key), key);
+    assert.ok(!Object.hasOwn(out.reviews.self, key), key);
+  }
+});
+
+test("a review succeeds when self returns none of assessments, documents, and handoff", () => {
+  const f = implemented();
+  const self = { session_id: "self-1", structured_output: { findings: [], verified: "self-1 checked" }, total_cost_usd: 1, duration_ms: 10 };
+  fakeReviewer(f, { self: { reply: self }, independent: CLEAN.independent });
+  assert.equal(reviewOut(f).verdict, "accepted");
+  assert.deepEqual(callsOf(f).sort(), ["independent", "self"]);
+});
+
+test("the independent review passes with a document that is an untracked new file, and with empty documents and handoff", () => {
+  const cases: [string, Record<string, unknown>][] = [
+    ["untracked new file", { assessments: ASSESSMENTS, documents: [{ ...DOCUMENT, path: "docs/new.md" }], handoff: [] }],
+    ["empty arrays", { assessments: ASSESSMENTS, documents: [], handoff: [] }],
+  ];
+  for (const [label, published] of cases) {
+    const f = implemented(PATH_KINDS);
+    fakeReviewer(f, { self: CLEAN.self, independent: { reply: independentReply(published) } });
+    const out = reviewOut(f) as unknown as { reviews: Record<string, Record<string, unknown>> };
+    assert.deepEqual(out.reviews.independent.documents, published.documents, label);
+    assert.deepEqual(callsOf(f).filter((name) => name.startsWith("again-")), [], label);
+  }
+});
+
+test("an independent review without assessments is asked once more in its session, and the reply that passes is used", () => {
+  const f = implemented();
+  fakeReviewer(f, {
+    self: CLEAN.self,
+    independent: { reply: independentReply({ documents: [], handoff: [] }) },
+    "again-ind-1": { reply: independentReply({ assessments: ASSESSMENTS, documents: [DOCUMENT], handoff: [] }) },
+  });
+  reviewOut(f);
+  assert.deepEqual(callsOf(f).filter((name) => name.startsWith("again-")), ["again-ind-1"]);
+  assert.equal(callOf(f, "again-ind-1").stdin, GIVE_REPLY);
+  assert.deepEqual((lastReview(f) as unknown as Record<string, Record<string, unknown>>).independent.documents, [DOCUMENT]);
+});
+
+test("an independent review whose assessments, documents, or handoff fails twice stops with review-failed naming the published fields and adds no record", () => {
+  const withoutDocumentation = Object.fromEntries(Object.entries(ASSESSMENTS).filter(([name]) => name !== "documentation"));
+  const documented = (documents: unknown[]) => ({ assessments: ASSESSMENTS, documents, handoff: [] });
+  const cases: [string, Record<string, unknown>][] = [
+    ["tests is only spaces", { assessments: { ...ASSESSMENTS, tests: "  " }, documents: [], handoff: [] }],
+    ["documentation is missing", { assessments: withoutDocumentation, documents: [], handoff: [] }],
+    ["a document is not an object", documented(["README.md"])],
+    ["the path is not in the tree", documented([{ ...DOCUMENT, path: "missing.md" }])],
+    ["the path is written as ./README.md", documented([{ ...DOCUMENT, path: "./README.md" }])],
+    ["the path is a directory", documented([{ ...DOCUMENT, path: "docs" }])],
+    ["the path is a symlink", documented([{ ...DOCUMENT, path: "link.md" }])],
+    ["the path is ignored by git", documented([{ ...DOCUMENT, path: "ignored.md" }])],
+    ["two documents share a path", documented([DOCUMENT, DOCUMENT])],
+    ["the role is draft", documented([{ ...DOCUMENT, role: "draft" }])],
+    ["the reason is empty", documented([{ ...DOCUMENT, reason: "" }])],
+    ["handoff holds an empty string", { assessments: ASSESSMENTS, documents: [], handoff: [""] }],
+    ["handoff is not an array", { assessments: ASSESSMENTS, documents: [], handoff: "nothing" }],
+  ];
+  const f = implemented(PATH_KINDS);
+  const before = launchRecord(worktreeOf(f));
+  for (const [label, published] of cases) {
+    for (const name of ["calls", "started-self", "started-independent"]) rmSync(join(f.logs, name), { force: true });
+    const reply = independentReply(published);
+    fakeReviewer(f, { self: CLEAN.self, independent: { reply }, "again-ind-1": { reply } });
+    const out = assertStopped(review(f), "review-failed") as { detail: string };
+    assert.ok(out.detail.includes(`The independent review gave no readable result: ${UNSHAPED_INDEPENDENT}, also after asking once more.`), `${label}: ${out.detail}`);
+    assert.deepEqual(callsOf(f).filter((name) => name.startsWith("again-")), ["again-ind-1"], label);
     assert.deepEqual(launchRecord(worktreeOf(f)), before, label);
   }
 });
