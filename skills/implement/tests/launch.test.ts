@@ -201,6 +201,8 @@ function assertStopped(result: SpawnSyncReturns<string>, reason: string): Record
 
 const worktreeOf = (f: Fixture) => join(f.repo, ".claude", "worktrees", `implement-${ISSUE}`);
 
+const baseOf = (f: Fixture): string => git(f.origin, "rev-parse", "main");
+
 const launchPathOf = (f: Fixture): string =>
   join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json");
 
@@ -854,13 +856,13 @@ const CLOSING = `Do not edit any file in this worktree. Do not commit. Scratch f
 
 Give the result through the structured output. \`findings\` lists every finding. Set \`required\` to true only for a defect you demonstrated or a requirement of the Issue that is not met, which must be fixed before the change is published. Set it to false for every other concern. \`location\` is \`file:line\`, or an empty string when no line applies. \`condition\` is the input or state that triggers the finding, \`problem\` is what goes wrong, and \`action\` is what to do. \`verified\` says what you checked and how. An empty \`findings\` is a valid result.`;
 
-const SELF_PROMPT = `Before your uncommitted change for Issue #42 is published, review it yourself and try to refute it. Read the change again with \`git diff HEAD\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
+const selfPrompt = (base: string): string => `Before your change for Issue #42 is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
 
 ${POINTS}
 
 ${CLOSING}`;
 
-const INDEPENDENT_PROMPT = `Independently review the uncommitted change in this worktree against GitHub Issue #42 of owner/repo. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff HEAD\` and \`git status --short\`, and read each untracked file.
+const independentPrompt = (base: string): string => `Independently review the change in this worktree against GitHub Issue #42 of owner/repo. The change is everything in this worktree that differs from commit ${base}, committed or not. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff ${base}\` and \`git status --short\`, and read each untracked file.
 
 Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.
 
@@ -1004,8 +1006,17 @@ test("review gives each review its full prompt with the Issue number and reposit
   const f = implemented();
   fakeReviewer(f, CLEAN);
   assert.equal(review(f).status, 0);
-  assert.equal(callOf(f, "self").stdin, SELF_PROMPT);
-  assert.equal(callOf(f, "independent").stdin, INDEPENDENT_PROMPT);
+  assert.equal(callOf(f, "self").stdin, selfPrompt(baseOf(f)));
+  assert.equal(callOf(f, "independent").stdin, independentPrompt(baseOf(f)));
+});
+
+test("review gives both reviews the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = implemented();
+  const base = moveBaseToParent(f);
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  assert.equal(callOf(f, "self").stdin, selfPrompt(base));
+  assert.equal(callOf(f, "independent").stdin, independentPrompt(base));
 });
 
 test("review runs the two reviews at the same time", () => {
@@ -1152,7 +1163,7 @@ const REJECTED: Record<string, Step> = {
   independent: { reply: shaped("ind-1", [INDEPENDENT_REQUIRED]) },
 };
 
-const repairPromptWith = (lines: string): string => `The reviews of your uncommitted change for Issue #42 reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
+const repairPromptWith = (base: string, lines: string): string => `The reviews of your change for Issue #42 reported findings that must be settled before the change is published. The change is everything in this worktree that differs from commit ${base}, committed or not. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
 
 ${lines}
 
@@ -1165,7 +1176,7 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
-const REPAIR_PROMPT = repairPromptWith(`{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}
+const repairPrompt = (base: string): string => repairPromptWith(base, `{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}
 {"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[]}`);
 
 const REPAIR_REPLY = `echo '{"session_id":"s-1","result":"repaired","total_cost_usd":0.7,"duration_ms":900}'\n`;
@@ -1257,7 +1268,15 @@ test("repair passes every entry of the last review's required list in order as J
   const f = rejected();
   fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
   assert.equal(repair(f).status, 0);
-  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), REPAIR_PROMPT);
+  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), repairPrompt(baseOf(f)));
+});
+
+test("repair gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = rejected();
+  const base = moveBaseToParent(f);
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), repairPrompt(base));
 });
 
 test("repair reports ok with changed false and records the round when the child changes nothing", () => {
@@ -1448,7 +1467,7 @@ const REPLY_PARAGRAPH = `The implementing session replied to the earlier finding
 
 repaired`;
 
-const SELF_JUDGING_PROMPT = `Before your uncommitted change for Issue #42 is published, review it yourself and try to refute it. Read the change again with \`git diff HEAD\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
+const selfJudgingPrompt = (base: string): string => `Before your change for Issue #42 is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
 
 ${EARLIER}
 
@@ -1458,7 +1477,7 @@ ${POINTS}
 
 ${CLOSING}`;
 
-const independentJudgingPrompt = (reply: string | null): string => `Independently review the uncommitted change in this worktree against GitHub Issue #42 of owner/repo. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff HEAD\` and \`git status --short\`, and read each untracked file.
+const independentJudgingPrompt = (base: string, reply: string | null): string => `Independently review the change in this worktree against GitHub Issue #42 of owner/repo. The change is everything in this worktree that differs from commit ${base}, committed or not. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff ${base}\` and \`git status --short\`, and read each untracked file.
 
 Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.
 
@@ -1473,6 +1492,14 @@ ${CLOSING}`;
 function rewriteLaunch(f: Fixture, change: (stored: Record<string, unknown>) => Record<string, unknown>): void {
   const dir = git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate");
   writeFileSync(join(dir, "launch.json"), `${JSON.stringify(change(launchRecord(worktreeOf(f))), null, 2)}\n`);
+}
+
+function moveBaseToParent(f: Fixture): string {
+  const parent = git(f.origin, "rev-parse", "main~1");
+  assert.notEqual(parent, baseOf(f));
+  assert.notEqual(parent, git(worktreeOf(f), "rev-parse", "HEAD"));
+  rewriteLaunch(f, (stored) => ({ ...stored, base: parent }));
+  return parent;
 }
 
 type ReviewOut = {
@@ -1525,7 +1552,7 @@ test("review gives the round-1 prompts and schema when the last record has no re
     arrange(f);
     fakeReviewer(f, CLEAN);
     reviewOut(f);
-    for (const [name, prompt] of [["self", SELF_PROMPT], ["independent", INDEPENDENT_PROMPT]]) {
+    for (const [name, prompt] of [["self", selfPrompt(baseOf(f))], ["independent", independentPrompt(baseOf(f))]]) {
       assert.equal(callOf(f, name).stdin, prompt, label);
       assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), REVIEW_SCHEMA, label);
     }
@@ -1536,8 +1563,8 @@ test("a review after a round with required findings gives both reviews the earli
   const f = rejected();
   fakeReviewer(f, BOTH_OPEN);
   reviewOut(f);
-  assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT);
-  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(null));
+  assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)));
+  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), null));
   for (const name of ["self", "independent"]) {
     assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), JUDGING_SCHEMA, name);
   }
@@ -1549,8 +1576,8 @@ test("the implementing session's reply to the last reviewed round reaches only t
   assert.equal(repair(f).status, 0);
   fakeReviewer(f, BOTH_OPEN);
   reviewOut(f);
-  assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT);
-  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(REPLY_PARAGRAPH));
+  assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)));
+  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), REPLY_PARAGRAPH));
 });
 
 test("no review gets the reply paragraph when the last repair answered another round, its reply is empty, or there is no repair", () => {
@@ -1566,8 +1593,8 @@ test("no review gets the reply paragraph when the last repair answered another r
     rewriteLaunch(f, (stored) => ({ ...stored, repairs: change((stored as Stored).repairs) }));
     fakeReviewer(f, BOTH_OPEN);
     reviewOut(f);
-    assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT, label);
-    assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(null), label);
+    assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)), label);
+    assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), null), label);
   }
 });
 
@@ -1702,7 +1729,7 @@ test("repair passes a reopened finding carried from an earlier round with its ke
   assert.equal(repair(f).status, 0);
   assert.equal(
     readFileSync(join(f.logs, "repair-stdin"), "utf8"),
-    repairPromptWith(`{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[{"side":"self","reason":"self-2 saw 1-independent-1 open"}]}
+    repairPromptWith(baseOf(f), `{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[{"side":"self","reason":"self-2 saw 1-independent-1 open"}]}
 {"key":"2-self-1","side":"self","location":"a.ts:1","condition":"c9","problem":"p1","action":"a1","reopened":[]}`),
   );
 });
@@ -2400,10 +2427,10 @@ const reread = (f: Fixture, ...extra: string[]) => run(f, ["reread", "--worktree
 
 const AGREED_DIGEST = digestOf(CHANGED_BODY);
 
-const REREAD_PROMPT = `GitHub Issue #42 of owner/repo changed after you last read it. The Issue as it is now is the agreed requirement.
+const rereadPrompt = (base: string): string => `GitHub Issue #42 of owner/repo changed after you last read it. The Issue as it is now is the agreed requirement.
 
 1. Read the Issue again with \`gh issue view 42 --repo owner/repo --json title,body\`, and find what changed from the version you read before.
-2. Compare every requirement, done condition, and out-of-scope item of the Issue with your uncommitted change. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
+2. Compare every requirement, done condition, and out-of-scope item of the Issue with your change. The change is everything in this worktree that differs from commit ${base}, committed or not. Read it with \`git diff ${base}\` and \`git status --short\`. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
 3. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
 4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
 
@@ -2515,7 +2542,15 @@ test("reread after agree resumes the implement session without a fork in the wor
   assert.ok(!args.includes("--fork-session"));
   assert.ok(!args.includes("--json-schema"));
   assert.equal(flagValue(args, "--model"), "opus");
-  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), REREAD_PROMPT);
+  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), rereadPrompt(baseOf(f)));
+});
+
+test("reread gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = agreedAfterChange();
+  const base = moveBaseToParent(f);
+  fakeRereader(f, PASS_CHECK + REREAD_REPLY);
+  assert.equal(reread(f).status, 0);
+  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), rereadPrompt(base));
 });
 
 test("reread passes --model to claude", () => {
@@ -2793,9 +2828,9 @@ test("run stops with the reason and detail of a reread that fails, and reread is
 
 const continueWork = (f: Fixture, ...extra: string[]) => run(f, ["continue", "--worktree", worktreeOf(f), ...extra]);
 
-const CONTINUE_PROMPT = `Your work on GitHub Issue #42 of owner/repo in this worktree is not finished. \`${DONE_GATE} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
+const continuePrompt = (base: string): string => `Your work on GitHub Issue #42 of owner/repo in this worktree is not finished. \`${DONE_GATE} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
 
-1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the uncommitted changes that are in the worktree, and finish that work.
+1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the changes that are in the worktree, and finish that work.
 2. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
 3. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
 
@@ -2848,7 +2883,15 @@ test("continue on a worktree whose implement stopped with not-done resumes the i
   assert.ok(!args.includes("--json-schema"));
   assert.equal(flagValue(args, "--allowedTools"), flagValue(implementArgs, "--allowedTools"));
   assert.equal(flagValue(args, "--model"), "opus");
-  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), CONTINUE_PROMPT);
+  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), continuePrompt(baseOf(f)));
+});
+
+test("continue gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = unfinished();
+  const base = moveBaseToParent(f);
+  fakeContinuer(f, PASS_CHECK + CONTINUE_REPLY);
+  assert.equal(continueWork(f).status, 0);
+  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), continuePrompt(base));
 });
 
 test("continue reports ok, appends round 1 to continues with done true, and passes --model when the child passes the check", () => {
@@ -3117,9 +3160,9 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: the files you changed, what \`${DONE_GATE} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
 `;
 
-const RESUME_PROMPT = `Your turn implementing GitHub Issue #42 of owner/repo in this worktree was interrupted before you replied.
+const resumePrompt = (base: string): string => `Your turn implementing GitHub Issue #42 of owner/repo in this worktree was interrupted before you replied.
 
-1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you had done and what was left. Keep the uncommitted changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view 42 --repo owner/repo --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
+1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you had done and what was left. Keep the changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view 42 --repo owner/repo --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
 2. Finish the change the Issue asks for, following the repository's rules that apply to the files you touch.
 3. Run \`${DONE_GATE} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
 4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
@@ -3227,7 +3270,15 @@ test("implement on an unfinished worktree resumes the recorded session with --mo
   assert.ok(!calls[0].args.includes("--session-id"));
   assert.ok(!calls[0].args.includes("--fork-session"));
   assert.equal(flagValue(calls[0].args, "--model"), "sonnet");
-  assert.equal(calls[0].stdin, RESUME_PROMPT);
+  assert.equal(calls[0].stdin, resumePrompt(baseOf(f)));
+});
+
+test("a resumed implement gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = interrupted();
+  const base = moveBaseToParent(f);
+  fakeImplementer(f, [FINISHED]);
+  assert.equal(implementAt(f).status, 0);
+  assert.equal(implementCalls(f)[0].stdin, resumePrompt(base));
 });
 
 test("a resumed implement that passes the check returns resumed true, keeps launch.json while it runs, and records the digest the session started with", () => {
@@ -4430,4 +4481,306 @@ test("implement --fresh on a launch.json without publications keeps only the pre
   assert.equal(result.status, 0, result.stdout);
   const [{ launch }] = implementCalls(f);
   for (const stored of [launch, launchRecord(worktreeOf(f))]) assert.deepEqual(Object.keys(stored), [...SESSION_KEYS, "implement"]);
+});
+
+function publishedOnce(): Fixture {
+  const f = publishedReady();
+  const result = published(f);
+  assert.equal(result.status, 0, result.stdout);
+  return f;
+}
+
+const publicationsOf = (f: Fixture): Record<string, unknown>[] => launchRecord(worktreeOf(f)).publications as Record<string, unknown>[];
+
+function reviewedEdit(f: Fixture, text: string): void {
+  writeFileSync(join(worktreeOf(f), "README.md"), text);
+  const check = spawnSync(process.execPath, [DONE_GATE, "check"], { cwd: worktreeOf(f), env: isolatedEnv(), encoding: "utf8" });
+  assert.equal(check.status, 0, check.stderr);
+  fakeReviewer(f, CLEAN);
+  const result = review(f);
+  assert.equal(result.status, 0, result.stdout);
+  assert.equal(lastReview(f).verdict, "accepted");
+}
+
+function stackCommit(f: Fixture, text: string): string {
+  const published = git(worktreeOf(f), "rev-parse", "HEAD");
+  reviewedEdit(f, text);
+  git(worktreeOf(f), "add", "-A");
+  git(worktreeOf(f), "commit", "-q", "-m", "stacked change");
+  return published;
+}
+
+function stacked(): { f: Fixture; published: string } {
+  const f = publishedOnce();
+  const published = stackCommit(f, "stacked change\n");
+  return { f, published };
+}
+
+const pullWithHead = (f: Fixture, sha: string, extra: Record<string, unknown> = {}): Record<string, unknown> =>
+  matchingPull(f, { head: { ref: BRANCH, sha, repo: { full_name: "owner/repo" } }, ...extra });
+
+const unreadablePublicationsDetail = (f: Fixture): string =>
+  `The last entry of publications in ${launchPathOf(f)} lacks a commit, a positive integer number, or a url. launch.ts does not repair it.`;
+
+const stackedCommitMismatchDetail = (f: Fixture, published: string): string =>
+  `HEAD of ${worktreeOf(f)} is neither the published commit ${published} nor one commit on top of it, or it does not hold the reviewed tree ${lastReview(f).tree}. Commit the reviewed working tree as one commit on top of ${published}, and nothing else.`;
+
+const alreadyPublishedDetail = (f: Fixture, published: string): string =>
+  `HEAD of ${worktreeOf(f)} is the commit ${published} that ${PR_URL} already has, and it holds the reviewed tree. There is nothing to push.`;
+
+const recordedNoPrDetail = `No open pull request of owner/repo uses the branch ${BRANCH}. The pull request ${PR_URL} that launch.json records is closed or merged.`;
+
+const stackedMismatchDetail = (names: string, number = 9): string =>
+  `The pull request ${PR_URL} differs from the publication launch.json records: ${names}. Reconcile it on GitHub, then call again. A pull request marked ready is turned back to a draft with \`gh pr ready ${number} --undo --repo owner/repo\`.`;
+
+const alreadyPushedDetail = (head: string): string => `The pull request ${PR_URL} already has the commit ${head} as its head. Call published.`;
+
+const notPushedDetail = (published: string, head: string): string =>
+  `The pull request ${PR_URL} still has the published commit ${published} as its head. Push the commit ${head} to the branch ${BRANCH} of origin, then call again.`;
+
+function assertBothStop(f: Fixture, reason: string): Record<string, unknown>[] {
+  const before = launchFile(f);
+  const outs = [publishable(f), published(f)].map((result) => assertStopped(result, reason));
+  assert.deepEqual(
+    outs.map((out) => out.action),
+    ["publishable", "published"],
+  );
+  assert.equal(launchFile(f), before, reason);
+  return outs;
+}
+
+function assertPublishableStops(f: Fixture, reason: string): Record<string, unknown> {
+  const before = launchFile(f);
+  const out = assertStopped(publishable(f), reason);
+  assert.equal(out.action, "publishable");
+  assert.equal(launchFile(f), before, reason);
+  return out;
+}
+
+const STACKED_FIELDS = [
+  "action",
+  "ok",
+  "issue",
+  "repository",
+  "remote",
+  "base_branch",
+  "branch",
+  "base",
+  "commit",
+  "tree",
+  "actor",
+  "number",
+  "url",
+  "launch_file",
+];
+
+test("publishable and published stop with publications-unreadable and keep launch.json when the last publication lacks a commit, has number 0, has an empty url, or is not an object", () => {
+  const breaks: [string, (last: Record<string, unknown>) => unknown][] = [
+    ["no commit", ({ commit: _commit, ...rest }) => rest],
+    ["number 0", (last) => ({ ...last, number: 0 })],
+    ["empty url", (last) => ({ ...last, url: "" })],
+    ["not an object", () => "not an object"],
+  ];
+  const f = publishedOnce();
+  const [record] = publicationsOf(f);
+  for (const [label, change] of breaks) {
+    rewriteLaunch(f, (stored) => ({ ...stored, publications: [change(record)] }));
+    for (const out of assertBothStop(f, "publications-unreadable")) assert.equal(out.detail, unreadablePublicationsDetail(f), label);
+  }
+});
+
+test("publishable succeeds as a first publication with the twelve fields when publications is an empty array or not an array", () => {
+  for (const publications of [[], "not an array"]) {
+    const f = committed();
+    rewriteLaunch(f, (stored) => ({ ...stored, publications }));
+    const result = publishable(f);
+    assert.equal(result.status, 0, result.stdout);
+    assert.deepEqual(Object.keys(outputOf(result)), [...STACKED_FIELDS.slice(0, 11), "launch_file"], JSON.stringify(publications));
+  }
+});
+
+test("publishable and published stop with commit-mismatch and the first-publication detail when no publication is recorded and HEAD is a merge commit whose first parent is the base", () => {
+  const f = committed();
+  const worktree = worktreeOf(f);
+  const base = String(launchRecord(worktree).base);
+  const other = git(f.origin, "rev-parse", "main~1");
+  const merge = git(worktree, "commit-tree", String(lastReview(f).tree), "-p", base, "-p", other, "-m", "merge");
+  git(worktree, "reset", "-q", "--soft", merge);
+  assert.equal(git(worktree, "rev-parse", "HEAD^"), base);
+  for (const out of assertBothStop(f, "commit-mismatch")) assert.equal(out.detail, commitMismatchDetail(f));
+});
+
+test("publishable and published stop with commit-mismatch and the published-commit detail when HEAD is the published commit and the reviewed change is not committed", () => {
+  const f = publishedOnce();
+  const published = git(worktreeOf(f), "rev-parse", "HEAD");
+  reviewedEdit(f, "reviewed but not committed\n");
+  for (const out of assertBothStop(f, "commit-mismatch")) assert.equal(out.detail, stackedCommitMismatchDetail(f, published));
+});
+
+test("publishable and published stop with commit-mismatch when the parent of HEAD is not the published commit", () => {
+  const f = publishedOnce();
+  const recorded = git(f.origin, "rev-parse", "main~1");
+  assert.notEqual(recorded, git(worktreeOf(f), "rev-parse", "HEAD"));
+  assert.notEqual(recorded, git(worktreeOf(f), "rev-parse", "HEAD^"));
+  rewriteLaunch(f, (stored) => ({ ...stored, publications: [{ ...publicationsOf(f)[0], commit: recorded }] }));
+  for (const out of assertBothStop(f, "commit-mismatch")) assert.equal(out.detail, stackedCommitMismatchDetail(f, recorded));
+});
+
+test("publishable and published stop with commit-mismatch when HEAD is a merge commit whose first parent is the published commit", () => {
+  const f = publishedOnce();
+  const worktree = worktreeOf(f);
+  const published = git(worktree, "rev-parse", "HEAD");
+  reviewedEdit(f, "merged change\n");
+  const merge = git(worktree, "commit-tree", String(lastReview(f).tree), "-p", published, "-p", String(launchRecord(worktree).base), "-m", "merge");
+  git(worktree, "add", "-A");
+  git(worktree, "reset", "-q", "--soft", merge);
+  assert.equal(git(worktree, "rev-parse", "HEAD^{tree}"), lastReview(f).tree);
+  for (const out of assertBothStop(f, "commit-mismatch")) assert.equal(out.detail, stackedCommitMismatchDetail(f, published));
+});
+
+test("publishable on the published commit right after published succeeds stops with already-published", () => {
+  const f = publishedOnce();
+  const out = assertPublishableStops(f, "already-published");
+  assert.equal(out.detail, alreadyPublishedDetail(f, git(worktreeOf(f), "rev-parse", "HEAD")));
+});
+
+test("publishable on a commit stacked on the published commit succeeds with the fourteen fields in order when the pull request matches, and keeps launch.json", () => {
+  const { f, published } = stacked();
+  const worktree = worktreeOf(f);
+  withPulls(f, [pullWithHead(f, published)]);
+  const before = launchFile(f);
+  const result = publishable(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  assert.deepEqual(Object.entries(outputOf(result)), [
+    ["action", "publishable"],
+    ["ok", true],
+    ["issue", ISSUE],
+    ["repository", "owner/repo"],
+    ["remote", "origin"],
+    ["base_branch", "main"],
+    ["branch", BRANCH],
+    ["base", launchRecord(worktree).base],
+    ["commit", git(worktree, "rev-parse", "HEAD")],
+    ["tree", lastReview(f).tree],
+    ["actor", "launch-test"],
+    ["number", 9],
+    ["url", PR_URL],
+    ["launch_file", launchPathOf(f)],
+  ]);
+  assert.equal(launchFile(f), before);
+});
+
+test("publishable on a stacked commit stops with no-pr naming the recorded pull request when no open pull request uses the branch", () => {
+  const { f } = stacked();
+  withPulls(f, []);
+  assert.equal(assertPublishableStops(f, "no-pr").detail, recordedNoPrDetail);
+});
+
+test("publishable on a stacked commit stops with several-prs, and with pulls-unreadable when the list fails or the selected pull request has no number", () => {
+  const { f, published } = stacked();
+  const second = "https://github.com/owner/repo/pull/11";
+  withPulls(f, [pullWithHead(f, published), pullWithHead(f, published, { number: 11, html_url: second })]);
+  assert.equal(
+    assertPublishableStops(f, "several-prs").detail,
+    `2 open pull requests of owner/repo use the branch ${BRANCH}: ${PR_URL}, ${second}. Close all but the one this launch opened, then call again.`,
+  );
+  fakeGh(f, ISSUE_REPLY, REPO_REPLY, { pulls: null });
+  const failed = assertPublishableStops(f, "pulls-unreadable");
+  assert.ok(String(failed.detail).startsWith(`gh could not list the open pull requests of owner/repo for the branch ${BRANCH}: `), String(failed.detail));
+  withPulls(f, [pullWithHead(f, published, { number: undefined })]);
+  assert.equal(assertPublishableStops(f, "pulls-unreadable").detail, PULL_UNREADABLE_DETAIL);
+});
+
+test("publishable on a stacked commit stops with already-pushed when the pull request head is HEAD, even when the pull request is not a draft", () => {
+  const { f } = stacked();
+  const head = git(worktreeOf(f), "rev-parse", "HEAD");
+  for (const extra of [{}, { draft: false }]) {
+    withPulls(f, [pullWithHead(f, head, extra)]);
+    assert.equal(assertPublishableStops(f, "already-pushed").detail, alreadyPushedDetail(head), JSON.stringify(extra));
+  }
+});
+
+test("publishable on a stacked commit stops with pr-mismatch naming only the one field that differs from the recorded publication", () => {
+  const { f, published } = stacked();
+  const cases: [string, Record<string, unknown>, number][] = [
+    ["number", { number: 12 }, 12],
+    ["draft", { draft: false }, 9],
+    ["author", { user: { login: "someone-else" } }, 9],
+    ["head", { head: { ref: BRANCH, sha: "0".repeat(40), repo: { full_name: "owner/repo" } } }, 9],
+    ["base", { base: { ref: "develop", repo: { full_name: "owner/repo" } } }, 9],
+  ];
+  for (const [name, change, number] of cases) {
+    withPulls(f, [pullWithHead(f, published, change)]);
+    assert.equal(assertPublishableStops(f, "pr-mismatch").detail, stackedMismatchDetail(name, number), name);
+  }
+});
+
+test("publishable on a stacked commit names every differing field as number, draft, author, head, base in that order", () => {
+  const { f } = stacked();
+  withPulls(f, [
+    matchingPull(f, {
+      number: 12,
+      draft: false,
+      user: { login: "someone-else" },
+      head: { ref: BRANCH, sha: "0".repeat(40), repo: { full_name: "owner/repo" } },
+      base: { ref: "develop", repo: { full_name: "owner/repo" } },
+    }),
+  ]);
+  assert.equal(assertPublishableStops(f, "pr-mismatch").detail, stackedMismatchDetail("number, draft, author, head, base", 12));
+});
+
+test("published on a pushed stacked commit appends a second publication for HEAD and keeps the first one unchanged", () => {
+  const { f } = stacked();
+  const [first] = publicationsOf(f);
+  const head = git(worktreeOf(f), "rev-parse", "HEAD");
+  withPulls(f, [matchingPull(f)]);
+  const result = published(f);
+  assert.equal(result.status, 0, result.stdout);
+  assert.equal(outputOf(result).commit, head);
+  const publications = publicationsOf(f);
+  assert.equal(publications.length, 2);
+  assert.deepEqual(publications[0], first);
+  assert.equal(publications[1].commit, head);
+});
+
+test("published on a stacked commit stops with not-pushed and keeps launch.json when the pull request head is still the published commit, even when the pull request is not a draft", () => {
+  const { f, published } = stacked();
+  const head = git(worktreeOf(f), "rev-parse", "HEAD");
+  for (const extra of [{}, { draft: false }]) {
+    withPulls(f, [pullWithHead(f, published, extra)]);
+    assert.equal(assertPublishedStops(f, "not-pushed").detail, notPushedDetail(published, head), JSON.stringify(extra));
+  }
+});
+
+test("publishable on a second stacked commit compares the pull request head with the second publication, not the first", () => {
+  const { f } = stacked();
+  withPulls(f, [matchingPull(f)]);
+  assert.equal(published(f).status, 0);
+  const [first, second] = publicationsOf(f);
+  stackCommit(f, "second stacked change\n");
+  withPulls(f, [pullWithHead(f, String(second.commit))]);
+  const result = publishable(f);
+  assert.equal(result.status, 0, result.stdout);
+  assert.deepEqual(Object.keys(outputOf(result)), STACKED_FIELDS);
+  withPulls(f, [pullWithHead(f, String(first.commit))]);
+  assert.equal(assertPublishableStops(f, "pr-mismatch").detail, stackedMismatchDetail("head"));
+});
+
+test("a publication before the last one that lacks every field does not stop publishable, which stops with already-published on the published commit", () => {
+  const f = publishedOnce();
+  rewriteLaunch(f, (stored) => ({ ...stored, publications: [{}, publicationsOf(f)[0]] }));
+  const out = assertPublishableStops(f, "already-published");
+  assert.equal(out.detail, alreadyPublishedDetail(f, git(worktreeOf(f), "rev-parse", "HEAD")));
+});
+
+test("published with a recorded publication stops with no-pr naming the recorded pull request when no open pull request uses the branch", () => {
+  const f = publishedOnce();
+  withPulls(f, []);
+  assert.equal(assertPublishedStops(f, "no-pr").detail, recordedNoPrDetail);
+});
+
+test("published with a recorded publication stops with pr-mismatch naming number when the pull request number differs from the record", () => {
+  const f = publishedOnce();
+  withPulls(f, [matchingPull(f, { number: 12 })]);
+  assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail("number"));
 });
