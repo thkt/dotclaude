@@ -4482,3 +4482,305 @@ test("implement --fresh on a launch.json without publications keeps only the pre
   const [{ launch }] = implementCalls(f);
   for (const stored of [launch, launchRecord(worktreeOf(f))]) assert.deepEqual(Object.keys(stored), [...SESSION_KEYS, "implement"]);
 });
+
+function publishedOnce(): Fixture {
+  const f = publishedReady();
+  const result = published(f);
+  assert.equal(result.status, 0, result.stdout);
+  return f;
+}
+
+const publicationsOf = (f: Fixture): Record<string, unknown>[] => launchRecord(worktreeOf(f)).publications as Record<string, unknown>[];
+
+function reviewedEdit(f: Fixture, text: string): void {
+  writeFileSync(join(worktreeOf(f), "README.md"), text);
+  const check = spawnSync(process.execPath, [DONE_GATE, "check"], { cwd: worktreeOf(f), env: isolatedEnv(), encoding: "utf8" });
+  assert.equal(check.status, 0, check.stderr);
+  fakeReviewer(f, CLEAN);
+  const result = review(f);
+  assert.equal(result.status, 0, result.stdout);
+  assert.equal(lastReview(f).verdict, "accepted");
+}
+
+function stackCommit(f: Fixture, text: string): string {
+  const published = git(worktreeOf(f), "rev-parse", "HEAD");
+  reviewedEdit(f, text);
+  git(worktreeOf(f), "add", "-A");
+  git(worktreeOf(f), "commit", "-q", "-m", "stacked change");
+  return published;
+}
+
+function stacked(): { f: Fixture; published: string } {
+  const f = publishedOnce();
+  const published = stackCommit(f, "stacked change\n");
+  return { f, published };
+}
+
+const pullWithHead = (f: Fixture, sha: string, extra: Record<string, unknown> = {}): Record<string, unknown> =>
+  matchingPull(f, { head: { ref: BRANCH, sha, repo: { full_name: "owner/repo" } }, ...extra });
+
+const unreadablePublicationsDetail = (f: Fixture): string =>
+  `The last entry of publications in ${launchPathOf(f)} lacks a commit, a positive integer number, or a url. launch.ts does not repair it.`;
+
+const stackedCommitMismatchDetail = (f: Fixture, published: string): string =>
+  `HEAD of ${worktreeOf(f)} is neither the published commit ${published} nor one commit on top of it, or it does not hold the reviewed tree ${lastReview(f).tree}. Commit the reviewed working tree as one commit on top of ${published}, and nothing else.`;
+
+const alreadyPublishedDetail = (f: Fixture, published: string): string =>
+  `HEAD of ${worktreeOf(f)} is the commit ${published} that ${PR_URL} already has, and it holds the reviewed tree. There is nothing to push.`;
+
+const recordedNoPrDetail = `No open pull request of owner/repo uses the branch ${BRANCH}. The pull request ${PR_URL} that launch.json records is closed or merged.`;
+
+const stackedMismatchDetail = (names: string, number = 9): string =>
+  `The pull request ${PR_URL} differs from the publication launch.json records: ${names}. Reconcile it on GitHub, then call again. A pull request marked ready is turned back to a draft with \`gh pr ready ${number} --undo --repo owner/repo\`.`;
+
+const alreadyPushedDetail = (head: string): string => `The pull request ${PR_URL} already has the commit ${head} as its head. Call published.`;
+
+const notPushedDetail = (published: string, head: string): string =>
+  `The pull request ${PR_URL} still has the published commit ${published} as its head. Push the commit ${head} to the branch ${BRANCH} of origin, then call again.`;
+
+function assertBothStop(f: Fixture, reason: string): Record<string, unknown>[] {
+  const before = launchFile(f);
+  const outs = [publishable(f), published(f)].map((result) => assertStopped(result, reason));
+  assert.deepEqual(
+    outs.map((out) => out.action),
+    ["publishable", "published"],
+  );
+  assert.equal(launchFile(f), before, reason);
+  return outs;
+}
+
+function assertPublishableStops(f: Fixture, reason: string): Record<string, unknown> {
+  const before = launchFile(f);
+  const out = assertStopped(publishable(f), reason);
+  assert.equal(out.action, "publishable");
+  assert.equal(launchFile(f), before, reason);
+  return out;
+}
+
+const STACKED_FIELDS = [
+  "action",
+  "ok",
+  "issue",
+  "repository",
+  "remote",
+  "base_branch",
+  "branch",
+  "base",
+  "commit",
+  "tree",
+  "actor",
+  "number",
+  "url",
+  "launch_file",
+];
+
+test("publishable and published stop with publications-unreadable and keep launch.json when the last publication lacks a commit, has number 0, has an empty url, or is not an object", () => {
+  const breaks: [string, (last: Record<string, unknown>) => unknown][] = [
+    ["no commit", ({ commit: _commit, ...rest }) => rest],
+    ["number 0", (last) => ({ ...last, number: 0 })],
+    ["empty url", (last) => ({ ...last, url: "" })],
+    ["not an object", () => "not an object"],
+  ];
+  const f = publishedOnce();
+  const [record] = publicationsOf(f);
+  for (const [label, change] of breaks) {
+    rewriteLaunch(f, (stored) => ({ ...stored, publications: [change(record)] }));
+    for (const out of assertBothStop(f, "publications-unreadable")) assert.equal(out.detail, unreadablePublicationsDetail(f), label);
+  }
+});
+
+test("publishable succeeds as a first publication with the twelve fields when publications is an empty array or not an array", () => {
+  for (const publications of [[], "not an array"]) {
+    const f = committed();
+    rewriteLaunch(f, (stored) => ({ ...stored, publications }));
+    const result = publishable(f);
+    assert.equal(result.status, 0, result.stdout);
+    assert.deepEqual(Object.keys(outputOf(result)), [...STACKED_FIELDS.slice(0, 11), "launch_file"], JSON.stringify(publications));
+  }
+});
+
+test("publishable and published stop with commit-mismatch and the first-publication detail when no publication is recorded and HEAD is a merge commit whose first parent is the base", () => {
+  const f = committed();
+  const worktree = worktreeOf(f);
+  const base = String(launchRecord(worktree).base);
+  const other = git(f.origin, "rev-parse", "main~1");
+  const merge = git(worktree, "commit-tree", String(lastReview(f).tree), "-p", base, "-p", other, "-m", "merge");
+  git(worktree, "reset", "-q", "--soft", merge);
+  assert.equal(git(worktree, "rev-parse", "HEAD^"), base);
+  for (const out of assertBothStop(f, "commit-mismatch")) assert.equal(out.detail, commitMismatchDetail(f));
+});
+
+test("publishable and published stop with commit-mismatch and the published-commit detail when HEAD is the published commit and the reviewed change is not committed", () => {
+  const f = publishedOnce();
+  const published = git(worktreeOf(f), "rev-parse", "HEAD");
+  reviewedEdit(f, "reviewed but not committed\n");
+  for (const out of assertBothStop(f, "commit-mismatch")) assert.equal(out.detail, stackedCommitMismatchDetail(f, published));
+});
+
+test("publishable and published stop with commit-mismatch when the parent of HEAD is not the published commit", () => {
+  const f = publishedOnce();
+  const recorded = git(f.origin, "rev-parse", "main~1");
+  assert.notEqual(recorded, git(worktreeOf(f), "rev-parse", "HEAD"));
+  assert.notEqual(recorded, git(worktreeOf(f), "rev-parse", "HEAD^"));
+  rewriteLaunch(f, (stored) => ({ ...stored, publications: [{ ...publicationsOf(f)[0], commit: recorded }] }));
+  for (const out of assertBothStop(f, "commit-mismatch")) assert.equal(out.detail, stackedCommitMismatchDetail(f, recorded));
+});
+
+test("publishable and published stop with commit-mismatch when HEAD is a merge commit whose first parent is the published commit", () => {
+  const f = publishedOnce();
+  const worktree = worktreeOf(f);
+  const published = git(worktree, "rev-parse", "HEAD");
+  reviewedEdit(f, "merged change\n");
+  const merge = git(worktree, "commit-tree", String(lastReview(f).tree), "-p", published, "-p", String(launchRecord(worktree).base), "-m", "merge");
+  git(worktree, "add", "-A");
+  git(worktree, "reset", "-q", "--soft", merge);
+  assert.equal(git(worktree, "rev-parse", "HEAD^{tree}"), lastReview(f).tree);
+  for (const out of assertBothStop(f, "commit-mismatch")) assert.equal(out.detail, stackedCommitMismatchDetail(f, published));
+});
+
+test("publishable on the published commit right after published succeeds stops with already-published", () => {
+  const f = publishedOnce();
+  const out = assertPublishableStops(f, "already-published");
+  assert.equal(out.detail, alreadyPublishedDetail(f, git(worktreeOf(f), "rev-parse", "HEAD")));
+});
+
+test("publishable on a commit stacked on the published commit succeeds with the fourteen fields in order when the pull request matches, and keeps launch.json", () => {
+  const { f, published } = stacked();
+  const worktree = worktreeOf(f);
+  withPulls(f, [pullWithHead(f, published)]);
+  const before = launchFile(f);
+  const result = publishable(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  assert.deepEqual(Object.entries(outputOf(result)), [
+    ["action", "publishable"],
+    ["ok", true],
+    ["issue", ISSUE],
+    ["repository", "owner/repo"],
+    ["remote", "origin"],
+    ["base_branch", "main"],
+    ["branch", BRANCH],
+    ["base", launchRecord(worktree).base],
+    ["commit", git(worktree, "rev-parse", "HEAD")],
+    ["tree", lastReview(f).tree],
+    ["actor", "launch-test"],
+    ["number", 9],
+    ["url", PR_URL],
+    ["launch_file", launchPathOf(f)],
+  ]);
+  assert.equal(launchFile(f), before);
+});
+
+test("publishable on a stacked commit stops with no-pr naming the recorded pull request when no open pull request uses the branch", () => {
+  const { f } = stacked();
+  withPulls(f, []);
+  assert.equal(assertPublishableStops(f, "no-pr").detail, recordedNoPrDetail);
+});
+
+test("publishable on a stacked commit stops with several-prs, and with pulls-unreadable when the list fails or the selected pull request has no number", () => {
+  const { f, published } = stacked();
+  const second = "https://github.com/owner/repo/pull/11";
+  withPulls(f, [pullWithHead(f, published), pullWithHead(f, published, { number: 11, html_url: second })]);
+  assert.equal(
+    assertPublishableStops(f, "several-prs").detail,
+    `2 open pull requests of owner/repo use the branch ${BRANCH}: ${PR_URL}, ${second}. Close all but the one this launch opened, then call again.`,
+  );
+  fakeGh(f, ISSUE_REPLY, REPO_REPLY, { pulls: null });
+  const failed = assertPublishableStops(f, "pulls-unreadable");
+  assert.ok(String(failed.detail).startsWith(`gh could not list the open pull requests of owner/repo for the branch ${BRANCH}: `), String(failed.detail));
+  withPulls(f, [pullWithHead(f, published, { number: undefined })]);
+  assert.equal(assertPublishableStops(f, "pulls-unreadable").detail, PULL_UNREADABLE_DETAIL);
+});
+
+test("publishable on a stacked commit stops with already-pushed when the pull request head is HEAD, even when the pull request is not a draft", () => {
+  const { f } = stacked();
+  const head = git(worktreeOf(f), "rev-parse", "HEAD");
+  for (const extra of [{}, { draft: false }]) {
+    withPulls(f, [pullWithHead(f, head, extra)]);
+    assert.equal(assertPublishableStops(f, "already-pushed").detail, alreadyPushedDetail(head), JSON.stringify(extra));
+  }
+});
+
+test("publishable on a stacked commit stops with pr-mismatch naming only the one field that differs from the recorded publication", () => {
+  const { f, published } = stacked();
+  const cases: [string, Record<string, unknown>, number][] = [
+    ["number", { number: 12 }, 12],
+    ["draft", { draft: false }, 9],
+    ["author", { user: { login: "someone-else" } }, 9],
+    ["head", { head: { ref: BRANCH, sha: "0".repeat(40), repo: { full_name: "owner/repo" } } }, 9],
+    ["base", { base: { ref: "develop", repo: { full_name: "owner/repo" } } }, 9],
+  ];
+  for (const [name, change, number] of cases) {
+    withPulls(f, [pullWithHead(f, published, change)]);
+    assert.equal(assertPublishableStops(f, "pr-mismatch").detail, stackedMismatchDetail(name, number), name);
+  }
+});
+
+test("publishable on a stacked commit names every differing field as number, draft, author, head, base in that order", () => {
+  const { f } = stacked();
+  withPulls(f, [
+    matchingPull(f, {
+      number: 12,
+      draft: false,
+      user: { login: "someone-else" },
+      head: { ref: BRANCH, sha: "0".repeat(40), repo: { full_name: "owner/repo" } },
+      base: { ref: "develop", repo: { full_name: "owner/repo" } },
+    }),
+  ]);
+  assert.equal(assertPublishableStops(f, "pr-mismatch").detail, stackedMismatchDetail("number, draft, author, head, base", 12));
+});
+
+test("published on a pushed stacked commit appends a second publication for HEAD and keeps the first one unchanged", () => {
+  const { f } = stacked();
+  const [first] = publicationsOf(f);
+  const head = git(worktreeOf(f), "rev-parse", "HEAD");
+  withPulls(f, [matchingPull(f)]);
+  const result = published(f);
+  assert.equal(result.status, 0, result.stdout);
+  assert.equal(outputOf(result).commit, head);
+  const publications = publicationsOf(f);
+  assert.equal(publications.length, 2);
+  assert.deepEqual(publications[0], first);
+  assert.equal(publications[1].commit, head);
+});
+
+test("published on a stacked commit stops with not-pushed and keeps launch.json when the pull request head is still the published commit, even when the pull request is not a draft", () => {
+  const { f, published } = stacked();
+  const head = git(worktreeOf(f), "rev-parse", "HEAD");
+  for (const extra of [{}, { draft: false }]) {
+    withPulls(f, [pullWithHead(f, published, extra)]);
+    assert.equal(assertPublishedStops(f, "not-pushed").detail, notPushedDetail(published, head), JSON.stringify(extra));
+  }
+});
+
+test("publishable on a second stacked commit compares the pull request head with the second publication, not the first", () => {
+  const { f } = stacked();
+  withPulls(f, [matchingPull(f)]);
+  assert.equal(published(f).status, 0);
+  const [first, second] = publicationsOf(f);
+  stackCommit(f, "second stacked change\n");
+  withPulls(f, [pullWithHead(f, String(second.commit))]);
+  const result = publishable(f);
+  assert.equal(result.status, 0, result.stdout);
+  assert.deepEqual(Object.keys(outputOf(result)), STACKED_FIELDS);
+  withPulls(f, [pullWithHead(f, String(first.commit))]);
+  assert.equal(assertPublishableStops(f, "pr-mismatch").detail, stackedMismatchDetail("head"));
+});
+
+test("a publication before the last one that lacks every field does not stop publishable, which stops with already-published on the published commit", () => {
+  const f = publishedOnce();
+  rewriteLaunch(f, (stored) => ({ ...stored, publications: [{}, publicationsOf(f)[0]] }));
+  const out = assertPublishableStops(f, "already-published");
+  assert.equal(out.detail, alreadyPublishedDetail(f, git(worktreeOf(f), "rev-parse", "HEAD")));
+});
+
+test("published with a recorded publication stops with no-pr naming the recorded pull request when no open pull request uses the branch", () => {
+  const f = publishedOnce();
+  withPulls(f, []);
+  assert.equal(assertPublishedStops(f, "no-pr").detail, recordedNoPrDetail);
+});
+
+test("published with a recorded publication stops with pr-mismatch naming number when the pull request number differs from the record", () => {
+  const f = publishedOnce();
+  withPulls(f, [matchingPull(f, { number: 12 })]);
+  assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail("number"));
+});

@@ -1155,11 +1155,39 @@ const runRounds = async ({ worktree, model }: WorktreeCall): Promise<Result> => 
   }
 };
 
-const headProblem = (worktree: string, base: string, tree: unknown): Problem | null => {
-  const parent = git(["rev-parse", "--verify", "--quiet", "HEAD^"], worktree);
-  const headTree = git(["rev-parse", "--verify", "--quiet", "HEAD^{tree}"], worktree);
-  if (parent === base && headTree === tree) return null;
-  const detail = `HEAD of ${worktree} is not one commit on top of ${base} that holds the reviewed tree ${String(tree)}. Commit the reviewed working tree as one commit, and nothing else.`;
+interface Publication {
+  commit: string;
+  number: number;
+  url: string;
+}
+
+type HeadState = "first" | "published" | "stacked";
+
+const isPositiveInteger = (value: unknown): value is number => Number.isInteger(value) && (value as number) > 0;
+
+const lastPublicationOf = ({ stored, launchPath }: Prepared): Publication | null | Problem => {
+  const { publications } = stored;
+  if (!Array.isArray(publications) || publications.length === 0) return null;
+  const last = objectOf(publications[publications.length - 1]);
+  if (last !== null && nonEmpty(last.commit) && isPositiveInteger(last.number) && nonEmpty(last.url)) {
+    return { commit: last.commit, number: last.number, url: last.url };
+  }
+  const detail = `The last entry of publications in ${launchPath} lacks a commit, a positive integer number, or a url. launch.ts does not repair it.`;
+  return { reason: "publications-unreadable", detail };
+};
+
+const headStateOf = (worktree: string, base: string, tree: unknown, last: Publication | null): HeadState | Problem => {
+  const [head = null, ...parents] = (git(["rev-list", "--parents", "-n", "1", "HEAD"], worktree) ?? "").split(" ").filter((id) => id !== "");
+  const holdsTree = git(["rev-parse", "--verify", "--quiet", "HEAD^{tree}"], worktree) === tree;
+  const onTopOf = (commit: string) => parents.length === 1 && parents[0] === commit && holdsTree;
+  if (last === null) {
+    if (onTopOf(base)) return "first";
+    const detail = `HEAD of ${worktree} is not one commit on top of ${base} that holds the reviewed tree ${String(tree)}. Commit the reviewed working tree as one commit, and nothing else.`;
+    return { reason: "commit-mismatch", detail };
+  }
+  if (head === last.commit && holdsTree) return "published";
+  if (onTopOf(last.commit)) return "stacked";
+  const detail = `HEAD of ${worktree} is neither the published commit ${last.commit} nor one commit on top of it, or it does not hold the reviewed tree ${String(tree)}. Commit the reviewed working tree as one commit on top of ${last.commit}, and nothing else.`;
   return { reason: "commit-mismatch", detail };
 };
 
@@ -1210,6 +1238,9 @@ const branchPullProblem = (worktree: string, repository: string, branch: string)
 interface PublishFacts {
   prepared: Prepared;
   tree: unknown;
+  head: string | null;
+  last: Publication | null;
+  state: HeadState;
   config: { remote: string; baseBranch: string };
   actor: string;
 }
@@ -1227,15 +1258,17 @@ const publishFactsOf = (worktree: string): PublishFacts | Problem => {
   const status = gateStatusOf(worktree);
   if (status.status !== 0) return { reason: "not-done", detail: `done_gate.ts status is not done: ${outputOf(status)}` };
   const tree = currentReviewOf(stored)?.tree;
-  const head = headProblem(worktree, launch.base, tree);
-  if (head !== null) return head;
+  const last = lastPublicationOf(prepared);
+  if (last !== null && "reason" in last) return last;
+  const state = headStateOf(worktree, launch.base, tree, last);
+  if (typeof state !== "string") return state;
   const config = publishConfigOf(worktree, launch);
   if ("reason" in config) return config;
   const target = remoteProblem(worktree, config.remote, launch.repository) ?? publishTargetProblem(launch.repository, worktree);
   if (target !== null) return target;
   const actor = actorOf(worktree);
   if (typeof actor !== "string") return actor;
-  return { prepared, tree, config, actor };
+  return { prepared, tree, head: git(["rev-parse", "HEAD"], worktree), last, state, config, actor };
 };
 
 const publishFields = ({ prepared: { launch }, config, tree, actor }: PublishFacts, commit: string | null) => ({
@@ -1250,23 +1283,8 @@ const publishFields = ({ prepared: { launch }, config, tree, actor }: PublishFac
   actor,
 });
 
-const publishable = ({ worktree }: WorktreeCall): Result => {
-  const stop = ({ reason, detail }: Problem) => stopped("publishable", reason, detail);
-
-  const facts = publishFactsOf(worktree);
-  if ("reason" in facts) return stop(facts);
-  const { launch, launchPath } = facts.prepared;
-  const pull = branchPullProblem(worktree, launch.repository, launch.branch);
-  if (pull !== null) return stop(pull);
-  return {
-    action: "publishable",
-    ok: true,
-    ...publishFields(facts, git(["rev-parse", "HEAD"], worktree)),
-    launch_file: launchPath,
-  };
-};
-
 interface Expected {
+  number: number | null;
   actor: string;
   commit: string | null;
   baseBranch: string;
@@ -1274,6 +1292,7 @@ interface Expected {
 }
 
 const PULL_FIELDS: [string, (pull: Record<string, unknown>, expected: Expected) => boolean][] = [
+  ["number", (pull, { number }) => number === null || pull.number === number],
   ["draft", (pull) => pull.draft === true],
   ["author", (pull, { actor }) => objectOf(pull.user)?.login === actor],
   ["head", (pull, { commit }) => objectOf(pull.head)?.sha === commit],
@@ -1286,15 +1305,29 @@ const PULL_FIELDS: [string, (pull: Record<string, unknown>, expected: Expected) 
   ],
 ];
 
-const isPositiveInteger = (value: unknown): value is number => Number.isInteger(value) && (value as number) > 0;
+const differingOf = (pull: Record<string, unknown>, facts: PublishFacts, commit: string | null): string[] => {
+  const expected = {
+    number: facts.last?.number ?? null,
+    actor: facts.actor,
+    commit,
+    baseBranch: facts.config.baseBranch,
+    repository: facts.prepared.launch.repository,
+  };
+  return PULL_FIELDS.filter(([, same]) => !same(pull, expected)).map(([name]) => name);
+};
 
-const publishedPullOf = (worktree: string, facts: PublishFacts, commit: string | null): { pull: Record<string, unknown> } | Problem => {
+const headShaOf = (pull: Record<string, unknown>): unknown => objectOf(pull.head)?.sha;
+
+const selectedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<string, unknown> } | Problem => {
   const { repository, branch } = facts.prepared.launch;
   const pulls = openPullsOf(worktree, repository, branch);
   if (!Array.isArray(pulls)) return pulls;
   const selected = branchPullsOf(pulls, repository, branch);
   if (selected.length === 0) {
-    const detail = `No open pull request of ${repository} uses the branch ${branch}. If the commit ${commit} is not published yet, push it and open a draft pull request into ${facts.config.baseBranch}, then call again.`;
+    const detail =
+      facts.last === null
+        ? `No open pull request of ${repository} uses the branch ${branch}. If the commit ${facts.head} is not published yet, push it and open a draft pull request into ${facts.config.baseBranch}, then call again.`
+        : `No open pull request of ${repository} uses the branch ${branch}. The pull request ${facts.last.url} that launch.json records is closed or merged.`;
     return { reason: "no-pr", detail };
   }
   if (selected.length > 1) {
@@ -1306,8 +1339,62 @@ const publishedPullOf = (worktree: string, facts: PublishFacts, commit: string |
     const detail = `gh listed an open pull request for the branch ${branch} that lacks a positive integer number or a non-empty html_url.`;
     return { reason: "pulls-unreadable", detail };
   }
-  const expected = { actor: facts.actor, commit, baseBranch: facts.config.baseBranch, repository };
-  const differing = PULL_FIELDS.filter(([, same]) => !same(pull, expected)).map(([name]) => name);
+  return { pull };
+};
+
+const stackedPullOf = (worktree: string, facts: PublishFacts, last: Publication): { pull: Record<string, unknown> } | Problem => {
+  const found = selectedPullOf(worktree, facts);
+  if ("reason" in found) return found;
+  const { pull } = found;
+  if (headShaOf(pull) === facts.head) {
+    return { reason: "already-pushed", detail: `The pull request ${pull.html_url} already has the commit ${facts.head} as its head. Call published.` };
+  }
+  const differing = differingOf(pull, facts, last.commit);
+  if (differing.length === 0) return { pull };
+  const { repository } = facts.prepared.launch;
+  const detail = `The pull request ${pull.html_url} differs from the publication launch.json records: ${differing.join(", ")}. Reconcile it on GitHub, then call again. A pull request marked ready is turned back to a draft with \`gh pr ready ${pull.number} --undo --repo ${repository}\`.`;
+  return { reason: "pr-mismatch", detail };
+};
+
+const publishableAt = (worktree: string, facts: PublishFacts): { fields: Record<string, unknown> } | Problem => {
+  const { launch } = facts.prepared;
+  if (facts.last === null) return branchPullProblem(worktree, launch.repository, launch.branch) ?? { fields: {} };
+  if (facts.state === "published") {
+    const detail = `HEAD of ${worktree} is the commit ${facts.last.commit} that ${facts.last.url} already has, and it holds the reviewed tree. There is nothing to push.`;
+    return { reason: "already-published", detail };
+  }
+  const found = stackedPullOf(worktree, facts, facts.last);
+  if ("reason" in found) return found;
+  return { fields: { number: found.pull.number, url: found.pull.html_url } };
+};
+
+const publishable = ({ worktree }: WorktreeCall): Result => {
+  const stop = ({ reason, detail }: Problem) => stopped("publishable", reason, detail);
+
+  const facts = publishFactsOf(worktree);
+  if ("reason" in facts) return stop(facts);
+  const pull = publishableAt(worktree, facts);
+  if ("reason" in pull) return stop(pull);
+  return {
+    action: "publishable",
+    ok: true,
+    ...publishFields(facts, facts.head),
+    ...pull.fields,
+    launch_file: facts.prepared.launchPath,
+  };
+};
+
+const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<string, unknown> } | Problem => {
+  const found = selectedPullOf(worktree, facts);
+  if ("reason" in found) return found;
+  const { pull } = found;
+  const { last, state } = facts;
+  if (state === "stacked" && last !== null && headShaOf(pull) === last.commit) {
+    const { branch } = facts.prepared.launch;
+    const detail = `The pull request ${pull.html_url} still has the published commit ${last.commit} as its head. Push the commit ${facts.head} to the branch ${branch} of ${facts.config.remote}, then call again.`;
+    return { reason: "not-pushed", detail };
+  }
+  const differing = differingOf(pull, facts, facts.head);
   if (differing.length === 0) return { pull };
   const detail = `The pull request ${pull.html_url} differs from what launch.ts confirmed before the push: ${differing.join(", ")}. Reconcile it on GitHub, then call again.`;
   return { reason: "pr-mismatch", detail };
@@ -1318,8 +1405,8 @@ const published = ({ worktree }: WorktreeCall): Result => {
 
   const facts = publishFactsOf(worktree);
   if ("reason" in facts) return stop(facts);
-  const commit = git(["rev-parse", "HEAD"], worktree);
-  const found = publishedPullOf(worktree, facts, commit);
+  const commit = facts.head;
+  const found = publishedPullOf(worktree, facts);
   if ("reason" in found) return stop(found);
   const { pull } = found;
   const { launchPath, stored } = facts.prepared;
