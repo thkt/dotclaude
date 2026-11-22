@@ -4300,6 +4300,22 @@ test("the usage has the publishable line after the run line, and a publishable c
 
 const PR_URL = "https://github.com/owner/repo/pull/9";
 
+const builtBodies = new WeakMap<Fixture, Map<string, string>>();
+
+function builtBody(f: Fixture): string {
+  const result = run(f, ["body", "--worktree", worktreeOf(f)]);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  const file = join(dirname(launchPathOf(f)), "pr-body.md");
+  const text = readFileSync(file, "utf8");
+  rmSync(file);
+  const bodies = builtBodies.get(f) ?? new Map<string, string>();
+  bodies.set(git(worktreeOf(f), "rev-parse", "HEAD"), text);
+  builtBodies.set(f, bodies);
+  return text;
+}
+
+const builtBodyAt = (f: Fixture, sha: string): string | undefined => builtBodies.get(f)?.get(sha);
+
 const matchingPull = (f: Fixture, extra: Record<string, unknown> = {}): Record<string, unknown> => ({
   number: 9,
   html_url: PR_URL,
@@ -4308,6 +4324,7 @@ const matchingPull = (f: Fixture, extra: Record<string, unknown> = {}): Record<s
   user: { login: "launch-test" },
   head: { ref: BRANCH, sha: git(worktreeOf(f), "rev-parse", "HEAD"), repo: { full_name: "owner/repo" } },
   base: { ref: "main", repo: { full_name: "owner/repo" } },
+  ...("body" in extra ? {} : { body: builtBody(f) }),
   ...extra,
 });
 
@@ -4349,12 +4366,13 @@ function assertPublishedStops(f: Fixture, reason: string): Record<string, unknow
   return out;
 }
 
-test("published on a committed worktree whose open draft pull request matches succeeds with the fifteen fields in order, appends one publication to launch.json, starts no claude, and keeps HEAD", () => {
+test("published on a committed worktree whose open draft pull request matches succeeds with the sixteen fields in order, appends one publication to launch.json, starts no claude, and keeps HEAD", () => {
   const f = publishedReady();
   const worktree = worktreeOf(f);
   fakeRounds(f, {});
   const before = launchRecord(worktree);
   const head = git(worktree, "rev-parse", "HEAD");
+  const digest = createHash("sha256").update(String(builtBodyAt(f, head))).digest("hex");
   const result = published(f);
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
   const out = outputOf(result);
@@ -4374,15 +4392,16 @@ test("published on a committed worktree whose open draft pull request matches su
     ["actor", "launch-test"],
     ["number", 9],
     ["url", PR_URL],
+    ["body_digest", digest],
     ["at", at],
     ["launch_file", launchPathOf(f)],
   ]);
   const after = launchRecord(worktree);
   assert.deepEqual(Object.keys(after), [...Object.keys(before), "publications"]);
-  const record = { number: 9, url: PR_URL, commit: head, tree: lastReview(f).tree, base_branch: "main", actor: "launch-test", at };
+  const record = { number: 9, url: PR_URL, commit: head, tree: lastReview(f).tree, base_branch: "main", actor: "launch-test", body_digest: digest, at };
   assert.deepEqual(after, { ...before, publications: [record] });
   const [stored] = after.publications as Record<string, unknown>[];
-  assert.deepEqual(Object.keys(stored), ["number", "url", "commit", "tree", "base_branch", "actor", "at"]);
+  assert.deepEqual(Object.keys(stored), ["number", "url", "commit", "tree", "base_branch", "actor", "body_digest", "at"]);
   assert.deepEqual(roundCalls(f), []);
   assert.equal(git(worktree, "rev-parse", "HEAD"), head);
 });
@@ -4688,7 +4707,7 @@ function stacked(): { f: Fixture; published: string } {
 }
 
 const pullWithHead = (f: Fixture, sha: string, extra: Record<string, unknown> = {}): Record<string, unknown> =>
-  matchingPull(f, { head: { ref: BRANCH, sha, repo: { full_name: "owner/repo" } }, ...extra });
+  matchingPull(f, { head: { ref: BRANCH, sha, repo: { full_name: "owner/repo" } }, body: builtBodyAt(f, sha), ...extra });
 
 const unreadablePublicationsDetail = (f: Fixture): string =>
   `The last entry of publications in ${launchPathOf(f)} lacks a commit, a positive integer number, or a url. launch.ts does not repair it.`;
@@ -5370,4 +5389,128 @@ test("the usage has the body line after the published line, and a body call with
       result.stderr,
     );
   }
+});
+
+const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
+
+test("published succeeds when the pull request body equals the body launch.ts body writes, and records its SHA-256 as body_digest in launch.json and on stdout", () => {
+  const f = committed();
+  const text = expectedBody({ commit: headOf(f) });
+  withPulls(f, [matchingPull(f, { body: text })]);
+  const result = published(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  assert.equal(outputOf(result).body_digest, sha256(text));
+  assert.equal(publicationsOf(f)[0].body_digest, sha256(text));
+});
+
+test("published stops with pr-mismatch naming body and keeps launch.json when the pull request body has one more character, lacks the last newline, is null, or is absent", () => {
+  const f = committed();
+  const text = expectedBody({ commit: headOf(f) });
+  const bodies: [string, Record<string, unknown>][] = [
+    ["one more character", { body: `${text}x` }],
+    ["no last newline", { body: text.slice(0, -1) }],
+    ["null", { body: null }],
+    ["absent", { body: undefined }],
+  ];
+  for (const [label, change] of bodies) {
+    withPulls(f, [matchingPull(f, change)]);
+    assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail("body"), label);
+  }
+});
+
+test("published names every differing field as draft, author, head, base, body, with number first when a publication is recorded", () => {
+  const everything = {
+    draft: false,
+    user: { login: "someone-else" },
+    head: { ref: BRANCH, sha: "0".repeat(40), repo: { full_name: "owner/repo" } },
+    base: { ref: "develop", repo: { full_name: "owner/repo" } },
+    body: "another body\n",
+  };
+  const f = committed();
+  withPulls(f, [matchingPull(f, everything)]);
+  assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail("draft, author, head, base, body"));
+  const once = publishedOnce();
+  withPulls(once, [matchingPull(once, { ...everything, number: 12 })]);
+  assert.equal(assertPublishedStops(once, "pr-mismatch").detail, mismatchDetail("number, draft, author, head, base, body"));
+});
+
+test("published compares the pull request body with the body it builds, not with pr-body.md, and leaves pr-body.md as it is", () => {
+  const f = committed();
+  const text = bodyText(f);
+  const rewritten = "a body someone rewrote\n";
+  writeFileSync(bodyFileOf(f), rewritten);
+  withPulls(f, [matchingPull(f, { body: text })]);
+  const result = published(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  assert.equal(readFileSync(bodyFileOf(f), "utf8"), rewritten);
+  withPulls(f, [matchingPull(f, { body: rewritten })]);
+  assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail("body"));
+  assert.equal(readFileSync(bodyFileOf(f), "utf8"), rewritten);
+});
+
+test("published stops with the reason and detail body gives when it cannot build the body, even when another field differs, and keeps launch.json", () => {
+  const f = committed();
+  withPulls(f, [matchingPull(f, { draft: false })]);
+  rewriteLastIndependent(f, ({ assessments: _, ...rest }) => rest);
+  const out = assertPublishedStops(f, "no-assessments");
+  assert.equal(out.detail, assertStopped(writeBody(f), "no-assessments").detail);
+});
+
+test("published on a stacked commit stops with not-pushed before it builds the body", () => {
+  const { f, published: first } = stacked();
+  withPulls(f, [pullWithHead(f, first)]);
+  rewriteLastIndependent(f, ({ assessments: _, ...rest }) => rest);
+  assert.equal(assertPublishedStops(f, "not-pushed").detail, notPushedDetail(first, headOf(f)));
+});
+
+test("publishable on a stacked commit succeeds when the SHA-256 of the pull request body equals the recorded body_digest", () => {
+  const { f, published: first } = stacked();
+  const text = String(builtBodyAt(f, first));
+  assert.equal(publicationsOf(f)[0].body_digest, sha256(text));
+  withPulls(f, [pullWithHead(f, first, { body: text })]);
+  const result = publishable(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+const bodyChangedDetail = `The body of the pull request ${PR_URL} changed after launch.ts recorded it. launch.ts does not overwrite a change someone else made. A human decides how to keep it.`;
+
+test("publishable on a stacked commit stops with body-changed when the pull request body has one more character or is null", () => {
+  const { f, published: first } = stacked();
+  for (const body of [`${builtBodyAt(f, first)}x`, null]) {
+    withPulls(f, [pullWithHead(f, first, { body })]);
+    assert.equal(assertPublishableStops(f, "body-changed").detail, bodyChangedDetail, String(body));
+  }
+});
+
+test("publishable on a stacked commit stops with pr-mismatch without naming body when a field and the body both differ", () => {
+  const { f, published: first } = stacked();
+  withPulls(f, [pullWithHead(f, first, { draft: false, body: `${builtBodyAt(f, first)}x` })]);
+  assert.equal(assertPublishableStops(f, "pr-mismatch").detail, stackedMismatchDetail("draft"));
+});
+
+test("publishable on a stacked commit does not check the body when the last publication has no body_digest or an uppercase one", () => {
+  const changes: [string, (record: Record<string, unknown>) => Record<string, unknown>][] = [
+    ["no body_digest", ({ body_digest: _, ...rest }) => rest],
+    ["uppercase", (record) => ({ ...record, body_digest: String(record.body_digest).toUpperCase() })],
+  ];
+  for (const [label, change] of changes) {
+    const { f, published: first } = stacked();
+    rewriteLaunch(f, (stored) => ({ ...stored, publications: (stored.publications as Record<string, unknown>[]).map(change) }));
+    for (const body of ["any other body\n", null]) {
+      withPulls(f, [pullWithHead(f, first, { body })]);
+      const result = publishable(f);
+      assert.equal(result.status, 0, `${label} ${String(body)}: ${result.stdout}`);
+    }
+  }
+});
+
+test("published on a pushed stacked commit compares the pull request body with the body built from the new commit, and records a body_digest that differs from the first", () => {
+  const { f } = stacked();
+  const text = expectedBody({ commit: headOf(f) });
+  withPulls(f, [matchingPull(f, { body: text })]);
+  const result = published(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  const [first, second] = publicationsOf(f);
+  assert.equal(second.body_digest, sha256(text));
+  assert.notEqual(second.body_digest, first.body_digest);
 });
