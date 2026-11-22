@@ -110,12 +110,38 @@ const FAIL = "echo 'not found' >&2\nexit 1\n";
 const onAdjacent = (first: string, second: string, body: string): string =>
   `prev=""\nfor arg in "$@"; do\n  if [ "$prev" = "${first}" ] && [ "$arg" = "${second}" ]; then\n${body}  fi\n  prev="$arg"\ndone\n`;
 
-function fakeGh(f: Fixture, reply: Record<string, unknown> | null, repoReply: Record<string, unknown> | null = REPO_REPLY): void {
+const ghUserReplyPath = (f: Fixture): string => join(f.logs, "gh-user-reply.txt");
+const ghPullsReplyPath = (f: Fixture): string => join(f.logs, "gh-pulls-reply.json");
+const ghPullsArgsPath = (f: Fixture): string => join(f.logs, "gh-pulls-args");
+
+interface ApiReplies {
+  user?: string | null;
+  pulls?: string | null;
+}
+
+const onPulls = (body: string): string =>
+  `api=""\npulls=""\nfor arg in "$@"; do\n  [ "$arg" = "api" ] && api=1\n  case "$arg" in */pulls) pulls=1 ;; esac\ndone\nif [ -n "$api" ] && [ -n "$pulls" ]; then\n${body}fi\n`;
+
+function fakeGh(
+  f: Fixture,
+  reply: Record<string, unknown> | null,
+  repoReply: Record<string, unknown> | null = REPO_REPLY,
+  { user = "launch-test\n", pulls = "[]" }: ApiReplies = {},
+): void {
   if (reply !== null) writeFileSync(ghReplyPath(f), JSON.stringify(reply));
   if (repoReply !== null) writeFileSync(ghRepoReplyPath(f), JSON.stringify(repoReply));
-  const repoBody = reply === null || repoReply === null ? FAIL : `cat '${ghRepoReplyPath(f)}'\nexit 0\n`;
+  if (user !== null) writeFileSync(ghUserReplyPath(f), user);
+  if (pulls !== null) writeFileSync(ghPullsReplyPath(f), pulls);
+  const answer = (path: string, value: unknown) => (reply === null || value === null ? FAIL : `cat '${path}'\nexit 0\n`);
+  const userBody = answer(ghUserReplyPath(f), user);
+  const pullsBody = `printf '%s\\n' "$@" > '${ghPullsArgsPath(f)}'\n${answer(ghPullsReplyPath(f), pulls)}`;
+  const repoBody = answer(ghRepoReplyPath(f), repoReply);
   const body = reply === null ? FAIL : `cat '${ghReplyPath(f)}'\n`;
-  writeFileSync(join(f.bin, "gh"), `#!/bin/sh\n${onAdjacent("repo", "view", repoBody)}${body}`, { mode: 0o755 });
+  writeFileSync(
+    join(f.bin, "gh"),
+    `#!/bin/sh\n${onAdjacent("api", "user", userBody)}${onPulls(pullsBody)}${onAdjacent("repo", "view", repoBody)}${body}`,
+    { mode: 0o755 },
+  );
 }
 
 function fakeGit(f: Fixture, remotes: string | null): void {
@@ -544,6 +570,45 @@ test("prepare stops with no-permission when the gh user cannot push, naming the 
     const out = assertStopped(prepare(f), "no-permission");
     assert.equal(out.detail, `The permission of the gh user on owner/repo is ${shown}, which cannot push.`);
     assertNothingCreated(f);
+  }
+});
+
+test("prepare stops with gh-host, remote-mismatch, repo-unreadable, repository-mismatch, or no-permission with action prepare and the issue", () => {
+  const cases: [string, (f: Fixture) => SpawnSyncReturns<string>][] = [
+    ["gh-host", (f) => prepareWithHost(f, "ghe.example.com")],
+    [
+      "remote-mismatch",
+      (f) => {
+        fakeGit(f, remotesOf("origin", "https://github.com/other/repo.git"));
+        return prepare(f);
+      },
+    ],
+    [
+      "repo-unreadable",
+      (f) => {
+        fakeGh(f, ISSUE_REPLY, null);
+        return prepare(f);
+      },
+    ],
+    [
+      "repository-mismatch",
+      (f) => {
+        fakeGh(f, ISSUE_REPLY, { nameWithOwner: "other/repo", viewerPermission: "WRITE" });
+        return prepare(f);
+      },
+    ],
+    [
+      "no-permission",
+      (f) => {
+        fakeGh(f, ISSUE_REPLY, { nameWithOwner: "owner/repo", viewerPermission: "READ" });
+        return prepare(f);
+      },
+    ],
+  ];
+  for (const [reason, call] of cases) {
+    const out = assertStopped(call(fixture()), reason);
+    assert.equal(out.action, "prepare", reason);
+    assert.equal(out.issue, ISSUE, reason);
   }
 });
 
@@ -3445,7 +3510,7 @@ const leftDetail = (pid: number, action: string, at: unknown, worktree: string, 
 const unreadableDetail = (file: string, worktree: string): string =>
   `The record ${file} of a launch.ts working on ${worktree} cannot be read. Confirm with \`ps -axo pid,pgid,command\`, run outside any sandbox, that no launch.ts and no claude it started is running on ${worktree}. Then delete ${file} and call again.`;
 
-const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run"];
+const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run", "publishable"];
 
 test("while implement waits for claude, launch-holders holds its pid record of pid, action, and at only, and a children record of that claude's pid only", async () => {
   const f = prepared();
@@ -3463,7 +3528,7 @@ test("while implement waits for claude, launch-holders holds its pid record of p
   }
 });
 
-test("each of the seven actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
+test("each of the eight actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
   const f = prepared();
   const waiting = await implementWaiting(f);
   try {
@@ -3727,5 +3792,278 @@ test("agree on another fixture's worktree succeeds while implement waits on one 
     assert.equal(agree(other).status, 0);
   } finally {
     endWaiting(f, waiting);
+  }
+});
+
+const BRANCH = `feat/${ISSUE}-publish-gate-ts`;
+
+const publishable = (f: Fixture, env: Record<string, string> = {}) => run(f, ["publishable", "--worktree", worktreeOf(f)], env);
+
+function acceptedWithChanges(): Fixture {
+  const f = fixture();
+  assert.equal(prepare(f).status, 0);
+  fakeClaude(f, `echo changed >> README.md\necho new > NEW.md\n${PASS_CHECK}${SESSION_REPLY}`);
+  assert.equal(run(f, ["implement", "--worktree", worktreeOf(f)]).status, 0);
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  assert.equal(lastReview(f).verdict, "accepted");
+  return f;
+}
+
+function committed(): Fixture {
+  const f = acceptedWithChanges();
+  git(worktreeOf(f), "add", "-A");
+  git(worktreeOf(f), "commit", "-q", "-m", "reviewed change");
+  return f;
+}
+
+const commitMismatchDetail = (f: Fixture): string =>
+  `HEAD of ${worktreeOf(f)} is not one commit on top of ${launchRecord(worktreeOf(f)).base} that holds the reviewed tree ${lastReview(f).tree}. Commit the reviewed working tree as one commit, and nothing else.`;
+
+const notAcceptedDetail = (f: Fixture, action: string): string =>
+  `run would call ${action} next for ${worktreeOf(f)}, so the current working tree has no accepted review against the agreed Issue. Call run first.`;
+
+test("publishable on a worktree whose reviewed tree is one commit on the base succeeds with the twelve publish fields in order, starts no claude, and keeps launch.json and HEAD", () => {
+  const f = committed();
+  const worktree = worktreeOf(f);
+  fakeRounds(f, {});
+  const before = launchFile(f);
+  const head = git(worktree, "rev-parse", "HEAD");
+  const result = publishable(f);
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  assert.deepEqual(Object.entries(outputOf(result)), [
+    ["action", "publishable"],
+    ["ok", true],
+    ["issue", ISSUE],
+    ["repository", "owner/repo"],
+    ["remote", "origin"],
+    ["base_branch", "main"],
+    ["branch", BRANCH],
+    ["base", launchRecord(worktree).base],
+    ["commit", head],
+    ["tree", lastReview(f).tree],
+    ["actor", "launch-test"],
+    ["launch_file", launchPathOf(f)],
+  ]);
+  assert.equal(git(worktree, "rev-parse", "HEAD^{tree}"), lastReview(f).tree);
+  assert.deepEqual(roundCalls(f), []);
+  assert.equal(launchFile(f), before);
+  assert.equal(git(worktree, "rev-parse", "HEAD"), head);
+});
+
+test("publishable leaves no file under launch-holders after it succeeds", () => {
+  const f = committed();
+  assert.equal(publishable(f).status, 0);
+  assert.deepEqual(existsSync(holdersOf(f)) ? readdirSync(holdersOf(f)) : [], []);
+});
+
+test("publishable on a worktree that only prepare ran stops with not-accepted naming implement", () => {
+  const f = fixture();
+  assert.equal(prepare(f).status, 0);
+  const out = assertStopped(publishable(f), "not-accepted");
+  assert.equal(out.action, "publishable");
+  assert.equal(out.detail, notAcceptedDetail(f, "implement"));
+});
+
+test("publishable on a worktree whose first review left a required finding stops with not-accepted naming repair", () => {
+  const f = rejected();
+  const out = assertStopped(publishable(f), "not-accepted");
+  assert.equal(out.detail, notAcceptedDetail(f, "repair"));
+});
+
+test("publishable on an accepted worktree edited and checked after the review stops with not-accepted naming review", () => {
+  const f = acceptedWithChanges();
+  writeFileSync(join(worktreeOf(f), "README.md"), "edited after the review\n");
+  const check = spawnSync(process.execPath, [DONE_GATE, "check"], { cwd: worktreeOf(f), env: isolatedEnv(), encoding: "utf8" });
+  assert.equal(check.status, 0, check.stderr);
+  const out = assertStopped(publishable(f), "not-accepted");
+  assert.equal(out.detail, notAcceptedDetail(f, "review"));
+});
+
+test("publishable on an accepted worktree whose Issue body changed stops with requirements-changed and the detail run gives", () => {
+  const f = committed();
+  fakeGh(f, CHANGED_BODY);
+  const out = assertStopped(publishable(f), "requirements-changed");
+  assert.equal(out.detail, assertStopped(runLaunch(f), "requirements-changed").detail);
+});
+
+test("publishable on a directory prepare did not set up stops with not-prepared", () => {
+  const f = fixture();
+  const out = assertStopped(run(f, ["publishable", "--worktree", f.repo]), "not-prepared");
+  assert.equal(out.action, "publishable");
+});
+
+test("publishable on a committed worktree stops with not-done after the gate is disabled", () => {
+  const f = committed();
+  gateDisabled(f);
+  const out = assertStopped(publishable(f), "not-done");
+  assert.ok(String(out.detail).startsWith("done_gate.ts status is not done: "), String(out.detail));
+});
+
+test("publishable on an accepted worktree with nothing committed stops with commit-mismatch", () => {
+  const f = acceptedWithChanges();
+  const out = assertStopped(publishable(f), "commit-mismatch");
+  assert.equal(out.detail, commitMismatchDetail(f));
+});
+
+test("publishable stops with commit-mismatch when only one changed file is committed", () => {
+  const f = acceptedWithChanges();
+  git(worktreeOf(f), "add", "NEW.md");
+  git(worktreeOf(f), "commit", "-q", "-m", "one file");
+  const out = assertStopped(publishable(f), "commit-mismatch");
+  assert.equal(out.detail, commitMismatchDetail(f));
+});
+
+test("publishable stops with commit-mismatch when the reviewed change is split into two commits", () => {
+  const f = acceptedWithChanges();
+  git(worktreeOf(f), "add", "NEW.md");
+  git(worktreeOf(f), "commit", "-q", "-m", "first");
+  git(worktreeOf(f), "add", "-A");
+  git(worktreeOf(f), "commit", "-q", "-m", "second");
+  assert.equal(git(worktreeOf(f), "rev-parse", "HEAD^{tree}"), lastReview(f).tree);
+  assertStopped(publishable(f), "commit-mismatch");
+});
+
+test("publishable stops with no-config when the base commit has no .dotagents.json", () => {
+  const f = acceptedWithChanges();
+  const worktree = worktreeOf(f);
+  const bare = git(worktree, "rev-parse", `${launchRecord(worktree).base}^`);
+  assert.notEqual(spawnSync("git", ["cat-file", "-e", `${bare}:.dotagents.json`], { cwd: worktree }).status, 0);
+  const commit = git(worktree, "commit-tree", String(lastReview(f).tree), "-p", bare, "-m", "reviewed change");
+  git(worktree, "reset", "-q", "--soft", commit);
+  rewriteLaunch(f, (stored) => ({ ...stored, base: bare }));
+  const out = assertStopped(publishable(f), "no-config");
+  assert.equal(
+    out.detail,
+    `The base commit ${bare} of ${worktree} has no .dotagents.json with remote and baseBranch strings and the repository owner/repo.`,
+  );
+});
+
+test("publishable on a committed worktree stops with the publish target reasons, with action publishable and no issue", () => {
+  const cases: [string, (f: Fixture) => Record<string, string>, string | null][] = [
+    ["gh-host", () => ({ GH_HOST: "ghe.example.com" }), "GH_HOST points at ghe.example.com. launch.ts handles only github.com."],
+    [
+      "remote-mismatch",
+      (f) => {
+        fakeGit(f, remotesOf("origin", "https://github.com/other/repo.git"));
+        return {};
+      },
+      null,
+    ],
+    [
+      "repo-unreadable",
+      (f) => {
+        fakeGh(f, ISSUE_REPLY, null);
+        return {};
+      },
+      null,
+    ],
+    [
+      "repository-mismatch",
+      (f) => {
+        fakeGh(f, ISSUE_REPLY, { nameWithOwner: "other/repo", viewerPermission: "WRITE" });
+        return {};
+      },
+      "GitHub names the repository other/repo, which differs from repository owner/repo in .dotagents.json.",
+    ],
+    [
+      "no-permission",
+      (f) => {
+        fakeGh(f, ISSUE_REPLY, { nameWithOwner: "owner/repo", viewerPermission: "READ" });
+        return {};
+      },
+      "The permission of the gh user on owner/repo is READ, which cannot push.",
+    ],
+  ];
+  for (const [reason, arrange, detail] of cases) {
+    const f = committed();
+    const out = assertStopped(publishable(f, arrange(f)), reason);
+    assert.equal(out.action, "publishable", reason);
+    assert.ok(!("issue" in out), reason);
+    if (detail !== null) assert.equal(out.detail, detail, reason);
+    if (reason === "remote-mismatch") {
+      assert.equal(
+        out.detail,
+        `The fetch and push URLs of remote origin in ${worktreeOf(f)} do not all point at owner/repo on github.com. Fix .dotagents.json or the remote.`,
+      );
+    }
+    if (reason === "repo-unreadable") assert.ok(String(out.detail).startsWith("gh could not read the repository owner/repo: "));
+  }
+});
+
+test("publishable stops with no-actor when gh api user fails or prints only whitespace", () => {
+  for (const user of [null, "  \n"]) {
+    const f = committed();
+    fakeGh(f, ISSUE_REPLY, REPO_REPLY, { user });
+    const out = assertStopped(publishable(f), "no-actor");
+    assert.equal(out.detail, "gh api user returned no login. Fix the gh authentication.", String(user));
+  }
+});
+
+test("publishable trims the whitespace around the login gh api user prints", () => {
+  const f = committed();
+  fakeGh(f, ISSUE_REPLY, REPO_REPLY, { user: "  launch-test  \n" });
+  const result = publishable(f);
+  assert.equal(result.status, 0, result.stdout);
+  assert.equal(outputOf(result).actor, "launch-test");
+});
+
+test("publishable stops with pulls-unreadable when listing the open pull requests fails or returns a JSON object", () => {
+  for (const pulls of [null, '{"message":"Not Found"}']) {
+    const f = committed();
+    fakeGh(f, ISSUE_REPLY, REPO_REPLY, { pulls });
+    const out = assertStopped(publishable(f), "pulls-unreadable");
+    const head = `gh could not list the open pull requests of owner/repo for the branch ${BRANCH}: `;
+    assert.ok(String(out.detail).startsWith(head), String(out.detail));
+  }
+});
+
+test("publishable stops with branch-pr-exists naming the html_url, or unknown, when an open pull request of the repository uses the branch", () => {
+  for (const [url, shown] of [
+    ["https://github.com/owner/repo/pull/7", "https://github.com/owner/repo/pull/7"],
+    [undefined, "unknown"],
+  ] as const) {
+    const f = committed();
+    const pull = { head: { ref: BRANCH, repo: { full_name: "owner/repo" } }, html_url: url };
+    fakeGh(f, ISSUE_REPLY, REPO_REPLY, { pulls: JSON.stringify([pull]) });
+    const out = assertStopped(publishable(f), "branch-pr-exists");
+    assert.equal(out.detail, `An open pull request already uses the branch ${BRANCH}: ${shown}.`);
+  }
+});
+
+test("publishable succeeds when the open pull requests use the branch only from a fork, or use only other branches", () => {
+  const pullsOf = (ref: string, fullName: string) =>
+    JSON.stringify([{ head: { ref, repo: { full_name: fullName } }, html_url: "https://github.com/owner/repo/pull/8" }]);
+  for (const pulls of [pullsOf(BRANCH, "fork/repo"), pullsOf("feat/1-other-branch", "owner/repo")]) {
+    const f = committed();
+    fakeGh(f, ISSUE_REPLY, REPO_REPLY, { pulls });
+    const result = publishable(f);
+    assert.equal(result.status, 0, `${pulls}: ${result.stdout}`);
+  }
+});
+
+test("publishable lists the open pull requests of the repository whose head is the branch of the repository owner", () => {
+  const f = committed();
+  assert.equal(publishable(f).status, 0);
+  const args = readFileSync(ghPullsArgsPath(f), "utf8").split("\n");
+  for (const arg of ["api", "repos/owner/repo/pulls", "state=open", `head=owner:${BRANCH}`]) assert.ok(args.includes(arg), arg);
+});
+
+test("the usage has the publishable line after the run line, and a publishable call without --worktree, with a relative path, or with --model prints the usage and nothing on stdout, and exits 2", () => {
+  const f = fixture();
+  const calls = [
+    ["publishable"],
+    ["publishable", "--worktree", "relative/worktree"],
+    ["publishable", "--worktree", worktreeOf(f), "--model", "opus"],
+  ];
+  for (const args of calls) {
+    const result = run(f, args);
+    assert.equal(result.status, 2, args.join(" "));
+    assert.equal(result.stdout, "", args.join(" "));
+    assert.match(result.stderr, /^usage: /, args.join(" "));
+    assert.ok(
+      result.stderr.includes("launch.ts run --worktree <abs path> [--model <name>]\n       launch.ts publishable --worktree <abs path>\n"),
+      result.stderr,
+    );
   }
 });

@@ -26,7 +26,8 @@ const USAGE =
   "       launch.ts agree --worktree <abs path>\n" +
   "       launch.ts reread --worktree <abs path> [--model <name>]\n" +
   "       launch.ts continue --worktree <abs path> [--model <name>]\n" +
-  "       launch.ts run --worktree <abs path> [--model <name>]\n";
+  "       launch.ts run --worktree <abs path> [--model <name>]\n" +
+  "       launch.ts publishable --worktree <abs path>\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
   `Implement GitHub Issue #${issue} of ${repository} in this worktree.
@@ -238,6 +239,15 @@ const parseObject = (text: string): Record<string, unknown> | null => {
   }
 };
 
+const parseArray = (text: string): unknown[] | null => {
+  try {
+    const value: unknown = JSON.parse(text);
+    return Array.isArray(value) ? value : null;
+  } catch {
+    return null;
+  }
+};
+
 const descriptionOf = (title: string): string | null => {
   const words = (title.replace(/^\[\w+\]/, "").toLowerCase().match(/[a-z0-9]+/g) ?? []).slice(0, 4);
   return words.length >= 2 ? words.join("-") : null;
@@ -377,31 +387,36 @@ const remotePointsAt = (repo: string, remote: string, repository: string): boole
   return kinds.has("fetch") && kinds.has("push") && lines.every((match) => GITHUB_URL.exec(match[2])?.[1] === repository);
 };
 
-const remoteStop = (issue: number, repo: string, remote: string, repository: string): Result | null => {
+type Problem = { reason: string; detail: string };
+
+const remoteProblem = (repo: string, remote: string, repository: string): Problem | null => {
   const host = (process.env.GH_HOST ?? "").trim();
   if (host !== "" && host !== "github.com") {
-    return prepareStop(issue, "gh-host", `GH_HOST points at ${host}. launch.ts handles only github.com.`);
+    return { reason: "gh-host", detail: `GH_HOST points at ${host}. launch.ts handles only github.com.` };
   }
   if (remotePointsAt(repo, remote, repository)) return null;
   const detail = `The fetch and push URLs of remote ${remote} in ${repo} do not all point at ${repository} on github.com. Fix .dotagents.json or the remote.`;
-  return prepareStop(issue, "remote-mismatch", detail);
+  return { reason: "remote-mismatch", detail };
 };
 
-const publishTargetStop = (issue: number, repository: string, repo: string): Result | null => {
+const publishTargetProblem = (repository: string, repo: string): Problem | null => {
   const viewed = runQuiet("gh", ["repo", "view", repository, "--json", "nameWithOwner,viewerPermission"], repo);
   const found = viewed.status === 0 ? parseObject(viewed.stdout) : null;
   if (!found || typeof found.nameWithOwner !== "string") {
-    return prepareStop(issue, "repo-unreadable", `gh could not read the repository ${repository}: ${outputOf(viewed)}`);
+    return { reason: "repo-unreadable", detail: `gh could not read the repository ${repository}: ${outputOf(viewed)}` };
   }
   const { nameWithOwner, viewerPermission } = found;
   if (nameWithOwner !== repository) {
     const detail = `GitHub names the repository ${nameWithOwner}, which differs from repository ${repository} in .dotagents.json.`;
-    return prepareStop(issue, "repository-mismatch", detail);
+    return { reason: "repository-mismatch", detail };
   }
   if (typeof viewerPermission === "string" && PUSH_PERMISSIONS.includes(viewerPermission)) return null;
   const permission = typeof viewerPermission === "string" && viewerPermission !== "" ? viewerPermission : "unknown";
-  return prepareStop(issue, "no-permission", `The permission of the gh user on ${repository} is ${permission}, which cannot push.`);
+  return { reason: "no-permission", detail: `The permission of the gh user on ${repository} is ${permission}, which cannot push.` };
 };
+
+const prepareProblemStop = (issue: number, problem: Problem | null): Result | null =>
+  problem === null ? null : prepareStop(issue, problem.reason, problem.detail);
 
 const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
   const status = runQuiet("git", ["-C", repo, "status", "--porcelain", "--untracked-files=all", "--", ".dotagents.json"], repo);
@@ -420,7 +435,7 @@ const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
   if (ciChecks.length === 0) {
     return prepareStop(issue, "no-ci-checks", `ciChecks in .dotagents.json of ${repo} is empty, so no check can confirm the published change.`);
   }
-  const sourceStop = remoteStop(issue, repo, remote, repository);
+  const sourceStop = prepareProblemStop(issue, remoteProblem(repo, remote, repository));
   if (sourceStop !== null) return sourceStop;
   const found = viewIssue(issue, repository, "number,title,body,state", repo);
   if (typeof found === "string") return prepareStop(issue, "issue-unreadable", found);
@@ -434,7 +449,7 @@ const planOf = ({ repo, issue, description }: PrepareCall): Plan | Result => {
   if (words === null) {
     return prepareStop(issue, "no-description", `The title of Issue #${issue} has fewer than 2 English words; pass --description.`);
   }
-  const targetStop = publishTargetStop(issue, repository, repo);
+  const targetStop = prepareProblemStop(issue, publishTargetProblem(repository, repo));
   if (targetStop !== null) return targetStop;
   const branch = `${TYPE_BY_PREFIX[prefix]}/${issue}-${words}`;
   const worktree = join(repo, ".claude", "worktrees", `implement-${issue}`);
@@ -1137,6 +1152,89 @@ const runRounds = async ({ worktree, model }: WorktreeCall): Promise<Result> => 
   }
 };
 
+const headProblem = (worktree: string, base: string, tree: unknown): Problem | null => {
+  const parent = git(["rev-parse", "--verify", "--quiet", "HEAD^"], worktree);
+  const headTree = git(["rev-parse", "--verify", "--quiet", "HEAD^{tree}"], worktree);
+  if (parent === base && headTree === tree) return null;
+  const detail = `HEAD of ${worktree} is not one commit on top of ${base} that holds the reviewed tree ${String(tree)}. Commit the reviewed working tree as one commit, and nothing else.`;
+  return { reason: "commit-mismatch", detail };
+};
+
+const publishConfigOf = (worktree: string, { base, repository }: Launch): { remote: string; baseBranch: string } | Problem => {
+  const shown = runQuiet("git", ["show", `${base}:.dotagents.json`], worktree);
+  const config = shown.status === 0 ? parseObject(shown.stdout) : null;
+  if (config !== null && nonEmpty(config.remote) && nonEmpty(config.baseBranch) && config.repository === repository) {
+    return { remote: config.remote, baseBranch: config.baseBranch };
+  }
+  const detail = `The base commit ${base} of ${worktree} has no .dotagents.json with remote and baseBranch strings and the repository ${repository}.`;
+  return { reason: "no-config", detail };
+};
+
+const actorOf = (worktree: string): string | Problem => {
+  const user = runQuiet("gh", ["api", "user", "--jq", ".login"], worktree);
+  if (user.status === 0 && nonEmpty(user.stdout)) return user.stdout.trim();
+  return { reason: "no-actor", detail: "gh api user returned no login. Fix the gh authentication." };
+};
+
+const branchPullProblem = (worktree: string, repository: string, branch: string): Problem | null => {
+  const owner = repository.slice(0, repository.indexOf("/"));
+  const args = ["api", `repos/${repository}/pulls`, "--method", "GET", "-f", "state=open", "-f", `head=${owner}:${branch}`];
+  const listed = runQuiet("gh", args, worktree);
+  const pulls = listed.status === 0 ? parseArray(listed.stdout) : null;
+  if (pulls === null) {
+    const detail = `gh could not list the open pull requests of ${repository} for the branch ${branch}: ${outputOf(listed)}`;
+    return { reason: "pulls-unreadable", detail };
+  }
+  const found = pulls.map(objectOf).find((pull) => {
+    const head = objectOf(pull?.head);
+    return head?.ref === branch && objectOf(head?.repo)?.full_name === repository;
+  });
+  if (found === undefined) return null;
+  const url = typeof found?.html_url === "string" ? found.html_url : "unknown";
+  return { reason: "branch-pr-exists", detail: `An open pull request already uses the branch ${branch}: ${url}.` };
+};
+
+const publishable = ({ worktree }: WorktreeCall): Result => {
+  const stop = ({ reason, detail }: Problem) => stopped("publishable", reason, detail);
+
+  const prepared = preparedAt(worktree);
+  if (prepared === null) return stop({ reason: "not-prepared", detail: notPrepared(worktree) });
+  const { launchPath, stored, launch } = prepared;
+  const next = nextOf(worktree);
+  if (next.kind === "stop") return stop(next);
+  if (next.kind === "call") {
+    const detail = `run would call ${next.action} next for ${worktree}, so the current working tree has no accepted review against the agreed Issue. Call run first.`;
+    return stop({ reason: "not-accepted", detail });
+  }
+  const status = gateStatusOf(worktree);
+  if (status.status !== 0) return stop({ reason: "not-done", detail: `done_gate.ts status is not done: ${outputOf(status)}` });
+  const tree = currentReviewOf(stored)?.tree;
+  const head = headProblem(worktree, launch.base, tree);
+  if (head !== null) return stop(head);
+  const config = publishConfigOf(worktree, launch);
+  if ("reason" in config) return stop(config);
+  const target = remoteProblem(worktree, config.remote, launch.repository) ?? publishTargetProblem(launch.repository, worktree);
+  if (target !== null) return stop(target);
+  const actor = actorOf(worktree);
+  if (typeof actor !== "string") return stop(actor);
+  const pull = branchPullProblem(worktree, launch.repository, launch.branch);
+  if (pull !== null) return stop(pull);
+  return {
+    action: "publishable",
+    ok: true,
+    issue: launch.issue,
+    repository: launch.repository,
+    remote: config.remote,
+    base_branch: config.baseBranch,
+    branch: launch.branch,
+    base: launch.base,
+    commit: git(["rev-parse", "HEAD"], worktree),
+    tree,
+    actor,
+    launch_file: launchPath,
+  };
+};
+
 interface HeldAction {
   parse: (argv: string[]) => WorktreeCall | null;
   act: (call: WorktreeCall) => Result | Promise<Result>;
@@ -1150,6 +1248,7 @@ const HELD_ACTIONS: Record<string, HeldAction> = {
   reread: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: reread },
   continue: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: continueWork },
   run: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: runRounds },
+  publishable: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: publishable },
 };
 
 const gateDirOf = (worktree: string): string | null => {
