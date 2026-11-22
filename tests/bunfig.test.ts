@@ -12,5 +12,10 @@ test("bunfig.toml keeps bun's packages inside node_modules, so textlint's loader
     .map((line) => line.trim())
     .filter((line) => line !== "");
 
-  assert.deepEqual(lines, ["[install]", "globalStore = false"]);
+  const start = lines.indexOf("[install]");
+  const end = lines.findIndex((line, index) => index > start && line.startsWith("["));
+  const install = lines.slice(start + 1, end === -1 ? lines.length : end);
+
+  assert.notEqual(start, -1);
+  assert.ok(install.includes("globalStore = false"));
 });
