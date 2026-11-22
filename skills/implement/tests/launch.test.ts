@@ -201,6 +201,8 @@ function assertStopped(result: SpawnSyncReturns<string>, reason: string): Record
 
 const worktreeOf = (f: Fixture) => join(f.repo, ".claude", "worktrees", `implement-${ISSUE}`);
 
+const baseOf = (f: Fixture): string => git(f.origin, "rev-parse", "main");
+
 const launchPathOf = (f: Fixture): string =>
   join(git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate"), "launch.json");
 
@@ -854,13 +856,13 @@ const CLOSING = `Do not edit any file in this worktree. Do not commit. Scratch f
 
 Give the result through the structured output. \`findings\` lists every finding. Set \`required\` to true only for a defect you demonstrated or a requirement of the Issue that is not met, which must be fixed before the change is published. Set it to false for every other concern. \`location\` is \`file:line\`, or an empty string when no line applies. \`condition\` is the input or state that triggers the finding, \`problem\` is what goes wrong, and \`action\` is what to do. \`verified\` says what you checked and how. An empty \`findings\` is a valid result.`;
 
-const SELF_PROMPT = `Before your uncommitted change for Issue #42 is published, review it yourself and try to refute it. Read the change again with \`git diff HEAD\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
+const selfPrompt = (base: string): string => `Before your change for Issue #42 is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
 
 ${POINTS}
 
 ${CLOSING}`;
 
-const INDEPENDENT_PROMPT = `Independently review the uncommitted change in this worktree against GitHub Issue #42 of owner/repo. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff HEAD\` and \`git status --short\`, and read each untracked file.
+const independentPrompt = (base: string): string => `Independently review the change in this worktree against GitHub Issue #42 of owner/repo. The change is everything in this worktree that differs from commit ${base}, committed or not. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff ${base}\` and \`git status --short\`, and read each untracked file.
 
 Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.
 
@@ -1004,8 +1006,17 @@ test("review gives each review its full prompt with the Issue number and reposit
   const f = implemented();
   fakeReviewer(f, CLEAN);
   assert.equal(review(f).status, 0);
-  assert.equal(callOf(f, "self").stdin, SELF_PROMPT);
-  assert.equal(callOf(f, "independent").stdin, INDEPENDENT_PROMPT);
+  assert.equal(callOf(f, "self").stdin, selfPrompt(baseOf(f)));
+  assert.equal(callOf(f, "independent").stdin, independentPrompt(baseOf(f)));
+});
+
+test("review gives both reviews the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = implemented();
+  const base = moveBaseToParent(f);
+  fakeReviewer(f, CLEAN);
+  assert.equal(review(f).status, 0);
+  assert.equal(callOf(f, "self").stdin, selfPrompt(base));
+  assert.equal(callOf(f, "independent").stdin, independentPrompt(base));
 });
 
 test("review runs the two reviews at the same time", () => {
@@ -1152,7 +1163,7 @@ const REJECTED: Record<string, Step> = {
   independent: { reply: shaped("ind-1", [INDEPENDENT_REQUIRED]) },
 };
 
-const repairPromptWith = (lines: string): string => `The reviews of your uncommitted change for Issue #42 reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
+const repairPromptWith = (base: string, lines: string): string => `The reviews of your change for Issue #42 reported findings that must be settled before the change is published. The change is everything in this worktree that differs from commit ${base}, committed or not. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
 
 ${lines}
 
@@ -1165,7 +1176,7 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
-const REPAIR_PROMPT = repairPromptWith(`{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}
+const repairPrompt = (base: string): string => repairPromptWith(base, `{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}
 {"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[]}`);
 
 const REPAIR_REPLY = `echo '{"session_id":"s-1","result":"repaired","total_cost_usd":0.7,"duration_ms":900}'\n`;
@@ -1257,7 +1268,15 @@ test("repair passes every entry of the last review's required list in order as J
   const f = rejected();
   fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
   assert.equal(repair(f).status, 0);
-  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), REPAIR_PROMPT);
+  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), repairPrompt(baseOf(f)));
+});
+
+test("repair gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = rejected();
+  const base = moveBaseToParent(f);
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), repairPrompt(base));
 });
 
 test("repair reports ok with changed false and records the round when the child changes nothing", () => {
@@ -1448,7 +1467,7 @@ const REPLY_PARAGRAPH = `The implementing session replied to the earlier finding
 
 repaired`;
 
-const SELF_JUDGING_PROMPT = `Before your uncommitted change for Issue #42 is published, review it yourself and try to refute it. Read the change again with \`git diff HEAD\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
+const selfJudgingPrompt = (base: string): string => `Before your change for Issue #42 is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
 
 ${EARLIER}
 
@@ -1458,7 +1477,7 @@ ${POINTS}
 
 ${CLOSING}`;
 
-const independentJudgingPrompt = (reply: string | null): string => `Independently review the uncommitted change in this worktree against GitHub Issue #42 of owner/repo. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff HEAD\` and \`git status --short\`, and read each untracked file.
+const independentJudgingPrompt = (base: string, reply: string | null): string => `Independently review the change in this worktree against GitHub Issue #42 of owner/repo. The change is everything in this worktree that differs from commit ${base}, committed or not. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff ${base}\` and \`git status --short\`, and read each untracked file.
 
 Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.
 
@@ -1473,6 +1492,14 @@ ${CLOSING}`;
 function rewriteLaunch(f: Fixture, change: (stored: Record<string, unknown>) => Record<string, unknown>): void {
   const dir = git(worktreeOf(f), "rev-parse", "--path-format=absolute", "--git-path", "agent-gate");
   writeFileSync(join(dir, "launch.json"), `${JSON.stringify(change(launchRecord(worktreeOf(f))), null, 2)}\n`);
+}
+
+function moveBaseToParent(f: Fixture): string {
+  const parent = git(f.origin, "rev-parse", "main~1");
+  assert.notEqual(parent, baseOf(f));
+  assert.notEqual(parent, git(worktreeOf(f), "rev-parse", "HEAD"));
+  rewriteLaunch(f, (stored) => ({ ...stored, base: parent }));
+  return parent;
 }
 
 type ReviewOut = {
@@ -1525,7 +1552,7 @@ test("review gives the round-1 prompts and schema when the last record has no re
     arrange(f);
     fakeReviewer(f, CLEAN);
     reviewOut(f);
-    for (const [name, prompt] of [["self", SELF_PROMPT], ["independent", INDEPENDENT_PROMPT]]) {
+    for (const [name, prompt] of [["self", selfPrompt(baseOf(f))], ["independent", independentPrompt(baseOf(f))]]) {
       assert.equal(callOf(f, name).stdin, prompt, label);
       assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), REVIEW_SCHEMA, label);
     }
@@ -1536,8 +1563,8 @@ test("a review after a round with required findings gives both reviews the earli
   const f = rejected();
   fakeReviewer(f, BOTH_OPEN);
   reviewOut(f);
-  assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT);
-  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(null));
+  assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)));
+  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), null));
   for (const name of ["self", "independent"]) {
     assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), JUDGING_SCHEMA, name);
   }
@@ -1549,8 +1576,8 @@ test("the implementing session's reply to the last reviewed round reaches only t
   assert.equal(repair(f).status, 0);
   fakeReviewer(f, BOTH_OPEN);
   reviewOut(f);
-  assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT);
-  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(REPLY_PARAGRAPH));
+  assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)));
+  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), REPLY_PARAGRAPH));
 });
 
 test("no review gets the reply paragraph when the last repair answered another round, its reply is empty, or there is no repair", () => {
@@ -1566,8 +1593,8 @@ test("no review gets the reply paragraph when the last repair answered another r
     rewriteLaunch(f, (stored) => ({ ...stored, repairs: change((stored as Stored).repairs) }));
     fakeReviewer(f, BOTH_OPEN);
     reviewOut(f);
-    assert.equal(callOf(f, "self").stdin, SELF_JUDGING_PROMPT, label);
-    assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(null), label);
+    assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)), label);
+    assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), null), label);
   }
 });
 
@@ -1702,7 +1729,7 @@ test("repair passes a reopened finding carried from an earlier round with its ke
   assert.equal(repair(f).status, 0);
   assert.equal(
     readFileSync(join(f.logs, "repair-stdin"), "utf8"),
-    repairPromptWith(`{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[{"side":"self","reason":"self-2 saw 1-independent-1 open"}]}
+    repairPromptWith(baseOf(f), `{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[{"side":"self","reason":"self-2 saw 1-independent-1 open"}]}
 {"key":"2-self-1","side":"self","location":"a.ts:1","condition":"c9","problem":"p1","action":"a1","reopened":[]}`),
   );
 });
@@ -2400,10 +2427,10 @@ const reread = (f: Fixture, ...extra: string[]) => run(f, ["reread", "--worktree
 
 const AGREED_DIGEST = digestOf(CHANGED_BODY);
 
-const REREAD_PROMPT = `GitHub Issue #42 of owner/repo changed after you last read it. The Issue as it is now is the agreed requirement.
+const rereadPrompt = (base: string): string => `GitHub Issue #42 of owner/repo changed after you last read it. The Issue as it is now is the agreed requirement.
 
 1. Read the Issue again with \`gh issue view 42 --repo owner/repo --json title,body\`, and find what changed from the version you read before.
-2. Compare every requirement, done condition, and out-of-scope item of the Issue with your uncommitted change. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
+2. Compare every requirement, done condition, and out-of-scope item of the Issue with your change. The change is everything in this worktree that differs from commit ${base}, committed or not. Read it with \`git diff ${base}\` and \`git status --short\`. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
 3. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
 4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
 
@@ -2515,7 +2542,15 @@ test("reread after agree resumes the implement session without a fork in the wor
   assert.ok(!args.includes("--fork-session"));
   assert.ok(!args.includes("--json-schema"));
   assert.equal(flagValue(args, "--model"), "opus");
-  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), REREAD_PROMPT);
+  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), rereadPrompt(baseOf(f)));
+});
+
+test("reread gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = agreedAfterChange();
+  const base = moveBaseToParent(f);
+  fakeRereader(f, PASS_CHECK + REREAD_REPLY);
+  assert.equal(reread(f).status, 0);
+  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), rereadPrompt(base));
 });
 
 test("reread passes --model to claude", () => {
@@ -2793,9 +2828,9 @@ test("run stops with the reason and detail of a reread that fails, and reread is
 
 const continueWork = (f: Fixture, ...extra: string[]) => run(f, ["continue", "--worktree", worktreeOf(f), ...extra]);
 
-const CONTINUE_PROMPT = `Your work on GitHub Issue #42 of owner/repo in this worktree is not finished. \`${DONE_GATE} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
+const continuePrompt = (base: string): string => `Your work on GitHub Issue #42 of owner/repo in this worktree is not finished. \`${DONE_GATE} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
 
-1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the uncommitted changes that are in the worktree, and finish that work.
+1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the changes that are in the worktree, and finish that work.
 2. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
 3. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
 
@@ -2848,7 +2883,15 @@ test("continue on a worktree whose implement stopped with not-done resumes the i
   assert.ok(!args.includes("--json-schema"));
   assert.equal(flagValue(args, "--allowedTools"), flagValue(implementArgs, "--allowedTools"));
   assert.equal(flagValue(args, "--model"), "opus");
-  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), CONTINUE_PROMPT);
+  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), continuePrompt(baseOf(f)));
+});
+
+test("continue gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = unfinished();
+  const base = moveBaseToParent(f);
+  fakeContinuer(f, PASS_CHECK + CONTINUE_REPLY);
+  assert.equal(continueWork(f).status, 0);
+  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), continuePrompt(base));
 });
 
 test("continue reports ok, appends round 1 to continues with done true, and passes --model when the child passes the check", () => {
@@ -3117,9 +3160,9 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: the files you changed, what \`${DONE_GATE} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
 `;
 
-const RESUME_PROMPT = `Your turn implementing GitHub Issue #42 of owner/repo in this worktree was interrupted before you replied.
+const resumePrompt = (base: string): string => `Your turn implementing GitHub Issue #42 of owner/repo in this worktree was interrupted before you replied.
 
-1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you had done and what was left. Keep the uncommitted changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view 42 --repo owner/repo --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
+1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you had done and what was left. Keep the changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view 42 --repo owner/repo --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
 2. Finish the change the Issue asks for, following the repository's rules that apply to the files you touch.
 3. Run \`${DONE_GATE} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
 4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
@@ -3227,7 +3270,15 @@ test("implement on an unfinished worktree resumes the recorded session with --mo
   assert.ok(!calls[0].args.includes("--session-id"));
   assert.ok(!calls[0].args.includes("--fork-session"));
   assert.equal(flagValue(calls[0].args, "--model"), "sonnet");
-  assert.equal(calls[0].stdin, RESUME_PROMPT);
+  assert.equal(calls[0].stdin, resumePrompt(baseOf(f)));
+});
+
+test("a resumed implement gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
+  const f = interrupted();
+  const base = moveBaseToParent(f);
+  fakeImplementer(f, [FINISHED]);
+  assert.equal(implementAt(f).status, 0);
+  assert.equal(implementCalls(f)[0].stdin, resumePrompt(base));
 });
 
 test("a resumed implement that passes the check returns resumed true, keeps launch.json while it runs, and records the digest the session started with", () => {

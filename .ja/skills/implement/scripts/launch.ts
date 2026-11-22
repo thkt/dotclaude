@@ -43,10 +43,10 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: the files you changed, what \`${doneGate} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
 `;
 
-const resumePrompt = (issue: number, repository: string, doneGate: string): string =>
+const resumePrompt = (issue: number, repository: string, base: string, doneGate: string): string =>
   `Your turn implementing GitHub Issue #${issue} of ${repository} in this worktree was interrupted before you replied.
 
-1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you had done and what was left. Keep the uncommitted changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view ${issue} --repo ${repository} --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
+1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you had done and what was left. Keep the changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view ${issue} --repo ${repository} --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
 2. Finish the change the Issue asks for, following the repository's rules that apply to the files you touch.
 3. Run \`${doneGate} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
 4. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
@@ -56,8 +56,8 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: the files you changed, what \`${doneGate} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
 `;
 
-const repairPrompt = (issue: number, findings: string, doneGate: string): string =>
-  `The reviews of your uncommitted change for Issue #${issue} reported findings that must be settled before the change is published. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
+const repairPrompt = (issue: number, base: string, findings: string, doneGate: string): string =>
+  `The reviews of your change for Issue #${issue} reported findings that must be settled before the change is published. The change is everything in this worktree that differs from commit ${base}, committed or not. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
 
 ${findings}
 
@@ -70,11 +70,11 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
-const rereadPrompt = (issue: number, repository: string, doneGate: string): string =>
+const rereadPrompt = (issue: number, repository: string, base: string, doneGate: string): string =>
   `GitHub Issue #${issue} of ${repository} changed after you last read it. The Issue as it is now is the agreed requirement.
 
 1. Read the Issue again with \`gh issue view ${issue} --repo ${repository} --json title,body\`, and find what changed from the version you read before.
-2. Compare every requirement, done condition, and out-of-scope item of the Issue with your uncommitted change. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
+2. Compare every requirement, done condition, and out-of-scope item of the Issue with your change. The change is everything in this worktree that differs from commit ${base}, committed or not. Read it with \`git diff ${base}\` and \`git status --short\`. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
 3. Run \`${doneGate} check\`. Fix what fails and run it again.
 4. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
 
@@ -83,10 +83,10 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
-const continuePrompt = (issue: number, repository: string, doneGate: string): string =>
+const continuePrompt = (issue: number, repository: string, base: string, doneGate: string): string =>
   `Your work on GitHub Issue #${issue} of ${repository} in this worktree is not finished. \`${doneGate} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
 
-1. Find where the work stopped. Read \`git status --short\` and \`git diff HEAD\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the uncommitted changes that are in the worktree, and finish that work.
+1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the changes that are in the worktree, and finish that work.
 2. Run \`${doneGate} check\`. Fix what fails and run it again.
 3. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
 
@@ -153,11 +153,11 @@ const REVIEW_CLOSING = `Do not edit any file in this worktree. Do not commit. Sc
 
 Give the result through the structured output. \`findings\` lists every finding. Set \`required\` to true only for a defect you demonstrated or a requirement of the Issue that is not met, which must be fixed before the change is published. Set it to false for every other concern. \`location\` is \`file:line\`, or an empty string when no line applies. \`condition\` is the input or state that triggers the finding, \`problem\` is what goes wrong, and \`action\` is what to do. \`verified\` says what you checked and how. An empty \`findings\` is a valid result.`;
 
-const selfOpening = (issue: number): string =>
-  `Before your uncommitted change for Issue #${issue} is published, review it yourself and try to refute it. Read the change again with \`git diff HEAD\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.`;
+const selfOpening = (issue: number, base: string): string =>
+  `Before your change for Issue #${issue} is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.`;
 
-const independentOpening = (issue: number, repository: string): string =>
-  `Independently review the uncommitted change in this worktree against GitHub Issue #${issue} of ${repository}. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff HEAD\` and \`git status --short\`, and read each untracked file.
+const independentOpening = (issue: number, repository: string, base: string): string =>
+  `Independently review the change in this worktree against GitHub Issue #${issue} of ${repository}. The change is everything in this worktree that differs from commit ${base}, committed or not. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff ${base}\` and \`git status --short\`, and read each untracked file.
 
 Read the Issue with \`gh issue view ${issue} --repo ${repository} --json title,body\`, the change, and the code the change calls or is called by.`;
 
@@ -620,7 +620,7 @@ const implement = async ({ worktree, model, fresh }: WorktreeCall): Promise<Resu
     const earlier = objectOf(stored.implement) ?? {};
     const outcome = await runChild({
       ...common,
-      prompt: resumePrompt(launch.issue, launch.repository, DONE_GATE),
+      prompt: resumePrompt(launch.issue, launch.repository, launch.base, DONE_GATE),
       resume: earlier.session_id as string,
     });
     return noSessionOf(outcome) ? startNew() : { outcome, resumed: true, issueDigest: earlier.issue_digest, base: stored };
@@ -788,9 +788,9 @@ const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const tree = treeHash(gate.root);
   const schema = keys === null ? REVIEW_SCHEMA : JUDGING_SCHEMA;
   const common = { model, effort: undefined, schema, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, tools: REVIEW_TOOLS };
-  const selfPrompt = reviewPrompt(selfOpening(launch.issue), [...judging, ...closing]);
+  const selfPrompt = reviewPrompt(selfOpening(launch.issue, launch.base), [...judging, ...closing]);
   const independentJudging = [...judging, ...(reply === null ? [] : [replyParagraph(reply)]), ...closing];
-  const independentPrompt = reviewPrompt(independentOpening(launch.issue, launch.repository), independentJudging);
+  const independentPrompt = reviewPrompt(independentOpening(launch.issue, launch.repository, launch.base), independentJudging);
   const [self, independent] = await Promise.all([
     runReview({ ...common, prompt: selfPrompt, resume: implemented, fork: true }, keys),
     runReview({ ...common, prompt: independentPrompt }, keys),
@@ -860,7 +860,7 @@ const repair = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
 
   const reply = sessionReplyOf(
     await runChild({
-      prompt: repairPrompt(launch.issue, required.map(repairLine).join("\n"), DONE_GATE),
+      prompt: repairPrompt(launch.issue, launch.base, required.map(repairLine).join("\n"), DONE_GATE),
       model,
       effort: undefined,
       schema: undefined,
@@ -931,7 +931,7 @@ const reread = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const before = treeHash(gate.root);
   const reply = sessionReplyOf(
     await runChild({
-      prompt: rereadPrompt(launch.issue, launch.repository, DONE_GATE),
+      prompt: rereadPrompt(launch.issue, launch.repository, launch.base, DONE_GATE),
       model,
       effort: undefined,
       schema: undefined,
@@ -986,7 +986,7 @@ const continueWork = async ({ worktree, model }: WorktreeCall): Promise<Result> 
   const before = treeHash(gate.root);
   const reply = sessionReplyOf(
     await runChild({
-      prompt: continuePrompt(launch.issue, launch.repository, DONE_GATE),
+      prompt: continuePrompt(launch.issue, launch.repository, launch.base, DONE_GATE),
       model,
       effort: undefined,
       schema: undefined,
