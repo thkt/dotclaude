@@ -9,7 +9,7 @@ paths:
 
 thkt のリポジトリで Bun を使うものは、直下に `bunfig.toml` を置く。`bun install` が作る `node_modules` の形と版の選び方を、手元、CI、クラウドのセッションでそろえるためである。thkt のリポジトリとは、`origin` が `github.com/thkt/` を指すリポジトリを言う。
 
-手元の Mac では、`~/.bunfig.toml` が同じ 2 つのキーを持つ。リポジトリの `bunfig.toml` は、そのファイルを読まない CI、クラウドのセッション、別のマシンのために置く。手元の設定と重なっていても消さない。
+手元の Mac では、`~/.bunfig.toml` が同じ 2 つのキーと `globalStore = true` を持つ。リポジトリの `bunfig.toml` は、そのファイルを読まない CI、クラウドのセッション、別のマシンのために置く。手元の設定と重なっていても消さない。
 
 ## 置く内容
 
@@ -28,7 +28,13 @@ linker = "isolated"
 
 ## 置かないキー
 
-`globalStore = true` は置かない。これを置くと、textlint は global store にある自分の場所から規則を探し、規則を 1 つも読み込めずに失敗する。速くなる幅は、約 400 パッケージの `bun install` で 1 回あたり 0.2 秒ほどだった。
+`globalStore = true` は、リポジトリの `bunfig.toml` に置かない。global store が速くするのは、パッケージの実体が既にキャッシュにある `bun install` だけである。thkt のリポジトリの CI は bun のキャッシュを持ち越さないので、置いても速くならない。手元では、`~/.bunfig.toml` がこのキーを持つ。
+
+## textlint を使うリポジトリ
+
+textlint を使うリポジトリは、`bunfig.toml` に `globalStore = false` を足す。`~/.bunfig.toml` の `globalStore = true` の下では、textlint は global store にある自分の場所から規則を探し、規則を 1 つも読み込めずに失敗する。リポジトリの `globalStore = false` は、`~/.bunfig.toml` の値より優先される。失う速さは、約 400 パッケージの `bun install` で 1 回あたり 0.2 秒ほどである。
+
+textlint の呼び出しに `--rules-base-directory "$PWD/node_modules"` を付けても、規則は読み込める。ただし、呼び出しのすべてに付ける必要があるので、この方法は選ばない。
 
 ## 状況ごとの扱い
 

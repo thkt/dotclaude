@@ -9,7 +9,7 @@ paths:
 
 A repository of thkt's that uses Bun keeps a `bunfig.toml` at its root. It makes the `node_modules` layout `bun install` builds and the way it picks versions match across the local machine, CI, and cloud sessions. A repository of thkt's is one whose `origin` points at `github.com/thkt/`.
 
-On the local Mac, `~/.bunfig.toml` holds the same two keys. The repository's `bunfig.toml` is there for CI, cloud sessions, and other machines, which do not read that file. Do not remove it because it overlaps the local setting.
+On the local Mac, `~/.bunfig.toml` holds the same two keys and `globalStore = true`. The repository's `bunfig.toml` is there for CI, cloud sessions, and other machines, which do not read that file. Do not remove it because it overlaps the local setting.
 
 ## What to put in it
 
@@ -28,7 +28,13 @@ Each key decides the behavior below.
 
 ## Keys left out
 
-Do not add `globalStore = true`. With it, textlint looks for its rules from its own location in the global store, loads none of them, and fails. The speedup it buys was about 0.2 seconds per `bun install` on roughly 400 packages.
+Do not add `globalStore = true` to the repository's `bunfig.toml`. The global store speeds up only a `bun install` whose packages are already in the cache. CI in thkt's repositories does not carry bun's cache over between runs, so the key does not speed it up. On the local Mac, `~/.bunfig.toml` holds this key.
+
+## Repositories that use textlint
+
+A repository that uses textlint adds `globalStore = false` to its `bunfig.toml`. Under the `globalStore = true` in `~/.bunfig.toml`, textlint looks for its rules from its own location in the global store, loads none of them, and fails. The repository's `globalStore = false` takes precedence over the value in `~/.bunfig.toml`. The speed given up is about 0.2 seconds per `bun install` on roughly 400 packages.
+
+Passing `--rules-base-directory "$PWD/node_modules"` to textlint also lets it load the rules. That option is not chosen, because every textlint invocation would need it.
 
 ## Handling by situation
 
