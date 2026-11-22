@@ -51,6 +51,7 @@ export interface ChildRun {
   fork?: boolean;
   tools?: string;
   sessionId?: string;
+  everyTurn?: boolean;
   onStart?: (pid: number) => void;
 }
 export interface ChildOutcome {
@@ -72,8 +73,9 @@ export const endAll = () => {
   for (const pid of runningChildren) endGroup(pid, "SIGTERM");
 };
 
-const claudeArgv = ({ model, effort, schema, resume, fork, tools, sessionId }: ChildRun): string[] => {
-  const argv = ["-p", "--model", model, "--output-format", "json", "--allowedTools", tools ?? CHILD_TOOLS];
+const claudeArgv = ({ model, effort, schema, resume, fork, tools, sessionId, everyTurn }: ChildRun): string[] => {
+  const format = everyTurn ? ["stream-json", "--verbose"] : ["json"];
+  const argv = ["-p", "--model", model, "--output-format", ...format, "--allowedTools", tools ?? CHILD_TOOLS];
   argv.push("--disallowedTools", CHILD_DENIED);
   if (effort) argv.push("--effort", effort);
   if (resume) argv.push("--resume", resume);

@@ -559,15 +559,34 @@ const NO_SESSION = "No conversation found with session ID";
 
 const noSessionOf = (outcome: ChildOutcome): boolean => outcome.code !== 0 && outcome.stderr.includes(NO_SESSION);
 
-const replyOf = (outcome: ChildOutcome): Record<string, unknown> | string => {
-  const tail = oneLine(outcome.stderr.split("\n").slice(-3).join(" "));
-  if (outcome.timedOut) return `claude -p was ended at its ${CHILD_TIMEOUT_MS} ms limit. ${tail}`;
-  if (outcome.code !== 0) return `claude -p exited ${outcome.code}. ${tail}`;
-  return parseObject(outcome.stdout) ?? `claude -p printed no JSON object. ${tail}`;
+const tailOf = (outcome: ChildOutcome): string => oneLine(outcome.stderr.split("\n").slice(-3).join(" "));
+
+const failureOf = (outcome: ChildOutcome): string | null => {
+  if (outcome.timedOut) return `claude -p was ended at its ${CHILD_TIMEOUT_MS} ms limit. ${tailOf(outcome)}`;
+  if (outcome.code !== 0) return `claude -p exited ${outcome.code}. ${tailOf(outcome)}`;
+  return null;
+};
+
+const replyOf = (outcome: ChildOutcome): Record<string, unknown> | string =>
+  failureOf(outcome) ?? parseObject(outcome.stdout) ?? `claude -p printed no JSON object. ${tailOf(outcome)}`;
+
+const turnResultsOf = (stdout: string): Record<string, unknown>[] =>
+  stdout
+    .split("\n")
+    .map(parseObject)
+    .filter((line): line is Record<string, unknown> => line?.type === "result");
+
+const everyTurnReplyOf = (outcome: ChildOutcome): Record<string, unknown> | string => {
+  const failure = failureOf(outcome);
+  if (failure !== null) return failure;
+  const turns = turnResultsOf(outcome.stdout);
+  if (turns.length === 0) return `claude -p printed no result event. ${tailOf(outcome)}`;
+  const said = turns.map((turn) => turn.result).filter(nonEmpty);
+  return { ...turns[turns.length - 1], result: said.map((text) => text.trim()).join("\n\n") };
 };
 
 const sessionReplyOf = (outcome: ChildOutcome): (Record<string, unknown> & { session_id: string }) | string => {
-  const reply = replyOf(outcome);
+  const reply = everyTurnReplyOf(outcome);
   if (typeof reply === "string") return reply;
   if (typeof reply.session_id !== "string") return "the JSON claude -p printed has no session_id string.";
   return reply as Record<string, unknown> & { session_id: string };
@@ -606,7 +625,7 @@ const implement = async ({ worktree, model, fresh }: WorktreeCall): Promise<Resu
   const changed = issueChange(launch, worktree);
   if (changed !== null) return stop(changed.reason, changed.detail);
 
-  const common = { model, effort: undefined, schema: undefined, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS };
+  const common = { model, effort: undefined, schema: undefined, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, everyTurn: true };
   const startNew = async (): Promise<ImplementChild> => {
     const sessionId = randomUUID();
     const kept = Object.hasOwn(stored, "publications") ? { publications: stored.publications } : {};
@@ -867,6 +886,7 @@ const repair = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
       cwd: worktree,
       timeoutMs: CHILD_TIMEOUT_MS,
       resume: implemented,
+      everyTurn: true,
     }),
   );
   if (typeof reply === "string") return stop("child-failed", reply);
@@ -938,6 +958,7 @@ const reread = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
       cwd: worktree,
       timeoutMs: CHILD_TIMEOUT_MS,
       resume: implemented,
+      everyTurn: true,
     }),
   );
   if (typeof reply === "string") return stop("child-failed", reply);
@@ -993,6 +1014,7 @@ const continueWork = async ({ worktree, model }: WorktreeCall): Promise<Result> 
       cwd: worktree,
       timeoutMs: CHILD_TIMEOUT_MS,
       resume: implemented,
+      everyTurn: true,
     }),
   );
   if (typeof reply === "string") return stop("child-failed", reply);

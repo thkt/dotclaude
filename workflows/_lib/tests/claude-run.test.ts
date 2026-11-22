@@ -349,6 +349,18 @@ test("runClaudeOnce uses tools as the --allowedTools value when it is passed", a
   assert.equal(argv[argv.indexOf("--allowedTools") + 1], "Read,Glob,Grep,LS");
 });
 
+test("runClaudeOnce with everyTurn true passes --output-format stream-json --verbose where json was, and keeps every other argument in its order", async () => {
+  const plain = await argvOfOnce({ resume: "s-7", sessionId: "s-8" });
+  const every = await argvOfOnce({ resume: "s-7", sessionId: "s-8", everyTurn: true });
+  const at = plain.indexOf("--output-format");
+  assert.deepEqual(plain.slice(at, at + 2), ["--output-format", "json"]);
+  assert.deepEqual(every, [...plain.slice(0, at), "--output-format", "stream-json", "--verbose", ...plain.slice(at + 2)]);
+});
+
+test("runClaudeOnce with everyTurn false passes the same arguments as without everyTurn", async () => {
+  assert.deepEqual(await argvOfOnce({ everyTurn: false }), await argvOfOnce({}));
+});
+
 test("runClaudeOnce calls onStart once with the pid of the child it started, which is the pid the child reports for itself", async () => {
   const dir = mkdtempSync(join(tmpdir(), "claude-run-start-"));
   const bin = join(dir, "bin");
