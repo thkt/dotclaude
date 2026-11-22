@@ -3477,8 +3477,16 @@ async function startWaiting(f: Fixture, args: string[], claudes = 1): Promise<Wa
   const closed = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((done) =>
     child.on("close", (code, signal) => done({ code, signal })),
   );
-  const started = await waitFor(() => pidsIn(f, "hanging-sleep-pids").length >= claudes, 20_000);
-  assert.ok(started, `${claudes} claude started: ${stderr}`);
+  const recorded = (): boolean => {
+    try {
+      const children = readHolder(f, child.pid as number, ".children");
+      return Array.isArray(children) && pidsIn(f, "hanging-claude-pids").every((pid) => children.includes(pid));
+    } catch {
+      return false;
+    }
+  };
+  const started = await waitFor(() => pidsIn(f, "hanging-sleep-pids").length >= claudes && recorded(), 20_000);
+  assert.ok(started, `${claudes} claude started and recorded: ${stderr}`);
   return { pid: child.pid as number, closed, child };
 }
 
