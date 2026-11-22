@@ -69,7 +69,7 @@ install specific workflow sets:
   then hand the Issue to /implement, which carries it through the implement
   workflow to implementation, verification, a draft PR, and CI confirmation.
   Bundles the critic-design agent, the implement workflow, and /sweep,
-  /outcome, /dr.
+  /outcome, /dr, /in-your-own-words.
 
 ### Option 2: Manual Installation (Full Configuration)
 
