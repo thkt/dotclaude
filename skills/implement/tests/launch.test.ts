@@ -159,7 +159,7 @@ function fakeClaude(f: Fixture, body: string): void {
   );
 }
 
-const SESSION_REPLY = `echo '{"session_id":"s-1","result":"finished","total_cost_usd":0.5,"duration_ms":1200}'\n`;
+const SESSION_REPLY = `echo '{"type":"result","session_id":"s-1","result":"finished","total_cost_usd":0.5,"duration_ms":1200}'\n`;
 const PASS_CHECK = `"$NODE" "$DONE_GATE" check >&2\n`;
 
 function run(f: Fixture, args: string[], env: Record<string, string> = {}): SpawnSyncReturns<string> {
@@ -758,7 +758,7 @@ test("implement prints its JSON line whole through a pipe when the child's resul
   const f = fixture();
   assert.equal(prepare(f).status, 0);
   const long = "r".repeat(200_000);
-  writeFileSync(join(f.logs, "reply.json"), JSON.stringify({ session_id: "s-1", result: long, total_cost_usd: 0, duration_ms: 1 }));
+  writeFileSync(join(f.logs, "reply.json"), JSON.stringify({ type: "result", session_id: "s-1", result: long, total_cost_usd: 0, duration_ms: 1 }));
   fakeClaude(f, `${PASS_CHECK}cat "$LOGS/reply.json"\n`);
   const piped = spawnSync("/bin/sh", ["-c", '"$0" implement --worktree "$1" | cat', SCRIPT, worktreeOf(f)], {
     encoding: "utf8",
@@ -782,28 +782,28 @@ test("implement stops with not-done and still records the session when the child
   assert.equal(record.implement.reply, "not-done reply");
 });
 
-test("implement exits 0 without result in its JSON and records an empty reply when the child that passes the check gives no result", () => {
+test("implement exits 0 with an empty string result in its JSON and records an empty reply when the child that passes the check gives no result", () => {
   const f = fixture();
   assert.equal(prepare(f).status, 0);
-  fakeClaude(f, `${PASS_CHECK}echo '{"session_id":"s-1"}'\n`);
+  fakeClaude(f, `${PASS_CHECK}echo '{"type":"result","session_id":"s-1"}'\n`);
   const result = run(f, ["implement", "--worktree", worktreeOf(f)]);
   assert.equal(result.status, 0, result.stderr);
-  assert.ok(!("result" in outputOf(result)));
+  assert.equal(outputOf(result).result, "");
   assert.equal((launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement.reply, "");
 });
 
-test("implement exits 0 with the number result in its JSON and records an empty reply when the child that passes the check gives the result 3", () => {
+test("implement exits 0 with an empty string result in its JSON and records an empty reply when the child that passes the check gives the result 3", () => {
   const f = fixture();
   assert.equal(prepare(f).status, 0);
-  fakeClaude(f, `${PASS_CHECK}echo '{"session_id":"s-1","result":3}'\n`);
+  fakeClaude(f, `${PASS_CHECK}echo '{"type":"result","session_id":"s-1","result":3}'\n`);
   const result = run(f, ["implement", "--worktree", worktreeOf(f)]);
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(outputOf(result).result, 3);
+  assert.equal(outputOf(result).result, "");
   assert.equal((launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement.reply, "");
 });
 
 test("implement stops with child-failed when claude exits non-zero, prints no JSON, or gives no session_id", () => {
-  for (const body of [`${SESSION_REPLY}exit 3\n`, "echo 'not json'\n", `echo '{"result":"finished"}'\n`]) {
+  for (const body of [`${SESSION_REPLY}exit 3\n`, "echo 'not json'\n", `echo '{"type":"result","result":"finished"}'\n`]) {
     const f = fixture();
     assert.equal(prepare(f).status, 0);
     fakeClaude(f, body);
@@ -1179,7 +1179,7 @@ When you are done, reply with: for each finding, its \`key\` and what you change
 const repairPrompt = (base: string): string => repairPromptWith(base, `{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}
 {"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[]}`);
 
-const REPAIR_REPLY = `echo '{"session_id":"s-1","result":"repaired","total_cost_usd":0.7,"duration_ms":900}'\n`;
+const REPAIR_REPLY = `echo '{"type":"result","session_id":"s-1","result":"repaired","total_cost_usd":0.7,"duration_ms":900}'\n`;
 const EDIT_FILE = "echo fixed >> README.md\n";
 
 function fakeRepairer(f: Fixture, body: string): void {
@@ -1392,7 +1392,7 @@ test("repair stops with not-reviewed when reviews is not an array or is empty", 
 });
 
 test("repair stops with child-failed and keeps launch.json when claude exits non-zero, prints no JSON, or gives no session_id", () => {
-  for (const body of [`${REPAIR_REPLY}exit 3\n`, "echo 'not json'\n", `echo '{"result":"repaired"}'\n`]) {
+  for (const body of [`${REPAIR_REPLY}exit 3\n`, "echo 'not json'\n", `echo '{"type":"result","result":"repaired"}'\n`]) {
     const f = rejected();
     const before = launchRecord(worktreeOf(f));
     fakeRepairer(f, body);
@@ -1757,8 +1757,8 @@ test("repair stops with not-reviewed when the last record has no required array 
 test("repair records the child's result as reply, and an empty string when the result is not a string", () => {
   const cases: [string, string][] = [
     [REPAIR_REPLY, "repaired"],
-    [`echo '{"session_id":"s-1","result":{"text":"x"}}'\n`, ""],
-    [`echo '{"session_id":"s-1"}'\n`, ""],
+    [`echo '{"type":"result","session_id":"s-1","result":{"text":"x"}}'\n`, ""],
+    [`echo '{"type":"result","session_id":"s-1"}'\n`, ""],
   ];
   for (const [body, reply] of cases) {
     const f = rejected();
@@ -1814,7 +1814,7 @@ const turn = (JSON.parse(fs.readFileSync(logs + "/script.json", "utf8"))[role] |
 if (turn.edit) fs.appendFileSync("README.md", role + " " + index + "\\n");
 if (turn.check) spawnSync(process.env.NODE, [process.env.DONE_GATE, "check"], { stdio: "ignore" });
 if (turn.issue) fs.writeFileSync(logs + "/gh-reply.json", JSON.stringify(turn.issue));
-if (turn.reply !== undefined) process.stdout.write(typeof turn.reply === "string" ? turn.reply : JSON.stringify(turn.reply));
+if (turn.reply !== undefined) process.stdout.write(typeof turn.reply === "string" ? turn.reply : JSON.stringify({ type: "result", ...turn.reply }));
 process.exit(turn.exit || 0);
 `,
     { mode: 0o755 },
@@ -2439,7 +2439,7 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
-const REREAD_REPLY = `echo '{"session_id":"s-1","result":"reread","total_cost_usd":0.3,"duration_ms":700}'\n`;
+const REREAD_REPLY = `echo '{"type":"result","session_id":"s-1","result":"reread","total_cost_usd":0.3,"duration_ms":700}'\n`;
 
 function fakeRereader(f: Fixture, body: string): void {
   writeFileSync(
@@ -2646,7 +2646,7 @@ test("reread stops with not-prepared, not-implemented, issue-unreadable, child-f
     ],
     ["child-failed", agreedAfterChange, `${REREAD_REPLY}exit 3\n`],
     ["child-failed", agreedAfterChange, "echo 'not json'\n"],
-    ["child-failed", agreedAfterChange, `echo '{"result":"reread"}'\n`],
+    ["child-failed", agreedAfterChange, `echo '{"type":"result","result":"reread"}'\n`],
     ["not-done", agreedAfterChange, EDIT_FILE + REREAD_REPLY],
   ];
   for (const [reason, arrange, body] of cases) {
@@ -2839,7 +2839,7 @@ Do not commit, push, or open a pull request. Do not edit files outside this work
 When you are done, reply with: what was unfinished; what you changed; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
 `;
 
-const CONTINUE_REPLY = `echo '{"session_id":"s-1","result":"continued","total_cost_usd":0.4,"duration_ms":800}'\n`;
+const CONTINUE_REPLY = `echo '{"type":"result","session_id":"s-1","result":"continued","total_cost_usd":0.4,"duration_ms":800}'\n`;
 
 function fakeContinuer(f: Fixture, body: string): void {
   writeFileSync(
@@ -2950,7 +2950,7 @@ test("continue stops with not-done and appends a record with done false, with ch
 test("continue records round 1 when continues is not an array, and an empty reply when the child's result is not a string", () => {
   const f = unfinished();
   rewriteLaunch(f, (stored) => ({ ...stored, continues: { round: 5 } }));
-  fakeContinuer(f, `${PASS_CHECK}echo '{"session_id":"s-1","result":7,"total_cost_usd":0.4,"duration_ms":800}'\n`);
+  fakeContinuer(f, `${PASS_CHECK}echo '{"type":"result","session_id":"s-1","result":7,"total_cost_usd":0.4,"duration_ms":800}'\n`);
   const result = continueWork(f);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(outputOf(result).round, 1);
@@ -2995,7 +2995,7 @@ test("continue stops with not-prepared, not-implemented, gate-unreadable, requir
     ["issue-unreadable", withGh(null), CONTINUE_REPLY, 0],
     ["child-failed", unfinished, `${CONTINUE_REPLY}exit 3\n`, 1],
     ["child-failed", unfinished, "echo 'not json'\n", 1],
-    ["child-failed", unfinished, `echo '{"result":"continued"}'\n`, 1],
+    ["child-failed", unfinished, `echo '{"type":"result","result":"continued"}'\n`, 1],
   ];
   for (const [reason, arrange, body, calls] of cases) {
     const f = arrange();
@@ -3207,7 +3207,7 @@ fs.appendFileSync(log, JSON.stringify({ args, stdin, launch }) + "\\n");
 const turn = JSON.parse(fs.readFileSync(logs + "/implement-plan.json", "utf8"))[index] || {};
 if (turn.check) spawnSync(process.env.NODE, [process.env.DONE_GATE, "check"], { stdio: "ignore" });
 if (turn.stderr) process.stderr.write(turn.stderr);
-if (turn.reply !== undefined) process.stdout.write(JSON.stringify(turn.reply));
+if (turn.reply !== undefined) process.stdout.write(JSON.stringify({ type: "result", ...turn.reply }));
 process.exit(turn.exit || 0);
 `,
     { mode: 0o755 },
@@ -3655,7 +3655,7 @@ case "$prompt" in
   "Implement GitHub Issue"*)
     echo $$ > "$LOGS/implement-pid"
     "$NODE" "$DONE_GATE" check >&2
-    echo '{"session_id":"s-1","result":"finished","total_cost_usd":0.5,"duration_ms":1200}'
+    echo '{"type":"result","session_id":"s-1","result":"finished","total_cost_usd":0.5,"duration_ms":1200}'
     exit 0;;
 esac
 echo $$ >> "$LOGS/hanging-claude-pids"
@@ -4783,4 +4783,120 @@ test("published with a recorded publication stops with pr-mismatch naming number
   const f = publishedOnce();
   withPulls(f, [matchingPull(f, { number: 12 })]);
   assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail("number"));
+});
+
+const FIRST_TURN = { type: "result", session_id: "s-0", result: "first report", total_cost_usd: 0.5, duration_ms: 1200 };
+const SECOND_TURN = { type: "result", session_id: "s-1", result: "second note", total_cost_usd: 0.6, duration_ms: 300 };
+const TWO_TURNS = [JSON.stringify(FIRST_TURN), JSON.stringify(SECOND_TURN)];
+const JOINED_REPLY = "first report\n\nsecond note";
+
+const printing = (f: Fixture, lines: string[]): string => {
+  writeFileSync(join(f.logs, "turns.out"), lines.map((line) => `${line}\n`).join(""));
+  return `cat "$LOGS/turns.out"\n`;
+};
+
+const implementPrinting = (lines: string[]): { result: SpawnSyncReturns<string>; f: Fixture } => {
+  const f = fixture();
+  assert.equal(prepare(f).status, 0);
+  fakeClaude(f, PASS_CHECK + printing(f, lines));
+  return { result: run(f, ["implement", "--worktree", worktreeOf(f)]), f };
+};
+
+const implementReplyOf = (f: Fixture): unknown => (launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement.reply;
+
+test("implement records the results of both turns joined by a blank line as reply, and reports the joined result with the second turn's cost, duration, and session_id", () => {
+  const { result, f } = implementPrinting(TWO_TURNS);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result);
+  assert.equal(out.result, JOINED_REPLY);
+  assert.equal(out.cost_usd, 0.6);
+  assert.equal(out.duration_ms, 300);
+  assert.equal(out.session_id, "s-1");
+  assert.equal(implementReplyOf(f), JOINED_REPLY);
+  assert.equal((launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement.session_id, "s-1");
+});
+
+test("repair, reread, and continue each record the results of both turns joined by a blank line as reply", () => {
+  const repaired = rejected();
+  fakeRepairer(repaired, PASS_CHECK + printing(repaired, TWO_TURNS));
+  assert.equal(repair(repaired).status, 0);
+  assert.equal((launchRecord(worktreeOf(repaired)) as Stored).repairs[0].reply, JOINED_REPLY);
+
+  const rereadAt = agreedAfterChange();
+  fakeRereader(rereadAt, PASS_CHECK + printing(rereadAt, TWO_TURNS));
+  assert.equal(reread(rereadAt).status, 0);
+  assert.equal((launchRecord(worktreeOf(rereadAt)) as { rereads: Record<string, unknown>[] }).rereads[0].reply, JOINED_REPLY);
+
+  const continued = unfinished();
+  fakeContinuer(continued, PASS_CHECK + printing(continued, TWO_TURNS));
+  assert.equal(continueWork(continued).status, 0);
+  assert.equal((launchRecord(worktreeOf(continued)) as Continued).continues[0].reply, JOINED_REPLY);
+});
+
+test("implement skips lines that are not turn results, and reads the same reply as from the two turn results alone", () => {
+  const assistant = JSON.stringify({ type: "assistant", message: { content: "thinking" } });
+  const untyped = JSON.stringify({ session_id: "s-9", result: "untyped" });
+  const { result, f } = implementPrinting([assistant, "", TWO_TURNS[0], untyped, "not json", TWO_TURNS[1], assistant, ""]);
+  assert.equal(result.status, 0, result.stderr);
+  const out = outputOf(result);
+  assert.deepEqual([out.result, out.cost_usd, out.duration_ms, out.session_id], [JOINED_REPLY, 0.6, 300, "s-1"]);
+  assert.equal(implementReplyOf(f), JOINED_REPLY);
+});
+
+test("implement leaves out of the reply a turn result without a string result and one whose result is only whitespace", () => {
+  const { result, f } = implementPrinting([
+    JSON.stringify({ type: "result", session_id: "s-1" }),
+    JSON.stringify({ type: "result", session_id: "s-1", result: "  " }),
+    JSON.stringify({ type: "result", session_id: "s-1", result: "kept" }),
+  ]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(outputOf(result).result, "kept");
+  assert.equal(implementReplyOf(f), "kept");
+});
+
+test("implement stops with child-failed whose detail starts with the no result event sentence when claude prints no turn result", () => {
+  for (const lines of [[JSON.stringify({ type: "assistant", message: { content: "x" } })], []]) {
+    const { result } = implementPrinting(lines);
+    const out = assertStopped(result, "child-failed");
+    assert.ok(String(out.detail).startsWith("claude -p printed no result event."), String(out.detail));
+  }
+});
+
+test("implement, repair, reread, and continue start claude with --output-format stream-json --verbose, and the two review sessions with --output-format json and no --verbose", () => {
+  const streamed = (args: string[], label: string) => {
+    assert.equal(flagValue(args, "--output-format"), "stream-json", label);
+    assert.ok(args.includes("--verbose"), label);
+  };
+  const argsIn = (f: Fixture, name: string): string[] => readFileSync(join(f.logs, name), "utf8").split("\n");
+
+  const f = rejected();
+  streamed(argsIn(f, "args"), "implement");
+  for (const side of ["self", "independent"]) {
+    const { args } = callOf(f, side);
+    assert.equal(flagValue(args, "--output-format"), "json", side);
+    assert.ok(!args.includes("--verbose"), side);
+  }
+  fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
+  assert.equal(repair(f).status, 0);
+  streamed(argsIn(f, "repair-args"), "repair");
+
+  const rereadAt = agreedAfterChange();
+  fakeRereader(rereadAt, PASS_CHECK + REREAD_REPLY);
+  assert.equal(reread(rereadAt).status, 0);
+  streamed(argsIn(rereadAt, "reread-args"), "reread");
+
+  const continued = unfinished();
+  fakeContinuer(continued, PASS_CHECK + CONTINUE_REPLY);
+  assert.equal(continueWork(continued).status, 0);
+  streamed(argsIn(continued, "continue-args"), "continue");
+});
+
+test("the next round's independent review gets the repair's replies of both turns joined by a blank line", () => {
+  const f = rejected();
+  fakeRepairer(f, PASS_CHECK + printing(f, TWO_TURNS));
+  assert.equal(repair(f).status, 0);
+  fakeReviewer(f, BOTH_OPEN);
+  reviewOut(f);
+  const paragraph = `The implementing session replied to the earlier findings as follows. Treat the reply as a claim to check, not as a fact.\n\n${JOINED_REPLY}`;
+  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), paragraph));
 });
