@@ -9,11 +9,9 @@ const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(TEST_DIR, "..");
 
 const BIOME_SUPPRESSION = /(\/\/|\/\*)\s*biome-ignore(-all|-start)?\s+lint(\/[\w/]+)?\s*:/;
-const OXLINT_SUPPRESSION =
-  /(\/\/|\/\*)\s*(oxlint|eslint)-disable(-next-line|-line)?\b[^\n]*max-depth/;
 
 function suppressionIn(source) {
-  const match = BIOME_SUPPRESSION.exec(source) || OXLINT_SUPPRESSION.exec(source);
+  const match = BIOME_SUPPRESSION.exec(source);
   return match ? match[0] : null;
 }
 
@@ -35,7 +33,6 @@ const NESTED_FUNCTION = `export const nested = (a, b, c, d) => {
 const OTHER_FORMS = [
   ["// biome-", "ignore-all lint/complexity/noExcessiveCognitiveComplexity: whole file\n"].join(""),
   ["// biome-", "ignore-start lint: range\n"].join(""),
-  ["// oxlint-", "disable-next-line max-depth\n"].join(""),
 ];
 
 test('T-011 a file carrying the bare "biome-ignore lint:" comment is reported by the suppression scan', () => {
@@ -46,7 +43,7 @@ test("T-012 the same file with the comment removed is not reported", () => {
   assert.equal(suppressionIn(NESTED_FUNCTION), null);
 });
 
-test("T-013 the biome-ignore-all, biome-ignore-start, and oxlint-disable-next-line max-depth forms are each reported", () => {
+test("T-013 the biome-ignore-all and biome-ignore-start forms are each reported", () => {
   for (const form of OTHER_FORMS) {
     assert.ok(suppressionIn(form + NESTED_FUNCTION), `not reported: ${form.trim()}`);
   }

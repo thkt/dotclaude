@@ -54,21 +54,3 @@ test("T-018 no tracked .js or .ts file is hidden from Biome by .gitignore", () =
     .filter((file) => /\.(js|mjs|cjs|jsx|ts|mts|cts|tsx)$/.test(file));
   assert.deepEqual(ignoredTracked, []);
 });
-
-const BIOME_JSON = path.join(ROOT, "biome.json");
-const OXLINTRC = path.join(ROOT, ".oxlintrc.json");
-
-function nestingRuleLevels() {
-  const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
-  const oxlintConfig = JSON.parse(readFileSync(OXLINTRC, "utf8"));
-  const override = oxlintConfig.overrides.find((entry) => entry.files.includes("workflows/*.js"));
-  assert.ok(override, "no override in .oxlintrc.json matches workflows/*.js");
-  return {
-    biome: biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity.level,
-    oxlint: override.rules["max-depth"][0],
-  };
-}
-
-test("T-024 biome.json and .oxlintrc.json both hold their nesting rule at error", () => {
-  assert.deepEqual(nestingRuleLevels(), { biome: "error", oxlint: "error" });
-});

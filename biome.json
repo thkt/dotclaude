@@ -8,8 +8,6 @@
   "files": {
     "includes": [
       "**",
-      "!workflows/*.js",
-      "!.ja/workflows/*.js",
       "!plugins/**",
       "!bridge-spawn",
       "!seed-admin"

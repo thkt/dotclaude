@@ -4,39 +4,10 @@
     "plugins/**",
     "node_modules/**"
   ],
-  "globals": {
-    "agent": "readonly",
-    "parallel": "readonly",
-    "pipeline": "readonly",
-    "phase": "readonly",
-    "log": "readonly",
-    "workflow": "readonly",
-    "args": "readonly",
-    "budget": "readonly"
-  },
   "rules": {
     "no-unused-vars": "error"
   },
   "overrides": [
-    {
-      "files": [
-        "workflows/*.js",
-        ".ja/workflows/*.js"
-      ],
-      "rules": {
-        "func-style": [
-          "error",
-          "expression"
-        ],
-        "prefer-arrow-callback": "error",
-        "no-var": "error",
-        "no-undef": "error",
-        "max-depth": [
-          "error",
-          3
-        ]
-      }
-    },
     {
       "files": [
         "**/*.ts"
