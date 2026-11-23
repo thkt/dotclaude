@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { type ChildOutcome, type ChildRun, endAll as endChildren, GIVE_REPLY, runClaudeOnce } from "../../skills/implement/scripts/claude-child.ts";
 import { makeSlots, parseArgv, resolveWorkflowPath } from "./codex-run.ts";
-import { isMainModule } from "./entry-point.ts";
+import { isMainModule } from "../../skills/_lib/entry-point.ts";
 import { canonical, endRunningGroups, publicFields, runSpec } from "./relay.ts";
 import type { Spec } from "./relay.ts";
 import { runWorkflow } from "./run-workflow.ts";

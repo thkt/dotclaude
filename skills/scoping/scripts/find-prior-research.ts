@@ -3,7 +3,7 @@
 
 import { lstatSync, readFileSync, readdirSync, realpathSync } from "node:fs";
 import { basename, isAbsolute, join, relative, sep } from "node:path";
-import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { isMainModule } from "../../_lib/entry-point.ts";
 
 const DATE_PREFIX = /^\d{4}-\d{2}-\d{2}-/;
 

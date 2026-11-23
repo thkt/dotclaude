@@ -392,8 +392,8 @@ test("no tracked file outside the records and the absence tests names a retired 
     "README.md",
     ".ja/docs/COMMANDS.md",
     "docs/SPEC.md",
-    "workflows/_lib/cli.ts",
-    ".ja/workflows/_lib/cli.ts",
+    "skills/_lib/cli.ts",
+    ".ja/skills/_lib/cli.ts",
     "pyrightconfig.json",
     "workflows/_lib/tests/retirement.test.ts",
   ]) {

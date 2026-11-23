@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
+import { runCli } from "../../_lib/tests/_cli-fixture.ts";
 import { STATUS_SECTIONS } from "../scripts/update-index.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));

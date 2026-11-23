@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { assertStdoutShape, fixture, runCli } from "../../../workflows/_lib/tests/_cli-fixture.ts";
-import { withTempRepo } from "../../../workflows/_lib/tests/_git-repo.ts";
+import { assertStdoutShape, fixture, runCli } from "../../_lib/tests/_cli-fixture.ts";
+import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
 import { formatScore, OUTPUT_KEYS } from "../scripts/pre-check.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
