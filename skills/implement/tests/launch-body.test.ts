@@ -52,7 +52,7 @@ import {
   rewriteLastIndependent,
 } from "./_launch-fixture.ts";
 
-test("body on an accepted and committed worktree writes the body to pr-body.md in the gate directory, returns the ten fields in order, starts no claude, and keeps launch.json and HEAD", () => {
+test("body on an accepted and committed worktree writes the body to pr-body.md in the gate directory, returns the eleven fields in order, starts no claude, and keeps launch.json and HEAD", () => {
   const f = committed();
   fakeRounds(f, {});
   const before = launchFile(f);
@@ -70,6 +70,7 @@ test("body on an accepted and committed worktree writes the body to pr-body.md i
     ["tree", lastReview(f).tree],
     ["body_file", bodyFileOf(f)],
     ["body_digest", createHash("sha256").update(readFileSync(bodyFileOf(f))).digest("hex")],
+    ["media", []],
     ["launch_file", launchPathOf(f)],
   ]);
   assert.equal(readFileSync(bodyFileOf(f), "utf8"), text);
