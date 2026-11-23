@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(HERE, "..", "..", "..");
+const REPO_ROOT = join(HERE, "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
 interface Exclusion {

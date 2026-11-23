@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(TEST_DIR, "..", "..");
+const ROOT = path.resolve(TEST_DIR, "..");
 const BIOME_BIN = path.join(ROOT, "node_modules", ".bin", "biome");
 const OXLINT_BIN = path.join(ROOT, "node_modules", ".bin", "oxlint");
 const TEST_YML = path.join(ROOT, ".github", "workflows", "test.yml");

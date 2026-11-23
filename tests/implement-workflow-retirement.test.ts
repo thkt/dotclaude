@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(HERE, "..", "..", "..");
+const REPO_ROOT = join(HERE, "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
 
 const REMOVED_FILES = [
@@ -42,8 +42,8 @@ const RETIRED_NAMES = [
 
 const EXAMPLE_HOLDERS = [
   SELF_PATH,
-  "workflows/_lib/tests/build-path-retirement.test.ts",
-  "workflows/_lib/tests/retirement.test.ts",
+  "tests/build-path-retirement.test.ts",
+  "tests/retirement.test.ts",
 ];
 
 const jsFilesIn = (dir: string) => readdirSync(dir).filter((name) => name.endsWith(".js"));

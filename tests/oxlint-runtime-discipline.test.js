@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(TEST_DIR, "..", "..");
+const ROOT = path.resolve(TEST_DIR, "..");
 const OXLINT_BIN = path.join(ROOT, "node_modules", ".bin", "oxlint");
 const OXLINTRC = path.join(ROOT, ".oxlintrc.json");
 

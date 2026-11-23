@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { offendersAmong, trackedFiles } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(HERE, "..", "..", "..");
+const REPO_ROOT = join(HERE, "..");
 
 const REMOVED_PATHS = [
   "skills/think",
@@ -113,7 +113,7 @@ test("no path the build-path retirement removed exists on the English side or un
   assert.deepEqual(present, [], `removed paths still on disk: ${present.join(", ")}`);
 });
 
-const THIS_FILE = "workflows/_lib/tests/build-path-retirement.test.ts";
+const THIS_FILE = "tests/build-path-retirement.test.ts";
 const ABSENCE_TESTS = [
   "skills/implement/tests/workflow-contract.test.js",
   "workflows/_lib/tests/codex-run.test.js",
@@ -395,14 +395,14 @@ test("no tracked file outside the records and the absence tests names a retired 
     "skills/_lib/cli.ts",
     ".ja/skills/_lib/cli.ts",
     "pyrightconfig.json",
-    "workflows/_lib/tests/retirement.test.ts",
+    "tests/retirement.test.ts",
   ]) {
     assert.ok(scanned.includes(path), `the scan reaches ${path}`);
   }
   for (const path of [
     THIS_FILE,
     "docs/decisions/0128-retire-the-plan-based-build-path-for-scoping-and-implement.md",
-    "workflows/_lib/tests/pr-body-retirement.test.ts",
+    "tests/pr-body-retirement.test.ts",
     ...ABSENCE_TESTS,
   ]) {
     assert.ok(!scanned.includes(path), `the scan leaves out ${path}`);
@@ -493,7 +493,7 @@ test("the wiki and scribe predicate flags each retired name written in a fixture
 test("no tracked file outside the records and this file names docs/wiki, skills/scribe, /scribe, find_wiki_rule or a removed wiki and scribe hook", () => {
   const files = trackedFiles(REPO_ROOT);
   for (const path of [
-    "workflows/_lib/tests/pr-body-retirement.test.ts",
+    "tests/pr-body-retirement.test.ts",
     "hooks/pre-bash/tests/pre-bash-skill-hooks-retirement.test.ts",
     ...ABSENCE_TESTS,
   ]) {

@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(TEST_DIR, "..", "..");
+const ROOT = path.resolve(TEST_DIR, "..");
 
 const BIOME_SUPPRESSION = /(\/\/|\/\*)\s*biome-ignore(-all|-start)?\s+lint(\/[\w/]+)?\s*:/;
 const OXLINT_SUPPRESSION =
