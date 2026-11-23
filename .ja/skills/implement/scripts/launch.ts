@@ -223,8 +223,19 @@ ${reply}`;
 const JUDGE_EARLIER =
   "Judge each earlier finding against the current change. In `previous`, return exactly one entry for every `key`. `state` is `fixed` when the problem no longer occurs, `open` when it still occurs, and `withdrawn` when you now judge that the finding did not hold. `reason` says what you checked and what you saw. Do not repeat an earlier finding in `findings`. `findings` is for problems the earlier rounds did not report.";
 
-const reviewPrompt = (opening: string, judging: string[], published: string[]): string =>
-  [opening, ...judging, REVIEW_POINTS, ...published, REVIEW_CLOSING].join("\n\n");
+const capturedParagraph = (destination: string, files: unknown, changedAfter: boolean): string => {
+  const dir = destination.replace(/\/+$/, "");
+  const names = (Array.isArray(files) ? files : []).map((file) => objectOf(file)?.name).filter((name) => typeof name === "string");
+  const paths = names.map((name) => `${dir}/${name}`).join(", ");
+  const changed = changedAfter ? " The working tree changed after that capture only in Markdown files and saved records, which need no new capture." : "";
+  return `This repository configures a capture. launch.ts ran it on this change and installed its media under ${destination}: ${paths}. Open each image file and confirm that what it shows corresponds to the current code and to the screens and operations the Issue asks for. A video file cannot be opened here, so for a video read the capture definition that records it and confirm that the definition corresponds to the current code.${changed}`;
+};
+
+const notCapturedParagraph = (destination: string, base: string): string =>
+  `This repository configures a capture, and launch.ts did not run it, because the change touches only plain Markdown files. Any media under ${destination} are unchanged from commit ${base}.`;
+
+const reviewPrompt = (opening: string, captured: string[], judging: string[], published: string[]): string =>
+  [opening, ...captured, ...judging, REVIEW_POINTS, ...published, REVIEW_CLOSING].join("\n\n");
 
 type Flags = Record<string, string>;
 type Result = Record<string, unknown> & { ok: boolean };
@@ -889,6 +900,24 @@ const changeDuringReviews = (tree: string | null, after: string | null, launch: 
     ? issueChange(launch, worktree)
     : { reason: "tree-changed", detail: `The working tree was ${tree} before the reviews and ${after} after them.` };
 
+const capturedReviewOf = (worktree: string, stored: Record<string, unknown>, launch: Launch, tree: string | null): string | null | Problem => {
+  const config = captureConfigOf(worktree, launch.base);
+  if (config === null || "reason" in config) return null;
+  if (tree === null) return { reason: "capture-unavailable", detail: `The working tree of ${worktree} has no tree id.` };
+  const passed = lastPassedOf(Array.isArray(stored.captures) ? stored.captures : []);
+  const decision = captureDecisionOf(worktree, launch.base, config, tree, passed);
+  if (decision === "reused" && passed !== null) return capturedParagraph(config.destination, passed.files, passed.installed !== tree);
+  if (decision === "not_required") return notCapturedParagraph(config.destination, launch.base);
+  const detail = `The capture setting of the base commit requires a capture of the working tree ${tree} of ${worktree}. Call capture, then review again.`;
+  return { reason: "not-captured", detail };
+};
+
+const reviewStartOf = (worktree: string, stored: Record<string, unknown>, launch: Launch, tree: string | null): string[] | Problem => {
+  const captured = capturedReviewOf(worktree, stored, launch, tree);
+  if (typeof captured === "object" && captured !== null) return captured;
+  return issueChange(launch, worktree) ?? (captured === null ? [] : [captured]);
+};
+
 const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("review", reason, detail, extra);
@@ -900,8 +929,9 @@ const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   if (implemented === null) return stop("not-implemented", notImplemented(worktree, stored));
   const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
   if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`);
-  const changedBefore = issueChange(launch, worktree);
-  if (changedBefore !== null) return stop(changedBefore.reason, changedBefore.detail);
+  const tree = treeHash(gate.root);
+  const capturedParagraphs = reviewStartOf(worktree, stored, launch, tree);
+  if (!Array.isArray(capturedParagraphs)) return stop(capturedParagraphs.reason, capturedParagraphs.detail);
 
   const earlier = Array.isArray(stored.reviews) ? stored.reviews : [];
   const round = earlier.length + 1;
@@ -911,14 +941,13 @@ const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const judging = keys === null ? [] : [earlierParagraph(judged.map(earlierLine).join("\n"))];
   const closing = keys === null ? [] : [JUDGE_EARLIER];
 
-  const tree = treeHash(gate.root);
   const common = { model, effort: undefined, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, tools: REVIEW_TOOLS };
   const selfSchema = keys === null ? REVIEW_SCHEMA : JUDGING_SCHEMA;
   const independentSchema = keys === null ? INDEPENDENT_REVIEW_SCHEMA : INDEPENDENT_JUDGING_SCHEMA;
-  const selfPrompt = reviewPrompt(selfOpening(launch.issue, launch.base), [...judging, ...closing], []);
+  const selfPrompt = reviewPrompt(selfOpening(launch.issue, launch.base), capturedParagraphs, [...judging, ...closing], []);
   const independentJudging = [...judging, ...(reply === null ? [] : [replyParagraph(reply)]), ...closing];
   const independentOpened = independentOpening(launch.issue, launch.repository, launch.base);
-  const independentPrompt = reviewPrompt(independentOpened, independentJudging, [PUBLISHED_FIELDS]);
+  const independentPrompt = reviewPrompt(independentOpened, capturedParagraphs, independentJudging, [PUBLISHED_FIELDS]);
   const [self, independent] = await Promise.all([
     runReview({ ...common, schema: selfSchema, prompt: selfPrompt, resume: implemented, fork: true }, keys, null),
     runReview({ ...common, schema: independentSchema, prompt: independentPrompt }, keys, publishedCheck(gate.root, tree)),
