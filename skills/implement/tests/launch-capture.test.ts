@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import test from "node:test";
@@ -14,6 +15,8 @@ import {
   assertStopped,
   fakeClaude,
   fixture,
+  gateStatus,
+  git,
   implemented,
   isRunning,
   isolatedEnv,
@@ -35,7 +38,17 @@ const HARNESS = resolve(dirname(SCRIPT), "..", "..", "..", "workflows", "impleme
 
 const STOPPED_AFTER_START = ["action", "ok", "tree", "n", "output", "exit_code", "log_tail", "reason", "detail"];
 
-const RECORD_KEYS = ["n", "tree", "output", "outcome", "exit_code", "log_tail", "at"];
+const RECORD_KEYS = ["n", "tree", "output", "outcome", "exit_code", "log_tail", "files", "installed", "at"];
+
+const PASSED_FIELDS = ["action", "ok", "decision", "tree", "n", "output", "files", "installed"];
+
+const NOT_DONE_FIELDS = ["action", "ok", "tree", "n", "output", "files", "installed", "log_tail", "reason", "detail"];
+
+const COUNT_CHECK = '[ -z "$LOGS" ] || echo check >> "$LOGS/check-calls"';
+
+const PNG = Buffer.concat([Buffer.from("89504e470d0a1a0a", "hex"), Buffer.from("0123456789")]);
+
+const WRITE_PNG = 'cp "$LOGS/shot.png" "$last/list.png"\nexit 0\n';
 
 const TREE_DETAIL = /^The working tree was ([0-9a-f]{40}) before the capture and ([0-9a-f]{40}|null) after it\. A capture does not write into the checkout\.$/;
 
@@ -43,6 +56,7 @@ interface CaptureSetting {
   command?: string[];
   destination?: string;
   required?: boolean;
+  check?: string;
 }
 
 const settingOf = ({ command = [FAKE], destination = "media", required = true }: CaptureSetting) => ({ command, destination, required });
@@ -55,8 +69,9 @@ function fakeCapture(f: Fixture, body: string): void {
   );
 }
 
-function capturing(setting: CaptureSetting = {}, body = "exit 0\n"): Fixture {
-  const f = fixture({ ...CONFIG, capture: settingOf(setting) });
+function capturing(setting: CaptureSetting = {}, body = WRITE_PNG): Fixture {
+  const f = fixture({ ...CONFIG, check: setting.check ?? COUNT_CHECK, capture: settingOf(setting) });
+  writeFileSync(join(f.logs, "shot.png"), PNG);
   assert.equal(prepare(f).status, 0);
   fakeClaude(f, PASS_CHECK + SESSION_REPLY);
   assert.equal(run(f, ["implement", "--worktree", worktreeOf(f)]).status, 0);
@@ -112,6 +127,22 @@ const unchangedDecision = (f: Fixture, decision: string, n?: number): Record<str
 
 const allEnded = (pids: number[]) => waitFor(() => pids.every((pid) => !isRunning(pid)), 5_000);
 
+const checkCount = (f: Fixture): number =>
+  existsSync(join(f.logs, "check-calls")) ? readFileSync(join(f.logs, "check-calls"), "utf8").split("\n").filter(Boolean).length : 0;
+
+function committedInWorktree(f: Fixture, path: string, content: string | Buffer): void {
+  const file = join(worktreeOf(f), path);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, content);
+  git(worktreeOf(f), "add", path);
+  git(worktreeOf(f), "commit", "-q", "-m", `add ${path}`);
+  passCheck(f);
+}
+
+const listingOf = (f: Fixture, dir: string): string[] => readdirSync(join(worktreeOf(f), dir)).sort();
+
+const CHECK_FAILS_WITH_MEDIA = `${COUNT_CHECK}\n[ ! -e media/list.png ]`;
+
 test("capture stops before starting the command and keeps launch.json when the session has not finished, the check has not passed, or the base has no capture setting", () => {
   const f = fixture({ ...CONFIG, capture: settingOf({}) });
   assert.equal(prepare(f).status, 0);
@@ -154,7 +185,7 @@ test("capture with a null capture setting succeeds with three fields, keeps laun
 test("a required capture runs the command in the worktree with {harness} replaced and an empty output directory, and records one passed capture", () => {
   const f = capturing({ command: [FAKE, "{harness}/a:{harness}/b"] });
   const out = succeeded(f);
-  assert.deepEqual(Object.keys(out), ["action", "ok", "decision", "tree", "n", "output"]);
+  assert.deepEqual(Object.keys(out), PASSED_FIELDS);
   assert.equal(out.decision, "execute");
   assert.equal(out.n, 1);
   assert.equal(out.output, outputPathOf(f, 1));
@@ -167,7 +198,17 @@ test("a required capture runs the command in the worktree with {harness} replace
   assert.deepEqual(Object.keys(captures[0]), RECORD_KEYS);
   assert.deepEqual(
     { ...captures[0], at: undefined },
-    { n: 1, tree: out.tree, output: outputPathOf(f, 1), outcome: "passed", exit_code: 0, log_tail: "", at: undefined },
+    {
+      n: 1,
+      tree: out.tree,
+      output: outputPathOf(f, 1),
+      outcome: "passed",
+      exit_code: 0,
+      log_tail: "",
+      files: out.files,
+      installed: out.installed,
+      at: undefined,
+    },
   );
   assert.ok(!Number.isNaN(Date.parse(String(captures[0].at))));
 });
@@ -178,7 +219,7 @@ for (const required of [true, false]) {
     assert.equal(succeeded(f).decision, "execute");
     const out = unchangedDecision(f, "reused", 1);
     assert.deepEqual(Object.keys(out), ["action", "ok", "decision", "tree", "n"]);
-    assert.equal(out.tree, capturesOf(f)[0].tree);
+    assert.equal(out.tree, capturesOf(f)[0].installed);
   });
 }
 
@@ -189,9 +230,9 @@ test("a passed capture before a failed last capture is not reused when the tree 
   fakeCapture(f, "exit 1\n");
   assertStopped(captureAt(f), "capture-failed");
   writeChecked(f, "README.md", "readme\n");
-  fakeCapture(f, "exit 0\n");
+  fakeCapture(f, WRITE_PNG);
   const out = succeeded(f);
-  assert.equal(out.tree, first.tree);
+  assert.equal(out.tree, first.installed);
   assert.equal(out.decision, "execute");
   assert.equal(out.n, 3);
   assert.equal(out.output, outputPathOf(f, 3));
@@ -220,7 +261,7 @@ test("after a passed capture, a change of only .md files or record files beside 
   unchangedDecision(f, "reused", 1);
   writeChecked(f, "trial/evidence/run.json", "{}\n");
   const out = unchangedDecision(f, "reused", 1);
-  assert.notEqual(out.tree, capturesOf(f)[0].tree);
+  assert.notEqual(out.tree, capturesOf(f)[0].installed);
 });
 
 test("decision is execute for a non-.md change, an executable .md, a capture definition, a record file with no passed capture, a .json under the destination, and an empty diff", () => {
@@ -228,7 +269,6 @@ test("decision is execute for a non-.md change, an executable .md, a capture def
   assert.equal(succeeded(f).decision, "execute");
   writeChecked(f, "trial/evidence/media/shot.json", "{}\n");
   assert.equal(succeeded(f).decision, "execute");
-  removeChecked(f, "trial/evidence/media/shot.json");
   const changes: [string, number][] = [
     ["src.ts", 0o644],
     ["script.md", 0o755],
@@ -238,6 +278,7 @@ test("decision is execute for a non-.md change, an executable .md, a capture def
   ];
   for (const [path, mode] of changes) {
     rewriteLaunch(f, (stored) => ({ ...stored, captures: [] }));
+    rmSync(join(worktreeOf(f), "trial/evidence/media"), { recursive: true, force: true });
     writeChecked(f, path, "changed\n", mode);
     assert.equal(succeeded(f).decision, "execute", path);
     removeChecked(f, path);
@@ -340,7 +381,7 @@ test("a capture past the time limit stops with capture-timeout and leaves no com
 });
 
 test("LAUNCH_CAPTURE_TIMEOUT_MS that is not a positive integer up to 2147483647 falls back to 570000 ms", () => {
-  const f = capturing({}, "sleep 0.3\nexit 0\n");
+  const f = capturing({}, `sleep 0.3\n${WRITE_PNG}`);
   for (const value of ["0", "abc", "1.5", "2147483648"]) {
     rewriteLaunch(f, (stored) => ({ ...stored, captures: [] }));
     assert.equal(succeeded(f, { LAUNCH_CAPTURE_TIMEOUT_MS: value }).decision, "execute", value);
@@ -424,4 +465,156 @@ test("capture with a flag other than --worktree prints the usage on stderr, noth
   assert.equal(result.stdout, "");
   assert.ok(result.stderr.includes("       launch.ts capture --worktree <abs path>\n"), result.stderr);
   assert.equal(callCount(f), 0);
+});
+
+test("a passed capture installs its media into the destination in place of the earlier contents, and records the files and the installed tree", () => {
+  const f = capturing();
+  committedInWorktree(f, "media/old.png", PNG);
+  const out = succeeded(f);
+  assert.deepEqual(Object.keys(out), PASSED_FIELDS);
+  assert.deepEqual(listingOf(f, "media"), ["list.png"]);
+  assert.deepEqual(readFileSync(join(worktreeOf(f), "media/list.png")), PNG);
+  const sha256 = createHash("sha256").update(PNG).digest("hex");
+  assert.deepEqual(out.files, [{ name: "list.png", size: PNG.length, sha256 }]);
+  const [record] = capturesOf(f);
+  assert.deepEqual(Object.keys(record), RECORD_KEYS);
+  assert.deepEqual(record.files, out.files);
+  assert.equal(record.installed, out.installed);
+  assert.match(String(out.installed), /^[0-9a-f]{40}$/);
+  assert.notEqual(out.installed, out.tree);
+  assert.equal(out.installed, unchangedDecision(f, "reused", 1).tree);
+});
+
+test("when the install changes the tree, capture runs the check once and done_gate.ts status then exits 0", () => {
+  const f = capturing();
+  committedInWorktree(f, "media/old.png", PNG);
+  const before = checkCount(f);
+  succeeded(f);
+  assert.equal(checkCount(f) - before, 1);
+  const status = gateStatus(worktreeOf(f));
+  assert.equal(status.status, 0, `${status.stdout}${status.stderr}`);
+});
+
+test("when the install leaves the tree unchanged, capture runs no check and installed equals tree", () => {
+  const f = capturing();
+  committedInWorktree(f, "media/list.png", PNG);
+  const before = checkCount(f);
+  const out = succeeded(f);
+  assert.equal(out.installed, out.tree);
+  assert.equal(checkCount(f) - before, 0);
+});
+
+test("a check that fails after the install stops with not-done and ten fields, keeps the passed record, and the next capture stops with not-done before starting the command", () => {
+  const f = capturing({ check: CHECK_FAILS_WITH_MEDIA });
+  const out = assertStopped(captureAt(f), "not-done");
+  assert.deepEqual(Object.keys(out), NOT_DONE_FIELDS);
+  assert.equal(out.detail, "done_gate.ts check did not pass after the media were installed.");
+  const [record] = capturesOf(f);
+  assert.equal(record.outcome, "passed");
+  assert.equal(record.installed, out.installed);
+  assert.deepEqual(record.files, out.files);
+  const calls = callCount(f);
+  const text = launchFile(f);
+  const again = assertStopped(captureAt(f), "not-done");
+  assert.ok(String(again.detail).startsWith("done_gate.ts status is not done: "), String(again.detail));
+  assert.equal(callCount(f), calls);
+  assert.equal(launchFile(f), text);
+});
+
+test("launch.ts ended by SIGTERM during the check after the install exits 143 with nothing on stdout, ends the check and its child, and keeps the installed record", async () => {
+  const waiting = 'if [ -e media/list.png ]; then echo $$ >> "$LOGS/check-pids"; sleep 60 & echo $! >> "$LOGS/check-pids"; wait; fi';
+  const f = capturing({ check: waiting });
+  const child = spawn(SCRIPT, ["capture", "--worktree", worktreeOf(f)], {
+    stdio: ["ignore", "pipe", "pipe"],
+    env: isolatedEnv({ PATH: `${f.bin}:${process.env.PATH}`, LOGS: f.logs, NODE: process.execPath, DONE_GATE }),
+  });
+  let stdout = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk: string) => {
+    stdout += chunk;
+  });
+  const closed = new Promise<number | null>((done) => child.on("close", (code) => done(code)));
+  try {
+    assert.ok(await waitFor(() => pidsIn(f, "check-pids").length >= 2, 20_000), "the check started");
+    child.kill("SIGTERM");
+    assert.equal(await closed, 143);
+    assert.equal(stdout, "");
+    const pids = pidsIn(f, "check-pids");
+    assert.ok(await allEnded(pids), `still running: ${pids.filter(isRunning).join(" ")}`);
+    assert.equal(typeof capturesOf(f).at(-1)?.installed, "string");
+  } finally {
+    if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+    for (const pid of pidsIn(f, "check-pids")) {
+      try {
+        process.kill(pid, "SIGKILL");
+      } catch {}
+    }
+  }
+});
+
+test("the reuse decision compares the current tree with the installed tree, so an unchanged worktree after an install that changed the tree is reused", () => {
+  const f = capturing();
+  const first = succeeded(f);
+  assert.notEqual(first.installed, first.tree);
+  const out = unchangedDecision(f, "reused", 1);
+  assert.equal(out.tree, first.installed);
+});
+
+test("a passed capture without installed is not the last passed capture, so a required capture executes even on its tree", () => {
+  const f = capturing();
+  const first = succeeded(f);
+  rewriteLaunch(f, (stored) => {
+    const captures = [...(stored.captures as Record<string, unknown>[])];
+    const { installed, ...rest } = captures[captures.length - 1];
+    captures[captures.length - 1] = { ...rest, tree: installed };
+    return { ...stored, captures };
+  });
+  assert.equal(first.installed, capturesOf(f).at(-1)?.tree);
+  const out = succeeded(f);
+  assert.equal(out.decision, "execute");
+  assert.equal(out.n, 2);
+});
+
+test("after a passed capture, changing the installed media under the destination is execute", () => {
+  const f = capturing({ required: false });
+  succeeded(f);
+  writeChecked(f, "media/list.png", "changed bytes\n");
+  assert.equal(succeeded(f).decision, "execute");
+});
+
+test("an empty output stops with invalid-capture, records invalid_media without files or installed, leaves the destination, and runs no check", () => {
+  const f = capturing({}, "exit 0\n");
+  committedInWorktree(f, "media/old.png", PNG);
+  const before = checkCount(f);
+  const out = assertStopped(captureAt(f), "invalid-capture");
+  assert.deepEqual(Object.keys(out), STOPPED_AFTER_START);
+  assert.equal(out.detail, `The capture output ${outputPathOf(f, 1)} was not installed: Capture succeeded without required media`);
+  const [record] = capturesOf(f);
+  assert.equal(record.outcome, "invalid_media");
+  assert.deepEqual(Object.keys(record), ["n", "tree", "output", "outcome", "exit_code", "log_tail", "at"]);
+  assert.deepEqual(listingOf(f, "media"), ["old.png"]);
+  assert.equal(checkCount(f) - before, 0);
+});
+
+test("media whose first bytes do not match the extension stop with invalid-capture naming the file", () => {
+  const f = capturing({}, 'echo "not a png file" > "$last/list.png"\nexit 0\n');
+  const out = assertStopped(captureAt(f), "invalid-capture");
+  assert.ok(String(out.detail).includes("list.png"), String(out.detail));
+  assert.equal(capturesOf(f).at(-1)?.outcome, "invalid_media");
+});
+
+test("a destination git ignores stops with capture-media-ignored and records media_ignored", () => {
+  const f = capturing();
+  writeChecked(f, ".gitignore", "media/\n");
+  const out = assertStopped(captureAt(f), "capture-media-ignored");
+  assert.deepEqual(Object.keys(out), STOPPED_AFTER_START);
+  assert.equal(out.detail, `git ignores the capture destination media in ${worktreeOf(f)}, so the media would not be in the reviewed tree.`);
+  assert.equal(capturesOf(f).at(-1)?.outcome, "media_ignored");
+});
+
+test("an install result that cannot be read stops with invalid-capture whose detail ends with the unreadable result sentence", () => {
+  const f = capturing({ destination: "README.md/media" });
+  const out = assertStopped(captureAt(f), "invalid-capture");
+  assert.deepEqual(Object.keys(out), STOPPED_AFTER_START);
+  assert.ok(String(out.detail).endsWith("Could not get the media install result."), String(out.detail));
+  assert.equal(capturesOf(f).at(-1)?.outcome, "invalid_media");
 });

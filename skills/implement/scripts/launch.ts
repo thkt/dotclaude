@@ -1755,6 +1755,7 @@ const CAPTURE_TIMEOUT_MS = 570_000;
 const CAPTURE_KILL_DELAY_MS = 2_000;
 const LONGEST_TIMER_MS = 2_147_483_647;
 const HARNESS = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "workflows", "implement", "harness");
+const INSTALLER = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "workflows", "implement", "install-media.ts");
 const OUTPUT_SIBLINGS = ["", ".artifacts", ".config.mjs", ".report.json"];
 const DIFF_LINE = /^:(\d{6}) (\d{6}) [0-9a-f]+ [0-9a-f]+ [A-Z]\d*\t(.+)$/;
 const UNRENDERED_MODES = ["000000", "100644"];
@@ -1766,7 +1767,7 @@ interface CaptureConfig {
   required: boolean;
 }
 
-type PassedCapture = Record<string, unknown> & { tree: string };
+type PassedCapture = Record<string, unknown> & { installed: string };
 
 type CaptureDecision = "reused" | "not_required" | "execute";
 
@@ -1795,7 +1796,7 @@ const captureConfigOf = (worktree: string, base: string): CaptureConfig | null |
 
 const lastPassedOf = (captures: unknown[]): PassedCapture | null => {
   const last = objectOf(captures[captures.length - 1]);
-  return last !== null && last.outcome === "passed" && typeof last.tree === "string" ? (last as PassedCapture) : null;
+  return last !== null && last.outcome === "passed" && typeof last.installed === "string" ? (last as PassedCapture) : null;
 };
 
 const definitionsOf = (command: string[]): string[] =>
@@ -1821,9 +1822,9 @@ const needsNoRecapture = (line: string, capture: CaptureConfig, afterPassed: boo
 };
 
 const captureDecisionOf = (worktree: string, base: string, capture: CaptureConfig, tree: string, passed: PassedCapture | null): CaptureDecision => {
-  if (passed?.tree === tree) return "reused";
+  if (passed?.installed === tree) return "reused";
   if (capture.required) return "execute";
-  const diff = runQuiet("git", ["diff-tree", "-r", "--no-renames", passed?.tree ?? `${base}^{tree}`, tree], worktree);
+  const diff = runQuiet("git", ["diff-tree", "-r", "--no-renames", passed?.installed ?? `${base}^{tree}`, tree], worktree);
   if (diff.status !== 0) return "execute";
   const lines = diff.stdout.split("\n").filter((line) => line !== "");
   if (lines.length === 0 || !lines.every((line) => needsNoRecapture(line, capture, passed !== null))) return "execute";
@@ -1853,10 +1854,11 @@ const signalGroup = (pid: number, signal: NodeJS.Signals): void => {
   } catch {}
 };
 
-const shoot = (argv: string[], cwd: string, timeoutMs: number): Promise<Shot | { error: string }> =>
+const runInGroup = (argv: string[], cwd: string, timeoutMs: number | null): Promise<Shot | { error: string }> =>
   new Promise((done) => {
     const [file, ...args] = argv;
     const child = spawn(file, args, { cwd, stdio: ["ignore", "pipe", "pipe"], detached: true });
+    if (typeof child.pid === "number") captureGroup = child.pid;
     let text = "";
     const collect = (chunk: string) => {
       text += chunk;
@@ -1865,15 +1867,16 @@ const shoot = (argv: string[], cwd: string, timeoutMs: number): Promise<Shot | {
     child.stderr.setEncoding("utf8").on("data", collect);
     let started = false;
     child.on("error", (error) => {
-      if (!started) done({ error: error.message });
+      if (started) return;
+      captureGroup = null;
+      done({ error: error.message });
     });
     child.once("spawn", () => {
       started = true;
       const pid = child.pid as number;
-      captureGroup = pid;
       let timedOut = false;
       let killed: Promise<void> = Promise.resolve();
-      const timer = setTimeout(() => {
+      const timer = timeoutMs === null ? undefined : setTimeout(() => {
         timedOut = true;
         signalGroup(pid, "SIGTERM");
         killed = new Promise((wake) =>
@@ -1912,6 +1915,69 @@ const shotOutcomeOf = (shot: Shot, tree: string, after: string | null, timeoutMs
   return { outcome: "passed", stop: null };
 };
 
+const installMedia = (output: string, worktree: string, destination: string): { files: unknown[] } | { outcome: string; stop: Problem } => {
+  const installed = runQuiet(process.execPath, [INSTALLER, output, worktree, destination], worktree);
+  const result = parseObject(installed.stdout ?? "");
+  if (result?.ok === true && Array.isArray(result.files)) return { files: result.files };
+  if (result?.reason === "ignored") {
+    const detail = `git ignores the capture destination ${destination} in ${worktree}, so the media would not be in the reviewed tree.`;
+    return { outcome: "media_ignored", stop: { reason: "capture-media-ignored", detail } };
+  }
+  const reason = typeof result?.reason === "string" ? result.reason : "Could not get the media install result.";
+  return { outcome: "invalid_media", stop: { reason: "invalid-capture", detail: `The capture output ${output} was not installed: ${reason}` } };
+};
+
+interface Shooting {
+  worktree: string;
+  root: string;
+  launchPath: string;
+  stored: Record<string, unknown>;
+  captures: unknown[];
+  destination: string;
+  decision: CaptureDecision;
+  tree: string;
+  n: number;
+  output: string;
+  timeoutMs: number;
+}
+
+const failedCheckTail = async (worktree: string): Promise<string | null> => {
+  const checked = await runInGroup([process.execPath, DONE_GATE, "check"], worktree, null);
+  if ("error" in checked) return checked.error;
+  return checked.code === 0 ? null : logTailOf(checked.text);
+};
+
+const settleShot = async (shot: Shot, { worktree, root, launchPath, stored, captures, destination, decision, tree, n, output, timeoutMs }: Shooting): Promise<Result> => {
+  const exitCode = shot.timedOut ? null : shot.code;
+  const record = (outcome: string, extra: Record<string, unknown> = {}) => {
+    const entry = { n, tree, output, outcome, exit_code: exitCode, log_tail: outcome === "passed" ? "" : logTailOf(shot.text), ...extra, at: new Date().toISOString() };
+    writeFileSync(launchPath, `${JSON.stringify({ ...stored, captures: [...captures, entry] }, null, 2)}\n`);
+    return entry;
+  };
+  const stopAfterStart = (outcome: string, { reason, detail }: Problem) => {
+    const entry = record(outcome);
+    return stopped("capture", reason, detail, { tree, n, output, exit_code: entry.exit_code, log_tail: entry.log_tail });
+  };
+
+  const shotResult = shotOutcomeOf(shot, tree, treeHash(root), timeoutMs);
+  if (shotResult.stop !== null) return stopAfterStart(shotResult.outcome, shotResult.stop);
+  const media = installMedia(output, worktree, destination);
+  if ("stop" in media) return stopAfterStart(media.outcome, media.stop);
+  const installed = treeHash(root);
+  if (installed === null) {
+    const detail = `The working tree of ${worktree} has no tree id after the media were installed.`;
+    return stopAfterStart("unavailable", { reason: "capture-unavailable", detail });
+  }
+  const { files } = media;
+  record("passed", { files, installed });
+  const logTail = installed === tree ? null : await failedCheckTail(worktree);
+  if (logTail !== null) {
+    const detail = "done_gate.ts check did not pass after the media were installed.";
+    return stopped("capture", "not-done", detail, { tree, n, output, files, installed, log_tail: logTail });
+  }
+  return { action: "capture", ok: true, decision, tree, n, output, files, installed };
+};
+
 const capture = async ({ worktree }: WorktreeCall): Promise<Result> => {
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("capture", reason, detail, extra);
@@ -1943,22 +2009,10 @@ const capture = async ({ worktree }: WorktreeCall): Promise<Result> => {
   if (unprepared !== null) return stop("capture-unavailable", `The capture output directory ${output} could not be prepared: ${unprepared}`);
   const timeoutMs = captureTimeoutMs();
   const argv = [...config.command.map((part) => part.replaceAll("{harness}", HARNESS)), output];
-  const shot = await shoot(argv, worktree, timeoutMs);
+  const shot = await runInGroup(argv, worktree, timeoutMs);
   if ("error" in shot) return stop("capture-unavailable", `The capture command could not start: ${shot.error}`);
 
-  const { outcome, stop: shotStop } = shotOutcomeOf(shot, tree, treeHash(gate.root), timeoutMs);
-  const record = {
-    n,
-    tree,
-    output,
-    outcome,
-    exit_code: shot.timedOut ? null : shot.code,
-    log_tail: outcome === "passed" ? "" : logTailOf(shot.text),
-    at: new Date().toISOString(),
-  };
-  writeFileSync(launchPath, `${JSON.stringify({ ...stored, captures: [...captures, record] }, null, 2)}\n`);
-  if (shotStop === null) return { action: "capture", ok: true, decision, tree, n, output };
-  return stop(shotStop.reason, shotStop.detail, { tree, n, output, exit_code: record.exit_code, log_tail: record.log_tail });
+  return settleShot(shot, { worktree, root: gate.root, launchPath, stored, captures, destination: config.destination, decision, tree, n, output, timeoutMs });
 };
 
 interface HeldAction {
