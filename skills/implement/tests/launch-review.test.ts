@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
-import { GIVE_REPLY } from "../../../workflows/_lib/claude-run.ts";
+import { GIVE_REPLY } from "../scripts/claude-child.ts";
 import {
   ISSUE_REPLY,
   digestOf,

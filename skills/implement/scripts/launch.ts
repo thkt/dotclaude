@@ -6,7 +6,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, statSync, w
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type GateLocation, gateLocation, git, readJson, treeHash } from "../../../hooks/_lib/gate_record.ts";
-import { type ChildOutcome, type ChildRun, endAll, GIVE_REPLY, runClaudeOnce } from "../../../workflows/_lib/claude-run.ts";
+import { type ChildOutcome, type ChildRun, endAll, GIVE_REPLY, runClaudeOnce } from "./claude-child.ts";
 import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 import { type HolderStop, type Holding, hold } from "./holders.ts";
 
