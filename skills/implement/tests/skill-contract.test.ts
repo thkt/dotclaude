@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,6 +12,9 @@ const sides = [
   { name: "ja", dir: join(root, ".ja", "skills", "implement"), declines: /自分では打たない/ },
   { name: "en", dir: join(root, "skills", "implement"), declines: /^Do not run .* yourself$/ },
 ].map((side) => ({ ...side, skill: readFileSync(join(side.dir, "SKILL.md"), "utf8") }));
+
+const REVIEWS_FILTER = ".reviews[-1] | .self, .independent | {findings, verified}";
+const REPLY_FILTER = ".implement.reply";
 
 const launchSource = readFileSync(join(root, "skills", "implement", "scripts", "launch.ts"), "utf8");
 
@@ -124,4 +129,33 @@ test("the Japanese and English skills carry the same number of sections and the 
   }));
   assert.ok(ja.phases.length > 0, "the Japanese skill has no Phase");
   assert.deepEqual(en, ja);
+});
+
+test("Phase 3 of the skill on both sides reads the reviews and the reply of the launch record with the two jq commands", () => {
+  for (const { name, skill } of sides) {
+    const phase3 = section(skill, "## Phase 3");
+    for (const command of [`jq '${REVIEWS_FILTER}' "<launch_file>"`, `jq -r '${REPLY_FILTER}' "<launch_file>"`])
+      assert.ok(phase3.includes(command), `${name}: Phase 3 does not carry ${command}`);
+  }
+});
+
+test("the two jq filters of Phase 3 return the findings and verified of both reviews in the last round, and the reply string of the implement session", () => {
+  const review = (label: string) => ({ findings: [{ id: `${label}-1` }], verified: label.startsWith("last") });
+  const record = {
+    implement: { reply: "decided to keep the old name" },
+    reviews: [
+      { self: { ...review("first-self"), extra: 1 }, independent: review("first-independent") },
+      { self: { ...review("last-self"), extra: 1 }, independent: review("last-independent") },
+    ],
+  };
+  const dir = mkdtempSync(join(tmpdir(), "skill-contract-jq-"));
+  try {
+    const file = join(dir, "launch.json");
+    writeFileSync(file, JSON.stringify(record));
+    const reviews = execFileSync("jq", ["-c", REVIEWS_FILTER, file], { encoding: "utf8" }).trim().split("\n").map((line) => JSON.parse(line));
+    assert.deepEqual(reviews, [review("last-self"), review("last-independent")]);
+    assert.equal(execFileSync("jq", ["-r", REPLY_FILTER, file], { encoding: "utf8" }), "decided to keep the old name\n");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

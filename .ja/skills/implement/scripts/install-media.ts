@@ -12,7 +12,7 @@ import {
   rmSync,
 } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
-import { isMainModule } from "../_lib/entry-point.ts";
+import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
 
 const MEDIA_NAME = /\.(png|jpe?g|webp|mp4|webm)$/i;
 

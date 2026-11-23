@@ -16,7 +16,7 @@ import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "..", "install-media.ts");
+const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "install-media.ts");
 const PNG = Buffer.concat([Buffer.from("89504e470d0a1a0a", "hex"), Buffer.alloc(16, 1)]);
 
 const withRepo = (fn: (root: string) => void) => {

@@ -50,7 +50,7 @@ import {
   worktreeOf,
 } from "./_launch-fixture.ts";
 
-const HARNESS = resolve(dirname(SCRIPT), "..", "..", "..", "workflows", "implement", "harness");
+const HARNESS = resolve(dirname(SCRIPT), "..", "harness");
 
 const STOPPED_AFTER_START = ["action", "ok", "tree", "n", "output", "exit_code", "log_tail", "reason", "detail"];
 
