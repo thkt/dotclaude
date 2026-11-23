@@ -11,6 +11,7 @@ export const RED_FILE = "red.json";
 export const STOP_LOG_FILE = "stop-log.jsonl";
 export const STREAK_FILE = "stop-streak.json";
 export const PUBLISH_LOG_FILE = "publish-log.jsonl";
+export const LAUNCH_FILE = "launch.json";
 
 export type CheckCommand = string | string[];
 export type GateMode = "record" | "enforce";
@@ -198,6 +199,10 @@ export function gateLocation(cwd: string): GateLocation | null {
     return null;
   }
   return { root, dir };
+}
+
+export function launched(gate: GateLocation): boolean {
+  return existsSync(join(gate.dir, LAUNCH_FILE));
 }
 
 export function treeHash(root: string): string | null {

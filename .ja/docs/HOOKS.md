@@ -63,7 +63,7 @@ Bash ゲートの hook はすべての Bash 呼び出しで発火する。その
 | -------------------------- | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
 | package_manager_rewrite.ts | PreToolUse(Bash) | fail-closed | パッケージマネージャーコマンドを ni 系へ変換。マネージャー自身のフラグと bun 内蔵のテストランナーは素通しする |
 | body_proofread.ts          | PreToolUse(Bash) | fail-closed | gh issue/pr create の本文と commit メッセージを校正し、起票には構造チェックを添える (advisory)                |
-| publish_gate.ts | PreToolUse(Bash) | fail-open | `done_gate.ts on` を済ませた作業ツリーで、`git push`、`gh pr create`、`gh pr ready` を見つけ、`check` が今のツリーで通った記録があるかを判定する。mode が `record` のときは判定を記録して実行を許す。`enforce` のときは、記録がない間、実行を拒否する。行の文字から作業ツリーを決められないときは、判定せず、決められなかったことを記録して実行を許す |
+| publish_gate.ts | PreToolUse(Bash) | fail-open | `done_gate.ts on` を済ませた作業ツリーで、`git push`、`gh pr create`、`gh pr ready` を見つけ、`check` が今のツリーで通った記録があるかを判定する。mode が `record` のときは判定を記録して実行を許す。`enforce` のときは、記録がない間、実行を拒否する。関門の directory に `launch.json` がある作業ツリー（`launch.ts prepare` が用意した worktree）では、`git push` と `gh pr create` を正規でない公開と判定し、記録の行に `direct: true` を足す。`enforce` では、`check` が通っていても拒否し、`launch.ts publish --worktree <作業ツリーの根>` を呼ぶよう理由に書く。`gh pr ready` の判定は、`launch.json` の有無で変わらない。行の文字から作業ツリーを決められないときは、payload の `cwd` の関門に `unresolved: true` の行を記録する。`cwd` の関門が `enforce` なら拒否し、`record` なら実行を許す。`command_scan.ts` の `commands` が例外を投げ、コマンドが `push` か `gh` を含むときは、`cwd` の関門が `enforce` なら `error: true` の行を記録して拒否する。それ以外では、stderr に 1 行出して実行を許す |
 
 ### edit/
 
