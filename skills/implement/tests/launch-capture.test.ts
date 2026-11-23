@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
@@ -10,14 +10,22 @@ import {
   BOTH_OPEN,
   CLEAN,
   CONFIG,
+  COUNT_CHECK,
   DONE_GATE,
+  FAKE,
+  PNG,
   REJECTED,
   type Fixture,
   PASS_CHECK,
   SCRIPT,
   SESSION_REPLY,
+  WRITE_PNG,
+  allEnded,
   assertStopped,
   callOf,
+  captureAt,
+  capturing,
+  fakeCapture,
   fakeClaude,
   fakeReviewer,
   fixture,
@@ -30,17 +38,17 @@ import {
   launchRecord,
   moveBaseToParent,
   outputOf,
+  passCheck,
   pidsIn,
   prepare,
+  recordedBase,
   review,
   rewriteLaunch,
+  settingOf,
   run,
-  runLaunch,
   waitFor,
   worktreeOf,
 } from "./_launch-fixture.ts";
-
-const FAKE = "fake-capture";
 
 const HARNESS = resolve(dirname(SCRIPT), "..", "..", "..", "workflows", "implement", "harness");
 
@@ -52,42 +60,7 @@ const PASSED_FIELDS = ["action", "ok", "decision", "tree", "n", "output", "files
 
 const NOT_DONE_FIELDS = ["action", "ok", "tree", "n", "output", "files", "installed", "log_tail", "reason", "detail"];
 
-const COUNT_CHECK = '[ -z "$LOGS" ] || echo check >> "$LOGS/check-calls"';
-
-const PNG = Buffer.concat([Buffer.from("89504e470d0a1a0a", "hex"), Buffer.from("0123456789")]);
-
-const WRITE_PNG = 'cp "$LOGS/shot.png" "$last/list.png"\nexit 0\n';
-
 const TREE_DETAIL = /^The working tree was ([0-9a-f]{40}) before the capture and ([0-9a-f]{40}|null) after it\. A capture does not write into the checkout\.$/;
-
-interface CaptureSetting {
-  command?: string[];
-  destination?: string;
-  required?: boolean;
-  check?: string;
-}
-
-const settingOf = ({ command = [FAKE], destination = "media", required = true }: CaptureSetting) => ({ command, destination, required });
-
-function fakeCapture(f: Fixture, body: string): void {
-  writeFileSync(
-    join(f.bin, FAKE),
-    `#!/bin/sh\necho call >> "$LOGS/capture-calls"\npwd -P > "$LOGS/capture-cwd"\nprintf '%s\\n' "$@" > "$LOGS/capture-args"\nfor last; do :; done\nif [ -d "$last" ]; then ls -A "$last"; else echo missing; fi > "$LOGS/capture-listing"\n${body}`,
-    { mode: 0o755 },
-  );
-}
-
-function capturing(setting: CaptureSetting = {}, body = WRITE_PNG): Fixture {
-  const f = fixture({ ...CONFIG, check: setting.check ?? COUNT_CHECK, capture: settingOf(setting) });
-  writeFileSync(join(f.logs, "shot.png"), PNG);
-  assert.equal(prepare(f).status, 0);
-  fakeClaude(f, PASS_CHECK + SESSION_REPLY);
-  assert.equal(run(f, ["implement", "--worktree", worktreeOf(f)]).status, 0);
-  fakeCapture(f, body);
-  return f;
-}
-
-const captureAt = (f: Fixture, env: Record<string, string> = {}) => run(f, ["capture", "--worktree", worktreeOf(f)], env);
 
 const outputPathOf = (f: Fixture, n: number): string => `${worktreeOf(f)}-capture-${n}`;
 
@@ -95,11 +68,6 @@ const callCount = (f: Fixture): number =>
   existsSync(join(f.logs, "capture-calls")) ? readFileSync(join(f.logs, "capture-calls"), "utf8").split("\n").filter(Boolean).length : 0;
 
 const capturesOf = (f: Fixture): Record<string, unknown>[] => launchRecord(worktreeOf(f)).captures as Record<string, unknown>[];
-
-function passCheck(f: Fixture): void {
-  const check = spawnSync(process.execPath, [DONE_GATE, "check"], { cwd: worktreeOf(f), env: isolatedEnv(), encoding: "utf8" });
-  assert.equal(check.status, 0, check.stderr);
-}
 
 function writeChecked(f: Fixture, path: string, content: string, mode = 0o644): void {
   const file = join(worktreeOf(f), path);
@@ -132,8 +100,6 @@ const unchangedDecision = (f: Fixture, decision: string, n?: number): Record<str
   assert.equal(launchFile(f), text);
   return out;
 };
-
-const allEnded = (pids: number[]) => waitFor(() => pids.every((pid) => !isRunning(pid)), 5_000);
 
 const checkCount = (f: Fixture): number =>
   existsSync(join(f.logs, "check-calls")) ? readFileSync(join(f.logs, "check-calls"), "utf8").split("\n").filter(Boolean).length : 0;
@@ -647,8 +613,6 @@ const notCapturedParagraph = (base: string): string =>
 const reviewCallsOf = (f: Fixture): string[] =>
   existsSync(join(f.logs, "calls")) ? readFileSync(join(f.logs, "calls"), "utf8").split("\n").filter(Boolean) : [];
 
-const recordedBase = (f: Fixture): string => String(launchRecord(worktreeOf(f)).base);
-
 function reviewed(f: Fixture): Record<string, unknown> {
   const result = review(f);
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
@@ -669,14 +633,6 @@ function assertPromptsOpenWith(f: Fixture, paragraph: string, next?: string): vo
     if (next !== undefined) assert.ok(stdin.slice(head.length).startsWith(next), `${name}: ${stdin}`);
   }
 }
-
-test("run on a worktree whose required capture has not run stops with not-captured, and its only step is the review", () => {
-  const f = capturing();
-  fakeReviewer(f, CLEAN);
-  const out = assertStopped(runLaunch(f), "not-captured");
-  assert.deepEqual(out.steps, [{ action: "review", ok: false, reason: "not-captured" }]);
-  assert.deepEqual(reviewCallsOf(f), []);
-});
 
 test("review stops with not-captured naming the current tree, starts no review, and keeps launch.json, before any capture and after a non-.md change following a passed capture", () => {
   const f = capturing();
