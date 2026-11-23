@@ -1,14 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { PRODUCTION_GLOBALS, SCRIPT_ERROR_KEYS, readMeta, runWorkflow } from "../run-workflow.ts";
-import { extractBracedBody } from "./_brace.ts";
-
-const here = dirname(fileURLToPath(import.meta.url));
-const workflowsDir = join(here, "..", "..");
 
 const withScript = async <T>(source: string, run: (path: string) => Promise<T>): Promise<T> => {
   const dir = mkdtempSync(join(tmpdir(), "run-workflow-test-"));
@@ -20,74 +15,6 @@ const withScript = async <T>(source: string, run: (path: string) => Promise<T>):
     rmSync(dir, { recursive: true, force: true });
   }
 };
-
-const SINGLE_ESCAPES: Record<string, string> = {
-  n: "\n",
-  t: "\t",
-  r: "\r",
-  b: "\b",
-  f: "\f",
-  v: "\v",
-  0: "\0",
-};
-
-const extractStringField = (body: string, key: string): string | null => {
-  const marker = new RegExp(`(?:^|\\n)\\s*${key}:\\s*(['"])`);
-  const m = marker.exec(body);
-  if (!m) return null;
-  const quote = m[1];
-  let i = m.index + m[0].length;
-  let value = "";
-  while (i < body.length) {
-    if (body[i] === "\\") {
-      const escaped = body[i + 1];
-      value += SINGLE_ESCAPES[escaped] ?? escaped;
-      i += 2;
-      continue;
-    }
-    if (body[i] === quote) break;
-    value += body[i];
-    i++;
-  }
-  return value;
-};
-
-const extractPhaseTitles = (body: string): string[] =>
-  [...body.matchAll(/title:\s*"([^"]*)"/g)].map((m) => m[1]);
-
-const extractMeta = (source: string) => {
-  const body = extractBracedBody(source, "export const meta = {") ?? "";
-  return {
-    name: extractStringField(body, "name"),
-    description: extractStringField(body, "description"),
-    whenToUse: extractStringField(body, "whenToUse"),
-    phaseTitles: extractPhaseTitles(body),
-  };
-};
-
-test("readMeta returns name, description, whenToUse and phases for every script under workflows/", () => {
-  const scripts = readdirSync(workflowsDir)
-    .filter((f) => f.endsWith(".js"))
-    .filter((f) => readFileSync(join(workflowsDir, f), "utf8").startsWith("export const meta"));
-  assert.notEqual(scripts.length, 0, "found no workflow script carrying export const meta");
-
-  for (const file of scripts) {
-    const scriptPath = join(workflowsDir, file);
-    const source = readFileSync(scriptPath, "utf8");
-    const expected = extractMeta(source);
-
-    const meta = readMeta(scriptPath);
-
-    assert.equal(meta.name, expected.name, `${file}: name`);
-    assert.equal(meta.description, expected.description, `${file}: description`);
-    assert.equal(meta.whenToUse, expected.whenToUse, `${file}: whenToUse`);
-    assert.deepEqual(
-      (meta.phases ?? []).map((p) => p.title),
-      expected.phaseTitles,
-      `${file}: phases`,
-    );
-  }
-});
 
 test("readMeta returns the meta of a script carrying a top-level return without executing that return", async () => {
   const source = `export const meta = {

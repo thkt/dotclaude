@@ -4,7 +4,7 @@
 
 ## 呼び出し元が渡す値
 
-件名は `workflows/implement.js` が Issue title に求める接頭辞で始める。題は `~/.claude/settings.json` の `language` の言語で書き、未設定なら英語で書く。
+件名は `skills/implement/scripts/launch.ts` が Issue title に求める接頭辞で始める。題は `~/.claude/settings.json` の `language` の言語で書き、未設定なら英語で書く。
 
 | 値       | 中身                                                         |
 | -------- | ------------------------------------------------------------ |

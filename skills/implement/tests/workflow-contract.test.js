@@ -6,38 +6,6 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const skill = readFileSync(join(root, "skills", "implement", "SKILL.md"), "utf8");
-const script = readFileSync(join(root, "workflows", "implement.js"), "utf8");
-
-const isReason = (value) => /^[a-z][a-z-]*[a-z]$/.test(value) && value.includes("-");
-const stopReasons = () => {
-  const found = new Set();
-  const add = (text) => {
-    for (const [, value] of text.matchAll(/"([a-z-]+)"/g)) if (isReason(value)) found.add(value);
-  };
-  for (const [, value] of script.matchAll(/\b(?:stop|shipStop)\(\s*"([a-z-]+)"/g)) found.add(value);
-  for (const [line] of script.matchAll(/\bstop: [^\n]*/g)) add(line.split("why:")[0]);
-  const ciStops = /const CI_STOPS = \{([\s\S]*?)\n\};/.exec(script);
-  if (ciStops)
-    for (const [, value] of ciStops[1].matchAll(/^\s*"(ci-[a-z-]+)",$/gm)) found.add(value);
-  const reply = /const replyProblem = \(reply\) => \{([\s\S]*?)\n\};/.exec(script);
-  if (reply) add(reply[1]);
-  return found;
-};
-
-const stopTable = readFileSync(join(root, "skills", "implement", "references", "stops.md"), "utf8");
-
-test("the extraction reaches the workflow's stop reasons, including the later additions", () => {
-  const reasons = stopReasons();
-  for (const known of ["no-issue", "human-decision-required", "invalid-capture", "ci-timed-out"]) {
-    assert.ok(reasons.has(known), `the extraction misses ${known}`);
-  }
-  assert.ok(reasons.size >= 40, `only ${reasons.size} reasons extracted`);
-});
-
-test("the skill's stop table names every stop reason the workflow can return", () => {
-  const missing = [...stopReasons()].filter((reason) => !stopTable.includes(`\`${reason}\``));
-  assert.deepEqual(missing, [], "stop reasons with no handling in SKILL.md § Stop conditions");
-});
 
 test("scoping names the three handlings of a step the workflow cannot carry out, and the launch check sends back any other", () => {
   const sufficiency = readFileSync(join(root, "skills", "scoping", "references", "sufficiency.md"), "utf8");
@@ -47,15 +15,6 @@ test("scoping names the three handlings of a step the workflow cannot carry out,
   const rows = section.split("\n").filter((line) => line.startsWith("| ") && !/^\| (Handling|-)/.test(line));
   assert.equal(rows.length, 3, "the handlings an Issue may agree on");
   assert.match(sufficiency, /the `check` of `\.dotagents\.json`, the capture, and CI when publishing/);
-  assert.match(
-    script,
-    /The host runs the configured check and capture after you return\. \$\{CI_RULE\}/,
-  );
-  assert.match(
-    script,
-    /This run publishes, so the host also confirms the configured CI checks \(\$\{config\.ciChecks\.join\(", "\)\}\) on the published head\./,
-  );
-  assert.ok(script.includes('"repair-no-progress"') && section.includes("`repair-no-progress`"));
   const phase1 = skill.slice(skill.indexOf("## Phase 1"), skill.indexOf("## Phase 2"));
   assert.ok(phase1.includes("§ Handling a step the workflow cannot carry out"), "Phase 1 does not name the section");
   for (const row of rows) {
@@ -160,9 +119,9 @@ test("scoping keeps its SKILL.md body and sufficiency.md within 100 lines, on bo
   }
 });
 
-test("the type prefixes scoping puts on a title are the keys the workflow maps to a branch type, on both sides", () => {
+test("the type prefixes scoping puts on a title are the keys launch.ts maps to a branch type, on both sides", () => {
   const keysIn = (path) => {
-    const body = /const TYPE_BY_PREFIX = \{([^}]*)\};/.exec(readFileSync(join(root, ...path), "utf8"))?.[1];
+    const body = /const TYPE_BY_PREFIX(?:: [^=]+)? = \{([^}]*)\};/.exec(readFileSync(join(root, ...path), "utf8"))?.[1];
     assert.ok(body, `${path.join("/")} lost TYPE_BY_PREFIX`);
     return [...body.matchAll(/(\w+):/g)].map((m) => m[1]).sort();
   };
@@ -170,9 +129,9 @@ test("the type prefixes scoping puts on a title are the keys the workflow maps t
     const text = readFileSync(join(root, ...path), "utf8");
     return [...text.matchAll(/^\| `\[(\w+)\]` +\|/gm)].map((m) => m[1].toLowerCase()).sort();
   };
-  const keys = keysIn(["workflows", "implement.js"]);
+  const keys = keysIn(["skills", "implement", "scripts", "launch.ts"]);
   assert.ok(keys.length > 0, "no key extracted from TYPE_BY_PREFIX");
-  assert.deepEqual(keysIn([".ja", "workflows", "implement.js"]), keys, ".ja/workflows/implement.js");
+  assert.deepEqual(keysIn([".ja", "skills", "implement", "scripts", "launch.ts"]), keys, ".ja/skills/implement/scripts/launch.ts");
   for (const path of [
     ["skills", "scoping", "references", "issue.md"],
     [".ja", "skills", "scoping", "references", "issue.md"],
@@ -180,8 +139,6 @@ test("the type prefixes scoping puts on a title are the keys the workflow maps t
     assert.deepEqual(prefixesIn(path), keys, path.join("/"));
 });
 
-test("neither the skill nor the workflow routes an Issue by its Plan section", () => {
-  const whenToUse = /whenToUse:\s*"([^"]*)"/.exec(script)[1];
+test("the skill does not route an Issue by its Plan section", () => {
   assert.ok(!skill.includes("## Plan"), "SKILL.md routes by a ## Plan section");
-  assert.ok(!/Plan section/i.test(whenToUse), "whenToUse routes by a Plan section");
 });

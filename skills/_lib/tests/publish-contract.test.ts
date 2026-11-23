@@ -60,10 +60,10 @@ test("publish.md looks for a same-named branch both locally and on the remote", 
   }
 });
 
-test("each publishing skill points at publish.md and passes its branch and an implement.js prefix", () => {
-  const source = read("workflows/implement.js");
-  const literal = /const TYPE_BY_PREFIX = \{([^}]*)\}/.exec(source);
-  assert.ok(literal, "implement.js defines TYPE_BY_PREFIX");
+test("each publishing skill points at publish.md and passes its branch and a launch.ts prefix", () => {
+  const source = read("skills/implement/scripts/launch.ts");
+  const literal = /const TYPE_BY_PREFIX(?:: [^=]+)? = \{([^}]*)\}/.exec(source);
+  assert.ok(literal, "launch.ts defines TYPE_BY_PREFIX");
   const accepted = [...literal[1].matchAll(/(\w+):/g)].map((m) => m[1]);
   assert.ok(accepted.length > 0, "TYPE_BY_PREFIX has keys");
 
@@ -85,19 +85,6 @@ test("each publishing skill points at publish.md and passes its branch and an im
         `${rel}: [${passed}] is a TYPE_BY_PREFIX key (${accepted.join(", ")})`,
       );
     }
-  }
-});
-
-test("launch.ts maps each title type to the same branch type as implement.js, on both sides", () => {
-  const pairsIn = (rel: string) => {
-    const literal = /const TYPE_BY_PREFIX(?:: [^=]+)? = \{([^}]*)\}/.exec(read(rel));
-    assert.ok(literal, `${rel} defines TYPE_BY_PREFIX`);
-    return [...literal[1].matchAll(/(\w+):\s*"(\w+)"/g)].map((m) => `${m[1]}->${m[2]}`).sort();
-  };
-  const workflow = pairsIn("workflows/implement.js");
-  assert.ok(workflow.length > 0, "implement.js TYPE_BY_PREFIX has pairs");
-  for (const rel of bothSides("skills/implement/scripts/launch.ts")) {
-    assert.deepEqual(pairsIn(rel), workflow, rel);
   }
 });
 
