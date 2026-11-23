@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /// <reference types="node" />
-import { type SpawnSyncReturns, spawnSync } from "node:child_process";
+import { type SpawnSyncReturns, spawn, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type GateLocation, gateLocation, git, readJson, treeHash } from "../../../hooks/_lib/gate_record.ts";
@@ -29,7 +29,8 @@ const USAGE =
   "       launch.ts run --worktree <abs path> [--model <name>]\n" +
   "       launch.ts publishable --worktree <abs path>\n" +
   "       launch.ts published --worktree <abs path>\n" +
-  "       launch.ts body --worktree <abs path>\n";
+  "       launch.ts body --worktree <abs path>\n" +
+  "       launch.ts capture --worktree <abs path>\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
   `Implement GitHub Issue #${issue} of ${repository} in this worktree.
@@ -1750,6 +1751,216 @@ const body = ({ worktree }: WorktreeCall): Result => {
   };
 };
 
+const CAPTURE_TIMEOUT_MS = 570_000;
+const CAPTURE_KILL_DELAY_MS = 2_000;
+const LONGEST_TIMER_MS = 2_147_483_647;
+const HARNESS = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "workflows", "implement", "harness");
+const OUTPUT_SIBLINGS = ["", ".artifacts", ".config.mjs", ".report.json"];
+const DIFF_LINE = /^:(\d{6}) (\d{6}) [0-9a-f]+ [0-9a-f]+ [A-Z]\d*\t(.+)$/;
+const UNRENDERED_MODES = ["000000", "100644"];
+const RECORD_FILE = /\.(json|txt|log|stdout|stderr|diff)$/;
+
+interface CaptureConfig {
+  command: string[];
+  destination: string;
+  required: boolean;
+}
+
+type PassedCapture = Record<string, unknown> & { tree: string };
+
+type CaptureDecision = "reused" | "not_required" | "execute";
+
+interface Shot {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  timedOut: boolean;
+  text: string;
+}
+
+let captureGroup: number | null = null;
+
+const captureTimeoutMs = (): number => {
+  const text = process.env.LAUNCH_CAPTURE_TIMEOUT_MS ?? "";
+  const value = /^\d+$/.test(text) ? Number(text) : 0;
+  return value >= 1 && value <= LONGEST_TIMER_MS ? value : CAPTURE_TIMEOUT_MS;
+};
+
+const captureConfigOf = (worktree: string, base: string): CaptureConfig | null | Problem => {
+  const shown = runQuiet("git", ["show", `${base}:.dotagents.json`], worktree);
+  const config = shown.status === 0 ? parseObject(shown.stdout) : null;
+  if (config !== null && isCapture(config.capture)) return config.capture as CaptureConfig | null;
+  const detail = `The base commit ${base} of ${worktree} has no .dotagents.json with a capture that is null or {command, destination, required}.`;
+  return { reason: "no-config", detail };
+};
+
+const lastPassedOf = (captures: unknown[]): PassedCapture | null => {
+  const last = objectOf(captures[captures.length - 1]);
+  return last !== null && last.outcome === "passed" && typeof last.tree === "string" ? (last as PassedCapture) : null;
+};
+
+const definitionsOf = (command: string[]): string[] =>
+  command
+    .filter((part) => !part.includes("{harness}"))
+    .map((part) => (part.startsWith("-") && part.includes("=") ? part.slice(part.indexOf("=") + 1) : part))
+    .filter((part) => part !== "" && !part.startsWith("-"))
+    .map((part) => (part.startsWith("./") ? part.slice(2) : part));
+
+const isRecordFile = (destination: string, path: string): boolean => {
+  const dir = destination.replace(/\/+$/, "");
+  if (!dir.includes("/")) return false;
+  return RECORD_FILE.test(path) && path.startsWith(dir.slice(0, dir.lastIndexOf("/") + 1)) && !path.startsWith(`${dir}/`);
+};
+
+const needsNoRecapture = (line: string, capture: CaptureConfig, afterPassed: boolean): boolean => {
+  const match = DIFF_LINE.exec(line);
+  if (match === null) return false;
+  const [, before, after, path] = match;
+  if (!UNRENDERED_MODES.includes(before) || !UNRENDERED_MODES.includes(after)) return false;
+  if (definitionsOf(capture.command).includes(path)) return false;
+  return path.endsWith(".md") || (afterPassed && isRecordFile(capture.destination, path));
+};
+
+const captureDecisionOf = (worktree: string, base: string, capture: CaptureConfig, tree: string, passed: PassedCapture | null): CaptureDecision => {
+  if (passed?.tree === tree) return "reused";
+  if (capture.required) return "execute";
+  const diff = runQuiet("git", ["diff-tree", "-r", "--no-renames", passed?.tree ?? `${base}^{tree}`, tree], worktree);
+  if (diff.status !== 0) return "execute";
+  const lines = diff.stdout.split("\n").filter((line) => line !== "");
+  if (lines.length === 0 || !lines.every((line) => needsNoRecapture(line, capture, passed !== null))) return "execute";
+  return passed === null ? "not_required" : "reused";
+};
+
+const nextCaptureNumber = (captures: unknown[]): number =>
+  Math.max(0, ...captures.map((entry) => objectOf(entry)?.n).filter(isPositiveInteger)) + 1;
+
+const setAsideOutput = (output: string): string | null => {
+  try {
+    const stamp = `${Math.floor(Date.now() / 1000)}-${process.pid}`;
+    for (const suffix of OUTPUT_SIBLINGS) {
+      const path = `${output}${suffix}`;
+      if (lstatSync(path, { throwIfNoEntry: false }) !== undefined) renameSync(path, `${path}.stale-${stamp}`);
+    }
+    mkdirSync(output);
+    return null;
+  } catch (error) {
+    return (error as Error).message;
+  }
+};
+
+const signalGroup = (pid: number, signal: NodeJS.Signals): void => {
+  try {
+    process.kill(-pid, signal);
+  } catch {}
+};
+
+const shoot = (argv: string[], cwd: string, timeoutMs: number): Promise<Shot | { error: string }> =>
+  new Promise((done) => {
+    const [file, ...args] = argv;
+    const child = spawn(file, args, { cwd, stdio: ["ignore", "pipe", "pipe"], detached: true });
+    let text = "";
+    const collect = (chunk: string) => {
+      text += chunk;
+    };
+    child.stdout.setEncoding("utf8").on("data", collect);
+    child.stderr.setEncoding("utf8").on("data", collect);
+    let started = false;
+    child.on("error", (error) => {
+      if (!started) done({ error: error.message });
+    });
+    child.once("spawn", () => {
+      started = true;
+      const pid = child.pid as number;
+      captureGroup = pid;
+      let timedOut = false;
+      let killed: Promise<void> = Promise.resolve();
+      const timer = setTimeout(() => {
+        timedOut = true;
+        signalGroup(pid, "SIGTERM");
+        killed = new Promise((wake) =>
+          setTimeout(() => {
+            signalGroup(pid, "SIGKILL");
+            wake();
+          }, CAPTURE_KILL_DELAY_MS),
+        );
+      }, timeoutMs);
+      child.once("close", async (code, signal) => {
+        clearTimeout(timer);
+        await killed;
+        captureGroup = null;
+        done({ code, signal, timedOut, text });
+      });
+    });
+  });
+
+const logTailOf = (text: string): string => text.replace(/\n+$/, "").split("\n").slice(-80).join("\n").slice(-6000);
+
+const shotOutcomeOf = (shot: Shot, tree: string, after: string | null, timeoutMs: number): { outcome: string; stop: Problem | null } => {
+  if (shot.timedOut) {
+    return { outcome: "timed_out", stop: { reason: "capture-timeout", detail: `The capture did not end within ${timeoutMs} ms.` } };
+  }
+  if (shot.code === 78) {
+    const detail = "The capture command reported that the capture cannot run here (exit 78).";
+    return { outcome: "unavailable", stop: { reason: "capture-unavailable", detail } };
+  }
+  if (after !== tree) {
+    const detail = `The working tree was ${tree} before the capture and ${after} after it. A capture does not write into the checkout.`;
+    return { outcome: "source_changed", stop: { reason: "source-changed", detail } };
+  }
+  if (shot.code !== 0) {
+    return { outcome: "failed", stop: { reason: "capture-failed", detail: `The capture command exited ${shot.code ?? shot.signal}.` } };
+  }
+  return { outcome: "passed", stop: null };
+};
+
+const capture = async ({ worktree }: WorktreeCall): Promise<Result> => {
+  const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
+    stopped("capture", reason, detail, extra);
+
+  const prepared = preparedAt(worktree);
+  if (prepared === null) return stop("not-prepared", notPrepared(worktree));
+  const { gate, launchPath, stored, launch } = prepared;
+  if (finishedSessionOf(stored) === null) return stop("not-implemented", notImplemented(worktree, stored));
+  const status = gateStatusOf(worktree);
+  if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`);
+  const config = captureConfigOf(worktree, launch.base);
+  if (config === null) return { action: "capture", ok: true, decision: "not_configured" };
+  if ("reason" in config) return stop(config.reason, config.detail);
+  const tree = treeHash(gate.root);
+  if (tree === null) return stop("capture-unavailable", `The working tree of ${worktree} has no tree id.`);
+
+  const captures = Array.isArray(stored.captures) ? stored.captures : [];
+  const passed = lastPassedOf(captures);
+  const decision = captureDecisionOf(worktree, launch.base, config, tree, passed);
+  if (decision === "not_required") return { action: "capture", ok: true, decision, tree };
+  if (decision === "reused") return { action: "capture", ok: true, decision, tree, n: passed?.n };
+
+  const n = nextCaptureNumber(captures);
+  const output = `${worktree}-capture-${n}`;
+  if (!statSync(join(HARNESS, "scripts"), { throwIfNoEntry: false })?.isDirectory()) {
+    return stop("capture-unavailable", `The capture adapter directory ${HARNESS}/scripts does not exist.`);
+  }
+  const unprepared = setAsideOutput(output);
+  if (unprepared !== null) return stop("capture-unavailable", `The capture output directory ${output} could not be prepared: ${unprepared}`);
+  const timeoutMs = captureTimeoutMs();
+  const argv = [...config.command.map((part) => part.replaceAll("{harness}", HARNESS)), output];
+  const shot = await shoot(argv, worktree, timeoutMs);
+  if ("error" in shot) return stop("capture-unavailable", `The capture command could not start: ${shot.error}`);
+
+  const { outcome, stop: shotStop } = shotOutcomeOf(shot, tree, treeHash(gate.root), timeoutMs);
+  const record = {
+    n,
+    tree,
+    output,
+    outcome,
+    exit_code: shot.timedOut ? null : shot.code,
+    log_tail: outcome === "passed" ? "" : logTailOf(shot.text),
+    at: new Date().toISOString(),
+  };
+  writeFileSync(launchPath, `${JSON.stringify({ ...stored, captures: [...captures, record] }, null, 2)}\n`);
+  if (shotStop === null) return { action: "capture", ok: true, decision, tree, n, output };
+  return stop(shotStop.reason, shotStop.detail, { tree, n, output, exit_code: record.exit_code, log_tail: record.log_tail });
+};
+
 interface HeldAction {
   parse: (argv: string[]) => WorktreeCall | null;
   act: (call: WorktreeCall) => Result | Promise<Result>;
@@ -1766,6 +1977,7 @@ const HELD_ACTIONS: Record<string, HeldAction> = {
   publishable: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: publishable },
   published: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: published },
   body: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: body },
+  capture: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: capture },
 };
 
 const gateDirOf = (worktree: string): string | null => {
@@ -1801,10 +2013,18 @@ const endClaudeAndExit = () => {
   process.exit(143);
 };
 
+const endCaptureAndExit = () => {
+  if (captureGroup !== null) signalGroup(captureGroup, "SIGTERM");
+  process.exit(143);
+};
+
 export async function launch(argv: string[]): Promise<number> {
   const [action, ...rest] = argv;
   if (ENDS_CLAUDE_ON_SIGNAL.has(action ?? "")) {
     for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) process.on(name, endClaudeAndExit);
+  }
+  if (action === "capture") {
+    for (const name of ["SIGTERM", "SIGINT", "SIGHUP"] as const) process.on(name, endCaptureAndExit);
   }
   const result = await actOn(action ?? "", rest);
   if (result === null) {
