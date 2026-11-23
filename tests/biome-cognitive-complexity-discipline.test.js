@@ -15,7 +15,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(TEST_DIR, "..", "..");
+const ROOT = path.resolve(TEST_DIR, "..");
 const BIOME_BIN = path.join(ROOT, "node_modules", ".bin", "biome");
 const BIOME_JSON = path.join(ROOT, "biome.json");
 

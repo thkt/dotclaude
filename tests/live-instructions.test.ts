@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { trackedFiles } from "../workflows/_lib/tests/_retirement.ts";
+import { trackedFiles } from "./_retirement.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 

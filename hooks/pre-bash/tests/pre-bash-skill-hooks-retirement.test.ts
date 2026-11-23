@@ -8,7 +8,7 @@ import {
   assertDetectsAndMisses,
   offendersAmong,
   trackedFiles,
-} from "../../../workflows/_lib/tests/_retirement.ts";
+} from "../../../tests/_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");

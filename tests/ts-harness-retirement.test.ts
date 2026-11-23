@@ -7,9 +7,9 @@ import { fileURLToPath } from "node:url";
 import { assertDetectsAndMisses, assertNoResidualReferences } from "./_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(HERE, "..", "..", "..");
+const REPO_ROOT = join(HERE, "..");
 const SELF_PATH = relative(REPO_ROOT, fileURLToPath(import.meta.url));
-const PR_BODY_RETIREMENT_PATH = join(REPO_ROOT, "workflows", "_lib", "tests", "pr-body-retirement.test.ts");
+const PR_BODY_RETIREMENT_PATH = join(REPO_ROOT, "tests", "pr-body-retirement.test.ts");
 
 const RETIRED_PATHS = ["_lib/run-workflow.js", "_lib/codex-run.js", "_lib/tests/_brace.js"];
 
@@ -44,7 +44,7 @@ test(
 
     const prBodyRetiredName = ["pr-body", "py"].join(".");
     const prBodyPattern = new RegExp(`(^|[^\\w.-])${prBodyRetiredName.replace(".", "\\.")}\\b`);
-    const prBodySelfPath = "workflows/_lib/tests/pr-body-retirement.test.ts";
+    const prBodySelfPath = "tests/pr-body-retirement.test.ts";
     assert.doesNotThrow(
       () =>
         assertNoResidualReferences(

@@ -5,10 +5,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { stripComments } from "../../tests/_comments.ts";
+import { stripComments } from "./_comments.ts";
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(TEST_DIR, "..", "..");
+const ROOT = join(TEST_DIR, "..");
 const run = promisify(execFile);
 const FIXTURES = join(TEST_DIR, "fixtures", "ja-ts-parity");
 

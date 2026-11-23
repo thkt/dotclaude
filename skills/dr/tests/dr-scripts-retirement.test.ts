@@ -5,7 +5,7 @@ import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { trackedEntries } from "../../../hooks/_lib/shebang_scope.ts";
-import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "../../../workflows/_lib/tests/_retirement.ts";
+import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "../../../tests/_retirement.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..", "..");
