@@ -766,7 +766,7 @@ export async function implementWaiting(f: Fixture): Promise<Waiting> {
   return startWaiting(f, ["implement", "--worktree", worktreeOf(f)]);
 }
 
-export const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run", "publishable", "published", "body"];
+export const HELD_CALLS = ["implement", "review", "repair", "agree", "reread", "continue", "run", "publishable", "published", "body", "capture"];
 
 export async function killedLaunch(f: Fixture): Promise<Waiting> {
   const waiting = await implementWaiting(f);

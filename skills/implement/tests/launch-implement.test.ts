@@ -508,7 +508,7 @@ test("while implement waits for claude, launch-holders holds its pid record of p
   }
 });
 
-test("each of the ten actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
+test("each of the eleven actions called while implement waits stops with busy naming that record, starts no claude, and keeps launch.json and the records", async () => {
   const f = prepared();
   const waiting = await implementWaiting(f);
   try {
