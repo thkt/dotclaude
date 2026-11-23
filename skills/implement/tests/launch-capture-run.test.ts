@@ -36,6 +36,7 @@ import {
   pidsIn,
   prepare,
   recordedBase,
+  rewriteLaunch,
   runLaunch,
   settingOf,
   shaped,
@@ -154,6 +155,7 @@ test("when a capture fails and the resumed session fixes it, run continues with 
   const out = ranOk(f);
   assert.deepEqual(actionsOf(out), ["implement", "capture", "continue", "capture", "review"]);
   assert.deepEqual(out.steps[1], { action: "capture", ok: false, n: 1, reason: "capture-failed" });
+  assert.ok(!Object.hasOwn(out.steps[2], "capture"), JSON.stringify(out.steps[2]));
   assert.deepEqual(continuePromptsOf(f), [capturePrompt(recordedBase(f), "with exit code 1", "first-line\nsecond-line")]);
   assert.deepEqual(
     continuesOf(f).map((entry) => entry.capture),
@@ -187,7 +189,7 @@ test("after run stopped with capture-failed, a capture called directly that pass
   assert.equal(out.verdict, "accepted");
 });
 
-test("when the check fails after the media are installed, run continues with the plain continue prompt, captures again without a check, and reviews", () => {
+test("when the check fails after the media are installed, run continues with the plain continue prompt, captures again, and reviews", () => {
   const check = "[ ! -e media/list.png ] || grep -q '^continue ' README.md";
   const f = capturedFixture({ check }, WRITE_PNG);
   recordingRounds(f, { implement: [IMPLEMENTED], continue: [CONTINUED], ...CLEAN_REVIEWS });
@@ -233,6 +235,24 @@ test("continue on a worktree changed and checked after a failed capture stops wi
   fakeContinuer(f, CONTINUE_REPLY);
   assertStopped(continueWork(f), "nothing-to-continue");
   assert.ok(!existsSync(join(f.logs, "continue-calls")));
+});
+
+test("a failed capture without n is not an unrepaired failed capture, so continue stops with nothing-to-continue and run calls capture", () => {
+  const f = capturing({}, ALWAYS_FAIL);
+  assertStopped(captureAt(f), "capture-failed");
+  rewriteLaunch(f, (stored) => {
+    const captures = [...(stored.captures as Record<string, unknown>[])];
+    const { n: _, ...rest } = captures[captures.length - 1];
+    captures[captures.length - 1] = rest;
+    return { ...stored, captures };
+  });
+  fakeContinuer(f, CONTINUE_REPLY);
+  assertStopped(continueWork(f), "nothing-to-continue");
+  assert.ok(!existsSync(join(f.logs, "continue-calls")));
+  fakeCapture(f, WRITE_PNG);
+  fakeRounds(f, CLEAN_REVIEWS);
+  const out = ranOk(f);
+  assert.deepEqual(actionsOf(out), ["capture", "review"]);
 });
 
 test("continue after a capture command that ended by a signal says the command failed without an exit code", () => {

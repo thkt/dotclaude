@@ -1170,7 +1170,8 @@ const captureStateOf = (worktree: string, { gate, stored, launch }: Prepared): C
   const captures = Array.isArray(stored.captures) ? stored.captures : [];
   if (captureDecisionOf(worktree, launch.base, config, tree, lastPassedOf(captures)) !== "execute") return null;
   const last = objectOf(captures[captures.length - 1]);
-  return { config, failed: last !== null && last.outcome === "failed" && last.tree === tree ? last : null };
+  const unrepaired = last !== null && last.outcome === "failed" && last.tree === tree && isPositiveInteger(last.n);
+  return { config, failed: unrepaired ? last : null };
 };
 
 const unrepairedCaptureOf = (worktree: string, prepared: Prepared): Unrepaired | null => {
@@ -1648,7 +1649,52 @@ const publishable = ({ worktree }: WorktreeCall): Result => {
   };
 };
 
-const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<string, unknown>; text: string } | Problem => {
+const ASSET_PREFIX = "https://github.com/user-attachments/assets/";
+const ASSET_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const ASSET_ID_LENGTH = 36;
+
+const referenceOf = (path: string): string => `![${path}](${path})`;
+
+const isVideo = (path: string): boolean => /\.(mp4|webm)$/i.test(path);
+
+const assetAt = (text: string, at: number): boolean =>
+  text.startsWith(ASSET_PREFIX, at) && ASSET_ID.test(text.slice(at + ASSET_PREFIX.length, at + ASSET_PREFIX.length + ASSET_ID_LENGTH));
+
+const attachedLengthAt = (text: string, at: number, path: string): number | null => {
+  const assetLength = ASSET_PREFIX.length + ASSET_ID_LENGTH;
+  if (isVideo(path)) return assetAt(text, at) ? assetLength : null;
+  const opening = `![${path}](`;
+  if (!text.startsWith(opening, at) || !assetAt(text, at + opening.length)) return null;
+  return text.startsWith(")", at + opening.length + assetLength) ? opening.length + assetLength + 1 : null;
+};
+
+const nextReferenceOf = (text: string, from: number, media: string[]): { at: number; path: string } | null =>
+  media
+    .map((path) => ({ at: text.indexOf(referenceOf(path), from), path }))
+    .filter(({ at }) => at !== -1)
+    .reduce<{ at: number; path: string } | null>((first, found) => (first === null || found.at < first.at ? found : first), null);
+
+const unattachedOf = (built: string, actual: string, media: string[]): string[] | null => {
+  const unattached: string[] = [];
+  let builtAt = 0;
+  let actualAt = 0;
+  for (let found = nextReferenceOf(built, 0, media); found !== null; found = nextReferenceOf(built, builtAt, media)) {
+    const literal = built.slice(builtAt, found.at);
+    if (!actual.startsWith(literal, actualAt)) return null;
+    actualAt += literal.length;
+    const reference = referenceOf(found.path);
+    const attached = attachedLengthAt(actual, actualAt, found.path);
+    if (attached !== null) actualAt += attached;
+    else if (actual.startsWith(reference, actualAt)) {
+      actualAt += reference.length;
+      if (!unattached.includes(found.path)) unattached.push(found.path);
+    } else return null;
+    builtAt = found.at + reference.length;
+  }
+  return actual.slice(actualAt) === built.slice(builtAt) ? unattached : null;
+};
+
+const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<string, unknown>; body: string } | Problem => {
   const found = selectedPullOf(worktree, facts);
   if ("reason" in found) return found;
   const { pull } = found;
@@ -1658,12 +1704,20 @@ const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<
     const detail = `The pull request ${pull.html_url} still has the published commit ${last.commit} as its head. Push the commit ${facts.head} to the branch ${branch} of ${facts.config.remote}, then call again.`;
     return { reason: "not-pushed", detail };
   }
-  const text = bodyTextOf(worktree, facts);
-  if (typeof text !== "string") return text;
-  const differing = [...differingOf(pull, facts, facts.head), ...(pull.body === text ? [] : ["body"])];
-  if (differing.length === 0) return { pull, text };
-  const detail = `The pull request ${pull.html_url} differs from what launch.ts confirmed before the push: ${differing.join(", ")}. Reconcile it on GitHub, then call again.`;
-  return { reason: "pr-mismatch", detail };
+  const built = bodyTextOf(worktree, facts);
+  if ("reason" in built) return built;
+  const unattached = typeof pull.body === "string" ? unattachedOf(built.text, pull.body, built.media) : null;
+  const differing = [...differingOf(pull, facts, facts.head), ...(unattached === null ? ["body"] : [])];
+  if (differing.length > 0) {
+    const detail = `The pull request ${pull.html_url} differs from what launch.ts confirmed before the push: ${differing.join(", ")}. Reconcile it on GitHub, then call again.`;
+    return { reason: "pr-mismatch", detail };
+  }
+  if (unattached !== null && unattached.length > 0) {
+    const bodyFile = join(facts.prepared.gate.dir, BODY_FILE);
+    const detail = `The body of ${pull.html_url} still holds the relative reference of ${unattached.join(", ")}. In ${worktree}, run gh pr edit ${pull.number} --body-file ${bodyFile} with one --attach for every media of the body (${built.media.join(", ")}), then call published again.`;
+    return { reason: "media-unattached", detail };
+  }
+  return { pull, body: pull.body as string };
 };
 
 const published = ({ worktree }: WorktreeCall): Result => {
@@ -1674,7 +1728,7 @@ const published = ({ worktree }: WorktreeCall): Result => {
   const commit = facts.head;
   const found = publishedPullOf(worktree, facts);
   if ("reason" in found) return stop(found);
-  const { pull, text } = found;
+  const { pull, body: publicBody } = found;
   const { launchPath, stored } = facts.prepared;
   const record = {
     number: pull.number,
@@ -1683,7 +1737,7 @@ const published = ({ worktree }: WorktreeCall): Result => {
     tree: facts.tree,
     base_branch: facts.config.baseBranch,
     actor: facts.actor,
-    body_digest: sha256Of(text),
+    body_digest: sha256Of(publicBody),
     at: new Date().toISOString(),
   };
   const publications = Array.isArray(stored.publications) ? [...stored.publications, record] : [record];
@@ -1810,12 +1864,24 @@ interface BodyInput {
   fields: BodyFields;
   findingLines: string[];
   publicText: (value: string) => string;
+  media: string[];
 }
 
 const documentLink = (repository: string, commit: string, path: string): string =>
   `https://github.com/${repository}/blob/${commit}/${path.split("/").map(encodeURIComponent).join("/")}`;
 
-const bodyOf = ({ issue, repository, commit, config, fields, findingLines, publicText }: BodyInput): string =>
+const mediaSection = (media: string[]): string[] =>
+  media.length === 0 ? [] : ["## Media", ...media.flatMap((path) => [`\`${path}\``, referenceOf(path)])];
+
+const mediaSteps = (media: string[]): string[] =>
+  media.length === 0
+    ? []
+    : [
+        `- Assigned AI: attach the media of the target commit (${media.join(", ")}) with \`gh pr edit --body-file\` and \`--attach\`, and confirm with \`launch.ts published\` that every media reference in the public body points at an uploaded file.`,
+        "- Assigned AI: on the PR page, confirm that each media displays or plays and matches its path (rendered_media_check).",
+      ];
+
+const bodyOf = ({ issue, repository, commit, config, fields, findingLines, publicText, media }: BodyInput): string =>
   `${[
     `Closes #${issue}`,
     "## Changes and rationale",
@@ -1832,23 +1898,44 @@ const bodyOf = ({ issue, repository, commit, config, fields, findingLines, publi
     ...fields.documents.map(
       ({ path, role, reason }) => `- [${path}](${documentLink(repository, commit, path)}) (${role}): ${publicText(reason)}`,
     ),
+    ...mediaSection(media),
     "## Remaining work and owners",
-    "When this body was written, the draft publication, CI, the body check, the switch to ready, and human approval were not complete.",
+    `When this body was written, the draft publication, CI, the ${media.length === 0 ? "body check" : "body and media checks"}, the switch to ready, and human approval were not complete.`,
     `- Assigned AI: publish this PR as a draft and confirm that CI on the same head (${config.ciChecks.join(", ")}) registers and succeeds.`,
+    ...mediaSteps(media),
     ...fields.handoff.map((step) => `- ${publicText(step)}`),
-    "- Assigned AI: compare the latest public body with the Issue, the target commit, the accepted review, and the verification results (published_body_check). After confirming the body and CI on the same head, recheck, switch to ready, and read it back (mark_ready). Keep the draft while anything is unconfirmed.",
+    `- Assigned AI: compare the latest public body with the Issue, the target commit, the accepted review, and the verification results (published_body_check). After confirming ${media.length === 0 ? "the body and CI" : "the body, the media, and CI"} on the same head, recheck, switch to ready, and read it back (mark_ready). Keep the draft while anything is unconfirmed.`,
     "- Human: decide any change to requirements or permissions, and decide review, approval, and merge.",
   ].join("\n\n")}\n`;
 
-const bodyTextOf = (worktree: string, facts: PublishFacts): string | Problem => {
+const MEDIA_FILE = /\.(png|jpe?g|webp|mp4|webm)$/i;
+const MEDIA_PATH = /^[A-Za-z0-9._/-]+$/;
+
+const mediaOf = (worktree: string, base: string): string[] => {
+  const config = captureConfigOf(worktree, base);
+  if (config === null || "reason" in config) return [];
+  const dir = config.destination.replace(/\/+$/, "");
+  const diff = runQuiet("git", ["diff", "--name-only", "-z", "--no-renames", "--diff-filter=AM", base, "HEAD", "--", dir], worktree);
+  if (diff.status !== 0) return [];
+  return diff.stdout.split("\0").filter((path) => path.startsWith(`${dir}/`) && MEDIA_FILE.test(path));
+};
+
+const bodyTextOf = (worktree: string, facts: PublishFacts): { text: string; media: string[] } | Problem => {
   const { stored, launch } = facts.prepared;
   const config = bodyConfigOf(worktree, launch.base);
   if ("reason" in config) return config;
   const fields = bodyFieldsOf(worktree, stored);
   if ("reason" in fields) return fields;
+  const media = mediaOf(worktree, launch.base);
+  const unsupported = media.find((path) => !MEDIA_PATH.test(path));
+  if (unsupported !== undefined) {
+    const detail = `The media path ${JSON.stringify(unsupported)} has a character that launch.ts does not write into a pull request body.`;
+    return { reason: "media-path-unsupported", detail };
+  }
   const publicText = publicTextOf([worktree, ...repoRootOf(worktree)]);
   const findingLines = [...requiredLines(stored, publicText), ...concernLines(fields.findings, publicText)];
-  return bodyOf({ issue: launch.issue, repository: launch.repository, commit: String(facts.head), config, fields, findingLines, publicText });
+  const text = bodyOf({ issue: launch.issue, repository: launch.repository, commit: String(facts.head), config, fields, findingLines, publicText, media });
+  return { text, media };
 };
 
 const body = ({ worktree }: WorktreeCall): Result => {
@@ -1857,8 +1944,9 @@ const body = ({ worktree }: WorktreeCall): Result => {
   const facts = publishFactsOf(worktree);
   if ("reason" in facts) return stop(facts);
   const { gate, launchPath, launch } = facts.prepared;
-  const text = bodyTextOf(worktree, facts);
-  if (typeof text !== "string") return stop(text);
+  const built = bodyTextOf(worktree, facts);
+  if ("reason" in built) return stop(built);
+  const { text, media } = built;
   const bodyFile = join(gate.dir, BODY_FILE);
   writeFileSync(bodyFile, text, "utf8");
   return {
@@ -1871,6 +1959,7 @@ const body = ({ worktree }: WorktreeCall): Result => {
     tree: facts.tree,
     body_file: bodyFile,
     body_digest: sha256Of(text),
+    media,
     launch_file: launchPath,
   };
 };
