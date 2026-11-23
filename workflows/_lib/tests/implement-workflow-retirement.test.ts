@@ -56,6 +56,11 @@ test("none of the files the implement workflow retirement removed exists", () =>
   assert.deepEqual(present, [], `removed files still on disk: ${present.join(", ")}`);
 });
 
+test("neither workflows/implement nor .ja/workflows/implement exists", () => {
+  const present = ["workflows/implement", ".ja/workflows/implement"].filter((path) => existsSync(join(REPO_ROOT, path)));
+  assert.deepEqual(present, [], `directories still on disk: ${present.join(", ")}`);
+});
+
 test("neither workflows/ nor .ja/workflows/ holds a .js file directly under it, and the same check finds one in a directory that holds x.js", () => {
   const dir = mkdtempSync(join(tmpdir(), "implement-workflow-retirement-"));
   try {

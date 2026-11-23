@@ -37,7 +37,7 @@ The sessions `launch.ts` starts run only the commands the user's own permission 
 
 With `--no-publish`, do not commit. Return the worktree, the branch, `launch_file`, and the review results, and end.
 
-1. Read the record in `launch_file`. Note the findings and `verified` of the two reviews in the last round, and the implementation session's reply (`implement.reply`). From the reply, extract the decisions the Issue does not state.
+1. Read the record in `launch_file`. The record is one JSON document. The reviews of the last round are in the last element of `reviews`. That element's `self` and `independent` are the self-review and the independent review, and each holds `findings` and `verified`. The implementation session's reply is in `implement.reply`. You can read them with `jq '.reviews[-1] | .self, .independent | {findings, verified}' "<launch_file>"` and `jq -r '.implement.reply' "<launch_file>"`. From the reply, extract the decisions the Issue does not state.
 2. Do the checks noted in step 4 of Phase 1 that come before publication. Do not change the worktree's files. Note the results.
 3. Call `git -C "<worktree>" add -A` and `git -C "<worktree>" commit -m "<Issue title> (#<number>)"`, in this order. Without `-C`, the commit lands in the target repo's checkout. `add -A` stages the same files as the tree the review accepted in Phase 2. Do not change the files.
 4. Call `launch.ts publish --worktree "<worktree>"`. Note the output's `url` and `number`. `publish` does the push, the draft PR creation, and the media attachment. It then checks the body and records the publication. Do not run `git push` or `gh pr create` yourself.

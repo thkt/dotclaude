@@ -2104,8 +2104,8 @@ const body = ({ worktree }: WorktreeCall): Result => {
 const CAPTURE_TIMEOUT_MS = 570_000;
 const CAPTURE_KILL_DELAY_MS = 2_000;
 const LONGEST_TIMER_MS = 2_147_483_647;
-const HARNESS = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "workflows", "implement", "harness");
-const INSTALLER = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "workflows", "implement", "install-media.ts");
+const HARNESS = resolve(dirname(fileURLToPath(import.meta.url)), "..", "harness");
+const INSTALLER = resolve(dirname(fileURLToPath(import.meta.url)), "install-media.ts");
 const OUTPUT_SIBLINGS = ["", ".artifacts", ".config.mjs", ".report.json"];
 const DIFF_LINE = /^:(\d{6}) (\d{6}) [0-9a-f]+ [0-9a-f]+ [A-Z]\d*\t(.+)$/;
 const UNRENDERED_MODES = ["000000", "100644"];
