@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { isMainModule } from "../../_lib/entry-point.ts";
 
 const USAGE =
   "Usage: validate-outcome.ts <outcome-file>\n\n" +

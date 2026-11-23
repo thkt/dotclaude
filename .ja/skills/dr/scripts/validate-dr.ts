@@ -4,7 +4,7 @@ import { accessSync, constants, existsSync, readFileSync, statSync } from "node:
 import { basename, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fail, splitFrontmatter } from "./dr_common.ts";
-import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { isMainModule } from "../../_lib/entry-point.ts";
 
 export const REQUIRED_SECTIONS = [
   "Context and Problem Statement",

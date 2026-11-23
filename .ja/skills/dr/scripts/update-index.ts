@@ -12,7 +12,7 @@ import {
   resolveDrDir,
   splitFrontmatter,
 } from "./dr_common.ts";
-import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { isMainModule } from "../../_lib/entry-point.ts";
 
 export const STATUS_SECTIONS = [
   ["proposed", "Proposed"],

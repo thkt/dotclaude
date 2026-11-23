@@ -4,7 +4,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSy
 import { availableParallelism, tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isMainModule } from "./entry-point.ts";
+import { isMainModule } from "../../skills/_lib/entry-point.ts";
 import { runWorkflow } from "./run-workflow.ts";
 import type { RunWorkflowStubs } from "./run-workflow.ts";
 

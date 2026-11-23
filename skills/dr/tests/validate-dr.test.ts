@@ -10,7 +10,7 @@ import {
   fixture,
   runCli,
   withTempHome,
-} from "../../../workflows/_lib/tests/_cli-fixture.ts";
+} from "../../_lib/tests/_cli-fixture.ts";
 import { countOptions, STATUS_VALUES } from "../scripts/validate-dr.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));

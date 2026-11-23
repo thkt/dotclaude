@@ -11,7 +11,7 @@ import {
   fixture,
   runCli,
   withTempHome,
-} from "../../../workflows/_lib/tests/_cli-fixture.ts";
+} from "../../_lib/tests/_cli-fixture.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "validate-outcome.ts");

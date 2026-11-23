@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
 import { fail, filesUnder, gitTopLevel, guardSkillDir, localDate, resolveDrDir } from "./dr_common.ts";
-import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { isMainModule } from "../../_lib/entry-point.ts";
 
 export const OUTPUT_KEYS = [
   "status",

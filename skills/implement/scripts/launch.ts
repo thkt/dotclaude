@@ -7,7 +7,7 @@ import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { type GateLocation, gateLocation, git, readJson, treeHash } from "../../../hooks/_lib/gate_record.ts";
 import { type ChildOutcome, type ChildRun, endAll, GIVE_REPLY, runClaudeOnce } from "./claude-child.ts";
-import { isMainModule } from "../../../workflows/_lib/entry-point.ts";
+import { isMainModule } from "../../_lib/entry-point.ts";
 import { type HolderStop, type Holding, hold } from "./holders.ts";
 
 export const TYPE_BY_PREFIX: Record<string, string> = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };

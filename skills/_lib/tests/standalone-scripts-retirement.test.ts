@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -95,6 +95,26 @@ test(
     }
   },
 );
+
+const MOVED_HELPERS: [from: string, to: string][] = [
+  ["workflows/_lib/entry-point.ts", "skills/_lib/entry-point.ts"],
+  [".ja/workflows/_lib/entry-point.ts", ".ja/skills/_lib/entry-point.ts"],
+  ["workflows/_lib/cli.ts", "skills/_lib/cli.ts"],
+  [".ja/workflows/_lib/cli.ts", ".ja/skills/_lib/cli.ts"],
+  ["workflows/_lib/tests/_cli-fixture.ts", "skills/_lib/tests/_cli-fixture.ts"],
+  ["workflows/_lib/tests/_git-repo.ts", "skills/_lib/tests/_git-repo.ts"],
+  ["workflows/_lib/tests/cli.test.ts", "skills/_lib/tests/cli.test.ts"],
+  ["workflows/_lib/tests/cli-fixture.test.ts", "skills/_lib/tests/cli-fixture.test.ts"],
+  ["workflows/_lib/tests/git-repo.test.ts", "skills/_lib/tests/git-repo.test.ts"],
+];
+
+test("the 9 skill helpers exist under skills/_lib/ and .ja/skills/_lib/ and none remains under workflows/_lib/ or .ja/workflows/_lib/", () => {
+  assert.equal(MOVED_HELPERS.length, 9);
+  const leftBehind = MOVED_HELPERS.map(([from]) => from).filter((path) => existsSync(join(REPO_ROOT, path)));
+  assert.deepEqual(leftBehind, [], `helpers still under workflows/: ${leftBehind.join(", ")}`);
+  const missing = MOVED_HELPERS.map(([, to]) => to).filter((path) => !existsSync(join(REPO_ROOT, path)));
+  assert.deepEqual(missing, [], `helpers missing from skills/_lib/: ${missing.join(", ")}`);
+});
 
 function grantsPython3Bash(content: string): boolean {
   return content.includes("Bash(python3:*)");

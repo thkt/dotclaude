@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { isMainModule } from "./entry-point.ts";
+import { isMainModule } from "../../skills/_lib/entry-point.ts";
 import { defaultProjects, digest, recentPrompts } from "./transcript.ts";
 
 type Value = string | number | boolean | number[];
