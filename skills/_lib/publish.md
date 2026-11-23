@@ -4,7 +4,7 @@ Commit the files the calling skill wrote as one commit and open a draft PR. `/sw
 
 ## Values the caller passes
 
-The subject opens with the prefix `workflows/implement.js` requires of an Issue title. Write the title in the language of `language` in `~/.claude/settings.json`, and in English when it is unset.
+The subject opens with the prefix `skills/implement/scripts/launch.ts` requires of an Issue title. Write the title in the language of `language` in `~/.claude/settings.json`, and in English when it is unset.
 
 | Value   | Contents                                                                  |
 | ------- | ------------------------------------------------------------------------- |
