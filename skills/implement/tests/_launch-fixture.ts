@@ -945,3 +945,49 @@ export function rewriteLastIndependent(f: Fixture, change: (independent: Record<
 }
 
 export const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
+
+export const FAKE = "fake-capture";
+
+export const COUNT_CHECK = '[ -z "$LOGS" ] || echo check >> "$LOGS/check-calls"';
+
+export const PNG = Buffer.concat([Buffer.from("89504e470d0a1a0a", "hex"), Buffer.from("0123456789")]);
+
+export const WRITE_PNG = 'cp "$LOGS/shot.png" "$last/list.png"\nexit 0\n';
+
+export interface CaptureSetting {
+  command?: string[];
+  destination?: string;
+  required?: boolean;
+  check?: string;
+}
+
+export const settingOf = ({ command = [FAKE], destination = "media", required = true }: CaptureSetting) => ({ command, destination, required });
+
+export function fakeCapture(f: Fixture, body: string): void {
+  writeFileSync(
+    join(f.bin, FAKE),
+    `#!/bin/sh\necho call >> "$LOGS/capture-calls"\npwd -P > "$LOGS/capture-cwd"\nprintf '%s\\n' "$@" > "$LOGS/capture-args"\nfor last; do :; done\nif [ -d "$last" ]; then ls -A "$last"; else echo missing; fi > "$LOGS/capture-listing"\n${body}`,
+    { mode: 0o755 },
+  );
+}
+
+export function capturing(setting: CaptureSetting = {}, body = WRITE_PNG): Fixture {
+  const f = fixture({ ...CONFIG, check: setting.check ?? COUNT_CHECK, capture: settingOf(setting) });
+  writeFileSync(join(f.logs, "shot.png"), PNG);
+  assert.equal(prepare(f).status, 0);
+  fakeClaude(f, PASS_CHECK + SESSION_REPLY);
+  assert.equal(run(f, ["implement", "--worktree", worktreeOf(f)]).status, 0);
+  fakeCapture(f, body);
+  return f;
+}
+
+export const captureAt = (f: Fixture, env: Record<string, string> = {}) => run(f, ["capture", "--worktree", worktreeOf(f)], env);
+
+export function passCheck(f: Fixture): void {
+  const check = spawnSync(process.execPath, [DONE_GATE, "check"], { cwd: worktreeOf(f), env: isolatedEnv(), encoding: "utf8" });
+  assert.equal(check.status, 0, check.stderr);
+}
+
+export const allEnded = (pids: number[]) => waitFor(() => pids.every((pid) => !isRunning(pid)), 5_000);
+
+export const recordedBase = (f: Fixture): string => String(launchRecord(worktreeOf(f)).base);
