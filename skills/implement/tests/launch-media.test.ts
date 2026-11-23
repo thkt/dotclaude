@@ -5,22 +5,29 @@ import { join } from "node:path";
 import test from "node:test";
 import { treeHash } from "../../../hooks/_lib/gate_record.ts";
 import {
+  ASSET_A,
+  ASSET_B,
   BRANCH,
   CLEAN,
+  CLIP,
   type CaptureSetting,
   type Fixture,
+  LIST,
   PR_URL,
   assertStopped,
   bodyFileOf,
   bodyText,
+  bothAttached,
   captureAt,
+  capturedAndReviewed,
   capturing,
+  commitAll,
   committed,
   expectedBody,
   fakeCapture,
   fakeReviewer,
-  git,
   headOf,
+  imageAttached,
   launchRecord,
   matchingPull,
   outputOf,
@@ -31,20 +38,15 @@ import {
   review,
   rewriteLaunch,
   sha256,
+  twoMedia,
+  videoAttached,
+  withMedia,
   withPulls,
   worktreeOf,
   writeBody,
 } from "./_launch-fixture.ts";
 
-const MP4 = Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftypisom"), Buffer.from("0123")]);
-
-const WRITE_PNG_AND_MP4 = 'cp "$LOGS/shot.png" "$last/list.png"\ncp "$LOGS/clip.mp4" "$last/clip.mp4"\nexit 0\n';
-
 const WRITE_TWO_PNGS = 'cp "$LOGS/shot.png" "$last/list.png"\ncp "$LOGS/shot.png" "$last/more.png"\nexit 0\n';
-
-const ASSET_A = "https://github.com/user-attachments/assets/0123abcd-4567-89ab-cdef-0123456789ab";
-
-const ASSET_B = "https://github.com/user-attachments/assets/fedcba98-7654-3210-fedc-ba9876543210";
 
 const mediaBody = (commit: string, media: string[]): string =>
   `${[
@@ -70,47 +72,14 @@ const mediaBody = (commit: string, media: string[]): string =>
     "- Human: decide any change to requirements or permissions, and decide review, approval, and merge.",
   ].join("\n\n")}\n`;
 
-const imageAttached = (text: string, path: string, asset: string): string => text.replaceAll(`![${path}](${path})`, `![${path}](${asset})`);
-
-const videoAttached = (text: string, path: string, asset: string): string => text.replaceAll(`![${path}](${path})`, asset);
-
 const mismatchDetail = (names: string): string =>
   `The pull request ${PR_URL} differs from what launch.ts confirmed before the push: ${names}. Reconcile it on GitHub, then call again.`;
-
-function capturedAndReviewed(f: Fixture): void {
-  const captured = captureAt(f);
-  assert.equal(outputOf(captured).ok, true, `${captured.stdout}${captured.stderr}`);
-  fakeReviewer(f, CLEAN);
-  const reviewed = review(f);
-  assert.equal(outputOf(reviewed).verdict, "accepted", `${reviewed.stdout}${reviewed.stderr}`);
-}
-
-function commitAll(f: Fixture, message: string): void {
-  git(worktreeOf(f), "add", "-A");
-  git(worktreeOf(f), "commit", "-q", "-m", message);
-}
-
-function withMedia(setting: CaptureSetting = {}, body?: string): Fixture {
-  const f = body === undefined ? capturing(setting) : capturing(setting, body);
-  writeFileSync(join(f.logs, "clip.mp4"), MP4);
-  capturedAndReviewed(f);
-  commitAll(f, "reviewed change with media");
-  return f;
-}
 
 function bodyOut(f: Fixture): Record<string, unknown> {
   const result = writeBody(f);
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
   return outputOf(result);
 }
-
-const twoMedia = (): Fixture => withMedia({ destination: "trial/evidence/media/" }, WRITE_PNG_AND_MP4);
-
-const CLIP = "trial/evidence/media/clip.mp4";
-
-const LIST = "trial/evidence/media/list.png";
-
-const bothAttached = (text: string): string => videoAttached(imageAttached(text, LIST, ASSET_A), CLIP, ASSET_B);
 
 test("with one media, body puts the Media section between the documents and the remaining work, changes the three places of the remaining work, and prints the path as media", () => {
   const f = withMedia({ destination: "trial/evidence/media/" });

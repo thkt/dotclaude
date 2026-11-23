@@ -991,3 +991,197 @@ export function passCheck(f: Fixture): void {
 export const allEnded = (pids: number[]) => waitFor(() => pids.every((pid) => !isRunning(pid)), 5_000);
 
 export const recordedBase = (f: Fixture): string => String(launchRecord(worktreeOf(f)).base);
+
+export const MP4 = Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftypisom"), Buffer.from("0123")]);
+
+export const WRITE_PNG_AND_MP4 = 'cp "$LOGS/shot.png" "$last/list.png"\ncp "$LOGS/clip.mp4" "$last/clip.mp4"\nexit 0\n';
+
+export const ASSET_A = "https://github.com/user-attachments/assets/0123abcd-4567-89ab-cdef-0123456789ab";
+
+export const ASSET_B = "https://github.com/user-attachments/assets/fedcba98-7654-3210-fedc-ba9876543210";
+
+export const imageAttached = (text: string, path: string, asset: string): string => text.replaceAll(`![${path}](${path})`, `![${path}](${asset})`);
+
+export const videoAttached = (text: string, path: string, asset: string): string => text.replaceAll(`![${path}](${path})`, asset);
+
+export function capturedAndReviewed(f: Fixture): void {
+  const captured = captureAt(f);
+  assert.equal(outputOf(captured).ok, true, `${captured.stdout}${captured.stderr}`);
+  fakeReviewer(f, CLEAN);
+  const reviewed = review(f);
+  assert.equal(outputOf(reviewed).verdict, "accepted", `${reviewed.stdout}${reviewed.stderr}`);
+}
+
+export function commitAll(f: Fixture, message: string): void {
+  git(worktreeOf(f), "add", "-A");
+  git(worktreeOf(f), "commit", "-q", "-m", message);
+}
+
+export function withMedia(setting: CaptureSetting = {}, body?: string): Fixture {
+  const f = body === undefined ? capturing(setting) : capturing(setting, body);
+  writeFileSync(join(f.logs, "clip.mp4"), MP4);
+  capturedAndReviewed(f);
+  commitAll(f, "reviewed change with media");
+  return f;
+}
+
+export const twoMedia = (): Fixture => withMedia({ destination: "trial/evidence/media/" }, WRITE_PNG_AND_MP4);
+
+export const CLIP = "trial/evidence/media/clip.mp4";
+
+export const LIST = "trial/evidence/media/list.png";
+
+export const bothAttached = (text: string): string => videoAttached(imageAttached(text, LIST, ASSET_A), CLIP, ASSET_B);
+
+export type GhCall = "issue" | "pulls" | "create" | "edit";
+
+export type PullsReply = "live" | { live: Record<string, unknown> } | unknown[];
+
+export interface PublishGh {
+  repo?: Record<string, unknown>;
+  pr?: { number: number; body: string } | null;
+  pulls?: PullsReply[];
+  failCreate?: number[];
+  createdOnFail?: boolean;
+  createStdout?: string;
+  failEdit?: number[];
+  during?: { call: GhCall; index: number; shell: string };
+}
+
+export interface RecordedGh {
+  args: string[];
+  cwd: string;
+  body: string | null;
+}
+
+const publishGhPlanPath = (f: Fixture): string => join(f.logs, "publish-gh-plan.json");
+
+const publishGhStatePath = (f: Fixture): string => join(f.logs, "publish-gh-state.json");
+
+export function fakePublishGh(f: Fixture, plan: PublishGh = {}): void {
+  writeFileSync(ghReplyPath(f), JSON.stringify(ISSUE_REPLY));
+  writeFileSync(publishGhPlanPath(f), JSON.stringify(plan));
+  writeFileSync(publishGhStatePath(f), JSON.stringify({ pr: plan.pr ?? null, counts: {} }));
+  const settings = {
+    plan: publishGhPlanPath(f),
+    state: publishGhStatePath(f),
+    issue: ghReplyPath(f),
+    logs: f.logs,
+    origin: f.origin,
+    branch: BRANCH,
+    repo: REPO_REPLY,
+    url: PR_URL.slice(0, PR_URL.lastIndexOf("/") + 1),
+    image: ASSET_A,
+    video: ASSET_B,
+  };
+  writeFileSync(
+    join(f.bin, "gh"),
+    `#!/usr/bin/env node
+const fs = require("node:fs");
+const { spawnSync } = require("node:child_process");
+const s = ${JSON.stringify(settings)};
+const args = process.argv.slice(2);
+const plan = JSON.parse(fs.readFileSync(s.plan, "utf8"));
+const state = JSON.parse(fs.readFileSync(s.state, "utf8"));
+const save = () => fs.writeFileSync(s.state, JSON.stringify(state));
+const flag = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
+const call =
+  args[0] === "issue" && args[1] === "view" ? "issue"
+  : args[0] === "api" && args[1] === "user" ? "user"
+  : args[0] === "api" && String(args[1]).endsWith("/pulls") ? "pulls"
+  : args[0] === "repo" && args[1] === "view" ? "repo"
+  : args[0] === "pr" && args[1] === "create" ? "create"
+  : args[0] === "pr" && args[1] === "edit" ? "edit"
+  : "unknown";
+const index = (state.counts[call] || 0) + 1;
+state.counts[call] = index;
+save();
+if (plan.during && plan.during.call === call && plan.during.index === index) {
+  spawnSync("/bin/sh", ["-c", plan.during.shell], { stdio: ["ignore", 2, 2] });
+}
+const record = (body) => fs.writeFileSync(s.logs + "/gh-" + call + "-" + index + ".json", JSON.stringify({ args, cwd: process.cwd(), body }));
+const bodyFile = flag("--body-file");
+const fail = () => {
+  process.stderr.write("gh " + call + "  failed\\n   on purpose\\n");
+  process.exit(1);
+};
+const livePull = () => {
+  const head = spawnSync("git", ["-C", s.origin, "rev-parse", "--verify", "--quiet", "refs/heads/" + s.branch], { encoding: "utf8" });
+  return {
+    number: state.pr.number,
+    html_url: s.url + state.pr.number,
+    state: "open",
+    draft: true,
+    user: { login: "launch-test" },
+    head: { ref: s.branch, sha: head.status === 0 ? head.stdout.trim() : null, repo: { full_name: "owner/repo" } },
+    base: { ref: "main", repo: { full_name: "owner/repo" } },
+    body: state.pr.body,
+  };
+};
+if (call === "issue") {
+  process.stdout.write(fs.readFileSync(s.issue, "utf8"));
+} else if (call === "user") {
+  process.stdout.write("launch-test\\n");
+} else if (call === "repo") {
+  process.stdout.write(JSON.stringify(plan.repo || s.repo));
+} else if (call === "pulls") {
+  const reply = (plan.pulls || [])[index - 1] || "live";
+  const live = state.pr === null ? [] : [livePull()];
+  const pulls = Array.isArray(reply) ? reply : reply === "live" ? live : live.map((pull) => ({ ...pull, ...reply.live }));
+  process.stdout.write(JSON.stringify(pulls));
+} else if (call === "create") {
+  const body = fs.readFileSync(bodyFile, "utf8");
+  record(body);
+  const remember = () => {
+    state.pr = { number: 9, body };
+    save();
+  };
+  if ((plan.failCreate || []).includes(index)) {
+    if (plan.createdOnFail) remember();
+    fail();
+  }
+  remember();
+  process.stdout.write(plan.createStdout === undefined ? s.url + "9\\n" : plan.createStdout);
+} else if (call === "edit") {
+  const body = bodyFile === null ? null : fs.readFileSync(bodyFile, "utf8");
+  record(body);
+  if ((plan.failEdit || []).includes(index)) fail();
+  if (body !== null) {
+    let text = body;
+    args.forEach((arg, at) => {
+      if (arg !== "--attach") return;
+      const path = args[at + 1];
+      const attached = /\\.(mp4|webm)$/i.test(path) ? s.video : "![" + path + "](" + s.image + ")";
+      text = text.split("![" + path + "](" + path + ")").join(attached);
+    });
+    state.pr = { ...state.pr, body: text };
+    save();
+  }
+} else {
+  process.stderr.write("unknown gh call\\n");
+  process.exit(1);
+}
+`,
+    { mode: 0o755 },
+  );
+}
+
+export const ghCallsOf = (f: Fixture, call: GhCall): RecordedGh[] =>
+  readdirSync(f.logs)
+    .filter((name) => name.startsWith(`gh-${call}-`) && name.endsWith(".json"))
+    .sort((a, b) => Number(a.slice(`gh-${call}-`.length, -5)) - Number(b.slice(`gh-${call}-`.length, -5)))
+    .map((name) => JSON.parse(readFileSync(join(f.logs, name), "utf8")));
+
+export function onOrigin(f: Fixture, sha: string, pr: { number: number; body: string }): void {
+  git(worktreeOf(f), "push", "-q", f.origin, `${sha}:refs/heads/${BRANCH}`);
+  const statePath = publishGhStatePath(f);
+  const state = JSON.parse(readFileSync(statePath, "utf8"));
+  writeFileSync(statePath, JSON.stringify({ ...state, pr }));
+}
+
+export const originBranchOf = (f: Fixture): string | null => {
+  const result = spawnSync("git", ["-C", f.origin, "rev-parse", "--verify", "--quiet", `refs/heads/${BRANCH}`], { env: isolatedEnv(), encoding: "utf8" });
+  return result.status === 0 ? result.stdout.trim() : null;
+};
+
+export const publish = (f: Fixture, env: Record<string, string> = {}) => run(f, ["publish", "--worktree", worktreeOf(f)], env);
