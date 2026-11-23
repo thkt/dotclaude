@@ -1,0 +1,127 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+
+const sides = [
+  { name: "ja", dir: join(root, ".ja", "skills", "implement"), declines: /自分では打たない/ },
+  { name: "en", dir: join(root, "skills", "implement"), declines: /^Do not run .* yourself$/ },
+].map((side) => ({ ...side, skill: readFileSync(join(side.dir, "SKILL.md"), "utf8") }));
+
+const launchSource = readFileSync(join(root, "skills", "implement", "scripts", "launch.ts"), "utf8");
+
+const section = (doc: string, heading: string): string => {
+  const start = doc.indexOf(`\n${heading}`);
+  assert.ok(start >= 0, `the document lost ${heading}`);
+  const end = doc.indexOf("\n## ", start + 1);
+  return end < 0 ? doc.slice(start) : doc.slice(start, end);
+};
+
+const frontmatterEnd = (doc: string): number => {
+  assert.ok(doc.startsWith("---\n"), "SKILL.md opens with frontmatter");
+  return doc.indexOf("\n---\n", 4) + "\n---\n".length;
+};
+
+const occurrences = (text: string, phrase: string): number => text.split(phrase).length - 1;
+
+const sentences = (text: string): string[] =>
+  text.split(/(?<=。)|(?<=\.)\s+|\n/).map((sentence) => sentence.trim().replace(/[。.]$/, ""));
+
+test("every launch.ts action the skill calls is one the launch.ts usage lists, and the skill calls exactly prepare, run, publish, and agree", () => {
+  const usage = /const USAGE =([\s\S]*?);\n/.exec(launchSource)?.[1];
+  assert.ok(usage, "launch.ts lost its USAGE");
+  for (const { name, skill } of sides) {
+    const actions = new Set([...skill.matchAll(/`launch\.ts ([a-z]+) --/g)].map((match) => match[1]));
+    assert.deepEqual([...actions].sort(), ["agree", "prepare", "publish", "run"], `${name}: the actions SKILL.md calls`);
+    for (const action of actions) assert.ok(usage.includes(`launch.ts ${action} `), `${name}: the usage does not list ${action}`);
+  }
+});
+
+test("the skill points at launch.ts by its path from the skill directory, and that file exists", () => {
+  for (const { name, skill } of sides) assert.ok(skill.includes("${CLAUDE_SKILL_DIR}/scripts/launch.ts"), `${name}: SKILL.md does not name the launch.ts path`);
+  assert.ok(existsSync(join(root, "skills", "implement", "scripts", "launch.ts")));
+});
+
+test("every reference the skill names exists on the same side", () => {
+  for (const { name, dir, skill } of sides) {
+    for (const reference of ["launch-stops.md", "publish.md", "capture.md"]) {
+      assert.ok(skill.includes(`\${CLAUDE_SKILL_DIR}/references/${reference}`), `${name}: SKILL.md does not name ${reference}`);
+      assert.ok(existsSync(join(dir, "references", reference)), `${name}: ${reference} does not exist`);
+    }
+  }
+});
+
+test("the skill names none of the retired launch routes, and its allowed tools grant its scripts but not Workflow", () => {
+  for (const { name, skill } of sides) {
+    for (const retired of ["host.ts", "sandbox_probe.ts", "references/host.md", "references/stops.md", "Workflow("])
+      assert.ok(!skill.includes(retired), `${name}: SKILL.md still names ${retired}`);
+    const allowed = /^allowed-tools: (.*)$/m.exec(skill.slice(0, frontmatterEnd(skill)))?.[1];
+    assert.ok(allowed, `${name}: the frontmatter lost allowed-tools`);
+    assert.ok(!allowed.includes("Workflow"), `${name}: allowed-tools still grants Workflow`);
+    assert.ok(allowed.split(" ").includes("Bash(${CLAUDE_SKILL_DIR}/scripts/*)"), `${name}: allowed-tools does not grant the skill's scripts`);
+  }
+});
+
+test("the host reference is gone on both sides", () => {
+  for (const { name, dir } of sides) assert.ok(!existsSync(join(dir, "references", "host.md")), `${name}: references/host.md still exists`);
+});
+
+test("the skill leaves the push and the PR creation to launch.ts publish, naming each only in the sentence that declines to run it", () => {
+  for (const { name, skill, declines } of sides) {
+    assert.ok(section(skill, "## Phase 3").includes("launch.ts publish --worktree"), `${name}: Phase 3 does not call publish`);
+    for (const command of ["gh pr create", "git push"]) {
+      assert.equal(occurrences(skill, command), 1, `${name}: SKILL.md names ${command} more than once or not at all`);
+      const sentence = sentences(skill).find((candidate) => candidate.includes(command));
+      assert.match(sentence ?? "", declines, `${name}: the sentence naming ${command} does not decline to run it`);
+    }
+  }
+});
+
+test("Phase 3 of the skill handles --no-publish", () => {
+  for (const { name, skill } of sides) assert.ok(section(skill, "## Phase 3").includes("--no-publish"), `${name}: Phase 3 does not handle --no-publish`);
+});
+
+test("the skill tells the session to call launch.ts with the sandbox off", () => {
+  for (const { name, skill } of sides) assert.ok(skill.includes("dangerouslyDisableSandbox: true"), `${name}: SKILL.md does not turn the sandbox off`);
+});
+
+test("the publish reference comments, watches CI, and switches to ready in that order, without editing the body", () => {
+  for (const { name, dir } of sides) {
+    const publish = readFileSync(join(dir, "references", "publish.md"), "utf8");
+    assert.ok(!publish.includes("gh pr edit"), `${name}: publish.md edits the body`);
+    const positions = ["gh pr comment", "gh pr checks", "gh pr ready"].map((command) => publish.indexOf(command));
+    assert.ok(positions.every((position) => position >= 0), `${name}: publish.md lost a command: ${positions}`);
+    assert.deepEqual([...positions].sort((a, b) => a - b), positions, `${name}: publish.md runs the commands out of order`);
+  }
+});
+
+test("the skill body and its three references stay within 100 lines on both sides", () => {
+  for (const { name, dir, skill } of sides) {
+    for (const [file, text] of [
+      ["SKILL.md", skill.slice(frontmatterEnd(skill))],
+      ...["publish.md", "capture.md", "launch-stops.md"].map((reference) => [reference, readFileSync(join(dir, "references", reference), "utf8")]),
+    ]) {
+      const lines = text.trimEnd().split("\n").length;
+      assert.ok(lines <= 100, `${name}: ${file} is ${lines} lines`);
+    }
+  }
+});
+
+test("each English file of the skill keeps every paragraph, step, and table row of its Japanese canonical on one line, so both sides have the same line count", () => {
+  for (const file of ["SKILL.md", join("references", "publish.md"), join("references", "capture.md")]) {
+    const [ja, en] = sides.map(({ dir }) => readFileSync(join(dir, file), "utf8").split("\n").length);
+    assert.equal(en, ja, `${file}: the English side has ${en} lines and the Japanese side ${ja}`);
+  }
+});
+
+test("the Japanese and English skills carry the same number of sections and the same Phase sequence", () => {
+  const [ja, en] = sides.map(({ skill }) => ({
+    sections: skill.split("\n").filter((line) => line.startsWith("## ")).length,
+    phases: [...skill.matchAll(/^## Phase (\d+)/gm)].map((match) => match[1]),
+  }));
+  assert.ok(ja.phases.length > 0, "the Japanese skill has no Phase");
+  assert.deepEqual(en, ja);
+});

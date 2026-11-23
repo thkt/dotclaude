@@ -1,23 +1,37 @@
-# 公開後確認と ready への切替
+# 公開の後の確認と ready への切り替え
 
-draft PR の公開 (修正では本文の書き換え) と、同じ head の CI 確認は implement workflow が行う。この手順は、公開本文の照合から `gh pr ready` の読戻しまでを担う。CI 成功だけで ready に切り替えない。人の承認・マージは含めない。
+`/implement` の Phase 3 が使う、`launch.ts publish` の後の手順。`publish` は、push、draft の PR の作成、media の添付、本文の確認、公開の記録までを済ませている。この手順は、本文を読むこと、確認の comment、CI の確認、ready への切り替えを担う。CI の成功だけで ready に切り替えない。人の承認と merge は含めない。
+
+PR の本文は、`launch.ts` が記録から組み立てたものである。手で書き換えない。書き換えると、次に直すときに、`launch.ts` が `body-changed` で止まる。本文に足したいことは、確認の comment に書く。launch-stops.md の `media-unattached` の行が述べる添付だけが、例外である。
 
 ## 手順
 
-1. workflow の戻り値の `ci` と `remaining` を読む。`ci.status: passed` は、公開した head で `ciChecks` の check が成功し、他の登録済み check にも失敗・保留が無かったことを示す。
-2. `gh pr view <n> --json <項目>` で実際の本文と対象を読む。項目は url・state・isDraft・body・author・headRefName・headRefOid。加えて headRepository・headRepositoryOwner・isCrossRepository・baseRefName・closingIssuesReferences・statusCheckRollup も読む。head の repo が対象 repo で、別 repo からの PR でないことも確かめる。本文の事実・数量・条件・範囲・否定・未確認事項・リンクを照合する (published_body_check)。照合先は Issue・accepted の評価要約・check 結果。生成時の省略や整形で意味が変わっていないかを読む。`remaining` に `rendered_media_check` があれば、添付した媒体の表示・再生と説明・配置を PR 画面で確認する。
-3. 本文が日本語なら、最新の本文をファイルに保存し、`${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint --config ${CLAUDE_SKILL_DIR}/../../.textlintrc.json <file>` を実行する。指摘された文は `${CLAUDE_SKILL_DIR}/../../rules/conventions/PROSE.md` に沿って書き直し、未確認の事項が確認済みに変わっていないか、Issue と根拠に照らして確かめる。そのあと次の修正へ進む。accepted の評価と保存済みの根拠は書き換えない。
-4. 本文を直す必要があれば、`isDraft: true` を確認してから `gh pr edit <n> --body-file <path>` で更新し、最新本文を読み戻す。書込み直前にも最新本文・head と変更案を照合し、他者の変更があれば上書きせず取り込み方をユーザーに尋ねる。
-5. ready 直前に、確認した版と最新の対象・本文・head・Issue・評価要約・check 結果、`gh api user` の実効主体、対象 repo の権限、同じ head の CI を再照合する。変更があれば関係する手順へ戻る。
-6. すべて揃ったら `gh pr ready <n>` で切り替える。`gh pr view <n> --json isDraft,headRefOid,url,body,statusCheckRollup` で、`isDraft: false`・head・本文・同じ head の CI が確認した版と一致することを読み戻す (mark_ready)。PR URL、確認した版と結果、未確認事項を返す。
+1. `gh pr view <n> --json url,state,isDraft,body,headRefOid,baseRefName,closingIssuesReferences` で、PR を読む。head が commit した SHA で、閉じる Issue が今回の Issue だけであることを確かめる。本文の事実、数量、条件、範囲、否定、未確認の事項を、Issue、`launch_file` の最後の巡のレビュー、check の結果と照らす (published_body_check)。
+2. 本文に節 `## Media` があれば、PR の page で、media が表示されるか再生されること、path と中身が合うことを確かめる (rendered_media_check)。page を開けない場合は、本文の HTML を読む。`gh api repos/<repository>/pulls/<n> -H "Accept: application/vnd.github.html+json" --jq .body_html` で読める。media ごとの画像か動画があることを確かめる。page では確かめていないこととして控える。
+3. 確認の comment を、file に書く。中身は、下の表の順にする。日本語なら、`${CLAUDE_SKILL_DIR}/../../node_modules/.bin/textlint --config ${CLAUDE_SKILL_DIR}/../../.textlintrc.json <file>` を実行する。指摘された文は、${CLAUDE_SKILL_DIR}/../../rules/conventions/PROSE.md に沿って書き直す。`gh pr comment <n> --body-file <file>` で投稿する。
+4. `gh pr checks <n> --watch --fail-fast` を background で呼び、完了の通知を待つ。timeout は 3600000 を指定する。終わったら、`gh pr checks <n> --json name,state,bucket` で、次の 2 つを確かめる。`.dotagents.json` の `ciChecks` の全ての名前が、`bucket` が `pass` の check としてある。`bucket` が `fail` か `pending` の check が、1 つもない。`ciChecks` の名前がまだないか、`pending` が残る場合は、もう 1 回 `--watch` を呼ぶ。その前と後に、`gh pr view <n> --json headRefOid` で、head が commit した SHA のままであることを確かめる。
+5. Phase 1 で控えた確認のうち、公開の後に行うものを行い、結果を PR の comment に足す。
+6. ready の直前に、PR の head、本文、同じ head の CI、Issue の state を読み直す。手順 1 と手順 4 で確かめた版から変わっていれば、関係する手順へ戻る。
+7. `gh pr ready <n>` で切り替える。`gh pr view <n> --json isDraft,headRefOid,url` で、`isDraft` が false で、head が確かめた SHA であることを読み戻す (mark_ready)。
+
+確認の comment は、次の中身を、この順に持つ。当たるものがない行は、書かない。
+
+| 順 | 中身 |
+| --- | --- |
+| 1 | 公開の前と後に確かめたことと、その結果。Issue が担当 AI に引き継いだ確認を含む |
+| 2 | `run` の回数、巡の数、2 つのレビューの判定、費用 |
+| 3 | 本文に載っていないこと。自己レビューの必須でない指摘と、実装の session の返事のうち Issue に書いていない判断である |
+| 4 | Issue と違う所、本文の不備、確かめていないこと。人に確かめてほしいこととして書く |
+| 5 | 残る作業 |
 
 ## 不備の戻し先
 
-| 不備                            | 戻し先                                          |
-| ------------------------------- | ----------------------------------------------- |
-| 説明だけの不備                  | 手順 4 の本文修正と再確認                       |
-| 成果物の不備                    | SKILL.md § 既存 PR の修正                       |
-| 事実不足                        | 調査。結果を本文か Issue に反映して手順 2 へ    |
-| 要求・権限の変更                | 人の判断。draft を維持して待つ                  |
-| 公開結果が不明 (通信断・割込み) | `gh pr view` で実状態を確認するまで再試行しない |
-| 他者による予期しない状態変更    | 対象・変更内容・権限を照合してから対応する      |
+| 不備 | 戻し先 |
+| --- | --- |
+| 本文の説明だけの不備 | 確認の comment に書く。本文は書き換えない |
+| 成果物の不備 | SKILL.md § 既存 PR の修正 |
+| 事実の不足 | 調査する。結果を、確認の comment か Issue に書く |
+| 要求か権限の変更 | 人の判断。draft のまま待つ |
+| CI の失敗 | draft のまま保つ。失敗した check の log から原因を調べる。成果物が原因なら、SKILL.md § 既存 PR の修正で直す。CI の環境が原因なら、人に伝える |
+| 公開の結果が分からない (通信の断、割り込み) | `gh pr view` で状態を確かめるまで、やり直さない |
+| 他の人による、予期しない状態の変更 | 対象、変更の中身、権限を確かめてから対応する |
