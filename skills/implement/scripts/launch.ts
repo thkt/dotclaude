@@ -30,7 +30,8 @@ const USAGE =
   "       launch.ts publishable --worktree <abs path>\n" +
   "       launch.ts published --worktree <abs path>\n" +
   "       launch.ts body --worktree <abs path>\n" +
-  "       launch.ts capture --worktree <abs path>\n";
+  "       launch.ts capture --worktree <abs path>\n" +
+  "       launch.ts publish --worktree <abs path>\n";
 
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
   `Implement GitHub Issue #${issue} of ${repository} in this worktree.
@@ -456,12 +457,17 @@ const viewIssue = (issue: number, repository: string, fields: string, cwd: strin
 const digestOf = ({ title, body, state }: Record<string, unknown>): string =>
   createHash("sha256").update(JSON.stringify([title, body, state])).digest("hex");
 
-const issueChange = ({ issue, repository, issue_digest }: Launch, worktree: string): { reason: string; detail: string } | null => {
+const agreedIssueOf = ({ issue, repository, issue_digest }: Launch, worktree: string): { found: ViewedIssue } | Problem => {
   const found = viewIssue(issue, repository, "title,body,state", worktree);
   if (typeof found === "string") return { reason: "issue-unreadable", detail: found };
-  if (digestOf(found) === issue_digest) return null;
+  if (digestOf(found) === issue_digest) return { found };
   const detail = `The title, body, or state of Issue #${issue} of ${repository} changed after the agreed version was recorded.`;
   return { reason: "requirements-changed", detail };
+};
+
+const issueChange = (launch: Launch, worktree: string): Problem | null => {
+  const agreed = agreedIssueOf(launch, worktree);
+  return "found" in agreed ? null : agreed;
 };
 
 const prepareStop = (issue: number, reason: string, detail: string): Result =>
@@ -1611,17 +1617,25 @@ const stackedPullOf = (worktree: string, facts: PublishFacts, last: Publication)
     return { reason: "already-pushed", detail: `The pull request ${pull.html_url} already has the commit ${facts.head} as its head. Call published.` };
   }
   const differing = differingOf(pull, facts, last.commit);
-  if (differing.length > 0) {
-    const { repository } = facts.prepared.launch;
-    const detail = `The pull request ${pull.html_url} differs from the publication launch.json records: ${differing.join(", ")}. Reconcile it on GitHub, then call again. A pull request marked ready is turned back to a draft with \`gh pr ready ${pull.number} --undo --repo ${repository}\`.`;
-    return { reason: "pr-mismatch", detail };
-  }
+  if (differing.length > 0) return recordedMismatchOf(pull, differing, facts.prepared.launch.repository);
   if (!isDigest(last.bodyDigest) || (typeof pull.body === "string" && sha256Of(pull.body) === last.bodyDigest)) return { pull };
+  return bodyChangedOf(pull);
+};
+
+const recordedMismatchOf = (pull: Record<string, unknown>, differing: string[], repository: string): Problem => {
+  const detail = `The pull request ${pull.html_url} differs from the publication launch.json records: ${differing.join(", ")}. Reconcile it on GitHub, then call again. A pull request marked ready is turned back to a draft with \`gh pr ready ${pull.number} --undo --repo ${repository}\`.`;
+  return { reason: "pr-mismatch", detail };
+};
+
+const bodyChangedOf = (pull: Record<string, unknown>): Problem => {
   const detail = `The body of the pull request ${pull.html_url} changed after launch.ts recorded it. launch.ts does not overwrite a change someone else made. A human decides how to keep it.`;
   return { reason: "body-changed", detail };
 };
 
-const publishableAt = (worktree: string, facts: PublishFacts): { fields: Record<string, unknown> } | Problem => {
+const publishableAt = (
+  worktree: string,
+  facts: PublishFacts,
+): { fields: Record<string, unknown>; pull?: Record<string, unknown> } | Problem => {
   const { launch } = facts.prepared;
   if (facts.last === null) return branchPullProblem(worktree, launch.repository, launch.branch) ?? { fields: {} };
   if (facts.state === "published") {
@@ -1630,7 +1644,7 @@ const publishableAt = (worktree: string, facts: PublishFacts): { fields: Record<
   }
   const found = stackedPullOf(worktree, facts, facts.last);
   if ("reason" in found) return found;
-  return { fields: { number: found.pull.number, url: found.pull.html_url } };
+  return { fields: { number: found.pull.number, url: found.pull.html_url }, pull: found.pull };
 };
 
 const publishable = ({ worktree }: WorktreeCall): Result => {
@@ -1694,7 +1708,11 @@ const unattachedOf = (built: string, actual: string, media: string[]): string[] 
   return actual.slice(actualAt) === built.slice(builtAt) ? unattached : null;
 };
 
-const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<string, unknown>; body: string } | Problem => {
+const publishedPullOf = (
+  worktree: string,
+  facts: PublishFacts,
+  mediaAt = "HEAD",
+): { pull: Record<string, unknown>; body: string } | Problem => {
   const found = selectedPullOf(worktree, facts);
   if ("reason" in found) return found;
   const { pull } = found;
@@ -1704,7 +1722,7 @@ const publishedPullOf = (worktree: string, facts: PublishFacts): { pull: Record<
     const detail = `The pull request ${pull.html_url} still has the published commit ${last.commit} as its head. Push the commit ${facts.head} to the branch ${branch} of ${facts.config.remote}, then call again.`;
     return { reason: "not-pushed", detail };
   }
-  const built = bodyTextOf(worktree, facts);
+  const built = bodyTextOf(worktree, facts, mediaAt);
   if ("reason" in built) return built;
   const unattached = typeof pull.body === "string" ? unattachedOf(built.text, pull.body, built.media) : null;
   const differing = [...differingOf(pull, facts, facts.head), ...(unattached === null ? ["body"] : [])];
@@ -1725,15 +1743,17 @@ const published = ({ worktree }: WorktreeCall): Result => {
 
   const facts = publishFactsOf(worktree);
   if ("reason" in facts) return stop(facts);
-  const commit = facts.head;
   const found = publishedPullOf(worktree, facts);
   if ("reason" in found) return stop(found);
-  const { pull, body: publicBody } = found;
+  return publishedOutput("published", facts, recordPublication(facts, found.pull, found.body));
+};
+
+const recordPublication = (facts: PublishFacts, pull: Record<string, unknown>, publicBody: string) => {
   const { launchPath, stored } = facts.prepared;
   const record = {
     number: pull.number,
     url: pull.html_url,
-    commit,
+    commit: facts.head,
     tree: facts.tree,
     base_branch: facts.config.baseBranch,
     actor: facts.actor,
@@ -1742,16 +1762,133 @@ const published = ({ worktree }: WorktreeCall): Result => {
   };
   const publications = Array.isArray(stored.publications) ? [...stored.publications, record] : [record];
   writeFileSync(launchPath, `${JSON.stringify({ ...stored, publications }, null, 2)}\n`);
-  return {
-    action: "published",
-    ok: true,
-    ...publishFields(facts, commit),
-    number: record.number,
-    url: record.url,
-    body_digest: record.body_digest,
-    at: record.at,
-    launch_file: launchPath,
-  };
+  return record;
+};
+
+const publishedOutput = (action: string, facts: PublishFacts, record: ReturnType<typeof recordPublication>): Result => ({
+  action,
+  ok: true,
+  ...publishFields(facts, record.commit),
+  number: record.number,
+  url: record.url,
+  body_digest: record.body_digest,
+  at: record.at,
+  launch_file: facts.prepared.launchPath,
+});
+
+const PUBLISHED_INSTEAD = "If this launch opened the pull request, call launch.ts published.";
+const PUBLISHED_AFTER_FIX = "After fixing it on GitHub, call launch.ts published.";
+const STDERR_LIMIT = 500;
+const PR_NUMBER = /^[1-9]\d*$/;
+
+const withSentence = ({ reason, detail }: Problem, sentence: string): Problem => ({ reason, detail: `${detail} ${sentence}` });
+
+const stderrOf = (run: SpawnSyncReturns<string>): string =>
+  oneLine(`${run.stderr ?? ""} ${run.error?.message ?? ""}`).slice(0, STDERR_LIMIT);
+
+const commandFailure = (reason: string, command: string, run: SpawnSyncReturns<string>): Problem => ({
+  reason,
+  detail: `${command} exited ${run.status ?? run.signal}: ${stderrOf(run)}`,
+});
+
+const pushedPullOf = (worktree: string, facts: PublishFacts, built: { text: string; media: string[] }): { pull: Record<string, unknown> } | Problem => {
+  const found = selectedPullOf(worktree, facts);
+  if ("reason" in found) return found;
+  const { pull } = found;
+  const differing = differingOf(pull, facts, facts.head);
+  if (differing.length > 0) return recordedMismatchOf(pull, differing, facts.prepared.launch.repository);
+  if (typeof pull.body !== "string") return bodyChangedOf(pull);
+  const recorded = facts.last?.bodyDigest;
+  if (isDigest(recorded) && sha256Of(pull.body) === recorded) return { pull };
+  return unattachedOf(built.text, pull.body, built.media) === null ? bodyChangedOf(pull) : { pull };
+};
+
+const remoteHeadOf = (worktree: string, remote: string, branch: string): { sha: string | null } | Problem => {
+  const ref = `refs/heads/${branch}`;
+  const listed = runQuiet("git", ["ls-remote", remote, ref], worktree);
+  if (listed.status !== 0) return commandFailure("remote-unreadable", `git ls-remote ${remote} ${ref}`, listed);
+  const line = listed.stdout.split("\n").find((entry) => entry.endsWith(`\t${ref}`));
+  return { sha: line === undefined ? null : line.slice(0, line.indexOf("\t")) };
+};
+
+const pushCommit = (worktree: string, remote: string, commit: string, branch: string): Problem | null => {
+  const pushed = runQuiet("git", ["push", "--no-follow-tags", remote, `${commit}:refs/heads/${branch}`], worktree);
+  return pushed.status === 0 ? null : commandFailure("push-failed", `git push of ${commit} to refs/heads/${branch} of ${remote}`, pushed);
+};
+
+const createdNumberOf = (stdout: string): number | null => {
+  const last = stdout.split("\n").map((line) => line.trim()).filter((line) => line !== "").at(-1) ?? "";
+  const number = last.slice(last.lastIndexOf("/") + 1);
+  return last.includes("/") && PR_NUMBER.test(number) ? Number(number) : null;
+};
+
+const editPull = (worktree: string, number: unknown, repository: string, bodyFile: string, media: string[]): Problem | null => {
+  const attaches = media.flatMap((path) => ["--attach", path]);
+  const edited = runQuiet("gh", ["pr", "edit", String(number), "--repo", repository, "--body-file", bodyFile, ...attaches], worktree);
+  return edited.status === 0 ? null : commandFailure("pr-edit-failed", "gh pr edit", edited);
+};
+
+interface Sharing {
+  title: string;
+  bodyFile: string;
+  built: { text: string; media: string[] };
+  pull: Record<string, unknown> | null;
+  pushed: boolean;
+}
+
+const sharePull = (worktree: string, facts: PublishFacts, { title, bodyFile, built, pull, pushed }: Sharing): { created: boolean; attached: boolean } | Problem => {
+  const { repository, branch } = facts.prepared.launch;
+  const { text, media } = built;
+  if (pull === null) {
+    const args = ["pr", "create", "--draft", "--repo", repository, "--base", facts.config.baseBranch, "--head", branch, "--title", title, "--body-file", bodyFile];
+    const created = runQuiet("gh", args, worktree);
+    if (created.status !== 0) return commandFailure("pr-create-failed", "gh pr create", created);
+    const number = createdNumberOf(created.stdout);
+    if (number === null) {
+      const detail = `gh pr create printed no pull request URL that ends in a positive integer: ${oneLine(created.stdout).slice(0, STDERR_LIMIT)}`;
+      return { reason: "pr-create-failed", detail };
+    }
+    if (media.length === 0) return { created: true, attached: false };
+    return editPull(worktree, number, repository, bodyFile, media) ?? { created: true, attached: true };
+  }
+  const settled = typeof pull.body === "string" && unattachedOf(text, pull.body, media)?.length === 0;
+  if (!pushed && settled) return { created: false, attached: false };
+  return editPull(worktree, pull.number, repository, bodyFile, media) ?? { created: false, attached: media.length > 0 };
+};
+
+const publish = ({ worktree }: WorktreeCall): Result => {
+  const stop = ({ reason, detail }: Problem) => stopped("publish", reason, detail);
+
+  const facts = publishFactsOf(worktree);
+  if ("reason" in facts) return stop(facts);
+  const ready = publishableAt(worktree, facts);
+  if ("reason" in ready && ready.reason !== "already-pushed") {
+    return stop(ready.reason === "branch-pr-exists" ? withSentence(ready, PUBLISHED_INSTEAD) : ready);
+  }
+  const commit = String(facts.head);
+  const { gate, launch } = facts.prepared;
+  const agreed = agreedIssueOf(launch, worktree);
+  if (!("found" in agreed)) return stop(agreed);
+  const built = bodyTextOf(worktree, facts, commit);
+  if ("reason" in built) return stop(built);
+  const bodyFile = join(gate.dir, BODY_FILE);
+  writeFileSync(bodyFile, built.text, "utf8");
+  const existing = "reason" in ready ? pushedPullOf(worktree, facts, built) : { pull: ready.pull ?? null };
+  if ("reason" in existing) return stop(existing);
+
+  const remoteHead = remoteHeadOf(worktree, facts.config.remote, launch.branch);
+  if ("reason" in remoteHead) return stop(remoteHead);
+  const pushed = remoteHead.sha !== commit;
+  const pushFailure = pushed ? pushCommit(worktree, facts.config.remote, commit, launch.branch) : null;
+  if (pushFailure !== null) return stop(pushFailure);
+  const title = `${agreed.found.title} (#${launch.issue})`;
+  const shared = sharePull(worktree, facts, { title, bodyFile, built, pull: existing.pull, pushed });
+  if ("reason" in shared) return stop(shared);
+
+  const confirmed = publishedPullOf(worktree, facts, commit);
+  if ("reason" in confirmed) return stop(withSentence(confirmed, PUBLISHED_AFTER_FIX));
+  const record = recordPublication(facts, confirmed.pull, confirmed.body);
+  return { ...publishedOutput("publish", facts, record), pushed, created: shared.created, attached: shared.attached };
 };
 
 const BODY_FILE = "pr-body.md";
@@ -1911,22 +2048,22 @@ const bodyOf = ({ issue, repository, commit, config, fields, findingLines, publi
 const MEDIA_FILE = /\.(png|jpe?g|webp|mp4|webm)$/i;
 const MEDIA_PATH = /^[A-Za-z0-9._/-]+$/;
 
-const mediaOf = (worktree: string, base: string): string[] => {
+const mediaOf = (worktree: string, base: string, commit: string): string[] => {
   const config = captureConfigOf(worktree, base);
   if (config === null || "reason" in config) return [];
   const dir = config.destination.replace(/\/+$/, "");
-  const diff = runQuiet("git", ["diff", "--name-only", "-z", "--no-renames", "--diff-filter=AM", base, "HEAD", "--", dir], worktree);
+  const diff = runQuiet("git", ["diff", "--name-only", "-z", "--no-renames", "--diff-filter=AM", base, commit, "--", dir], worktree);
   if (diff.status !== 0) return [];
   return diff.stdout.split("\0").filter((path) => path.startsWith(`${dir}/`) && MEDIA_FILE.test(path));
 };
 
-const bodyTextOf = (worktree: string, facts: PublishFacts): { text: string; media: string[] } | Problem => {
+const bodyTextOf = (worktree: string, facts: PublishFacts, mediaAt = "HEAD"): { text: string; media: string[] } | Problem => {
   const { stored, launch } = facts.prepared;
   const config = bodyConfigOf(worktree, launch.base);
   if ("reason" in config) return config;
   const fields = bodyFieldsOf(worktree, stored);
   if ("reason" in fields) return fields;
-  const media = mediaOf(worktree, launch.base);
+  const media = mediaOf(worktree, launch.base, mediaAt);
   const unsupported = media.find((path) => !MEDIA_PATH.test(path));
   if (unsupported !== undefined) {
     const detail = `The media path ${JSON.stringify(unsupported)} has a character that launch.ts does not write into a pull request body.`;
@@ -2245,6 +2382,7 @@ const HELD_ACTIONS: Record<string, HeldAction> = {
   published: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: published },
   body: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: body },
   capture: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: capture },
+  publish: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: publish },
 };
 
 const gateDirOf = (worktree: string): string | null => {
