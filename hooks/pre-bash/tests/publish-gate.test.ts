@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { GATE_DIR_NAME, PUBLISH_LOG_FILE, treeHash } from "../../_lib/gate_record.ts";
+import { GATE_DIR_NAME, LAUNCH_FILE, PUBLISH_LOG_FILE, treeHash } from "../../_lib/gate_record.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "publish_gate.ts");
@@ -61,6 +61,24 @@ function gatedRepo(mode: "record" | "enforce" = "record"): string {
   return dir;
 }
 
+function gateDir(dir: string): string {
+  return git(dir, "rev-parse", "--path-format=absolute", "--git-path", GATE_DIR_NAME).trim();
+}
+
+function launchedRepo(mode: "record" | "enforce"): string {
+  const dir = gatedRepo(mode);
+  writeFileSync(path.join(gateDir(dir), LAUNCH_FILE), "{}\n");
+  return dir;
+}
+
+function denialReason(result: SpawnSyncReturns<string>): string {
+  const output = JSON.parse(result.stdout) as {
+    hookSpecificOutput: { permissionDecision: string; permissionDecisionReason: string };
+  };
+  assert.equal(output.hookSpecificOutput.permissionDecision, "deny");
+  return output.hookSpecificOutput.permissionDecisionReason;
+}
+
 function passCheck(dir: string): void {
   const result = doneGate(dir, "check");
   assert.equal(result.status, 0, result.stderr);
@@ -89,8 +107,7 @@ function bash(command: string, cwd: string): SpawnSyncReturns<string> {
 }
 
 function logLines(dir: string): Array<Record<string, unknown>> {
-  const gateDir = git(dir, "rev-parse", "--path-format=absolute", "--git-path", GATE_DIR_NAME).trim();
-  const log = path.join(gateDir, PUBLISH_LOG_FILE);
+  const log = path.join(gateDir(dir), PUBLISH_LOG_FILE);
   if (!existsSync(log)) {
     return [];
   }
@@ -217,16 +234,15 @@ test("T-576 in mode record a cd whose target is not literal appends one unresolv
   assert.equal(typeof line.at, "string");
 });
 
-test("T-580 in mode enforce with no passing check an unresolved target is allowed with an unresolved line, while a plain git push is denied", () => {
+test("T-580 in mode enforce with no launch.json an unresolved target is denied with an unresolved line and a reason naming a literal path", () => {
   const gated = gatedRepo("enforce");
-  assert.equal(bash('cd "$X" && git push', gated).stdout, "");
+  const reason = denialReason(bash('cd "$X" && git push', gated));
+  assert.ok(reason.includes("literal path"), reason);
+  assert.ok(!reason.includes("launch.ts"), reason);
   const lines = logLines(gated);
   assert.equal(lines.length, 1);
   assert.equal(lines[0].unresolved, true);
-  const denied = JSON.parse(bash("git push", gated).stdout) as {
-    hookSpecificOutput: { permissionDecision: string };
-  };
-  assert.equal(denied.hookSpecificOutput.permissionDecision, "deny");
+  denialReason(bash("git push", gated));
 });
 
 test("T-581 every form whose target cannot be read from the line appends one unresolved line", () => {
@@ -430,4 +446,135 @@ test("T-613 in mode enforce a push inside a subshell is judged at the subshell c
   };
   assert.equal(denied.hookSpecificOutput.permissionDecision, "deny");
   assert.equal(bash(`(cd ${b} && true); git push`, a).stdout, "");
+});
+
+test("T-625 in mode enforce in a working tree with launch.json git push and gh pr create are denied after a passing check, naming launch.ts publish --worktree and the root", () => {
+  const dir = launchedRepo("enforce");
+  passCheck(dir);
+  for (const command of ["git push", "gh pr create", "cd sub && git push"]) {
+    const reason = denialReason(bash(command, dir));
+    assert.ok(reason.includes(`launch.ts publish --worktree ${dir}`), reason);
+    assert.ok(!reason.includes(path.join(dir, "sub")), reason);
+  }
+  const lines = logLines(dir);
+  assert.equal(lines.length, 3);
+  for (const line of lines) {
+    assert.equal(line.direct, true);
+    assert.equal(line.done, true);
+  }
+});
+
+test("T-626 in mode record in a working tree with launch.json git push and gh pr create are allowed and their lines hold direct true", () => {
+  const dir = launchedRepo("record");
+  for (const command of ["git push", "gh pr create"]) {
+    assert.equal(bash(command, dir).stdout, "", command);
+  }
+  const lines = logLines(dir);
+  assert.deepEqual(
+    lines.map((line) => [line.command, line.direct, line.done, line.reason]),
+    [
+      ["git push", true, false, "no-record"],
+      ["gh pr create", true, false, "no-record"],
+    ],
+  );
+});
+
+test("T-627 in a working tree with launch.json gh pr ready is judged as without it, before and after a passing check", () => {
+  const dir = launchedRepo("enforce");
+  assert.ok(denialReason(bash("gh pr ready", dir)).includes("commit"));
+  passCheck(dir);
+  assert.equal(bash("gh pr ready", dir).stdout, "");
+  const lines = logLines(dir);
+  assert.deepEqual(
+    lines.map((line) => [line.command, line.done, line.direct]),
+    [
+      ["gh pr ready", false, undefined],
+      ["gh pr ready", true, undefined],
+    ],
+  );
+});
+
+test("T-628 with the cwd gate in mode enforce cd \"$WT\" && git push and git -C \"$(pwd)\" push are denied with an unresolved line", () => {
+  const dir = gatedRepo("enforce");
+  for (const command of ['cd "$WT" && git push', 'git -C "$(pwd)" push']) {
+    const before = logLines(dir).length;
+    denialReason(bash(command, dir));
+    const lines = logLines(dir);
+    assert.equal(lines.length, before + 1, command);
+    assert.equal(lines[lines.length - 1].unresolved, true, command);
+  }
+});
+
+test("T-629 with the cwd gate in mode enforce and launch.json an unresolved target is denied with a reason naming launch.ts publish --worktree and the root", () => {
+  const dir = launchedRepo("enforce");
+  const reason = denialReason(bash('cd "$WT" && git push', path.join(dir, "sub")));
+  assert.ok(reason.includes(`launch.ts publish --worktree ${dir}`), reason);
+});
+
+test("T-630 with the cwd gate in mode enforce an unclosed quote is denied with the scan error in the reason and an error line", () => {
+  const dir = gatedRepo("enforce");
+  const reason = denialReason(bash("echo 'a && git push", dir));
+  assert.ok(reason.includes("No closing quotation"), reason);
+  const lines = logLines(dir);
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].error, true);
+  assert.equal(lines[0].session_id, "publish-gate-session");
+});
+
+test("T-631 a scan error on a command without push or gh is allowed with no line even in mode enforce", () => {
+  const dir = gatedRepo("enforce");
+  const result = hook(
+    JSON.stringify({ tool_name: "Bash", tool_input: { command: "echo 'a" }, cwd: dir, session_id: "push-gh" }),
+  );
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, "");
+  assert.ok(result.stderr.includes("allowed after an error"), result.stderr);
+  assert.deepEqual(logLines(dir), []);
+});
+
+test("T-632 with the cwd gate in mode record unresolved targets and unclosed quotes are allowed, recording as before", () => {
+  const dir = gatedRepo("record");
+  for (const command of ['cd "$WT" && git push', 'git -C "$(pwd)" push']) {
+    assert.equal(bash(command, dir).stdout, "", command);
+  }
+  const quoted = bash("echo 'a && git push", dir);
+  assert.equal(quoted.stdout, "");
+  assert.ok(quoted.stderr.includes("allowed after an error"), quoted.stderr);
+  const lines = logLines(dir);
+  assert.deepEqual(
+    lines.map((line) => Object.keys(line).sort()),
+    [
+      ["at", "command", "session_id", "unresolved"],
+      ["at", "command", "session_id", "unresolved"],
+    ],
+  );
+});
+
+test("T-633 from a cwd without on or outside git unresolved targets and unclosed quotes are allowed with no line", () => {
+  const gated = gatedRepo("enforce");
+  const plain = repo();
+  const outside = realpathSync(mkdtempSync(path.join(tmpdir(), "publish-gate-outside-")));
+  for (const cwd of [plain, outside]) {
+    for (const command of ['cd "$WT" && git push', 'git -C "$(pwd)" push', "echo 'a && git push"]) {
+      assert.equal(bash(command, cwd).stdout, "", command);
+    }
+  }
+  assert.deepEqual(logLines(plain), []);
+  assert.deepEqual(logLines(gated), []);
+});
+
+test("T-634 launch.ts publish --worktree <path> is not found as a publish command in either mode", () => {
+  for (const mode of ["record", "enforce"] as const) {
+    const dir = launchedRepo(mode);
+    assert.equal(bash(`launch.ts publish --worktree ${dir}`, dir).stdout, "", mode);
+    assert.equal(bash(`bun skills/implement/scripts/launch.ts publish --worktree ${dir}`, dir).stdout, "", mode);
+    assert.deepEqual(logLines(dir), [], mode);
+  }
+});
+
+test("T-635 in mode enforce with launch.json an unresolved gh pr ready is denied without naming launch.ts publish", () => {
+  const dir = launchedRepo("enforce");
+  const reason = denialReason(bash('cd "$WT" && gh pr ready', dir));
+  assert.ok(reason.includes("literal path"), reason);
+  assert.ok(!reason.includes("launch.ts"), reason);
 });

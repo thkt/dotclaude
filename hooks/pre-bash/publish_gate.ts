@@ -5,7 +5,9 @@ import path from "node:path";
 import { commands, git_subcommand, VALUED_GIT_FLAGS } from "../_lib/command_scan.ts";
 import {
   evaluate,
+  type GateLocation,
   gateLocation,
+  launched,
   PUBLISH_LOG_FILE,
   storedConfig,
   verdictText,
@@ -23,6 +25,13 @@ const HELP_FLAGS: ReadonlySet<string> = new Set(["--help", "-h"]);
 
 const COMMIT_THEN_PUBLISH =
   "Pass `done_gate.ts check` on the current working tree and commit before you publish.";
+
+const UNRESOLVED_HINT =
+  "The working tree of this publish command cannot be read from the line. Run it from inside the working tree, or name the working tree with a literal path.";
+
+function publishThroughLaunch(root: string): string {
+  return `launch.ts prepared this working tree. Publish with \`launch.ts publish --worktree ${root}\` instead of running git push or gh pr create directly.`;
+}
 
 function gitDirs(tokens: readonly string[]): string[] {
   const dirs: string[] = [];
@@ -118,18 +127,49 @@ function sessionOf(payload: unknown): string | null {
   return typeof sessionId === "string" ? sessionId : null;
 }
 
-function recordUnresolved(payload: unknown, cwd: string, kind: PublishKind): void {
+function appendLog(gate: GateLocation, entry: Record<string, unknown>): void {
+  appendFileSync(path.join(gate.dir, PUBLISH_LOG_FILE), `${JSON.stringify(entry)}\n`);
+}
+
+function enabledGateAt(cwd: string): { gate: GateLocation; mode: "record" | "enforce" } | null {
   const gate = gateLocation(cwd);
-  if (gate === null || storedConfig(gate) === null) {
+  if (gate === null) {
+    return null;
+  }
+  const config = storedConfig(gate);
+  return config === null ? null : { gate, mode: config.mode };
+}
+
+function judgeUnresolved(payload: unknown, cwd: string, kind: PublishKind): void {
+  const found = enabledGateAt(cwd);
+  if (found === null) {
     return;
   }
-  const entry = {
+  appendLog(found.gate, {
     at: new Date().toISOString(),
     session_id: sessionOf(payload),
     command: kind,
     unresolved: true,
-  };
-  appendFileSync(path.join(gate.dir, PUBLISH_LOG_FILE), `${JSON.stringify(entry)}\n`);
+  });
+  if (found.mode === "enforce") {
+    const direct = kind !== "gh pr ready" && launched(found.gate);
+    deny(direct ? `${UNRESOLVED_HINT}\n${publishThroughLaunch(found.gate.root)}` : UNRESOLVED_HINT);
+  }
+}
+
+function judgeScanError(payload: unknown, command: string, cwd: string, error: unknown): void {
+  const message = (error instanceof Error ? error.message : String(error)).replace(/\s+/g, " ");
+  const found = command.includes("push") || command.includes("gh") ? enabledGateAt(cwd) : null;
+  if (found === null || found.mode !== "enforce") {
+    throw error;
+  }
+  appendLog(found.gate, {
+    at: new Date().toISOString(),
+    session_id: sessionOf(payload),
+    error: true,
+    message,
+  });
+  deny(`publish_gate could not read the command: ${message}. Rewrite the command so publish_gate can read it.`);
 }
 
 function judge(text: string): void {
@@ -139,12 +179,18 @@ function judge(text: string): void {
   if (typeof command !== "string" || typeof cwd !== "string") {
     return;
   }
-  const target = publishTarget(command, cwd);
+  let target: PublishTarget | null;
+  try {
+    target = publishTarget(command, cwd);
+  } catch (error) {
+    judgeScanError(payload, command, cwd, error);
+    return;
+  }
   if (target === null) {
     return;
   }
   if (target.dir === null) {
-    recordUnresolved(payload, cwd, target.kind);
+    judgeUnresolved(payload, cwd, target.kind);
     return;
   }
   const gate = gateLocation(target.dir);
@@ -160,16 +206,22 @@ function judge(text: string): void {
     throw new Error("could not hash the working tree");
   }
   const { tree, result } = evaluation;
-  const entry = {
+  const direct = target.kind !== "gh pr ready" && launched(gate);
+  appendLog(gate, {
     at: new Date().toISOString(),
     session_id: sessionOf(payload),
     command: target.kind,
     tree,
     done: result.done,
     ...(result.done ? {} : { reason: result.reason }),
-  };
-  appendFileSync(path.join(gate.dir, PUBLISH_LOG_FILE), `${JSON.stringify(entry)}\n`);
-  if (config.mode === "enforce" && !result.done) {
+    ...(direct ? { direct: true } : {}),
+  });
+  if (config.mode !== "enforce") {
+    return;
+  }
+  if (direct) {
+    deny(publishThroughLaunch(gate.root));
+  } else if (!result.done) {
     deny(`${verdictText(result)}\n${COMMIT_THEN_PUBLISH}`);
   }
 }
