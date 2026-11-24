@@ -54,12 +54,6 @@ const COMPLEXITY_15 = `export function nested(a, b, c, d, e) {
 }
 `;
 
-const TOP_LEVEL_RETURN_SCRIPT = `if (typeof shouldSkip === "undefined") {
-  return;
-}
-console.log("done");
-`;
-
 let workspace;
 const cache = new Map();
 
@@ -98,39 +92,19 @@ test.after(() => {
 });
 
 test("T-001 a function with cognitive complexity 16 exits non-zero under the repository's biome.json", () => {
-  const { exitCode } = lint("complexity-16", "workflows/complexity-16.ts", COMPLEXITY_16);
+  const { exitCode } = lint("complexity-16", "src/complexity-16.ts", COMPLEXITY_16);
   assert.notEqual(exitCode, 0);
 });
 
 test("T-002 the same function flattened to complexity 15 exits zero", () => {
-  const { exitCode } = lint("complexity-15", "workflows/complexity-15.ts", COMPLEXITY_15);
+  const { exitCode } = lint("complexity-15", "src/complexity-15.ts", COMPLEXITY_15);
   assert.equal(exitCode, 0);
-});
-
-test("T-003 a script with a top-level return placed under workflows/ yields no parse diagnostic", () => {
-  const { output } = lint(
-    "top-level-return-workflows",
-    "workflows/top-level-return.js",
-    TOP_LEVEL_RETURN_SCRIPT,
-  );
-  assert.ok(!output.includes("title=parse"), `expected no parse diagnostic, got: ${output}`);
-});
-
-test("T-004 the same script placed under src/ yields a parse diagnostic", () => {
-  const { output } = lint(
-    "top-level-return-src",
-    "src/top-level-return.js",
-    TOP_LEVEL_RETURN_SCRIPT,
-  );
-  assert.ok(output.includes("title=parse"), `expected a parse diagnostic, got: ${output}`);
 });
 
 const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 
 const PLANNED_FILES_INCLUDES = [
   "**",
-  "!workflows/*.js",
-  "!.ja/workflows/*.js",
   "!plugins/**",
   "!bridge-spawn",
   "!seed-admin",
@@ -156,7 +130,7 @@ test("T-005 biome.json keeps noExcessiveCognitiveComplexity at error with maxAll
   );
 });
 
-test("T-006 biome.json's files.includes equals the six planned entries exactly and the file carries no overrides key", () => {
+test("T-006 biome.json's files.includes equals the four planned entries exactly and the file carries no overrides key", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
   assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
 });
