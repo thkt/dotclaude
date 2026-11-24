@@ -73,7 +73,7 @@ Take the expected value of each test Step 4 adds from the spec read in Step 1. F
 
 ## Test Naming
 
-Test names state the spec they verify as a condition and expected result (e.g. "rejects deposit when amount is negative"). The ideal name survives a refactor of the implementation as is. When a name contains implementation vocabulary (method names / internal steps), replace it with the domain's condition and expected-result vocabulary. Do not prefix a name with an ID such as `T-123`. Nothing refers to such an ID, and the same ID ends up in several files.
+Test names state the spec they verify as a condition and expected result (e.g. "rejects deposit when amount is negative"). The ideal name survives a refactor of the implementation as is. When a name contains implementation vocabulary (method names / internal steps), replace it with the domain's condition and expected-result vocabulary. Do not put an ID such as `T-123` in a name. Nothing refers to such an ID, and the same ID ends up in several files.
 
 ## Bug-fix reproduction test
 
