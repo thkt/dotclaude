@@ -18,6 +18,8 @@ Read `.claude/OUTCOME.md` at task start and judge scope against the outcome. Ski
 | Trigger                               | Action                                                                                                                                                                                                                                                    |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Issue URL or external spec referenced | Present plan (changes, files, TODO). Interactive session: wait for approval. Unattended run: record the plan and every open question in the task checklist, continue with work that does not depend on the answer, and stop only when nothing can advance |
+| A way simpler (fewer files, steps, or dependencies to change) or sturdier (fewer conditions under which it fails) than the requested one exists | Before starting, say it once: put the requested approach next to the alternative and give the reason to prefer the alternative. Question the request's premise, not only its details. Proceed with the approach the user picks |
+| The instruction is short, comes right after a change of topic, or reads two ways | Before starting, restate in one or two sentences the goal (the state when the work is done) and any point you filled in by guess, with its basis. Then proceed |
 
 ### How to ask
 
