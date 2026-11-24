@@ -31,7 +31,7 @@ const instructionFiles = () => {
   const found: InstructionFile[] = [];
   for (const prefix of ["", ".ja"] as const) {
     const lang: "en" | ".ja" = prefix === "" ? "en" : prefix;
-    for (const dir of ["skills", "agents", "rules", "workflows"]) {
+    for (const dir of ["skills", "agents", "rules"]) {
       found.push(...scanInstructionDir(prefix, lang, dir));
     }
   }

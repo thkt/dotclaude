@@ -201,8 +201,8 @@ workflow は `Workflow({name, args})` で起動する。args はオブジェク�
 
 | ステップ      | コマンド                                                                                     |
 | ------------- | -------------------------------------------------------------------------------------------- |
-| Node tests    | `node --test` を `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"`, `"workflows/**/tests/*.test.js"`, `"workflows/**/tests/*.test.ts"` に対して実行 |
-| Python tests  | `find agents hooks skills workflows -name '*_test.py'` を 1 ファイルずつ実行                  |
+| Node tests    | `node --test` を `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"` に対して実行 |
+| Python tests  | `find agents hooks skills -name '*_test.py'` を 1 ファイルずつ実行                  |
 | Shell tests   | `find hooks sandbox -name '*.test.sh'` を 1 ファイルずつ bash で実行                          |
 | oxlint        | `npx oxlint --format=github`                                                                  |
 | biome         | `npx biome lint --reporter=github`                                                            |

@@ -1,7 +1,6 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -46,8 +45,6 @@ const EXAMPLE_HOLDERS = [
   "tests/retirement.test.ts",
 ];
 
-const jsFilesIn = (dir: string) => readdirSync(dir).filter((name) => name.endsWith(".js"));
-
 const namesRetiredFile = (content: string) => RETIRED_NAMES.some((name) => content.includes(name));
 
 test("none of the files the implement workflow retirement removed exists", () => {
@@ -59,19 +56,6 @@ test("none of the files the implement workflow retirement removed exists", () =>
 test("neither workflows/implement nor .ja/workflows/implement exists", () => {
   const present = ["workflows/implement", ".ja/workflows/implement"].filter((path) => existsSync(join(REPO_ROOT, path)));
   assert.deepEqual(present, [], `directories still on disk: ${present.join(", ")}`);
-});
-
-test("neither workflows/ nor .ja/workflows/ holds a .js file directly under it, and the same check finds one in a directory that holds x.js", () => {
-  const dir = mkdtempSync(join(tmpdir(), "implement-workflow-retirement-"));
-  try {
-    writeFileSync(join(dir, "x.js"), "");
-    assert.deepEqual(jsFilesIn(dir), ["x.js"]);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-  for (const tree of ["workflows", ".ja/workflows"]) {
-    assert.deepEqual(jsFilesIn(join(REPO_ROOT, tree)), [], `${tree} holds a workflow script`);
-  }
 });
 
 test("the retired-file predicate flags a line carrying each removed name and passes the same line once the name is removed", () => {

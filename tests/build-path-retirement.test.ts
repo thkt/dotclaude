@@ -116,7 +116,6 @@ test("no path the build-path retirement removed exists on the English side or un
 const THIS_FILE = "tests/build-path-retirement.test.ts";
 const ABSENCE_TESTS = [
   "skills/implement/tests/workflow-contract.test.js",
-  "workflows/_lib/tests/codex-run.test.js",
 ];
 
 function isScanned(path: string): boolean {
