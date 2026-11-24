@@ -80,6 +80,7 @@ function listHooksTsFiles(): string[] {
 }
 
 test("T-007 neither .oxlintrc.json's ignorePatterns nor tsconfig.json's exclude drops hooks/", () => {
+  assert.ok(listHooksTsFiles().length > 0, "the derived hooks/*.ts set is empty");
   const oxlintSet = listOxlintFiles();
   const tscSet = listTypeCheckedFiles();
   for (const file of listHooksTsFiles()) {
