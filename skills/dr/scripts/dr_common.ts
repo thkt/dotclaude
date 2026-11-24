@@ -14,10 +14,17 @@ export interface GitTopLevelResult {
   error?: Error;
 }
 
+export function repoNameFromOriginUrl(url: string): string | null {
+  const lastSegment = url.trim().replace(/\/+$/, "").split(/[/:]/).at(-1) ?? "";
+  const name = lastSegment.replace(/\.git$/, "");
+  return name === "" ? null : name;
+}
+
 export function resolveDrDir(
   env: NodeJS.ProcessEnv,
   arg: string | undefined,
   topLevel: GitTopLevelResult,
+  originUrl: string | null = null,
 ): string | null {
   if (env.DR_DIR) {
     return env.DR_DIR;
@@ -25,10 +32,27 @@ export function resolveDrDir(
   if (arg) {
     return arg;
   }
+  if (env.DR_HOME) {
+    const repoName = originUrl === null ? null : repoNameFromOriginUrl(originUrl);
+    return repoName === null ? null : join(env.DR_HOME, repoName);
+  }
   if (topLevel.status !== 0) {
     return null;
   }
   return join(topLevel.stdout.trim(), "docs", "decisions");
+}
+
+export function failUnresolvedDrDir(env: NodeJS.ProcessEnv): never {
+  if (env.DR_HOME) {
+    fail(
+      "Error: DR_HOME is set but the origin remote URL of the current repository could not be read." +
+        " Add an origin remote or set DR_DIR to the DR archive.",
+    );
+  }
+  fail(
+    "Error: not inside a git repository. Decision Records require" +
+      " <git-root>/docs/decisions/. Set DR_DIR env var to override.",
+  );
 }
 
 function isFile(path: string): boolean {
@@ -62,6 +86,11 @@ export function splitFrontmatter(text: string): [string[], string[]] {
 export function gitTopLevel(): GitTopLevelResult {
   const result = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
   return { status: result.status, stdout: result.stdout ?? "", error: result.error };
+}
+
+export function gitOriginUrl(): string | null {
+  const result = spawnSync("git", ["remote", "get-url", "origin"], { encoding: "utf8" });
+  return result.status === 0 ? (result.stdout ?? "").trim() : null;
 }
 
 export function filesUnder(dir: string, keep: (name: string) => boolean): string[] {

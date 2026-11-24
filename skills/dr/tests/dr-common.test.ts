@@ -154,3 +154,29 @@ test("T-486 gitTopLevel answers the repository root with status 0 inside a git w
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("T-636 resolveDrDir returns $DR_HOME/<repo name> when DR_HOME and the origin URL are set and neither DR_DIR nor the argument is, for an https URL, an ssh URL, and a URL without .git", () => {
+  for (const originUrl of [
+    "https://github.com/thkt/dotclaude.git",
+    "git@github.com:thkt/dotclaude.git",
+    "https://github.com/thkt/dotclaude",
+  ]) {
+    assert.equal(
+      resolveDrDir({ DR_HOME: "/home/decisions" }, undefined, GIT_OK("/from/git"), originUrl),
+      join("/home/decisions", "dotclaude"),
+      originUrl,
+    );
+  }
+});
+
+test("T-637 resolveDrDir returns DR_DIR when DR_DIR and DR_HOME are both set, and the argument when the argument and DR_HOME are both set", () => {
+  const originUrl = "https://github.com/thkt/dotclaude.git";
+  assert.equal(
+    resolveDrDir({ DR_DIR: "/from/env", DR_HOME: "/home/decisions" }, undefined, GIT_OK("/from/git"), originUrl),
+    "/from/env",
+  );
+  assert.equal(
+    resolveDrDir({ DR_HOME: "/home/decisions" }, "/from/arg", GIT_OK("/from/git"), originUrl),
+    "/from/arg",
+  );
+});

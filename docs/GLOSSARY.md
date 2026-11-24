@@ -29,7 +29,7 @@ so the record is scoped as a Decision Record rather than an Architecture-only on
   architecture-pattern, deprecation, process-change) differ only by the topic
   table inside it
 
-Location: `docs/decisions/NNNN-title.md`
+Location: `$DR_HOME/<repo name>/NNNN-title.md` when `DR_HOME` is set, otherwise `docs/decisions/NNNN-title.md`
 
 ## Related
 

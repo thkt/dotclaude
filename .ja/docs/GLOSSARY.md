@@ -22,7 +22,7 @@
 - 受理後は不変。新たな DR で置換されるが、編集はしない
 - テンプレートは MADR 1 枚。判断種別 (technology-selection, architecture-pattern, deprecation, process-change) の差は、そのテンプレート内のトピック表で表す
 
-配置: `docs/decisions/NNNN-title.md`
+配置: `DR_HOME` があれば `$DR_HOME/<repo 名>/NNNN-title.md`、なければ `docs/decisions/NNNN-title.md`
 
 ## 関連
 

@@ -3,7 +3,16 @@
 import { spawnSync } from "node:child_process";
 import { accessSync, constants, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
-import { fail, filesUnder, gitTopLevel, guardSkillDir, localDate, resolveDrDir } from "./dr_common.ts";
+import {
+  fail,
+  failUnresolvedDrDir,
+  filesUnder,
+  gitOriginUrl,
+  gitTopLevel,
+  guardSkillDir,
+  localDate,
+  resolveDrDir,
+} from "./dr_common.ts";
 import { isMainModule } from "../../_lib/entry-point.ts";
 
 export const OUTPUT_KEYS = [
@@ -176,12 +185,10 @@ export function main(argv: string[]): number {
     process.env,
     undefined,
     process.env.DR_DIR ? { status: 0, stdout: "" } : gitTopLevel(),
+    process.env.DR_DIR ? null : gitOriginUrl(),
   );
   if (drDir === null) {
-    fail(
-      "Error: not inside a git repository. Decision Records require" +
-        " <git-root>/docs/decisions/. Set DR_DIR env var to override.",
-    );
+    failUnresolvedDrDir(process.env);
   }
   const threshold = parseFloat(process.env.DUPLICATE_THRESHOLD ?? "0.7");
 

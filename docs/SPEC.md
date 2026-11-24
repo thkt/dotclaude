@@ -150,7 +150,7 @@ A skill marked "no" under user-invocable is a knowledge module the model loads f
 
 | Skill                              | Model   | User-invocable | Artifact or side effect                             |
 | ---------------------------------- | ------- | -------------- | --------------------------------------------------- |
-| `dr`                               | inherit | yes            | A MADR v4 file under `docs/decisions/`              |
+| `dr`                               | inherit | yes            | A MADR v4 file under `$DR_HOME/<repo name>/` when `DR_HOME` is set, otherwise under `docs/decisions/` |
 | `outcome`                          | inherit | yes            | `.claude/OUTCOME.md` created or updated             |
 | `use-cli-recall`                   | inherit | no             | Knowledge of how to call recall                     |
 | `use-cli-scout`                    | inherit | no             | Knowledge of how to call scout                      |

@@ -1,11 +1,13 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { runCli } from "../../_lib/tests/_cli-fixture.ts";
+import { runCli, type RunCliOptions } from "../../_lib/tests/_cli-fixture.ts";
+import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
 import { STATUS_SECTIONS } from "../scripts/update-index.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -26,6 +28,16 @@ const CASES = JSON.parse(
 ) as FixtureCase[];
 
 const DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
+
+function runCliWithoutHostDrHome(
+  scriptPath: string,
+  home: string,
+  stdin: string,
+  argv: readonly string[],
+  options: RunCliOptions,
+) {
+  return runCli(scriptPath, home, stdin, argv, { ...options, env: { DR_HOME: "", ...options.env } });
+}
 
 function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): T {
   const dir = mkdtempSync(join(tmpdir(), "update-index-case-"));
@@ -52,7 +64,7 @@ function assertReadmeDateShape(actual: string, expectedWithPlaceholder: string, 
 test("T-208 every frozen case in update-index-cases.json reproduces the python script's exit code, stdout path, and the README content with the date compared by shape", () => {
   for (const entry of CASES) {
     withCaseDir(entry.setup, (dir) => {
-      const run = runCli(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
+      const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
       assert.equal(run.status, entry.exit, `${entry.name}: exit code (stderr: ${run.stderr})`);
       const expectedStdout = entry.stdout.replace("<dr-dir>", entry.env.DR_DIR ?? "");
       assert.equal(run.stdout, expectedStdout, `${entry.name}: stdout path`);
@@ -76,7 +88,7 @@ test("T-209 the DR List rows follow file name order and each By Status section l
       "archive/0002-bravo-decision.md": '---\nstatus: "proposed"\n---\n# Mike Title\n\nbody\n',
     },
     (dir) => {
-      const run = runCli(TS_SCRIPT, dir, "", [], { cwd: dir, env: { DR_DIR: "archive" } });
+      const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", [], { cwd: dir, env: { DR_DIR: "archive" } });
       assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
       const readme = readFileSync(join(dir, "archive", "README.md"), "utf8");
 
@@ -115,7 +127,7 @@ test("T-210 a status value matching no section key is listed in the table and ab
         `---\nstatus: "${status}"\n---\n# Withdrawn Decision\n\nbody\n`,
     },
     (dir) => {
-      const run = runCli(TS_SCRIPT, dir, "", [], { cwd: dir, env: { DR_DIR: "archive" } });
+      const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", [], { cwd: dir, env: { DR_DIR: "archive" } });
       assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
       const readme = readFileSync(join(dir, "archive", "README.md"), "utf8");
 
@@ -147,7 +159,7 @@ test("T-211 the README is replaced in one rename and no temporary file is left i
         '---\nstatus: "proposed"\ndate: "2024-01-01"\n---\n# First Decision\n\nbody\n',
     },
     (dir) => {
-      const run = runCli(TS_SCRIPT, dir, "", [], { cwd: dir, env: { DR_DIR: "archive" } });
+      const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", [], { cwd: dir, env: { DR_DIR: "archive" } });
       assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
       const entries = readdirSync(join(dir, "archive")).sort();
       assert.deepEqual(
@@ -158,4 +170,26 @@ test("T-211 the README is replaced in one rename and no temporary file is left i
       );
     },
   );
+});
+
+test("T-640 with DR_HOME set in a repository whose origin is https://example.invalid/owner/sample.git, the run exits 0 and writes $DR_HOME/sample/README.md", () => {
+  withTempRepo((repo) => {
+    spawnSync("git", ["-C", repo, "remote", "add", "origin", "https://example.invalid/owner/sample.git"]);
+    const drHome = mkdtempSync(join(tmpdir(), "update-index-dr-home-"));
+    try {
+      mkdirSync(join(drHome, "sample"));
+      writeFileSync(
+        join(drHome, "sample", "0001-first-decision.md"),
+        '---\nstatus: "proposed"\ndate: "2024-01-01"\n---\n# First Decision\n\nbody\n',
+      );
+      const run = runCli(TS_SCRIPT, repo, "", [], {
+        cwd: repo,
+        env: { PATH: process.env.PATH ?? "", DR_HOME: drHome },
+      });
+      assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
+      assert.ok(existsSync(join(drHome, "sample", "README.md")), "$DR_HOME/sample/README.md exists");
+    } finally {
+      rmSync(drHome, { recursive: true, force: true });
+    }
+  });
 });
