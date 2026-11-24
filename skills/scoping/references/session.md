@@ -20,7 +20,7 @@ The sharing owner checks the diff and publication scope, and includes the needed
 
 Line up the target Issue, the needed reports' repo-relative paths, confirmed Git blob IDs, and start commit, and their save, commit, and sharing state. When no report is needed, state that judgment. When shared, make the report path, commit, and publication target traceable from the Issue; when not shared, show the remaining operations. Do not treat a local save or a commit alone as shared.
 
-Move important decision evidence that lives only in the conversation into the Issue. Select the related decision records and research originals as needed, and hand over the confirmed versions and their relation to this requirement.
+Move important decision evidence that lives only in the conversation into the Issue. Select the related research originals as needed, and hand over the confirmed versions and their relation to this requirement.
 
 Implementation and independent evaluation refer to the same report version, and judge separately its applicability to the current code and any contradiction. A matching reference alone does not guarantee content, agreement, or sharing state. After updating a report, do not reuse an old evaluation.
 

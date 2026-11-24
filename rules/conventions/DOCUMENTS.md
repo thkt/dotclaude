@@ -31,8 +31,6 @@ The same directive sitting in both `rules/` and a record that has not been super
 
 ## Read and retain
 
-At requirements and implementation entry, select the relevant decision records from the target repository's decisions index, task terms, and changed paths. Missing documents are not a start blocker. Check each relevant DR's status, scope, and successor against the current requirements. Do not apply an old conclusion to another objective unconditionally.
-
 Keep originals in the target repository's `docs/research/` and choice rationale in `docs/decisions/`. How the work is done today is held by the code, its tests, the comments that state a reason, and `rules/`. README and CLAUDE.md are entry points; the Issue and agreement record own requirements and permission. Pass needed references to implementation and evaluation. Where versions matter, use repository-relative paths, Git blobs, and the starting commit. Version agreement proves neither correctness nor adoption.
 
 When a decision settles and when the implementation diff is ready, check effects on existing documents. Include required DR creation and `rules/` updates in the agreed change scope and compare them with originals and code during independent evaluation. The Issue/PR explanation suffices for choices below the DR adoption gate. Use dr's MADR template for a DR.
