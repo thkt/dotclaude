@@ -60,7 +60,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 
 #### 利用可能なプラグイン
 
-- build: 自己完結の開発ワークフロー一式。install 時にリポジトリ全体を一度 clone し、全 skill/agent/workflow を build: namespace でロードする。`/scoping` で要求を整理して Issue に合意し、その Issue を `/implement` に渡す。`/implement` は implement workflow で実装から検証を経て draft PR と CI 確認まで進める。同梱対象は critic-design エージェントと implement workflow。`/sweep` `/outcome` `/dr` `/in-your-own-words` の 4 skill も含む。
+- build: 自己完結の開発ワークフロー一式。install 時にリポジトリ全体を一度 clone し、全 skill/agent を build: namespace でロードする。`/scoping` で要求を整理して Issue に合意し、その Issue を `/implement` に渡す。`/implement` は `launch.ts` で実装から検証を経て draft PR と CI 確認まで進める。同梱対象は critic-design エージェント。`/sweep` `/outcome` `/dr` `/in-your-own-words` の 4 skill も含む。
 
 ### Option 2: 手動インストール (フル設定)
 
@@ -79,7 +79,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
    git clone https://github.com/thkt/dotclaude.git ~/.claude
    ```
 
-注意: 手動インストールでは、すべてのスキル、エージェント、ルール、個人設定が読み込まれる。プラグインインストールもリポジトリ全体を clone するが、Claude Code が読み込むのは skill、agent、workflow だけで、個人の `CLAUDE.md`、`rules/`、`settings.json` はルールや設定として適用されない。skill が `rules/` を引用するときは plugin 内のコピーを読む。
+注意: 手動インストールでは、すべてのスキル、エージェント、ルール、個人設定が読み込まれる。プラグインインストールもリポジトリ全体を clone するが、Claude Code が読み込むのは skill と agent だけで、個人の `CLAUDE.md`、`rules/`、`settings.json` はルールや設定として適用されない。skill が `rules/` を引用するときは plugin 内のコピーを読む。
 
 ## 📦 依存関係とセットアップ
 
@@ -138,7 +138,7 @@ macOS で sandbox を有効にしている場合、sandbox 内で `gh` を実行
 
 ### Hook ツール (推奨)
 
-このファミリーのバイナリは 1 つも `settings.json` に配線されておらず、自動実行されない (DR-0121, DR-0122)。`hooks/` 配下の TypeScript hook も、Stop の `lifecycle/done_gate.ts stop` と PreToolUse(Bash) の `pre-bash/publish_gate.ts` を除いて配線していない (DR-0123)。品質保証は CI と workflow が持つ。インストールは任意で、下表はどのバイナリが何を担っていたかの記録である。
+このファミリーのバイナリは 1 つも `settings.json` に配線されておらず、自動実行されない (DR-0121, DR-0122)。`hooks/` 配下の TypeScript hook も、Stop の `lifecycle/done_gate.ts stop` と PreToolUse(Bash) の `pre-bash/publish_gate.ts` を除いて配線していない (DR-0123)。品質保証は CI と `launch.ts` が持つ。インストールは任意で、下表はどのバイナリが何を担っていたかの記録である。
 
 ```bash
 brew tap thkt/tap
@@ -214,7 +214,7 @@ Slack 読み込み: `scout fetch <slack-url>` で任意の Slack メッセージ
 ### コアドキュメント
 
 - [Design Philosophy](./docs/DESIGN.md). 設計思想・意図
-- [SPEC](./docs/SPEC.md). hook, skill, agent, workflow の実行契約
+- [SPEC](./docs/SPEC.md). hook, skill, agent の実行契約
 - [Commands Reference (English)](../docs/COMMANDS.md)
 - [Commands Reference (Japanese)](./docs/COMMANDS.md)
 - [Configuration Guide](../CLAUDE.md)

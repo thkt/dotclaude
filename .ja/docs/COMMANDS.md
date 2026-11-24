@@ -39,8 +39,6 @@ Issue を経ない変更は `/sweep`、`/dr`、`/outcome` が自分で draft PR 
 
 | DR                                                                                                                  | 決定                                                                 |
 | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [DR-0120](../../docs/decisions/0120-keep-the-implement-workflows-deviations-from-codexs-implement.md)               | implement workflow が Codex の implement から外れるところを保つ      |
-| [DR-0127](../../docs/decisions/0127-launch-the-implement-workflow-on-a-host-that-runs-relays-itself.md)             | relay を自分で走らせる host から implement workflow を起動する       |
 | [DR-0128](../../docs/decisions/0128-retire-the-plan-based-build-path-for-scoping-and-implement.md)                  | Issue から PR までの経路を `/scoping` → `/implement` の 1 本にする   |
 | [DR-0090](../../docs/decisions/0090-unify-workspace-and-history-storage-locations.md)                               | 成果物は `.claude/workspace/`、履歴は `~/.claude/history/`           |
 

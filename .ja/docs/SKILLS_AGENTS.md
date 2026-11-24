@@ -24,7 +24,7 @@ graph LR
 
 ## Skills と Agents
 
-`dr` は DR file と index を Write/Edit で生成し、`implement` は implement workflow を起動する。そのため Skill の状態と出力は許可ツールと手順に依存する。
+`dr` は DR file と index を Write/Edit で生成し、`implement` は `launch.ts` を呼ぶ。そのため Skill の状態と出力は許可ツールと手順に依存する。
 
 | 観点         | Skills                              | Agents           |
 | ------------ | ----------------------------------- | ---------------- |
@@ -133,6 +133,6 @@ SKILL.md → reference.md (1 階層のみ)
 
 ## 関連
 
-- [COMMANDS.md](./COMMANDS.md). コマンドと workflow の関係、`/scoping` → `/implement` 中心の開発フロー
+- [COMMANDS.md](./COMMANDS.md). コマンドの実装と、`/scoping` → `/implement` 中心の開発フロー
 - [SKILLS](../rules/conventions/SKILLS.md). Skill 定義書式
 - [SUBAGENT](../rules/conventions/SUBAGENT.md). サブエージェント定義書式

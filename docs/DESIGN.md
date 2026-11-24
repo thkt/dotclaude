@@ -133,18 +133,18 @@ Consistency across documentation, plugins, and translations.
   adds files to read
 - Align EN/JP structure while allowing translation content differences
 
-### 5. Workflows Layer - User Interface
+### 5. Commands Layer - User Interface
 
-User-facing commands and workflow system.
+User-facing commands.
 
-#### Workflow Patterns
+#### Development Flow
 
 ```mermaid
 flowchart LR
     S["/scoping"] --> I["Agreed Issue"] --> M["/implement"] --> PR["draft PR"]
 ```
 
-The implement workflow's phases and governing DRs live in [COMMANDS](./COMMANDS.md).
+`/implement`'s phases and governing DRs live in [COMMANDS](./COMMANDS.md).
 
 ## Underlying Philosophy
 
@@ -167,7 +167,7 @@ Refer to:
 
 | Document                            | Content                                                                             |
 | ----------------------------------- | ----------------------------------------------------------------------------------- |
-| [COMMANDS](./COMMANDS.md)           | Commands, workflows, and the development flow centered on `/scoping` → `/implement` |
+| [COMMANDS](./COMMANDS.md)           | How the commands are implemented, and the development flow centered on `/scoping` → `/implement` |
 | [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent mechanisms and usage                                                    |
 | [HOOKS](./HOOKS.md)                 | Hook system and Quality Pipeline                                                    |
 | [GLOSSARY](./GLOSSARY.md)           | Ubiquitous language dictionary                                                      |

@@ -64,11 +64,11 @@ install specific workflow sets:
 #### Available Plugins
 
 - **build**: Self-contained development workflow toolkit. Installing it clones
-  the whole repository once, so every skill, agent, and workflow loads under the
+  the whole repository once, so every skill and agent loads under the
   build: namespace. Settle the requirements into an agreed Issue with /scoping,
-  then hand the Issue to /implement, which carries it through the implement
-  workflow to implementation, verification, a draft PR, and CI confirmation.
-  Bundles the critic-design agent, the implement workflow, and /sweep,
+  then hand the Issue to /implement, which carries it through `launch.ts`
+  to implementation, verification, a draft PR, and CI confirmation.
+  Bundles the critic-design agent and /sweep,
   /outcome, /dr, /in-your-own-words.
 
 ### Option 2: Manual Installation (Full Configuration)
@@ -90,7 +90,7 @@ For using this as your personal `.claude` configuration:
 
 **Note**: Manual installation applies all skills, agents, rules, and personal
 configuration. Plugin installation also clones the whole repository, but Claude
-Code loads only its skills, agents, and workflows; personal `CLAUDE.md`,
+Code loads only its skills and agents; personal `CLAUDE.md`,
 `rules/`, and `settings.json` are not applied as rules or settings. A skill that
 cites `rules/` reads the copy inside the plugin.
 
@@ -156,7 +156,7 @@ On macOS with the sandbox enabled, running `gh` inside the sandbox requires `san
 automatically (DR-0121, DR-0122). The TypeScript hooks under `hooks/` are not
 wired either, except `lifecycle/done_gate.ts stop` on Stop and
 `pre-bash/publish_gate.ts` on PreToolUse(Bash) (DR-0123). CI and
-the workflows carry the quality enforcement.
+`launch.ts` carry the quality enforcement.
 Installing them is optional, and the table below
 records what each one carried.
 
@@ -237,7 +237,7 @@ Full details: [PRINCIPLES.md](./rules/PRINCIPLES.md)
 ### Core Documentation
 
 - [Design Philosophy](./docs/DESIGN.md) - **Why this design** (設計思想・意図)
-- [SPEC](./docs/SPEC.md) - Execution contract of hooks, skills, agents, and workflows
+- [SPEC](./docs/SPEC.md) - Execution contract of hooks, skills, and agents
 - [Commands Reference (English)](./docs/COMMANDS.md)
 - [Commands Reference (Japanese)](./.ja/docs/COMMANDS.md)
 - [Configuration Guide](./CLAUDE.md)

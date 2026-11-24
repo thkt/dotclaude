@@ -24,8 +24,8 @@ graph LR
 
 ## Skills vs Agents
 
-`dr` creates a DR file and index through Write/Edit, and `implement` launches
-the implement workflow. Skill state and output therefore depend on the permitted tools and
+`dr` creates a DR file and index through Write/Edit, and `implement` calls
+`launch.ts`. Skill state and output therefore depend on the permitted tools and
 procedure.
 
 | Aspect         | Skills                         | Agents         |
@@ -136,6 +136,6 @@ Reason: each extra level adds files to read and makes the reference graph harder
 
 ## Related
 
-- [COMMANDS.md](./COMMANDS.md) - Commands, workflows, and the development flow centered on `/scoping` → `/implement`
+- [COMMANDS.md](./COMMANDS.md) - How the commands are implemented, and the development flow centered on `/scoping` → `/implement`
 - [SKILLS](../rules/conventions/SKILLS.md) - Skill definition format
 - [SUBAGENT](../rules/conventions/SUBAGENT.md) - Sub-agent definition format

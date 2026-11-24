@@ -132,18 +132,18 @@ Contextual (SOLID / Law of Demeter / TIDYINGS ほか)
 - 参照深度を制限 (Skills 1 階層、Rules 3 階層)。階層が増えるほど読むファイルが増える
 - 翻訳内容の差を許容しつつ EN/JP の構造を揃える
 
-### 5. Workflows Layer. ユーザー インターフェース
+### 5. Commands Layer. ユーザー インターフェース
 
-ユーザー向けコマンドとワークフロー システム。
+ユーザー向けのコマンド。
 
-#### ワークフロー パターン
+#### 開発フロー
 
 ```mermaid
 flowchart LR
     S["/scoping"] --> I["Agreed Issue"] --> M["/implement"] --> PR["draft PR"]
 ```
 
-implement workflow の phase と統治 DR は[COMMANDS](./COMMANDS.md)が持つ。
+`/implement` の phase と統治 DR は[COMMANDS](./COMMANDS.md)が持つ。
 
 ## 根底の哲学
 
@@ -164,7 +164,7 @@ implement workflow の phase と統治 DR は[COMMANDS](./COMMANDS.md)が持つ�
 
 | ドキュメント                        | 内容                                                                         |
 | ----------------------------------- | ---------------------------------------------------------------------------- |
-| [COMMANDS](./COMMANDS.md)           | コマンドと workflow の関係、`/scoping` → `/implement` を中心とした開発フロー |
+| [COMMANDS](./COMMANDS.md)           | コマンドの実装と、`/scoping` → `/implement` を中心とした開発フロー         |
 | [SKILLS_AGENTS](./SKILLS_AGENTS.md) | Skill/agent の仕組みと利用                                                   |
 | [HOOKS](./HOOKS.md)                 | Hook システムと Quality Pipeline                                             |
 | [GLOSSARY](./GLOSSARY.md)           | ユビキタス言語辞書                                                           |

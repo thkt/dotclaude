@@ -38,7 +38,7 @@ MCP Servers: zero calls over the same window.
 ### Skills to Know About
 
 - `/scoping` - Settles requirements, done conditions, and verification methods, and turns the agreed scope into a GitHub Issue. Entry point for any feature or bug.
-- `/implement` - Carries an agreed Issue through the implement workflow to a draft PR.
+- `/implement` - Carries an agreed Issue through `launch.ts` to a draft PR.
 - `/compact` - Summarizes and compresses context when usage approaches 70%. Run proactively on long sessions.
 
 ## Team Tips

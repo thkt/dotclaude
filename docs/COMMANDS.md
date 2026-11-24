@@ -39,8 +39,6 @@ A change with no Issue is published up to a draft PR by `/sweep`, `/dr`, or `/ou
 
 | DR                                                                                                | Decision                                                                    |
 | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [DR-0120](decisions/0120-keep-the-implement-workflows-deviations-from-codexs-implement.md)        | Keep the implement workflow's deviations from Codex's implement             |
-| [DR-0127](decisions/0127-launch-the-implement-workflow-on-a-host-that-runs-relays-itself.md)      | Launch the implement workflow on a host that runs relays itself             |
 | [DR-0128](decisions/0128-retire-the-plan-based-build-path-for-scoping-and-implement.md)           | One path from an Issue to a PR: `/scoping` → `/implement`                   |
 | [DR-0090](decisions/0090-unify-workspace-and-history-storage-locations.md)                        | Work products live in `.claude/workspace/`, records in `~/.claude/history/` |
 
