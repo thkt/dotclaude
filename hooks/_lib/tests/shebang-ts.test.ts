@@ -26,7 +26,7 @@ function readJson(relativePath: string): unknown {
   return JSON.parse(readFileSync(path.join(REPO, relativePath), "utf8"));
 }
 
-test("T-010 every executable tracked .ts under hooks/ opens with the bun shebang, and the same check flags the exec-bit fixture whose first line is wrong", () => {
+test("every executable tracked .ts under hooks/ opens with the bun shebang, and the same check flags the exec-bit fixture whose first line is wrong", () => {
   const realOffenders = executableShebangOffenders(["hooks/*.ts", FIXTURES_EXCLUDE], SHEBANG);
   assert.deepEqual(
     realOffenders,
@@ -41,7 +41,7 @@ test("T-010 every executable tracked .ts under hooks/ opens with the bun shebang
   );
 });
 
-test("T-011 no tracked file under hooks/ carries a stale #!/usr/bin/env bun line, and the same check flags the fixture that carries one", () => {
+test("no tracked file under hooks/ carries a stale #!/usr/bin/env bun line, and the same check flags the fixture that carries one", () => {
   const realOffenders = staleShebangOffenders(["hooks/*", FIXTURES_EXCLUDE], STALE_SHEBANG);
   assert.deepEqual(
     realOffenders,
@@ -56,7 +56,7 @@ test("T-011 no tracked file under hooks/ carries a stale #!/usr/bin/env bun line
   );
 });
 
-test("T-012 every .ts settings.json names as a hook command carries the exec bit and the bun shebang, and the same check flags the settings-shaped fixture naming a .ts without them", () => {
+test("every .ts settings.json names as a hook command carries the exec bit and the bun shebang, and the same check flags the settings-shaped fixture naming a .ts without them", () => {
   const realOffenders = settingsCommandShebangOffenders(readJson("settings.json"), SHEBANG);
   assert.deepEqual(
     realOffenders,
@@ -71,7 +71,7 @@ test("T-012 every .ts settings.json names as a hook command carries the exec bit
   );
 });
 
-test("T-013 no tracked .ts under hooks/_lib/ carries a shebang line, and the same check flags the _lib-shaped fixture that carries one", () => {
+test("no tracked .ts under hooks/_lib/ carries a shebang line, and the same check flags the _lib-shaped fixture that carries one", () => {
   const realOffenders = libHasShebangOffenders(["hooks/_lib/*.ts", FIXTURES_EXCLUDE]);
   assert.deepEqual(
     realOffenders,

@@ -57,7 +57,7 @@ function scratchGuardedRepo(prefix: string): { repo: string; hook: string } {
   return { repo, hook };
 }
 
-test("T-296 a commit whose added lines carry a listed term is denied with the term and the file named in the reason", () => {
+test("a commit whose added lines carry a listed term is denied with the term and the file named in the reason", () => {
   const scratch = mkdtempSync(path.join(tmpdir(), "client-identifier-gate-hit-"));
   const listPath = path.join(scratch, "client-names.txt");
   writeFileSync(listPath, `# comment\n${TERM}\n\n${OTHER_TERM}\n`);
@@ -86,7 +86,7 @@ test("T-296 a commit whose added lines carry a listed term is denied with the te
   );
 });
 
-test("T-297 a dry-run commit and a commit outside the guarded repository are both allowed", () => {
+test("a dry-run commit and a commit outside the guarded repository are both allowed", () => {
   const scratch = mkdtempSync(path.join(tmpdir(), "client-identifier-gate-dryrun-"));
   const listPath = path.join(scratch, "client-names.txt");
   writeFileSync(listPath, `# comment\n${TERM}\n\n${OTHER_TERM}\n`);
@@ -115,7 +115,7 @@ test("T-297 a dry-run commit and a commit outside the guarded repository are bot
   );
 });
 
-test("T-298 an unreadable term list and a git call that fails leave the commit allowed rather than denying on a guess", () => {
+test("an unreadable term list and a git call that fails leave the commit allowed rather than denying on a guess", () => {
   const scratch = mkdtempSync(path.join(tmpdir(), "client-identifier-gate-fail-"));
 
   const missingList = path.join(scratch, "missing.txt");

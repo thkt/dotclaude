@@ -83,7 +83,7 @@ run_firewall() {
 }
 
 test_the_udp_53_rule_is_generated_from_the_nameserver_in_resolv_conf_and_no_reference_to_127_0_0_11_remains() {
-  echo "T-004: the udp/53 rule is generated from the nameserver in resolv.conf and no reference to 127.0.0.11 remains"
+  echo "the udp/53 rule is generated from the nameserver in resolv.conf and no reference to 127.0.0.11 remains"
   : > "$IPTABLES_LOG"
   RESOLV_CONF="$GOOD_RESOLV_CONF" run_firewall || true
   assert_contains "udp/53 rule names the resolv.conf nameserver" \
@@ -93,7 +93,7 @@ test_the_udp_53_rule_is_generated_from_the_nameserver_in_resolv_conf_and_no_refe
 }
 
 test_a_failed_dns_resolution_of_an_allowed_domain_exits_non_zero() {
-  echo "T-005: a failed DNS resolution of an allowed domain exits non-zero"
+  echo "a failed DNS resolution of an allowed domain exits non-zero"
   local status=0
   DIG_FAIL_DOMAIN="api.anthropic.com" run_firewall || status=$?
   assert_eq "exit code is non-zero" "yes" "$([[ "$status" -ne 0 ]] && echo yes || echo no)"
@@ -102,7 +102,7 @@ test_a_failed_dns_resolution_of_an_allowed_domain_exits_non_zero() {
 }
 
 test_reaching_a_blocked_domain_in_the_post_check_exits_non_zero() {
-  echo "T-006: reaching a blocked domain in the post-check exits non-zero"
+  echo "reaching a blocked domain in the post-check exits non-zero"
   local status=0
   CURL_BLOCKED_REACHABLE=1 run_firewall || status=$?
   assert_eq "exit code is non-zero" "yes" "$([[ "$status" -ne 0 ]] && echo yes || echo no)"
@@ -111,7 +111,7 @@ test_reaching_a_blocked_domain_in_the_post_check_exits_non_zero() {
 }
 
 test_the_domain_set_entering_ipset_comes_from_the_agents_table_rather_than_a_constant_in_the_script() {
-  echo "T-007: the domain set entering ipset comes from the agents table rather than a constant in the script"
+  echo "the domain set entering ipset comes from the agents table rather than a constant in the script"
   local marker_dir="$TEST_TMPDIR/marker-sandbox"
   mkdir -p "$marker_dir"
   cp "$INIT_FIREWALL" "$marker_dir/init-firewall.sh" 2>/dev/null || true

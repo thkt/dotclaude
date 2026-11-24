@@ -66,7 +66,7 @@ function callsFor(f: Fixture, filePath: string): boolean {
     .includes(filePath);
 }
 
-test("T-383 an edited Japanese markdown file reaches textlint and an english one does not", () => {
+test("an edited Japanese markdown file reaches textlint and an english one does not", () => {
   const f = fixture();
   const root = path.dirname(f.callsFile);
 

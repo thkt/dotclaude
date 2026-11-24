@@ -124,7 +124,7 @@ run_chain() {
 }
 
 test_hako_sh_claudes_run_arguments_drive_the_entrypoint_to_exec_claude_as_the_demoted_user_after_the_firewall_applies() {
-  echo "T-016: hako.sh claude's run arguments drive the entrypoint to exec claude as the demoted user after the firewall applies"
+  echo "hako.sh claude's run arguments drive the entrypoint to exec claude as the demoted user after the firewall applies"
   local status=0
   run_chain "$GOOD_RESOLV_CONF" || status=$?
   assert_eq "the whole chain exits zero" "0" "$status"
@@ -148,7 +148,7 @@ test_hako_sh_claudes_run_arguments_drive_the_entrypoint_to_exec_claude_as_the_de
 }
 
 test_a_non_zero_exit_from_init_firewall_sh_leaves_the_agent_unexeced_and_ends_the_whole_chain_non_zero() {
-  echo "T-017: a non-zero exit from init-firewall.sh leaves the agent unexec'd and ends the whole chain non-zero"
+  echo "a non-zero exit from init-firewall.sh leaves the agent unexec'd and ends the whole chain non-zero"
   local status=0
   run_chain "$BAD_RESOLV_CONF" || status=$?
   assert_eq "the whole chain exits non-zero" "yes" "$([[ "$status" -ne 0 ]] && echo yes || echo no)"
@@ -159,7 +159,7 @@ test_a_non_zero_exit_from_init_firewall_sh_leaves_the_agent_unexeced_and_ends_th
 }
 
 test_the_ci_shell_tests_step_discovers_every_test_file_under_sandbox() {
-  echo "T-018: the CI Shell tests step discovers every test file under sandbox"
+  echo "the CI Shell tests step discovers every test file under sandbox"
   local shell_step find_cmd discovered
   shell_step="$(awk '/name: Shell tests/{flag=1; next} /- name:/{if (flag) exit} flag' "$WORKFLOW")"
   find_cmd="$(printf '%s' "$shell_step" | grep -oE 'find [^|]+' | head -1)"

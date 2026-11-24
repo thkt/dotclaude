@@ -31,7 +31,7 @@ function withOnlyPath<T>(binDir: string, fn: () => T): T {
   }
 }
 
-test("T-376 a clippy run yielding more than the cap returns exactly the cap, cut after collecting the whole output", () => {
+test("a clippy run yielding more than the cap returns exactly the cap, cut after collecting the whole output", () => {
   const root = makeFixtureRoot();
   const fillerCount = MAX_FINDINGS + 10;
   const fillerEchoes = Array.from(
@@ -69,7 +69,7 @@ test("T-376 a clippy run yielding more than the cap returns exactly the cap, cut
   );
 });
 
-test("T-377 a missing cargo binary leaves the hook silent instead of reporting a failure", () => {
+test("a missing cargo binary leaves the hook silent instead of reporting a failure", () => {
   const root = makeFixtureRoot();
   const emptyBinDir = path.join(root, "empty-bin");
   mkdirSync(emptyBinDir);
@@ -81,7 +81,7 @@ test("T-377 a missing cargo binary leaves the hook silent instead of reporting a
   assert.equal(result, null, "an absent cargo binary must read as nothing to say, not throw");
 });
 
-test("T-378 an output larger than node's default maxBuffer is not truncated", () => {
+test("an output larger than node's default maxBuffer is not truncated", () => {
   const root = makeFixtureRoot();
   const lineCount = 20000;
   const padding = "x".repeat(80);

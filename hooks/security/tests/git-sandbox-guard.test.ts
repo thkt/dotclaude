@@ -18,7 +18,7 @@ function runHook(command: string): string {
   );
 }
 
-test("T-285 a rewriting subcommand is denied with the REASON text and a read-only one is allowed", () => {
+test("a rewriting subcommand is denied with the REASON text and a read-only one is allowed", () => {
   const reason = denyReason(runHook("git checkout main"));
   assert.ok(reason, "a rewriting subcommand must be denied");
   assert.match(
@@ -30,13 +30,13 @@ test("T-285 a rewriting subcommand is denied with the REASON text and a read-onl
   assert.equal(denyReason(runHook("git status")), null, "a read-only subcommand must be allowed");
 });
 
-test("T-286 a help flag turns a rewriting subcommand into an allowed call", () => {
+test("a help flag turns a rewriting subcommand into an allowed call", () => {
   for (const command of ["git checkout --help", "git stash -h"]) {
     assert.equal(denyReason(runHook(command)), null, `${command} must be allowed`);
   }
 });
 
-test("T-287 a read-only flag or argument on a rewriting subcommand keeps it allowed, and adding a write flag denies it", () => {
+test("a read-only flag or argument on a rewriting subcommand keeps it allowed, and adding a write flag denies it", () => {
   assert.equal(denyReason(runHook("git rm --cached x")), null, "read flag must be allowed");
   assert.equal(denyReason(runHook("git stash list")), null, "read argument must be allowed");
   assert.equal(

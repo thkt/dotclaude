@@ -17,7 +17,7 @@ function backdate(path: string, minutes: number): void {
   utimesSync(path, stamp, stamp);
 }
 
-test("T-393 touching an existing marker moves its mtime forward, so a background marker keeps reading fresh", () => {
+test("touching an existing marker moves its mtime forward, so a background marker keeps reading fresh", () => {
   const dir = fixtureDir();
   const bgMarker = join(dir, "bg-session-a");
 
@@ -38,7 +38,7 @@ test("T-393 touching an existing marker moves its mtime forward, so a background
   );
 });
 
-test("T-394 a marker older than the freshness window reads stale and one inside it reads fresh", () => {
+test("a marker older than the freshness window reads stale and one inside it reads fresh", () => {
   const dir = fixtureDir();
   const staleMarker = join(dir, "session-a");
   const freshMarker = join(dir, "session-b");
@@ -69,7 +69,7 @@ test("T-394 a marker older than the freshness window reads stale and one inside 
   assert.equal(existsSync(freshMarker), true, "sweep must keep the marker inside STALE_MINUTES");
 });
 
-test("T-395 removing a marker another process already removed does not throw", () => {
+test("removing a marker another process already removed does not throw", () => {
   const dir = fixtureDir();
   const marker = join(dir, "session-a");
 

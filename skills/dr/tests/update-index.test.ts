@@ -61,7 +61,7 @@ function assertReadmeDateShape(actual: string, expectedWithPlaceholder: string, 
   assert.match(dateSlice, DATE_SHAPE, `${label}: date shape`);
 }
 
-test("T-208 every frozen case in update-index-cases.json reproduces the python script's exit code, stdout path, and the README content with the date compared by shape", () => {
+test("every frozen case in update-index-cases.json reproduces the frozen exit code, stdout path, and the README content with the date compared by shape", () => {
   for (const entry of CASES) {
     withCaseDir(entry.setup, (dir) => {
       const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
@@ -80,7 +80,7 @@ test("T-208 every frozen case in update-index-cases.json reproduces the python s
   }
 });
 
-test("T-209 the DR List rows follow file name order and each By Status section lists its entries sorted by number", () => {
+test("the DR List rows follow file name order and each By Status section lists its entries sorted by number", () => {
   withCaseDir(
     {
       "archive/0003-alpha-decision.md": '---\nstatus: "proposed"\n---\n# Alpha Title\n\nbody\n',
@@ -113,7 +113,7 @@ test("T-209 the DR List rows follow file name order and each By Status section l
   );
 });
 
-test("T-210 a status value matching no section key is listed in the table and absent from every By Status section", () => {
+test("a status value matching no section key is listed in the table and absent from every By Status section", () => {
   const status = "withdrawn";
   assert.equal(
     STATUS_SECTIONS.some(([key]) => status.startsWith(key)),
@@ -152,7 +152,7 @@ test("T-210 a status value matching no section key is listed in the table and ab
   );
 });
 
-test("T-211 the README is replaced in one rename and no temporary file is left in the directory", () => {
+test("the README is replaced in one rename and no temporary file is left in the directory", () => {
   withCaseDir(
     {
       "archive/0001-first-decision.md":
@@ -166,13 +166,13 @@ test("T-211 the README is replaced in one rename and no temporary file is left i
         entries,
         ["0001-first-decision.md", "README.md"],
         "only the source DR file and the freshly written README.md remain -- no stray temp file" +
-          " from tempfile.mkstemp's replacement is left behind in the directory",
+          " from the atomic README write is left behind in the directory",
       );
     },
   );
 });
 
-test("T-640 with DR_HOME set in a repository whose origin is https://example.invalid/owner/sample.git, the run exits 0 and writes $DR_HOME/sample/README.md", () => {
+test("with DR_HOME set in a repository whose origin is https://example.invalid/owner/sample.git, the run exits 0 and writes $DR_HOME/sample/README.md", () => {
   withTempRepo((repo) => {
     spawnSync("git", ["-C", repo, "remote", "add", "origin", "https://example.invalid/owner/sample.git"]);
     const drHome = mkdtempSync(join(tmpdir(), "update-index-dr-home-"));

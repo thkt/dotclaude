@@ -28,7 +28,7 @@ function frozenRow(frozen: Map<string, FrozenCase>, command: string): FrozenCase
   return row;
 }
 
-test("T-275 every corpus case reproduces the frozen commands_with_env output, compared as parsed JSON", () => {
+test("every corpus case reproduces the frozen commands_with_env output, compared as parsed JSON", () => {
   const frozen = loadFrozenCases();
   const corpus = commandScanCorpus();
   assert.ok(corpus.length > 0, "the corpus must not be empty");
@@ -48,7 +48,7 @@ test("T-275 every corpus case reproduces the frozen commands_with_env output, co
   }
 });
 
-test("T-276 every corpus case that records a raise throws, and one that does not record a raise returns without throwing", () => {
+test("every corpus case that records a raise throws, and one that does not record a raise returns without throwing", () => {
   const frozen = loadFrozenCases();
   const corpus = commandScanCorpus();
   const raising = corpus.filter((c) => frozenRow(frozen, c.command).raises !== null);
@@ -70,7 +70,7 @@ test("T-276 every corpus case that records a raise throws, and one that does not
   );
 });
 
-test("T-277 a command carrying a non-BMP character keeps that character inside its token instead of splitting at the surrogate pair", () => {
+test("a command carrying a non-BMP character keeps that character inside its token instead of splitting at the surrogate pair", () => {
   const face = "\u{1F600}";
   const command = `echo alpha${face}beta`;
 

@@ -68,7 +68,7 @@ async function waitForLog(logPath: string): Promise<string> {
   return readFileSync(logPath, "utf8");
 }
 
-test("T-243 with no stamp on file the hook runs recall index and writes the stamp under the temp HOME", async () => {
+test("with no stamp on file the hook runs recall index and writes the stamp under the temp HOME", async () => {
   const f = fixture();
   runHook(f, "{}");
   const logged = await waitForLog(f.log);
@@ -79,7 +79,7 @@ test("T-243 with no stamp on file the hook runs recall index and writes the stam
   );
 });
 
-test("T-244 a stamp newer than the window skips the run and a stamp from 2020 lets it run", async () => {
+test("a stamp newer than the window skips the run and a stamp from 2020 lets it run", async () => {
   const f = fixture();
   const stamp = stampPath(f.home);
   mkdirSync(path.dirname(stamp), { recursive: true });
@@ -96,7 +96,7 @@ test("T-244 a stamp newer than the window skips the run and a stamp from 2020 le
   assert.match(logged, /index/, "a stamp from 2020 must let the run happen");
 });
 
-test("T-245 a compact source skips the run without writing a stamp while a startup source runs it", async () => {
+test("a compact source skips the run without writing a stamp while a startup source runs it", async () => {
   const f = fixture();
 
   runHook(f, '{"source":"compact"}');
@@ -113,7 +113,7 @@ test("T-245 a compact source skips the run without writing a stamp while a start
   assert.match(logged, /index/, "a startup source must run recall");
 });
 
-test("T-246 an absent recall binary produces no output and no run, and a closed stdin is read as an empty payload with exit 0", () => {
+test("an absent recall binary produces no output and no run, and a closed stdin is read as an empty payload with exit 0", () => {
   const f = fixture();
 
   const stdout = runHook(f, "{}", path.join(f.root, "absent-recall"));

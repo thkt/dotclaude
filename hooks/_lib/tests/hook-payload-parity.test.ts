@@ -27,28 +27,28 @@ function fixture(id: string): Fixture {
   return found;
 }
 
-test("T-001 field returns the command string of a PreToolUse Bash payload", () => {
-  const { payload } = fixture("T-001-pretooluse-bash");
+test("field returns the command string of a PreToolUse Bash payload", () => {
+  const { payload } = fixture("pretooluse-bash");
 
   assert.equal(field(payload.tool_input, "command"), "echo hello world");
 });
 
-test("T-002 editedFile returns the written path of a PostToolUse Write payload", () => {
-  const { payload } = fixture("T-002-posttooluse-write");
+test("editedFile returns the written path of a PostToolUse Write payload", () => {
+  const { payload } = fixture("posttooluse-write");
 
   assert.equal(editedFile(JSON.stringify(payload)), "/tmp/hook-payload-parity-example.txt");
 });
 
-test("T-540 field returns null rather than undefined for a payload missing a key and for one whose tool_input is not a mapping", () => {
-  const missingKey = fixture("T-540-missing-key");
-  const typeMismatch = fixture("T-540-type-mismatch");
+test("field returns null rather than undefined for a payload missing a key and for one whose tool_input is not a mapping", () => {
+  const missingKey = fixture("missing-key");
+  const typeMismatch = fixture("type-mismatch");
   const key = "file_path";
 
   assert.strictEqual(field(missingKey.payload.tool_input, key), null, "missing key");
   assert.strictEqual(field(typeMismatch.payload.tool_input, key), null, "type mismatch");
 });
 
-test("T-004 every fixture payload yields a non-empty tool_name", () => {
+test("every fixture payload yields a non-empty tool_name", () => {
   const fixtures = loadFixtures();
   assert.ok(fixtures.length > 0, "the fixture file must carry at least one payload");
 
@@ -58,7 +58,7 @@ test("T-004 every fixture payload yields a non-empty tool_name", () => {
   }
 });
 
-test("T-541 notification returns the envelope shape hooks/edit/rumdl_check.ts's notify call depends on, with the finding verbatim in both channels", () => {
+test("notification returns the envelope shape hooks/edit/rumdl_check.ts's notify call depends on, with the finding verbatim in both channels", () => {
   const message = "violation.md:2:1 [MD022] headings should be surrounded by blank lines";
 
   assert.deepEqual(notification(message, "PostToolUse"), {
@@ -75,7 +75,7 @@ const FORBIDDEN = [`${"child"}_process`, `${"spawn"}Sync`, `${"py"}thon3`];
 const namesForbidden = (source: string): string[] =>
   FORBIDDEN.filter((needle) => source.includes(needle));
 
-test("T-542 this file names no process-spawning import or python interpreter, and the same predicate flags a source line carrying each", () => {
+test("this file names no process-spawning import or python interpreter, and the same predicate flags a source line carrying each", () => {
   assert.deepEqual(namesForbidden(readFileSync(SELF_PATH, "utf8")), []);
 
   for (const needle of FORBIDDEN) {

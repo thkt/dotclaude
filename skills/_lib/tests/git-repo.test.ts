@@ -13,7 +13,7 @@ function readConfig(repo: string, key: string): string {
 }
 
 test(
-  "T-416 a repository the helper creates answers 0 for gc.auto and false for maintenance.auto, " +
+  "a repository the helper creates answers 0 for gc.auto and false for maintenance.auto, " +
     "read back through git config rather than from the helper's own constant",
   () => {
     withTempRepo((repo) => {
@@ -24,7 +24,7 @@ test(
 );
 
 test(
-  "T-417 the helper removes the repository even when the body throws, and the path no longer " +
+  "the helper removes the repository even when the body throws, and the path no longer " +
     "exists afterwards",
   () => {
     let capturedRepo = "";
@@ -40,7 +40,7 @@ test(
 );
 
 test(
-  "T-418 a repository created without the helper still answers the inherited gc.auto, " +
+  "a repository created without the helper still answers the inherited gc.auto, " +
     "so the assertion above is not vacuous",
   () => {
     const repo = mkdtempSync(join(tmpdir(), "git-repo-control-"));

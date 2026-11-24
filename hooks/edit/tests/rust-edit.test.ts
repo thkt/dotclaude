@@ -62,7 +62,7 @@ function runHook(
   return run(hook, payload, { ...f.env, ...extraEnv });
 }
 
-test("T-381 the pre-edit hook reports the target it resolves for a .rs path and stays silent for another extension", () => {
+test("the pre-edit hook reports the target it resolves for a .rs path and stays silent for another extension", () => {
   const f = fixture();
 
   const rustOut = runHook(PRE, f, path.join(f.repo, "src", "lib.rs"));
@@ -81,7 +81,7 @@ test("T-381 the pre-edit hook reports the target it resolves for a .rs path and 
   assert.equal(otherOut, "", "an edit to a non-.rs path must stay silent");
 });
 
-test("T-382 the post-edit hook reports clippy findings for an edited .rs file and stays silent when there are none", () => {
+test("the post-edit hook reports clippy findings for an edited .rs file and stays silent when there are none", () => {
   const f = fixture();
 
   const withFindings = runHook(POST, f, path.join(f.repo, "src", "lib.rs"));

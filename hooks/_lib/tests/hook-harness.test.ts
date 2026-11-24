@@ -11,7 +11,7 @@ const FAIL_FIXTURE = path.join(FIXTURES, "fail-with-stderr.ts");
 const DUMP_ENV_FIXTURE = path.join(FIXTURES, "dump-env.ts");
 const ECHO_STDIN_FIXTURE = path.join(FIXTURES, "echo-stdin.ts");
 
-test("T-240 a hook that exits non-zero makes checked throw an error naming the hook and carrying its stderr", () => {
+test("a hook that exits non-zero makes checked throw an error naming the hook and carrying its stderr", () => {
   assert.throws(
     () => checked(FAIL_FIXTURE, ""),
     (error: unknown) => {
@@ -23,7 +23,7 @@ test("T-240 a hook that exits non-zero makes checked throw an error naming the h
   );
 });
 
-test("T-241 the env passed to checked replaces the process environment instead of extending it", () => {
+test("the env passed to checked replaces the process environment instead of extending it", () => {
   assert.ok(process.env.PATH, "PATH must be present in this test process for the check below");
 
   const stdout = run(DUMP_ENV_FIXTURE, "", { HARNESS_SENTINEL: "only-this" });
@@ -34,7 +34,7 @@ test("T-241 the env passed to checked replaces the process environment instead o
   assert.deepEqual(receivedEnv, { HARNESS_SENTINEL: "only-this" });
 });
 
-test("T-242 an object payload reaches the hook as its JSON text and a string payload reaches it verbatim", () => {
+test("an object payload reaches the hook as its JSON text and a string payload reaches it verbatim", () => {
   const objectPayload = { tool_name: "Bash", tool_input: { command: "echo hi" } };
   assert.equal(run(ECHO_STDIN_FIXTURE, objectPayload), JSON.stringify(objectPayload));
 
@@ -42,6 +42,6 @@ test("T-242 an object payload reaches the hook as its JSON text and a string pay
   assert.equal(run(ECHO_STDIN_FIXTURE, stringPayload), stringPayload);
 });
 
-test("T-266 the harness kills a hook at the same 60 seconds the retired Python module allowed", () => {
+test("the harness kills a hook after 60 seconds", () => {
   assert.equal(TIMEOUT_SECONDS, 60);
 });

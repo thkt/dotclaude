@@ -55,7 +55,7 @@ function runCase(testCase: ValidateOutcomeCase, home: string): void {
 }
 
 test(
-  "T-176 every frozen case in validate-outcome-cases.json reproduces the python validator's " +
+  "every frozen case in validate-outcome-cases.json reproduces the frozen " +
     "exit code and stdout JSON with file resolved from the case's argv",
   () => {
     assert.ok(CASES.length > 0, "the frozen fixture carries at least one case");
@@ -68,7 +68,7 @@ test(
 );
 
 test(
-  "T-177 the shipped template skills/outcome/templates/outcome.md exits 1 with a " +
+  "the shipped template skills/outcome/templates/outcome.md exits 1 with a " +
     "placeholder_left error",
   () => {
     withTempHome((home) => {
@@ -77,7 +77,7 @@ test(
   },
 );
 
-test("T-178 no argument exits 1 with nothing on stdout and a stderr line starting with Usage:", () => {
+test("no argument exits 1 with nothing on stdout and a stderr line starting with Usage:", () => {
   withTempHome((home) => {
     const run = runCli(SCRIPT, home, "", [], { cwd: REPO_ROOT });
     assert.equal(run.status, 1, `exit code (stderr: ${run.stderr})`);
@@ -86,7 +86,7 @@ test("T-178 no argument exits 1 with nothing on stdout and a stderr line startin
   });
 });
 
-test("T-179 the script is tracked with mode 100755 in the git index and opens with #!/usr/bin/env node", () => {
+test("the script is tracked with mode 100755 in the git index and opens with #!/usr/bin/env node", () => {
   const entries = trackedEntries(["skills/outcome/scripts/validate-outcome.ts"]);
   assert.equal(entries.length, 1, "the script is tracked exactly once in the git index");
   const [mode, absolutePath] = entries[0];

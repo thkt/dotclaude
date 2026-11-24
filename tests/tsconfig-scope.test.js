@@ -35,7 +35,7 @@ function listTypeCheckedFiles() {
   return cached;
 }
 
-test("T-254 the type-check set contains every tracked .ts under the tests directory whose path has no directory that starts with a dot, compared as a set of names against git ls-files", () => {
+test("the type-check set contains every tracked .ts under the tests directory whose path has no directory that starts with a dot, compared as a set of names against git ls-files", () => {
   const checkedNames = new Set(
     listTypeCheckedFiles().map((file) => toPosix(path.relative(ROOT, file))),
   );
@@ -56,7 +56,7 @@ test("T-254 the type-check set contains every tracked .ts under the tests direct
   }
 });
 
-test("T-255 the Node tests step in .github/workflows/test.yml carries tests/*.test.ts", () => {
+test("the Node tests step in .github/workflows/test.yml carries tests/*.test.ts", () => {
   const workflow = readFileSync(path.join(ROOT, ".github", "workflows", "test.yml"), "utf8");
   const step = workflow.slice(workflow.indexOf("- name: Node tests"));
   assert.ok(step.startsWith("- name: Node tests"), "the Node tests step is missing from test.yml");

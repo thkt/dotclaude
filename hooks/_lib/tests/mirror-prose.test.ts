@@ -60,7 +60,7 @@ function trackedUnder(repo: string, prefix: string): string[] {
     .map((relative) => path.join(repo, relative));
 }
 
-test("T-366 an edited .ja file whose english twin is missing is reported, and one whose twin exists is not", () => {
+test("an edited .ja file whose english twin is missing is reported, and one whose twin exists is not", () => {
   const root = tempRoot("mirror-prose-verdict-");
 
   const missingJapaneseTwin = editedPath(
@@ -81,7 +81,7 @@ test("T-366 an edited .ja file whose english twin is missing is reported, and on
   );
 });
 
-test("T-367 the sweep excludes node_modules, projects and logs, and the same predicate flags a fixture path inside them", () => {
+test("the sweep excludes node_modules, projects and logs, and the same predicate flags a fixture path inside them", () => {
   const root = tempRoot("mirror-prose-sweep-");
   const englishOnly = "// why-not: Convert the payload.\n// why-not: Persist it.\n";
   const excluded = [
@@ -107,7 +107,7 @@ test("T-367 the sweep excludes node_modules, projects and logs, and the same pre
   }
 });
 
-test("T-368 an english-side file that kept the japanese original is reported by name", () => {
+test("an english-side file that kept the japanese original is reported by name", () => {
   const root = tempRoot("mirror-prose-english-sweep-");
   const relative = path.join("skills", "sample", "scripts", "m.ts");
   const japaneseBody = "// why-not: 語の重なりを数える。\n";

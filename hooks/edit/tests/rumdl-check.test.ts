@@ -28,7 +28,7 @@ function runHook(filePath: string, env: NodeJS.ProcessEnv): string {
   return run(HOOK, payload, env);
 }
 
-test("T-384 an edited markdown file reaches rumdl and its findings arrive through notify in the python version's shape, and a missing rumdl binary leaves the hook silent", () => {
+test("an edited markdown file reaches rumdl and its findings arrive through notify on both the human and the agent channel, and a missing rumdl binary leaves the hook silent", () => {
   const root = mkdtempSync(path.join(tmpdir(), "rumdl-check-tests-"));
   const mdPath = path.join(root, "violation.md");
   writeFileSync(mdPath, VIOLATING_MD);
@@ -49,7 +49,7 @@ test("T-384 an edited markdown file reaches rumdl and its findings arrive throug
   assert.match(
     parsed.hookSpecificOutput.additionalContext,
     /MD022/,
-    "the finding must reach the agent channel too, in the python version's notify shape",
+    "the finding must reach the agent channel too, as PostToolUse additionalContext",
   );
 
   const withoutRumdl = { ...process.env, PATH: "/usr/bin:/bin" };

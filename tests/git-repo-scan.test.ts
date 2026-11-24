@@ -30,7 +30,7 @@ const CLEAN_FIXTURE_SOURCE = OFFENDING_FIXTURE_SOURCE.replace(
 );
 
 test(
-  "T-422 no tracked .test.ts runs git init without importing the helper, and the same " +
+  "no tracked .test.ts runs git init without importing the helper, and the same " +
     "predicate flags a fixture source that does",
   () => {
     assert.equal(

@@ -47,20 +47,19 @@ const FROZEN_CONVERSIONS: Record<string, { command: string; rewritten: string }>
   bunx: { command: "bunx cowsay", rewritten: "nlx cowsay" },
 };
 
-test("T-299 each manager the table names converts to the head the python version emitted, compared as the whole rewritten string", () => {
+test("each manager the table names converts to its ni-family head, compared as the whole rewritten string", () => {
   const env = { ...process.env, PATH: pathWithNiStub() };
 
   for (const [manager, frozen] of Object.entries(FROZEN_CONVERSIONS)) {
     assert.equal(
       convertedByHook(frozen.command, env),
       frozen.rewritten,
-      `${manager}: package_manager_rewrite.ts must answer "${frozen.command}" the way the ` +
-        `retired Python rewriter did`,
+      `${manager}: package_manager_rewrite.ts must rewrite "${frozen.command}" to "${frozen.rewritten}"`,
     );
   }
 });
 
-test("T-300 a command whose head is not a manager passes through unchanged", () => {
+test("a command whose head is not a manager passes through unchanged", () => {
   const env = { ...process.env, PATH: pathWithNiStub() };
 
   const stdout = run(HOOK, { tool_name: "Bash", tool_input: { command: "git status" } }, env);
@@ -68,7 +67,7 @@ test("T-300 a command whose head is not a manager passes through unchanged", () 
   assert.equal(stdout, "", "a non-manager command must pass through unchanged");
 });
 
-test("T-301 a manager that is not installed leaves the command unchanged rather than rewriting it", () => {
+test("a manager that is not installed leaves the command unchanged rather than rewriting it", () => {
   const env = { ...process.env, PATH: pathWithoutNi() };
 
   const stdout = run(HOOK, { tool_name: "Bash", tool_input: { command: "npm install" } }, env);
@@ -93,7 +92,7 @@ for (const manager of managers) {
   }
 }
 // npx / bunx never reach the subcommand table above -- convert() rewrites them from the
-// manager name alone (T-299's "npx"/"bunx" rows).
+// manager name alone (the "npx"/"bunx" rows).
 for (const manager of ["npx", "bunx"]) {
   const result = pmr.convert([manager, "pkg"]);
   if (result) heads.add(result.split(/\\s+/)[0]);
@@ -125,7 +124,7 @@ function installShapedHeads(): HeadEnumeration {
   return JSON.parse(result.stdout) as HeadEnumeration;
 }
 
-test("T-302 every install-shaped head convert can emit is a member of NI_INSTALLS or RUNNERS, derived from both modules rather than restated", () => {
+test("every install-shaped head convert can emit is a member of NI_INSTALLS or RUNNERS, derived from both modules rather than restated", () => {
   const { heads, NI_INSTALLS, RUNNERS } = installShapedHeads();
   assert.ok(heads.length > 0, "the enumeration must produce at least one head to check");
 

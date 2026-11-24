@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { BODY_FILE_FLAGS, BODY_FLAGS, body_file, find, flag, TITLE_FLAGS } from "../gh_filing.ts";
 
-test("T-292 find returns the kind and the token list for an issue create and for a pr create, and null for a command that is neither", () => {
+test("find returns the kind and the token list for an issue create and for a pr create, and null for a command that is neither", () => {
   const issueFiling = find('gh issue create --title "test" --body "hello"');
   assert.ok(issueFiling, "gh issue create must resolve to a filing");
   assert.equal(issueFiling.kind, "issue");
@@ -21,7 +21,7 @@ test("T-292 find returns the kind and the token list for an issue create and for
   );
 });
 
-test("T-293 flag returns the value for each of the long and short spellings the tables name, and null when the flag is absent", () => {
+test("flag returns the value for each of the long and short spellings the tables name, and null when the flag is absent", () => {
   const longFiling = find('gh issue create --title "Login fails" --body "hello world"');
   assert.ok(longFiling, "the long-flag filing must resolve");
   assert.equal(flag(longFiling, TITLE_FLAGS), "Login fails");
@@ -39,7 +39,7 @@ test("T-293 flag returns the value for each of the long and short spellings the 
   );
 });
 
-test("T-294 body_file returns the path for a --body-file filing and null for a --body filing", () => {
+test("body_file returns the path for a --body-file filing and null for a --body filing", () => {
   const fileFiling = find('gh issue create --title "Login fails" --body-file /tmp/body.md');
   assert.ok(fileFiling, "the --body-file filing must resolve");
   assert.equal(body_file(fileFiling), "/tmp/body.md");

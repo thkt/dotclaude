@@ -46,7 +46,7 @@ run_hako() {
 }
 
 test_the_login_subcommand_starts_in_interactive_mode_and_passes_no_permission_skipping_flag() {
-  echo "T-014: the login subcommand starts in interactive mode and passes no permission-skipping flag"
+  echo "the login subcommand starts in interactive mode and passes no permission-skipping flag"
   run_hako login "$AGENT_NAME" || true
   local run_line
   run_line="$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null | head -1 || true)"
@@ -57,7 +57,7 @@ test_the_login_subcommand_starts_in_interactive_mode_and_passes_no_permission_sk
 }
 
 test_an_omitted_or_unknown_agent_name_exits_non_zero_without_calling_container_run() {
-  echo "T-015: an omitted or unknown agent name exits non-zero without calling container run"
+  echo "an omitted or unknown agent name exits non-zero without calling container run"
   local status
 
   status=0

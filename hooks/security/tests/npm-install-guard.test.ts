@@ -22,7 +22,7 @@ function runHook(command: string, home: string): string {
   return run(HOOK, { tool_name: "Bash", tool_input: { command } }, { ...process.env, HOME: home });
 }
 
-test("T-282 an install command under a directory whose npmrc omits ignore-scripts is denied with the reason for that manager", () => {
+test("an install command under a directory whose npmrc omits ignore-scripts is denied with the reason for that manager", () => {
   const home = makeDir("npm-install-guard-home-unset-");
   const project = makeDir("npm-install-guard-project-unset-");
 
@@ -35,7 +35,7 @@ test("T-282 an install command under a directory whose npmrc omits ignore-script
   );
 });
 
-test("T-283 the same command under a directory whose npmrc sets ignore-scripts is allowed, and an override flag makes it denied again", () => {
+test("the same command under a directory whose npmrc sets ignore-scripts is allowed, and an override flag makes it denied again", () => {
   const home = makeDir("npm-install-guard-home-unset-");
   const project = makeDir("npm-install-guard-project-configured-");
   writeNpmrc(project, "ignore-scripts=true\n");
@@ -53,7 +53,7 @@ test("T-283 the same command under a directory whose npmrc sets ignore-scripts i
   );
 });
 
-test("T-284 a runner subcommand that fetches and runs is denied while a plain script run is allowed", () => {
+test("a runner subcommand that fetches and runs is denied while a plain script run is allowed", () => {
   const home = makeDir("npm-install-guard-home-unset-");
 
   const runnerReason = denyReason(runHook("npx create-vite my-app", home));

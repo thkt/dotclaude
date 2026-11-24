@@ -21,7 +21,7 @@ function runHook(command: string): string {
   return run(HOOK, { tool_name: "Bash", tool_input: { command } });
 }
 
-test("T-303 a gh issue create with a body file selects the filing mode and names that file, and a body file naming nothing readable leaves no target", () => {
+test("a gh issue create with a body file selects the filing mode and names that file, and a body file naming nothing readable leaves no target", () => {
   const path = tempBodyFile("この本文は --body-file の指す先から読まれる。");
 
   const hit = runHook(`gh issue create --title "test" --body-file ${path}`);
@@ -31,7 +31,7 @@ test("T-303 a gh issue create with a body file selects the filing mode and names
   assert.equal(miss, "", "a --body-file naming nothing readable must resolve to no target");
 });
 
-test("T-304 a git commit with an inline message selects the commit mode with its length threshold, and an empty inline message leaves no target", () => {
+test("a git commit with an inline message selects the commit mode with its length threshold, and an empty inline message leaves no target", () => {
   const hit = runHook('git commit -m "fix: 十文字の閾値を確認するための commit message です。"');
   assert.notEqual(hit, "", "an inline commit message must resolve to a target");
 
@@ -39,7 +39,7 @@ test("T-304 a git commit with an inline message selects the commit mode with its
   assert.equal(miss, "", "an empty inline commit message must resolve to no target");
 });
 
-test("T-305 a heredoc body is read through to its terminator, and an unterminated one leaves no target", () => {
+test("a heredoc body is read through to its terminator, and an unterminated one leaves no target", () => {
   const body = "一行目の本文\n二行目の本文";
   const terminated = `git commit -m "$(cat <<'EOF'\n${body}\nEOF\n)"`;
   assert.notEqual(
@@ -56,6 +56,6 @@ test("T-305 a heredoc body is read through to its terminator, and an unterminate
   );
 });
 
-test("T-306 a command that is neither a filing nor a commit yields no target", () => {
+test("a command that is neither a filing nor a commit yields no target", () => {
   assert.equal(runHook("git status"), "");
 });

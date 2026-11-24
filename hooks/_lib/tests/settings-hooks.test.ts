@@ -13,7 +13,7 @@ function settings(): Record<string, unknown> {
   return JSON.parse(readFileSync(join(REPO_ROOT, "settings.json"), "utf8"));
 }
 
-test("T-001 hookCommands returns the command string of every group under the named event", () => {
+test("hookCommands returns the command string of every group under the named event", () => {
   const settings = {
     hooks: {
       PreToolUse: [
@@ -31,7 +31,7 @@ test("T-001 hookCommands returns the command string of every group under the nam
   assert.deepEqual(hookCommands(settings, "PreToolUse"), ["a.ts", "b.ts", "c.ts"]);
 });
 
-test("T-002 hookCommands with a matcher returns only the groups whose matcher equals it", () => {
+test("hookCommands with a matcher returns only the groups whose matcher equals it", () => {
   const settings = {
     hooks: {
       PreToolUse: [
@@ -44,7 +44,7 @@ test("T-002 hookCommands with a matcher returns only the groups whose matcher eq
   assert.deepEqual(hookCommands(settings, "PreToolUse", "Bash"), ["a.ts", "d.ts"]);
 });
 
-test("T-003 hookCommands returns an empty list when the event or its groups are not arrays, and the commands once one group is an array", () => {
+test("hookCommands returns an empty list when the event or its groups are not arrays, and the commands once one group is an array", () => {
   assert.deepEqual(hookCommands({}, "PreToolUse"), []);
   assert.deepEqual(hookCommands({ hooks: {} }, "PreToolUse"), []);
   assert.deepEqual(hookCommands({ hooks: { PreToolUse: "not-an-array" } }, "PreToolUse"), []);
@@ -59,7 +59,7 @@ test("T-003 hookCommands returns an empty list when the event or its groups are 
   assert.deepEqual(hookCommands(withOneRealGroup, "PreToolUse"), ["a.ts"]);
 });
 
-test("T-567 settings.json registers exactly one Stop command, done_gate.ts stop, and the script it names is tracked with the exec bit", () => {
+test("settings.json registers exactly one Stop command, done_gate.ts stop, and the script it names is tracked with the exec bit", () => {
   const commands = hookCommands(settings(), "Stop");
   assert.deepEqual(commands, ["~/.claude/hooks/lifecycle/done_gate.ts stop"]);
 
@@ -72,7 +72,7 @@ test("T-567 settings.json registers exactly one Stop command, done_gate.ts stop,
   assert.match(staged.stdout, /^100755 /, `${script} is not tracked with the exec bit: ${staged.stdout}`);
 });
 
-test("T-580 settings.json registers exactly one PreToolUse command on matcher Bash, publish_gate.ts, and the script it names is tracked with the exec bit", () => {
+test("settings.json registers exactly one PreToolUse command on matcher Bash, publish_gate.ts, and the script it names is tracked with the exec bit", () => {
   const commands = hookCommands(settings(), "PreToolUse", "Bash");
   assert.deepEqual(commands, ["~/.claude/hooks/pre-bash/publish_gate.ts"]);
 
@@ -85,7 +85,7 @@ test("T-580 settings.json registers exactly one PreToolUse command on matcher Ba
   assert.match(staged.stdout, /^100755 /, `${script} is not tracked with the exec bit: ${staged.stdout}`);
 });
 
-test("T-568 settings.json permissions.allow lets a session run done_gate.ts without a prompt", () => {
+test("settings.json permissions.allow lets a session run done_gate.ts without a prompt", () => {
   const permissions = settings().permissions as { allow: string[] };
   assert.ok(permissions.allow.includes("Bash(~/.claude/hooks/lifecycle/done_gate.ts *)"));
 });

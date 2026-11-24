@@ -7,7 +7,7 @@ import test from "node:test";
 import { runCli, withTempHome } from "./_cli-fixture.ts";
 
 test(
-  "T-137 runCli launches the CLI in the cwd the caller passes, so a relative path in stdin " +
+  "runCli launches the CLI in the cwd the caller passes, so a relative path in stdin " +
     "resolves under that directory",
   () => {
     const workDir = mkdtempSync(join(tmpdir(), "cli-fixture-cwd-"));
@@ -39,7 +39,7 @@ test(
   },
 );
 
-test("T-138 runCli's env option overrides the cleared PATH while HOME still points at the temp home", () => {
+test("runCli's env option overrides the cleared PATH while HOME still points at the temp home", () => {
   const workDir = mkdtempSync(join(tmpdir(), "cli-fixture-env-"));
   try {
     const scriptPath = join(workDir, "spawn-git.mjs");

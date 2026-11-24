@@ -4,7 +4,7 @@ import test from "node:test";
 import { offendersAmong } from "./_retirement.ts";
 
 test(
-  "T-120 a file whose path starts with a historical directory is not reported even when its " +
+  "a file whose path starts with a historical directory is not reported even when its " +
     "content names the retired path",
   () => {
     const retiredNeedle = "_lib/legacy-helper.py";
@@ -27,7 +27,7 @@ test(
 );
 
 test(
-  "T-121 a file the caller lists as an extra exclusion is not reported while the same " +
+  "a file the caller lists as an extra exclusion is not reported while the same " +
     "content under another path is reported",
   () => {
     const retiredNeedle = "_lib/legacy-tool.py";
@@ -51,7 +51,7 @@ test(
 );
 
 test(
-  "T-122 the offender list is the set of matching paths in tree order and an unreadable " +
+  "the offender list is the set of matching paths in tree order and an unreadable " +
     "file is skipped rather than aborting the scan",
   () => {
     const retiredNeedle = "retired-thing";

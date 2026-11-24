@@ -37,7 +37,7 @@ function makeFixtureRoot(): string {
   return mkdtempSync(join(tmpdir(), "textlint-tests-"));
 }
 
-test("T-379 a lint run returns the runner's stdout verbatim, including the path it was handed", () => {
+test("a lint run returns the runner's stdout verbatim, including the path it was handed", () => {
   const root = makeFixtureRoot();
   const binDir = installStubBun(root);
   const targetPath = join(root, "example.md");
@@ -48,7 +48,7 @@ test("T-379 a lint run returns the runner's stdout verbatim, including the path 
   assert.equal(result, `STUB_TEXTLINT_FINDING:${targetPath}\n`);
 });
 
-test("T-380 an absent textlint binary leaves the hook silent", () => {
+test("an absent textlint binary leaves the hook silent", () => {
   const root = makeFixtureRoot();
   const emptyBinDir = join(root, "empty-bin");
   mkdirSync(emptyBinDir, { recursive: true });

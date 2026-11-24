@@ -51,7 +51,7 @@ run_hako() {
 }
 
 test_the_default_run_mounts_a_temporary_clone_of_the_repo_and_no_mount_argument_carries_pwd() {
-  echo "T-011: the default run mounts a temporary clone of the repo and no mount argument carries \$PWD"
+  echo "the default run mounts a temporary clone of the repo and no mount argument carries \$PWD"
   run_hako "$AGENT_NAME" || true
   local run_line
   run_line="$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null | head -1 || true)"
@@ -63,7 +63,7 @@ test_the_default_run_mounts_a_temporary_clone_of_the_repo_and_no_mount_argument_
 }
 
 test_only_live_mounts_pwd_as_the_workspace() {
-  echo "T-012: only --live mounts \$PWD as the workspace"
+  echo "only --live mounts \$PWD as the workspace"
   run_hako "$AGENT_NAME" "--live" || true
   local run_line
   run_line="$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null | head -1 || true)"
@@ -72,7 +72,7 @@ test_only_live_mounts_pwd_as_the_workspace() {
 }
 
 test_the_generated_run_arguments_carry_cap_add_net_admin_and_the_per_agent_named_volume_mount() {
-  echo "T-013: the generated run arguments carry --cap-add NET_ADMIN and the per-agent named volume mount"
+  echo "the generated run arguments carry --cap-add NET_ADMIN and the per-agent named volume mount"
   run_hako "$AGENT_NAME" || true
   local volume_create_line volume_name run_line
   volume_create_line="$(grep '^volume create' "$CONTAINER_LOG" 2>/dev/null | head -1 || true)"

@@ -3,12 +3,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { DEFAULT_THRESHOLD, hasJapanese, JAPANESE } from "../japanese.ts";
 
-test("T-236 a count at the threshold passes and one below the threshold fails", () => {
+test("a count at the threshold passes and one below the threshold fails", () => {
   assert.equal(hasJapanese("あ".repeat(10), 10), true, "a count at the threshold must pass");
   assert.equal(hasJapanese("あ".repeat(9), 10), false, "a count one below the threshold must fail");
 });
 
-test("T-237 no threshold and a null threshold both take the default of 50", () => {
+test("no threshold and a null threshold both take the default of 50", () => {
   assert.equal(
     hasJapanese("あ".repeat(DEFAULT_THRESHOLD)),
     true,
@@ -26,7 +26,7 @@ test("T-237 no threshold and a null threshold both take the default of 50", () =
   );
 });
 
-test("T-238 hiragana, katakana, the long-vowel mark, and CJK ideographs each count toward the threshold", () => {
+test("hiragana, katakana, the long-vowel mark, and CJK ideographs each count toward the threshold", () => {
   assert.equal(
     hasJapanese("English text with 保 in it", 1),
     true,
@@ -44,7 +44,7 @@ test("T-238 hiragana, katakana, the long-vowel mark, and CJK ideographs each cou
   );
 });
 
-test("T-239 punctuation alone, English letters, and digits do not count", () => {
+test("punctuation alone, English letters, and digits do not count", () => {
   assert.equal(
     hasJapanese("、。！？（）「」".repeat(20), 1),
     false,
@@ -57,7 +57,7 @@ test("T-239 punctuation alone, English letters, and digits do not count", () => 
   );
 });
 
-test("T-267 the character class counts every match in the text and covers hiragana, katakana, the long-vowel mark and CJK ideographs", () => {
+test("the character class counts every match in the text and covers hiragana, katakana, the long-vowel mark and CJK ideographs", () => {
   assert.ok(JAPANESE.global, "the pattern must count every match, not only the first");
   assert.deepEqual("あアー漢".match(JAPANESE), ["あ", "ア", "ー", "漢"]);
   assert.equal("、。 abc".match(JAPANESE), null, "punctuation and latin carry no words");

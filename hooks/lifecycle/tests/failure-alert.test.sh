@@ -55,32 +55,32 @@ silent_hook() {
 }
 
 test_an_error_stop_sounds() {
-  echo "T-001: A turn ending on anything but end_turn sounds"
+  echo "A turn ending on anything but end_turn sounds"
   assert_contains "max_tokens" "Heavy" "$(run_hook stop '{"stop_reason":"max_tokens"}')"
 }
 
 test_a_normal_stop_is_silent() {
-  echo "T-002: A clean finish stays silent"
+  echo "A clean finish stays silent"
   assert_empty "end_turn" "$(silent_hook stop '{"stop_reason":"end_turn"}')"
 }
 
 test_a_missing_stop_reason_is_silent() {
-  echo "T-003: A payload with no stop_reason counts as a clean finish"
+  echo "A payload with no stop_reason counts as a clean finish"
   assert_empty "no key" "$(silent_hook stop '{"session_id":"abc"}')"
 }
 
 test_a_subagent_is_silent() {
-  echo "T-004: A subagent finishing is not the end of a turn"
+  echo "A subagent finishing is not the end of a turn"
   assert_empty "subagent" "$(silent_hook stop '{"stop_reason":"max_tokens"}' 1)"
 }
 
 test_stop_failure_always_sounds() {
-  echo "T-005: StopFailure is an API error and always sounds"
+  echo "StopFailure is an API error and always sounds"
   assert_contains "fail" "Heavy" "$(run_hook fail '{}')"
 }
 
 test_the_sound_file_is_named() {
-  echo "T-006: The file it plays exists under sounds/"
+  echo "The file it plays exists under sounds/"
   local named
   named=$(grep -oE 'DHVMagellanHorn_[A-Za-z]+\.mp3' "$HOOK" | head -1)
   assert_eq "the file exists" "yes" \
