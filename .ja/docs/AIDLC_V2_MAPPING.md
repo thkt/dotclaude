@@ -1,6 +1,6 @@
 # AI-DLC v2 との対応
 
-awslabs/aidlc-workflows v2 の stage と、このハーネスの workflow と skill を両方向で突き合わせた表。守備範囲を広げる提案が来たとき、どこを意図的に持っていないかを読む材料にする。
+awslabs/aidlc-workflows v2 の stage と、このハーネスの skill を両方向で突き合わせた表。守備範囲を広げる提案が来たとき、どこを意図的に持っていないかを読む材料にする。
 
 計測時点は upstream の `v2` ブランチ `840ba653` (2026-08-22)。stage ディレクトリはこの 2 週間で 4 回動いたので、読むときは sha を確認する。
 
@@ -45,7 +45,7 @@ OPERATION phase の 7 stage が全て unmatched であることは、`deploy|obs
 | --- | ------------------------ | --------- | ----------------------------------------------------------------------------------------------------- |
 | 0.1 | workspace-scaffold       | unmatched | -                                                                                                     |
 | 0.2 | workspace-detection      | unmatched | -                                                                                                     |
-| 0.3 | state-init               | unmatched | `workflows/_lib/run-workflow.ts` が run ごとの状態を持つが、これは配管であって stage ではない         |
+| 0.3 | state-init               | unmatched | `skills/implement/scripts/launch.ts` が Issue ごとの状態を `launch.json` に持つが、これは配管であって stage ではない         |
 | 1.1 | intent-capture           | partial   | `/outcome` の Outcome state が intent-statement を埋める。stakeholder-map は無い                      |
 | 1.2 | market-research          | unmatched | -                                                                                                     |
 | 1.3 | feasibility              | partial   | constraint-register は OUTCOME.md § Constraints                                                       |
@@ -68,7 +68,7 @@ OPERATION phase の 7 stage が全て unmatched であることは、`deploy|obs
 | 3.4 | infrastructure-design    | unmatched | -                                                                                                     |
 | 3.5 | code-generation          | unmatched | -                                                                                                     |
 | 3.6 | build-and-test           | unmatched | -                                                                                                     |
-| 3.7 | ci-pipeline              | unmatched | CI はあるが、それを生成する workflow / skill は無い                                                   |
+| 3.7 | ci-pipeline              | unmatched | CI はあるが、それを生成する skill は無い                                                   |
 | 4.1 | deployment-pipeline      | unmatched | -                                                                                                     |
 | 4.2 | environment-provisioning | unmatched | -                                                                                                     |
 | 4.3 | deployment-execution     | unmatched | -                                                                                                     |

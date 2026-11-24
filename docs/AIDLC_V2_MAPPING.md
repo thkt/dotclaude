@@ -1,6 +1,6 @@
 # Mapping to AI-DLC v2
 
-Both directions of a mapping between awslabs/aidlc-workflows v2's stages and this harness's workflows and skills. It reads as the record of what the harness deliberately does not carry, for judging a proposal that would widen its scope.
+Both directions of a mapping between awslabs/aidlc-workflows v2's stages and this harness's skills. It reads as the record of what the harness deliberately does not carry, for judging a proposal that would widen its scope.
 
 Measured at upstream `v2` branch `840ba653` (2026-08-22). The stages directory moved four times in the two weeks before that, so check the sha when reading.
 
@@ -45,7 +45,7 @@ That every one of the 7 OPERATION stages is unmatched was checked by sweeping `w
 | --- | ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1 | workspace-scaffold       | unmatched | -                                                                                                                                     |
 | 0.2 | workspace-detection      | unmatched | -                                                                                                                                     |
-| 0.3 | state-init               | unmatched | `workflows/_lib/run-workflow.ts` holds per-run state, but that is plumbing rather than a stage                                        |
+| 0.3 | state-init               | unmatched | `skills/implement/scripts/launch.ts` holds per-Issue state in `launch.json`, but that is plumbing rather than a stage                                        |
 | 1.1 | intent-capture           | partial   | `/outcome`'s Outcome state fills intent-statement. No stakeholder-map                                                                 |
 | 1.2 | market-research          | unmatched | -                                                                                                                                     |
 | 1.3 | feasibility              | partial   | OUTCOME.md § Constraints is the constraint-register                                                                                   |
@@ -68,7 +68,7 @@ That every one of the 7 OPERATION stages is unmatched was checked by sweeping `w
 | 3.4 | infrastructure-design    | unmatched | -                                                                                                                                     |
 | 3.5 | code-generation          | unmatched | -                                                                                                                                     |
 | 3.6 | build-and-test           | unmatched | -                                                                                                                                     |
-| 3.7 | ci-pipeline              | unmatched | CI exists, but no workflow or skill generates it                                                                                      |
+| 3.7 | ci-pipeline              | unmatched | CI exists, but no skill generates it                                                                                      |
 | 4.1 | deployment-pipeline      | unmatched | -                                                                                                                                     |
 | 4.2 | environment-provisioning | unmatched | -                                                                                                                                     |
 | 4.3 | deployment-execution     | unmatched | -                                                                                                                                     |

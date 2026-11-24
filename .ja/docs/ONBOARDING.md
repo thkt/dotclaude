@@ -38,7 +38,7 @@ MCP Servers: 同じ期間の呼び出しは 0 件。
 ### Skills to Know About
 
 - `/scoping`. 要求、完了条件、検証方法を整理し、合意した範囲を GitHub Issue にする。機能とバグのどちらで始めるときもここから入る。
-- `/implement`. 合意済みの Issue を implement workflow で draft PR まで進める。
+- `/implement`. 合意済みの Issue を `launch.ts` で draft PR まで進める。
 - `/compact`. 使用率が 70% に近づいたらコンテキストを要約・圧縮する。長いセッションで先回り実行する。
 
 ## Team Tips
