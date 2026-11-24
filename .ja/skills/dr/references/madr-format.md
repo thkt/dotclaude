@@ -28,7 +28,7 @@ More Information 配下の h3 に置く。More Information を持たない DR �
 | ---------------------------- | ---------------------------------------------- |
 | Decision Drivers             | 選択を導いた基準                               |
 | Consequences (under Outcome) | `Good, because ...` / `Bad, because ...`       |
-| Pros and Cons of the Options | 選択肢ごとの詳細を `### {option}` 見出しで示す |
+| Pros and Cons of the Options | 選択肢ごとの詳細を `### {option}` 見出しで示す。選ばなかった option があれば、その option の節は必須 |
 | More Information             | 移行計画、関連リンク                           |
 
 ## Status ライフサイクル
