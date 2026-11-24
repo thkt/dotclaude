@@ -7,21 +7,21 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const skill = readFileSync(join(root, "skills", "implement", "SKILL.md"), "utf8");
 
-test("scoping names the three handlings of a step the workflow cannot carry out, and the launch check sends back any other", () => {
+test("scoping names the three handlings of a step launch.ts cannot carry out, and the launch check sends back any other", () => {
   const sufficiency = readFileSync(join(root, "skills", "scoping", "references", "sufficiency.md"), "utf8");
-  const heading = "### Handling a step the workflow cannot carry out";
+  const heading = "### Handling a step `launch.ts` cannot carry out";
   assert.ok(sufficiency.includes(heading), "sufficiency.md lost the section");
   const section = sufficiency.slice(sufficiency.indexOf(heading), sufficiency.indexOf("## Questions and re-evaluation"));
   const rows = section.split("\n").filter((line) => line.startsWith("| ") && !/^\| (Handling|-)/.test(line));
   assert.equal(rows.length, 3, "the handlings an Issue may agree on");
   assert.match(sufficiency, /the `check` of `\.dotagents\.json`, the capture, and CI when publishing/);
   const phase1 = skill.slice(skill.indexOf("## Phase 1"), skill.indexOf("## Phase 2"));
-  assert.ok(phase1.includes("§ Handling a step the workflow cannot carry out"), "Phase 1 does not name the section");
+  assert.ok(phase1.includes("§ Handling a step `launch.ts` cannot carry out"), "Phase 1 does not name the section");
   for (const row of rows) {
     const name = row.split("|")[1].trim();
     assert.ok(phase1.toLowerCase().includes(name.toLowerCase()), `Phase 1 does not name the handling "${name}"`);
   }
-  const actors = /Someone inside the run means ([^.]+)\./.exec(section)?.[1];
+  const actors = /Someone inside the run means (.+?)\. [A-Z]/.exec(section)?.[1];
   assert.ok(actors, "the section no longer says who is inside the run");
   assert.ok(phase1.includes(`assigns work to ${actors}`), `Phase 1 does not return a cell that assigns work to ${actors}`);
   assert.match(section, /or to an option you offer the human/);
@@ -141,4 +141,23 @@ test("the type prefixes scoping puts on a title are the keys launch.ts maps to a
 
 test("the skill does not route an Issue by its Plan section", () => {
   assert.ok(!skill.includes("## Plan"), "SKILL.md routes by a ## Plan section");
+});
+
+test("the six procedure documents name launch.ts and its stop reasons, not the retired workflow and host", () => {
+  const retired = /\bworkflows?\b|\bhost\b|human-decision-required|repair-no-progress|needs_host/i;
+  const launch = readFileSync(join(root, "skills", "implement", "scripts", "launch.ts"), "utf8");
+  for (const reason of ["disagreement", "not-converging"])
+    assert.ok(launch.includes(`reason: "${reason}"`), `launch.ts no longer stops as ${reason}`);
+  assert.match("the workflow stops", retired);
+  assert.doesNotMatch("launch.ts stops", retired);
+  for (const prefix of [[], [".ja"]])
+    for (const path of [
+      ["skills", "scoping", "references", "sufficiency.md"],
+      ["skills", "scoping", "references", "issue.md"],
+      ["skills", "implement", "SKILL.md"],
+    ]) {
+      const rel = [...prefix, ...path].join("/");
+      const hits = readFileSync(join(root, rel), "utf8").split("\n").filter((line) => retired.test(line));
+      assert.deepEqual(hits, [], `${rel} still names a retired word`);
+    }
 });
