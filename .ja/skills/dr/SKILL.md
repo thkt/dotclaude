@@ -31,7 +31,7 @@ argument-hint: "[decision title]"
 | 1    | Pre-Check | ${CLAUDE_SKILL_DIR}/scripts/pre-check.ts "$TITLE" を実行する。返り値から使うのは `dr_dir` と `filename` (書き込み先)、`date` (frontmatter)、`similar_drs` (重複判定)。stderr が open な PR を確認できなかったと述べたときは、`gh pr list --state open` で DR を足す PR がないことを確かめてから番号を使う |
 | 2    | Type      | 決定の意図で決定タイプを判定し、推奨トピックを選ぶ (§ 決定タイプ)                                                                                                    |
 | 3    | Sources   | プロジェクトドキュメント、issue、外部リソースを収集する                                                                                                              |
-| 4    | Draft     | ${CLAUDE_SKILL_DIR}/templates/madr-template.md を `dr_dir` 配下に `filename` で写し、収集した内容で埋める (§ YAML Frontmatter)                                       |
+| 4    | Draft     | ${CLAUDE_SKILL_DIR}/templates/madr-template.md を `dr_dir` 配下に `filename` で写し、収集した内容で埋める (§ YAML Frontmatter)。選ばなかった option の `Bad, because` と、`Decision Drivers` の各行の下に、子の行を 1 つ書く。子の行は `確かめた。`、`確かめていない。`、`方針による。` のどれかで始める。確かめる道具は `/dr` を呼んだ session が動かし、`/dr` はその結果を書く。選ばなかった option の子の行に `確かめていない。` が 1 つでもあれば、`status` を `proposed` にし、その行を AskUserQuestion で示す。答えの選択肢は、確かめて書き直すことと、`proposed` のまま進めることの 2 つである                                       |
 | 5    | Critique  | 既存 DR の原則に例外を作る、または既存 DR を supersede する場合だけ、下書きを critic-design の agent に渡し、結果の通知を待ってから、verdict と成立条件を More Information に 1 行で残す |
 | 6    | Validate  | ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE" を実行する。exit 0 なら合格。落ちた項目は `errors[]` に入り、`warnings[]` は参考                               |
 | 7    | Index     | ${CLAUDE_SKILL_DIR}/scripts/update-index.ts を実行し、`dr_dir/README.md` を再生成する                                                                                |

@@ -24,6 +24,7 @@ informed: "{任意。結果を共有する利害関係者}"
 ## Decision Drivers
 
 - {任意。選択を導いた基準を箇条書きで}
+  - {確かめた。動かしたか読んだもの、その版と日付、分かったこと | 確かめていない。その理由 | 方針による。どの方針か}
 
 ## Considered Options
 
@@ -45,7 +46,7 @@ Chosen option: "{選択した option}", because {選んだ理由}.
 
 ## Pros and Cons of the Options
 
-{任意。option ごとに以下を繰り返す}
+{選ばなかった option ごとに必須。選んだ option は任意。option ごとに以下を繰り返す}
 
 ### {option}
 
@@ -53,6 +54,7 @@ Chosen option: "{選択した option}", because {選んだ理由}.
 
 - Good, because {利点}
 - Bad, because {欠点}
+  - {確かめた。動かしたか読んだもの、その版と日付、分かったこと | 確かめていない。その理由 | 方針による。どの方針か}
 
 ## More Information
 

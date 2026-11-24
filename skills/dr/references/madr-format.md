@@ -28,7 +28,7 @@ These go under More Information as an h3. A DR without a More Information sectio
 | ---------------------------- | ------------------------------------------- |
 | Decision Drivers             | Criteria guiding the choice                 |
 | Consequences (under Outcome) | `Good, because ...` / `Bad, because ...`    |
-| Pros and Cons of the Options | Per-option detail with `### {option}` heads |
+| Pros and Cons of the Options | Per-option detail with `### {option}` heads. Required for each rejected option |
 | More Information             | Migration plan, related links               |
 
 ## Status Lifecycle

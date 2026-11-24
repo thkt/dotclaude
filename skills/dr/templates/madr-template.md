@@ -24,6 +24,7 @@ informed: "{optional. stakeholders kept in the loop}"
 ## Decision Drivers
 
 - {Optional. Criteria guiding the choice, as bullets}
+  - {Verified. What was run or read, its version and date, and what it showed | Not verified. Why | By policy. Which policy}
 
 ## Considered Options
 
@@ -45,7 +46,7 @@ Chosen option: "{chosen option}", because {immediate justification}.
 
 ## Pros and Cons of the Options
 
-{Optional. Repeat the following per option}
+{Required for each rejected option, optional for the chosen one. Repeat the following per option}
 
 ### {option}
 
@@ -53,6 +54,7 @@ Chosen option: "{chosen option}", because {immediate justification}.
 
 - Good, because {advantage}
 - Bad, because {drawback}
+  - {Verified. What was run or read, its version and date, and what it showed | Not verified. Why | By policy. Which policy}
 
 ## More Information
 
