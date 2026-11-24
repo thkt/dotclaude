@@ -67,19 +67,3 @@ export function assertDetectsAndMisses(
     `positive control (${retiredName}): the same line goes undetected once the cue is removed`,
   );
 }
-
-export function assertNoResidualReferences(
-  repoRoot: string,
-  read: (path: string) => string,
-  matches: (content: string, path: string) => boolean,
-  retiredLabel: string,
-  extraExclusions: string[],
-): void {
-  const offenders = offendersAmong(trackedFiles(repoRoot), read, matches, extraExclusions);
-  assert.deepEqual(
-    offenders,
-    [],
-    `files still naming ${retiredLabel} (decisions and research archives are ` +
-      `kept as history, not counted): ${offenders.join(", ")}`,
-  );
-}
