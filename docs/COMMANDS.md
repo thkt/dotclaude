@@ -35,13 +35,6 @@ A change with no Issue is published up to a draft PR by `/sweep`, `/dr`, or `/ou
 | Ship      | `/implement` commits once, and `launch.ts` pushes and opens a draft PR                     |
 | CI        | Wait for CI on the same head. The switch to ready stays with the `/implement` skill and the human |
 
-### Governing DRs
-
-| DR                                                                                                | Decision                                                                    |
-| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| DR-0128           | One path from an Issue to a PR: `/scoping` → `/implement`                   |
-| DR-0090                        | Work products live in `.claude/workspace/`, records in `~/.claude/history/` |
-
 ## Command → Implementation Mapping
 
 A skill executes its SKILL.md procedure in the conversation context. `/implement` puts the processing that carries loops and gates into `launch.ts`, in a shape the LLM cannot skip at its discretion.

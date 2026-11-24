@@ -215,14 +215,7 @@ The lint targets and thresholds live in configuration files. This document does 
 
 `tests/` binds conventions in code. What a document alone failed to hold ended up here.
 
-| Test                       | Convention it binds                                             |
-| -------------------------- | --------------------------------------------------------------- |
-| `decision-records.test.js` | No duplicate DR number, and a title heading matching its filename |
-| `live-instructions.test.js`| Wording in instructions: the retired name ADR, home-anchored paths, un-narrowed Bash grants, a workspace path missing `.claude/` |
-| `phase-handoff.test.js`    | A Phase that hands something forward is named back by the receiving Phase |
-| `prose-language.test.js`   | Test names on the English side are not Japanese                 |
-| `skill-h1.test.js`         | A wrapper skill's H1 is its own name, and a user-invocable skill's H1 opens with its slash command |
-| `table-paragraph.test.js`  | No paragraph directly below a table                             |
+Each test's name states the convention it binds.
 
 ## Distribution contract
 

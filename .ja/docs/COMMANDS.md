@@ -35,13 +35,6 @@ Issue を経ない変更は `/sweep`、`/dr`、`/outcome` が自分で draft PR 
 | Ship      | `/implement` が 1 回コミットし、`launch.ts` が push し、draft PR を開く             |
 | CI        | 同じ head で CI を待つ。ready への切り替えは `/implement` skill と人間が受け持つ    |
 
-### 統治する DR
-
-| DR                                                                                                                  | 決定                                                                 |
-| ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| DR-0128                  | Issue から PR までの経路を `/scoping` → `/implement` の 1 本にする   |
-| DR-0090                               | 成果物は `.claude/workspace/`、履歴は `~/.claude/history/`           |
-
 ## Command → 実装マッピング
 
 skill は SKILL.md の手順を会話の文脈で実行する。`/implement` は、ループとゲートを持つ処理を `launch.ts` に置き、LLM の裁量で飛ばせない形にする。
