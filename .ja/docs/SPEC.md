@@ -25,7 +25,7 @@
 | 要素                                        | 実体                                    | 供給元                          |
 | ------------------------------------------- | --------------------------------------- | ------------------------------- |
 | hook スクリプト                             | `hooks/**/*.ts`, `hooks/**/*.sh`        | 本リポジトリ                    |
-| skill / agent / workflow 定義               | `skills/`, `agents/`, `workflows/`      | 本リポジトリ                    |
+| skill / agent 定義                          | `skills/`, `agents/`                    | 本リポジトリ                    |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLI                                | `brew install thkt/tap/{tool}`  |
 | `ast-grep`                                  | Rust バイナリ                           | `brew install ast-grep`。CI の lint は devDependency を `bun install` で入れる |
 | `codegraph`                                 | mise shim 経由のバイナリ                | mise                            |
@@ -42,7 +42,6 @@
 | `rules/`      | 規約と原則。読み込むファイルは `paths:` frontmatter が決める | Claude 本体          |
 | `skills/`     | 手順と知識のモジュール                     | Skill tool / モデル  |
 | `agents/`     | fork 実行される専門エージェント定義        | Agent tool           |
-| `workflows/`  | 決定論的なオーケストレーション スクリプト  | Workflow tool        |
 | `hooks/`      | ツール呼び出しに割り込むスクリプト         | Claude Code harness  |
 | `docs/`       | 人間向けの設計文書と決定記録               | 人間                 |
 | `tests/`      | 規約をコードで縛る横断テスト               | `node --test`        |
@@ -175,20 +174,6 @@ agent は必ず fork 文脈で走り、呼び出し元の会話履歴を持た�
 | ------- | --------------- | ----- |
 | critics | `critic-design` | opus  |
 
-## Workflow 契約
-
-### 起動と引数
-
-workflow は `Workflow({name, args})` で起動する。args はオブジェクト、JSON 文字列、素の文字列のいずれでも受け取り、スクリプトが 1 つの形に正規化する。素の文字列は workflow ごとの短縮形として解釈され、`implement` は Issue として読む。
-
-`repo` は全 workflow で必須である。絶対パスが無い呼び出しは `{stopped: "no-repo"}` を返し、対象リポジトリを取り違えたまま走ることはない。
-
-今ある workflow は `implement` だけである。その phase は[COMMANDS.md](./COMMANDS.md)の implement workflow の節が持つ。
-
-### 返り値
-
-返り値は呼び出し元が読む唯一の一次情報である。報告書ファイルを書く workflow でも、判断に要る数はここに載る。
-
 ## 品質ゲート
 
 ### ローカル
@@ -242,7 +227,7 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 
 ## 配布契約
 
-`.claude-plugin/marketplace.json` は単一プラグイン構成である。`build` を入れるとリポジトリ全体が 1 度クローンされ、skill, agent, workflow のすべてが `build:` 名前空間で読み込まれる。
+`.claude-plugin/marketplace.json` は単一プラグイン構成である。`build` を入れるとリポジトリ全体が 1 度クローンされ、skill と agent のすべてが `build:` 名前空間で読み込まれる。
 
 | 項目           | 値                          |
 | -------------- | --------------------------- |
@@ -271,6 +256,5 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `node --test "hooks/**/tests/*.test.ts"` と `find hooks sandbox -name '*.test.sh'` |
 | skill        | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
 | agent        | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
-| workflow     | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`             | `node --test "workflows/**/tests/*.test.js" "workflows/**/tests/*.test.ts"` |
 | DR           | `docs/decisions/NNNN-*.md`                                              | `node --test tests/decision-records.test.js`|
 | 文書         | `.ja/docs/<NAME>.md` を先、`docs/<NAME>.md` を同一コミットで            | `npx textlint '.ja/**/*.md'` と `rumdl check .` |

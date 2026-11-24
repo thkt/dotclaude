@@ -30,7 +30,6 @@ graph TD
     subgraph Conventions["Conventions Layer"]
         MD[MARKDOWN]
         MIR[MIRROR]
-        WF[WORKFLOWS]
         SKILL[SKILLS]
         SUB[SUBAGENT]
         PLUG[PLUGIN]
@@ -123,7 +122,6 @@ Consistency across documentation, plugins, and translations.
 | ---------------------------------------------- | ------------------------------------- |
 | [MARKDOWN](../rules/conventions/MARKDOWN.md)   | Markdown conventions                  |
 | [MIRROR](../rules/conventions/MIRROR.md)       | `.ja/`-canonical mirroring            |
-| [WORKFLOWS](../rules/conventions/WORKFLOWS.md) | Workflow script conventions           |
 | [SKILLS](../rules/conventions/SKILLS.md)       | Skill definition standard             |
 | [SUBAGENT](../rules/conventions/SUBAGENT.md)   | Sub-agent definition standard         |
 | [PLUGIN](../rules/conventions/PLUGIN.md)       | Plugin constraints                    |
