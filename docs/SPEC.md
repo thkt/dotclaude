@@ -14,7 +14,6 @@ The document you want depends on the question. This one answers what happens; th
 | Design intent of the layer structure      | [DESIGN.md](./DESIGN.md)                    |
 | Design intent and naming of hooks         | [HOOKS.md](./HOOKS.md)                      |
 | Skills versus Agents                      | [SKILLS_AGENTS.md](./SKILLS_AGENTS.md)      |
-| How one decision was reached              | [decisions](./decisions)                    |
 | Role of each external CLI                 | [CLI_TOOLS.md](./CLI_TOOLS.md)              |
 | Term definitions                          | [GLOSSARY.md](./GLOSSARY.md)                |
 
@@ -43,7 +42,7 @@ The directory is the unit of responsibility. The runner column names who reads t
 | `skills/`     | Procedure and knowledge modules            | Skill tool / model   |
 | `agents/`     | Specialist definitions run in a fork       | Agent tool           |
 | `hooks/`      | Scripts that interrupt a tool call         | Claude Code harness  |
-| `docs/`       | Human-facing design docs and decisions     | Humans               |
+| `docs/`       | Human-facing design docs     | Humans               |
 | `tests/`      | Cross-cutting tests that enforce rules     | `node --test`        |
 
 ## Hook contract
@@ -256,5 +255,4 @@ Here are the files a new component touches, and the command that confirms the ad
 | A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `node --test "hooks/**/tests/*.test.ts"` and `find hooks sandbox -name '*.test.sh'` |
 | A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
 | An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
-| A DR     | `docs/decisions/NNNN-*.md`                                              | `node --test tests/decision-records.test.js`|
 | A document | `.ja/docs/<NAME>.md` first, `docs/<NAME>.md` in the same commit       | `npx textlint '.ja/**/*.md'` and `rumdl check .` |

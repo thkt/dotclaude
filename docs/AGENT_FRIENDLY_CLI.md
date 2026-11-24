@@ -6,7 +6,7 @@ This document captures the input-contract and help-contract patterns now aligned
 across `xr`, `sae`, and `notch` as of 2026-04-02. It is intentionally
 opinionated. Prefer consistency over local cleverness.
 
-[DR-0060](decisions/0060-adopt-agent-friendly-cli-design-principles.md) owns the
+DR-0060 owns the
 decision of what is mandatory. It defines three required axes (machine-readable
 / next step / self-discovery), and this document gives the concrete input, help,
 and test shapes that satisfy them. When the two disagree, DR-0060 wins.
@@ -146,7 +146,7 @@ Root help should include operator-level information that affects automation, for
 
 Example root addition. This shape mirrors `xr` as it stands today. New CLIs use
 the group-specific sysexits.h subset from
-[DR-0066](decisions/0066-cli-exit-code-policy-grouped-by-error-topology.md).
+DR-0066.
 
 ```text
 Exit codes:

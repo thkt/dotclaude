@@ -39,8 +39,8 @@ A change with no Issue is published up to a draft PR by `/sweep`, `/dr`, or `/ou
 
 | DR                                                                                                | Decision                                                                    |
 | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [DR-0128](decisions/0128-retire-the-plan-based-build-path-for-scoping-and-implement.md)           | One path from an Issue to a PR: `/scoping` → `/implement`                   |
-| [DR-0090](decisions/0090-unify-workspace-and-history-storage-locations.md)                        | Work products live in `.claude/workspace/`, records in `~/.claude/history/` |
+| DR-0128           | One path from an Issue to a PR: `/scoping` → `/implement`                   |
+| DR-0090                        | Work products live in `.claude/workspace/`, records in `~/.claude/history/` |
 
 ## Command → Implementation Mapping
 

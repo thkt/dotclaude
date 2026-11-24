@@ -53,7 +53,7 @@ Revising a PR this skill published also uses the same worktree and `launch.ts`. 
 3. When the PR is ready, confirm with the human that it goes back to draft during the revision, and put it back with `gh pr ready <n> --undo`. While it stays ready, `publish` stops with `pr-mismatch`.
 4. Do steps 2 to 4 of Phase 2. `run` has the implementation session read the Issue again, and redoes the capture and the review.
 5. Do Phase 3. Stack one commit on top of the published commit. `publish` opens no new PR and rewrites the body of the same PR.
-6. Check the adopted findings' cause and whether they can recur, and only when needed connect them to existing decision records, tests, or lint per ${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md. Do not add improvements beyond this agreed scope to the existing PR's done conditions.
+6. Check the adopted findings' cause and whether they can recur, and only when needed connect them to existing tests or lint per ${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md. Do not add improvements beyond this agreed scope to the existing PR's done conditions.
 
 ## Stop conditions
 

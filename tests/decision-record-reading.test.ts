@@ -48,3 +48,27 @@ test("no tracked file outside docs/decisions/ and docs/research/ asks to read de
     `files still asking to read decision records at task entry: ${offenders.join(", ")}`,
   );
 });
+
+test("git tracks no file under docs/decisions/ while it still tracks files under docs/", () => {
+  const files = trackedFiles(REPO_ROOT);
+  assert.ok(files.some((path) => path.startsWith("docs/")));
+  const records = files.filter((path) => path.startsWith("docs/decisions/"));
+  assert.deepEqual(records, [], `tracked files under docs/decisions/: ${records.join(", ")}`);
+});
+
+function linksToDecisions(content: string): boolean {
+  return /\]\([^)]*decisions\//.test(content);
+}
+
+test("no tracked Markdown file outside docs/research/ links to a decisions/ path, and the predicate flags a DR link while missing the bare DR number", () => {
+  assert.equal(linksToDecisions("[DR-0001](decisions/0001-x.md)"), true);
+  assert.equal(linksToDecisions("DR-0001"), false);
+
+  const markdown = trackedFiles(REPO_ROOT).filter((path) => path.endsWith(".md"));
+  const offenders = offendersAmong(
+    markdown,
+    (path) => readFileSync(join(REPO_ROOT, path), "utf8"),
+    linksToDecisions,
+  );
+  assert.deepEqual(offenders, [], `files still linking to decisions/: ${offenders.join(", ")}`);
+});

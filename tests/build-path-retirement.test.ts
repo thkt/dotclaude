@@ -400,7 +400,6 @@ test("no tracked file outside the records and the absence tests names a retired 
   }
   for (const path of [
     THIS_FILE,
-    "docs/decisions/0128-retire-the-plan-based-build-path-for-scoping-and-implement.md",
     "tests/pr-body-retirement.test.ts",
     ...ABSENCE_TESTS,
   ]) {
@@ -498,10 +497,7 @@ test("no tracked file outside the records and this file names docs/wiki, skills/
   ]) {
     assert.ok(files.includes(path), `the scan reaches ${path}`);
   }
-  const record = "docs/decisions/0130-retire-the-wiki-and-scribe-and-keep-intent-in-code-and-rules.md";
-  assert.equal(namesWikiOrScribe(readFileSync(join(REPO_ROOT, record), "utf8")), true);
   const read = (path: string) => readFileSync(join(REPO_ROOT, path), "utf8");
-  assert.deepEqual(offendersAmong([record], read, namesWikiOrScribe), []);
   const offenders = offendersAmong(files, read, namesWikiOrScribe, [THIS_FILE]);
   assert.deepEqual(offenders, [], `files still naming the wiki or scribe: ${offenders.join(", ")}`);
 });
@@ -573,80 +569,6 @@ test("SPEC.md keeps its version row and no longer states the pinned 4.1.0 on eit
     const text = readFileSync(join(REPO_ROOT, path), "utf8");
     assert.ok(firstColumnCells(text).includes("version"), `${path} has a version row`);
     assert.ok(!text.includes("4.1.0"), `${path} states 4.1.0`);
-  }
-});
-
-const SUPERSEDED_DRS = [
-  "0002",
-  "0050",
-  "0084",
-  "0085",
-  "0087",
-  "0088",
-  "0089",
-  "0094",
-  "0099",
-  "0102",
-  "0103",
-];
-
-test("each DR the build-path retirement replaces carries the status superseded by DR-0128", () => {
-  const decisions = join(REPO_ROOT, "docs", "decisions");
-  const names = readdirSync(decisions);
-  for (const number of SUPERSEDED_DRS) {
-    const file = names.find((name) => name.startsWith(`${number}-`));
-    assert.ok(file, `DR-${number} exists`);
-    const status = readFileSync(join(decisions, file as string), "utf8").match(
-      /^status: "?([^"\n]*)"?$/m,
-    )?.[1];
-    assert.equal(status, "superseded by DR-0128", `DR-${number} status`);
-  }
-});
-
-const SUPERSEDED_BY_DR_0129 = [
-  "0011",
-  "0012",
-  "0035",
-  "0043",
-  "0046",
-  "0047",
-  "0051",
-  "0063",
-  "0071",
-  "0075",
-  "0078",
-  "0079",
-  "0095",
-  "0096",
-  "0104",
-  "0108",
-];
-
-test("each DR the workflow retirement replaces carries the status superseded by DR-0129", () => {
-  const decisions = join(REPO_ROOT, "docs", "decisions");
-  const names = readdirSync(decisions);
-  for (const number of SUPERSEDED_BY_DR_0129) {
-    const file = names.find((name) => name.startsWith(`${number}-`));
-    assert.ok(file, `DR-${number} exists`);
-    const status = readFileSync(join(decisions, file as string), "utf8").match(
-      /^status: "?([^"\n]*)"?$/m,
-    )?.[1];
-    assert.equal(status, "superseded by DR-0129", `DR-${number} status`);
-  }
-});
-
-const SUPERSEDED_BY_DR_0130 = ["0106", "0116"];
-
-test("each DR the wiki and scribe retirement replaces carries the status superseded by DR-0130", () => {
-  const decisions = join(REPO_ROOT, "docs", "decisions");
-  const names = readdirSync(decisions);
-  for (const number of SUPERSEDED_BY_DR_0130) {
-    const file = names.find((name) => name.startsWith(`${number}-`));
-    assert.ok(file, `DR-${number} exists`);
-    const status = readFileSync(join(decisions, file as string), "utf8").match(
-      /^status: "?([^"\n]*)"?$/m,
-    )?.[1];
-    assert.equal(status, "superseded by DR-0130", `DR-${number} status`);
   }
 });
 

@@ -53,7 +53,7 @@ argument-hint: "[issue number or URL] [--no-publish]"
 3. PR が ready なら、修正の間は draft に戻すことを人に確かめ、`gh pr ready <n> --undo` で戻す。ready のままでは、`publish` が `pr-mismatch` で止まる。
 4. Phase 2 の手順 2 から 4 を行う。`run` は、実装の session に Issue を読み直させ、撮影とレビューをやり直す。
 5. Phase 3 を行う。commit は、公開した commit の上に 1 つ積む。`publish` は、新しい PR を作らず、同じ PR の本文を書き直す。
-6. 採用した指摘の原因と再発性を確かめ、必要な場合だけ ${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md に従って既存の判断記録・テスト・lint へつなぐ。今回の合意範囲を超える改善を、既存 PR の完了条件に加えない。
+6. 採用した指摘の原因と再発性を確かめ、必要な場合だけ ${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md に従って既存のテスト・lint へつなぐ。今回の合意範囲を超える改善を、既存 PR の完了条件に加えない。
 
 ## 停止条件
 
