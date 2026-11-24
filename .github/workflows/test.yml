@@ -57,8 +57,6 @@ jobs:
           "hooks/**/tests/*.test.ts"
           "skills/**/tests/*.test.js"
           "skills/**/tests/*.test.ts"
-          "workflows/**/tests/*.test.js"
-          "workflows/**/tests/*.test.ts"
 
       # hooks/edit/tests/rumdl_check_test.py runs the real binary. The rumdl step below
       # reaches it through `pipx run`, which puts nothing on PATH for this step.
@@ -68,7 +66,7 @@ jobs:
       # Not unittest discovery: it cannot recurse from the root, where the test
       # directories are not packages.
       - name: Python tests
-        run: find agents hooks skills workflows -name '*_test.py' -print0 | xargs -0 -r -n1 python3
+        run: find agents hooks skills -name '*_test.py' -print0 | xargs -0 -r -n1 python3
 
       # Runs only on a failed suite (#589). A test that builds a git repo under
       # tempfile.TemporaryDirectory has failed here in teardown with

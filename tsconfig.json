@@ -14,7 +14,6 @@
   "include": [
     "hooks/**/*.ts",
     "skills/**/*.ts",
-    "workflows/**/*.ts",
     "tests/**/*.ts",
     "mods/**/*.ts"
   ],

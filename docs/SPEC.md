@@ -201,8 +201,8 @@ The only check before a write is `rust_pre_edit.ts`'s clippy, which takes `.rs`.
 
 | Step          | Command                                                                                      |
 | ------------- | -------------------------------------------------------------------------------------------- |
-| Node tests    | `node --test` over `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"`, `"workflows/**/tests/*.test.js"`, `"workflows/**/tests/*.test.ts"` |
-| Python tests  | `find agents hooks skills workflows -name '*_test.py'`, one file per invocation               |
+| Node tests    | `node --test` over `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"` |
+| Python tests  | `find agents hooks skills -name '*_test.py'`, one file per invocation               |
 | Shell tests   | `find hooks sandbox -name '*.test.sh'`, one file per bash invocation                          |
 | oxlint        | `npx oxlint --format=github`                                                                  |
 | biome         | `npx biome lint --reporter=github`                                                            |

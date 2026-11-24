@@ -9,9 +9,7 @@ const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(TEST_DIR, "..");
 const TSC_BIN = path.join(ROOT, "node_modules", ".bin", "tsc");
 const TSCONFIG = path.join(ROOT, "tsconfig.json");
-const FIXTURE = "workflows/tests/fixtures/tsconfig-scope-fixture.ts";
 const TESTS_FIXTURE = "tests/fixtures/tsconfig-scope-fixture.ts";
-const LIB_TESTS_FIXTURE = "workflows/_lib/tests/fixtures/tsconfig-scope-fixture.ts";
 
 function toPosix(filePath) {
   return filePath.split(path.sep).join("/");
@@ -37,25 +35,7 @@ function listTypeCheckedFiles() {
   return cached;
 }
 
-test("T-002 the type-check set contains the .ts under workflows", () => {
-  const files = listTypeCheckedFiles();
-  assert.ok(
-    files.some((file) => file.endsWith(FIXTURE)),
-    `${FIXTURE} is not in the type-check set`,
-  );
-});
-
-test("T-044 the type-check set contains workflows/_lib/run-workflow.ts and workflows/_lib/codex-run.ts", () => {
-  const files = listTypeCheckedFiles();
-  for (const target of ["workflows/_lib/run-workflow.ts", "workflows/_lib/codex-run.ts"]) {
-    assert.ok(
-      files.some((file) => file.endsWith(target)),
-      `${target} is not in the type-check set`,
-    );
-  }
-});
-
-test("T-254 the type-check set contains every tracked .ts under the tests directory whose path has no directory that starts with a dot, compared as a set of names against git ls-files, and the fixture under workflows/_lib/tests/fixtures", () => {
+test("T-254 the type-check set contains every tracked .ts under the tests directory whose path has no directory that starts with a dot, compared as a set of names against git ls-files", () => {
   const checkedNames = new Set(
     listTypeCheckedFiles().map((file) => toPosix(path.relative(ROOT, file))),
   );
@@ -74,14 +54,6 @@ test("T-254 the type-check set contains every tracked .ts under the tests direct
   for (const name of tracked) {
     assert.ok(checkedNames.has(name), `${name} is tracked but missing from the type-check set`);
   }
-  assert.ok(
-    existsSync(path.join(ROOT, LIB_TESTS_FIXTURE)),
-    `${LIB_TESTS_FIXTURE} is missing, so this check proves nothing`,
-  );
-  assert.ok(
-    checkedNames.has(LIB_TESTS_FIXTURE),
-    `${LIB_TESTS_FIXTURE} is missing from the type-check set`,
-  );
 });
 
 test("T-255 the Node tests step in .github/workflows/test.yml carries tests/*.test.ts", () => {
