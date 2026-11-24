@@ -25,7 +25,7 @@ This repository holds scripts and Markdown, nothing else. Most binaries invoked 
 | Component                                   | Implementation                          | Supplied by                     |
 | ------------------------------------------- | --------------------------------------- | ------------------------------- |
 | Hook scripts                                | `hooks/**/*.ts`, `hooks/**/*.sh`        | This repository                 |
-| Skill / agent / workflow definitions        | `skills/`, `agents/`, `workflows/`      | This repository                 |
+| Skill / agent definitions                   | `skills/`, `agents/`                    | This repository                 |
 | `scout`, `recall`, `sae`, `xr`              | Rust CLIs                               | `brew install thkt/tap/{tool}`  |
 | `ast-grep`                                  | Rust binary                             | `brew install ast-grep`. The CI lint installs the devDependency through `bun install` |
 | `codegraph`                                 | Binary behind a mise shim               | mise                            |
@@ -42,7 +42,6 @@ The directory is the unit of responsibility. The runner column names who reads t
 | `rules/`      | Conventions and principles; `paths:` frontmatter decides which files load | Claude itself        |
 | `skills/`     | Procedure and knowledge modules            | Skill tool / model   |
 | `agents/`     | Specialist definitions run in a fork       | Agent tool           |
-| `workflows/`  | Deterministic orchestration scripts        | Workflow tool        |
 | `hooks/`      | Scripts that interrupt a tool call         | Claude Code harness  |
 | `docs/`       | Human-facing design docs and decisions     | Humans               |
 | `tests/`      | Cross-cutting tests that enforce rules     | `node --test`        |
@@ -175,20 +174,6 @@ An agent always runs in a fork and carries none of the caller's conversation. On
 | -------- | --------------- | ----- |
 | critics  | `critic-design` | opus  |
 
-## Workflow contract
-
-### Invocation and arguments
-
-A workflow starts as `Workflow({name, args})`. args arrives as an object, a JSON string, or a bare string, and the script normalizes it to one shape. A bare string is the per-workflow shorthand, and `implement` reads it as the Issue.
-
-`repo` is required by every workflow. A call without an absolute path returns `{stopped: "no-repo"}`, so none of them run against the wrong repository.
-
-The one workflow is `implement`. Its phases are in the implement workflow section of [COMMANDS.md](./COMMANDS.md).
-
-### Return values
-
-The return value is the only primary channel the caller reads. Even a workflow that writes a report file puts the numbers needed for a decision here.
-
 ## Quality gates
 
 ### Local
@@ -242,7 +227,7 @@ The lint targets and thresholds live in configuration files. This document does 
 
 ## Distribution contract
 
-`.claude-plugin/marketplace.json` is a single-plugin configuration. Installing `build` clones the whole repository once, and every skill, agent, and workflow loads under the `build:` namespace.
+`.claude-plugin/marketplace.json` is a single-plugin configuration. Installing `build` clones the whole repository once, and every skill and agent loads under the `build:` namespace.
 
 | Item           | Value                       |
 | -------------- | --------------------------- |
@@ -271,6 +256,5 @@ Here are the files a new component touches, and the command that confirms the ad
 | A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `node --test "hooks/**/tests/*.test.ts"` and `find hooks sandbox -name '*.test.sh'` |
 | A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
 | An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
-| A workflow | `workflows/<name>.js`, `workflows/tests/`, `.ja/workflows/`           | `node --test "workflows/**/tests/*.test.js" "workflows/**/tests/*.test.ts"` |
 | A DR     | `docs/decisions/NNNN-*.md`                                              | `node --test tests/decision-records.test.js`|
 | A document | `.ja/docs/<NAME>.md` first, `docs/<NAME>.md` in the same commit       | `npx textlint '.ja/**/*.md'` and `rumdl check .` |
