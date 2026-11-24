@@ -13,7 +13,7 @@
     {
       "name": "build",
       "source": { "source": "github", "repo": "thkt/dotclaude" },
-      "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping, then hand the Issue to /implement, which carries it through launch.ts to implementation, verification, a draft PR, and CI confirmation. Bundles the critic-design agent and /sweep, /outcome, /dr, /in-your-own-words.",
+      "description": "End-to-end development from an agreed Issue. Settle the requirements into an Issue with /scoping, then hand the Issue to /implement, which carries it through launch.ts to implementation, verification, a draft PR, and CI confirmation. Bundles the critic-design agent and /sweep, /outcome, /dr.",
       "author": {
         "name": "thkt",
         "url": "https://github.com/thkt"
