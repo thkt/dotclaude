@@ -143,7 +143,7 @@ flowchart LR
     S["/scoping"] --> I["Agreed Issue"] --> M["/implement"] --> PR["draft PR"]
 ```
 
-`/implement` の phase と統治 DR は[COMMANDS](./COMMANDS.md)が持つ。
+`/implement` の phase は[COMMANDS](./COMMANDS.md)が持つ。
 
 ## 根底の哲学
 

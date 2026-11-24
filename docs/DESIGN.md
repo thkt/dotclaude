@@ -144,7 +144,7 @@ flowchart LR
     S["/scoping"] --> I["Agreed Issue"] --> M["/implement"] --> PR["draft PR"]
 ```
 
-`/implement`'s phases and governing DRs live in [COMMANDS](./COMMANDS.md).
+`/implement`'s phases live in [COMMANDS](./COMMANDS.md).
 
 ## Underlying Philosophy
 
