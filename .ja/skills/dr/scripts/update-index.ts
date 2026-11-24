@@ -5,7 +5,9 @@ import { randomBytes } from "node:crypto";
 import { basename, join } from "node:path";
 import {
   fail,
+  failUnresolvedDrDir,
   filesUnder,
+  gitOriginUrl,
   gitTopLevel,
   guardSkillDir,
   localDate,
@@ -113,12 +115,10 @@ export function main(argv: string[]): number {
     process.env,
     arg,
     process.env.DR_DIR || arg ? { status: 0, stdout: "" } : gitTopLevel(),
+    process.env.DR_DIR || arg ? null : gitOriginUrl(),
   );
   if (drDir === null) {
-    fail(
-      "Error: not inside a git repository. Decision Records require" +
-        " <git-root>/docs/decisions/. Set DR_DIR env var to override.",
-    );
+    failUnresolvedDrDir(process.env);
   }
   if (!existsSync(drDir) || !statSync(drDir).isDirectory()) {
     fail(`Error: directory not found: ${drDir}`);

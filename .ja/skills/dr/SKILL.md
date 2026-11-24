@@ -10,7 +10,7 @@ argument-hint: "[decision title]"
 
 ## 入力
 
-決定タイトルは `$ARGUMENTS` で受け取る。空なら AskUserQuestion で New decision/Update existing を確認する。New decision ならタイトルを聞き、Update existing なら `<git-root>/docs/decisions/` の既存 DR から選択させる (§ 既存 DR の更新)。新規に作るタイトルは "Adopt X for Y" のような具体的なアクションに整え、5〜64 文字に収めて `/:*?"<>|` を含めない。保存先は既定で `<git-root>/docs/decisions/` で、`DR_DIR` 環境変数を設定すると変えられる。
+決定タイトルは `$ARGUMENTS` で受け取る。空なら AskUserQuestion で New decision/Update existing を確認する。New decision ならタイトルを聞き、Update existing なら DR の置き場の既存 DR から選択させる (§ 既存 DR の更新)。DR の置き場は Pre-Check の `dr_dir` と同じ順で決まり、`DR_HOME` があれば `$DR_HOME/<repo 名>/`、なければ `<git-root>/docs/decisions/` である。新規に作るタイトルは "Adopt X for Y" のような具体的なアクションに整え、5〜64 文字に収めて `/:*?"<>|` を含めない。保存先は既定で `<git-root>/docs/decisions/` で、`DR_DIR` 環境変数を設定すると変えられる。
 
 `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md` に従い、関連 DR と原本の適用条件・状態を現在の要求へ照合する。必要な文書更新を今回の合意範囲へ含め、実装と同じ評価へ渡す。
 
@@ -35,7 +35,7 @@ argument-hint: "[decision title]"
 | 5    | Critique  | 既存 DR の原則に例外を作る、または既存 DR を supersede する場合だけ、下書きを critic-design の agent に渡し、結果の通知を待ってから、verdict と成立条件を More Information に 1 行で残す |
 | 6    | Validate  | ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE" を実行する。exit 0 なら合格。落ちた項目は `errors[]` に入り、`warnings[]` は参考                               |
 | 7    | Index     | ${CLAUDE_SKILL_DIR}/scripts/update-index.ts を実行し、`dr_dir/README.md` を再生成する                                                                                |
-| 8    | Publish   | ${CLAUDE_SKILL_DIR}/../_lib/publish.md を読み、§ 公開の値を渡して draft PR にする                                                                                    |
+| 8    | Publish   | ${CLAUDE_SKILL_DIR}/../_lib/publish.md を読み、`dr_dir` の directory に移ってその手順を行い、§ 公開の値を渡して draft PR にする。publish.md の 1 歩目の `git rev-parse --show-toplevel` が `dr_dir` の属す repo を指すようにするためである |
 
 ## 公開の値
 
@@ -45,7 +45,7 @@ Publish で publish.md に渡す値は下表のとおり。採用ゲートで DR
 | -------- | ----------------------------------------------------------------------------------------------------------------- |
 | branch   | `docs/dr-<filename>`。`<filename>` は Pre-Check の `filename` から `.md` を除いたもの。proposed の DR を編集するときは Pre-Check を実行しないので、編集した DR のファイル名から `.md` を除いたもの |
 | 件名     | `[Docs] DR-<番号> <DR の H1>`                                                                                     |
-| 本文     | Decision Outcome の「Chosen option」の段落、置き換えた DR の番号、DR ファイルの repo 相対パス                     |
+| 本文     | Decision Outcome の「Chosen option」の段落、置き換えた DR の番号、DR ファイルの、`dr_dir` の属す repo からの相対パス |
 | ファイル | DR のファイル、再生成した `README.md`、status を変えた旧 DR                                                       |
 
 ## 決定タイプ
@@ -89,6 +89,7 @@ status が proposed なら本文を直接編集し、Validate、Index、Publish 
 | エラー                         | 扱い                                                                    |
 | ------------------------------ | ----------------------------------------------------------------------- |
 | git リポジトリの外だと報告     | `DR_DIR` を設定して保存先を明示する                                     |
+| `DR_HOME` はあるが `origin` を読めないと報告 | `origin` を足すか、`DR_DIR` で置き場を指す |
 | 保存先に SKILL.md があると報告 | skill ディレクトリを指しているので `DR_DIR` を DR 置き場へ向け直す      |
 | `similar_drs` が非空           | 重複候補を提示し、続行するか更新へ切り替えるかを確認 (§ 既存 DR の更新) |
 | `errors[]` が非空              | 返った項目を直し、Validate をやり直す                                   |

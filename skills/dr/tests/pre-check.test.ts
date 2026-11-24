@@ -1,11 +1,12 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { assertStdoutShape, fixture, runCli } from "../../_lib/tests/_cli-fixture.ts";
+import { assertStdoutShape, fixture, runCli, type RunCliOptions } from "../../_lib/tests/_cli-fixture.ts";
 import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
 import { formatScore, OUTPUT_KEYS } from "../scripts/pre-check.ts";
 
@@ -28,6 +29,16 @@ const CASES = JSON.parse(
 
 const DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
 
+function runCliWithoutHostDrHome(
+  scriptPath: string,
+  home: string,
+  stdin: string,
+  argv: readonly string[],
+  options: RunCliOptions,
+) {
+  return runCli(scriptPath, home, stdin, argv, { ...options, env: { DR_HOME: "", ...options.env } });
+}
+
 function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): T {
   const dir = mkdtempSync(join(tmpdir(), "pre-check-case-"));
   try {
@@ -45,7 +56,7 @@ function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): 
 test("T-200 every frozen case in pre-check-cases.json reproduces the python script's exit code and stdout keys in the order OUTPUT_KEYS declares, with date compared by shape and dr_dir by the literal DR_DIR env value", () => {
   for (const entry of CASES) {
     withCaseDir(entry.setup, (dir) => {
-      const run = runCli(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
+      const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
       assert.equal(run.status, entry.exit, `${entry.name}: exit code (stderr: ${run.stderr})`);
       assertStdoutShape(
         run.stdout,
@@ -73,7 +84,7 @@ test("T-200 every frozen case in pre-check-cases.json reproduces the python scri
 
 test("T-201 the number is one more than the largest NNNN- prefix in the directory and 0001 in an empty one", () => {
   withCaseDir({}, (dir) => {
-    const run = runCli(TS_SCRIPT, dir, "", ["Test Title Here"], { cwd: dir, env: { DR_DIR: "archive" } });
+    const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", ["Test Title Here"], { cwd: dir, env: { DR_DIR: "archive" } });
     assert.equal(run.status, 0, `empty dir: exit code (stderr: ${run.stderr})`);
     const parsed = JSON.parse(run.stdout) as { number: string };
     assert.equal(parsed.number, "0001", "an empty (or nonexistent) archive starts at 0001");
@@ -82,7 +93,7 @@ test("T-201 the number is one more than the largest NNNN- prefix in the director
   withCaseDir(
     { "archive/0002-a.md": "# A\n", "archive/0005-b.md": "# B\n" },
     (dir) => {
-      const run = runCli(TS_SCRIPT, dir, "", ["Test Title Here"], { cwd: dir, env: { DR_DIR: "archive" } });
+      const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", ["Test Title Here"], { cwd: dir, env: { DR_DIR: "archive" } });
       assert.equal(run.status, 0, `numbered dir: exit code (stderr: ${run.stderr})`);
       const parsed = JSON.parse(run.stdout) as { number: string };
       assert.equal(parsed.number, "0006", "the next number follows the largest prefix (0005), not the file count (2)");
@@ -95,7 +106,7 @@ test("T-202 a title outside 5 to 64 characters or carrying a forbidden character
     for (const name of ["title-under-5-chars-errors", "title-over-64-chars-errors"]) {
       const entry = fixture(CASES, name);
       const title = entry.argv[0];
-      const run = runCli(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
+      const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
       assert.equal(run.status, 1, `${name}: exit code`);
       assert.equal(run.stdout, "", `${name}: stdout is empty`);
       assert.equal(
@@ -106,7 +117,7 @@ test("T-202 a title outside 5 to 64 characters or carrying a forbidden character
     }
 
     const forbidden = fixture(CASES, "title-with-forbidden-characters-errors");
-    const run = runCli(TS_SCRIPT, dir, "", forbidden.argv, { cwd: dir, env: forbidden.env });
+    const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", forbidden.argv, { cwd: dir, env: forbidden.env });
     assert.equal(run.status, 1, `${forbidden.name}: exit code`);
     assert.equal(run.stdout, "", `${forbidden.name}: stdout is empty`);
     assert.equal(
@@ -170,7 +181,7 @@ function withGitRepoHoldingDrs0002And0005<T>(fn: (dir: string) => T): T {
 }
 
 function runWithGh(dir: string, bin: string, env: Record<string, string> = {}) {
-  const run = runCli(TS_SCRIPT, dir, "", ["Test Title Here"], {
+  const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", ["Test Title Here"], {
     cwd: dir,
     env: { PATH: HOST_PATH_FOR_GIT, CLAUDE_GH_BIN: bin, ...env },
   });
@@ -238,5 +249,46 @@ test("T-209 an archive outside a git work tree never calls gh and says on stderr
     assert.equal(existsSync(calledMarker), false, "the fake gh was not called");
     assert.equal(run.parsed.number, "0006");
     assert.match(run.stderr, /could not check open pull requests/);
+  });
+});
+
+function withDrHome<T>(fn: (drHome: string) => T): T {
+  const drHome = mkdtempSync(join(tmpdir(), "pre-check-dr-home-"));
+  try {
+    return fn(drHome);
+  } finally {
+    rmSync(drHome, { recursive: true, force: true });
+  }
+}
+
+test("T-638 with DR_HOME set in a repository whose origin is https://example.invalid/owner/sample.git, the run exits 0, answers dr_dir as $DR_HOME/sample, and creates that directory", () => {
+  withTempRepo((repo) => {
+    spawnSync("git", ["-C", repo, "remote", "add", "origin", "https://example.invalid/owner/sample.git"]);
+    withDrHome((drHome) => {
+      const run = runCli(TS_SCRIPT, repo, "", ["Test Title Here"], {
+        cwd: repo,
+        env: { PATH: HOST_PATH_FOR_GIT, DR_HOME: drHome },
+      });
+      assert.equal(run.status, 0, `exit code (stderr: ${run.stderr})`);
+      const parsed = JSON.parse(run.stdout) as { dr_dir: string };
+      assert.equal(parsed.dr_dir, join(drHome, "sample"));
+      assert.ok(existsSync(join(drHome, "sample")), "the $DR_HOME/sample directory exists");
+    });
+  });
+});
+
+test("T-639 with DR_HOME set in a repository without an origin remote, the run exits 1, names DR_HOME and origin on stderr, writes nothing to stdout, and creates no directory under DR_HOME", () => {
+  withTempRepo((repo) => {
+    withDrHome((drHome) => {
+      const run = runCli(TS_SCRIPT, repo, "", ["Test Title Here"], {
+        cwd: repo,
+        env: { PATH: HOST_PATH_FOR_GIT, DR_HOME: drHome },
+      });
+      assert.equal(run.status, 1, `exit code (stderr: ${run.stderr})`);
+      assert.match(run.stderr, /DR_HOME/);
+      assert.match(run.stderr, /origin/);
+      assert.equal(run.stdout, "");
+      assert.deepEqual(readdirSync(drHome), []);
+    });
   });
 });

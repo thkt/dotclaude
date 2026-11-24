@@ -10,7 +10,7 @@ argument-hint: "[decision title]"
 
 ## Input
 
-Take the decision title from `$ARGUMENTS`. If empty, confirm New decision / Update existing via AskUserQuestion. For New decision ask for the title; for Update existing, list recent DRs in `<git-root>/docs/decisions/` for selection (§ Updating an Existing DR). Shape a title you are creating into a specific action like "Adopt X for Y", keeping it 5-64 characters and free of `/:*?"<>|`. The archive defaults to `<git-root>/docs/decisions/`, and the `DR_DIR` env var moves it.
+Take the decision title from `$ARGUMENTS`. If empty, confirm New decision / Update existing via AskUserQuestion. For New decision ask for the title; for Update existing, list recent DRs in the DR archive for selection (§ Updating an Existing DR). The DR archive resolves in the same order as Pre-Check's `dr_dir`: `$DR_HOME/<repo name>/` when `DR_HOME` is set, otherwise `<git-root>/docs/decisions/`. Shape a title you are creating into a specific action like "Adopt X for Y", keeping it 5-64 characters and free of `/:*?"<>|`. The archive defaults to `<git-root>/docs/decisions/`, and the `DR_DIR` env var moves it.
 
 Follow `${CLAUDE_SKILL_DIR}/../../rules/conventions/DOCUMENTS.md`: check relevant DRs and original conditions and status against the current requirements. Include needed document updates in the agreed scope and pass them through the same evaluation as implementation.
 
@@ -35,7 +35,7 @@ Proceed to the process only when all three conditions below hold. When one is mi
 | 5    | Critique  | Only for a DR that carves an exception into an existing DR's principle or supersedes one, call the critic-design agent with the draft, wait for its result notification, and then record the verdict and the condition it holds under as one line in More Information |
 | 6    | Validate  | Run ${CLAUDE_SKILL_DIR}/scripts/validate-dr.ts "$DR_FILE". exit 0 passes. What failed lands in `errors[]`, and `warnings[]` is advisory                                                            |
 | 7    | Index     | Run ${CLAUDE_SKILL_DIR}/scripts/update-index.ts to regenerate `dr_dir/README.md`                                                                                                                   |
-| 8    | Publish   | Read ${CLAUDE_SKILL_DIR}/../_lib/publish.md and open a draft PR with the values in § Publish Values                                                                                                |
+| 8    | Publish   | Read ${CLAUDE_SKILL_DIR}/../_lib/publish.md, move to the `dr_dir` directory, run its steps there, and open a draft PR with the values in § Publish Values. This makes publish.md's first step, `git rev-parse --show-toplevel`, point at the repository `dr_dir` belongs to |
 
 ## Publish Values
 
@@ -45,7 +45,7 @@ The Publish stage passes publish.md the values below. When the Adoption Gate cre
 | ------- | ------------------------------------------------------------------------------------------------------------------- |
 | branch  | `docs/dr-<filename>`, where `<filename>` is Pre-Check's `filename` without `.md`. Editing a proposed DR runs no Pre-Check, so `<filename>` is the edited DR's file name without `.md` |
 | subject | `[Docs] DR-<number> <the DR's H1>`                                                                                  |
-| body    | The "Chosen option" paragraph of Decision Outcome, the number of any DR it supersedes, the DR file's repo-relative path |
+| body    | The "Chosen option" paragraph of Decision Outcome, the number of any DR it supersedes, the DR file's path relative to the repository `dr_dir` belongs to |
 | files   | The DR file, the regenerated `README.md`, the old DR whose status changed                                           |
 
 ## Decision Type
@@ -89,6 +89,7 @@ Each script reports its failure as JSON or on stderr. Handle them per the table.
 | Error                                   | Treatment                                                                                                |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | Reported as outside a git repository    | Set `DR_DIR` to name the archive explicitly                                                              |
+| Reported as `DR_HOME` set but `origin` unreadable | Add an `origin` remote, or set `DR_DIR` to name the archive |
 | Reported as an archive holding SKILL.md | It points at a skill directory, so redirect `DR_DIR` to the archive                                      |
 | `similar_drs` is non-empty              | Present the duplicates and confirm whether to proceed or switch to an update (§ Updating an Existing DR) |
 | `errors[]` comes back non-empty         | Fix what it names and run Validate again                                                                 |
