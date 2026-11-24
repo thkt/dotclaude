@@ -43,7 +43,7 @@ function runCase(testCase: FindPriorResearchCase, home: string): void {
 }
 
 test(
-  "T-180 every frozen case in find-prior-research-cases.json reproduces the python scanner's " +
+  "every frozen case in find-prior-research-cases.json reproduces the frozen " +
     "exit code and stdout JSON including the candidate order",
   () => {
     assert.ok(CASES.length > 0, "the frozen fixture carries at least one case");
@@ -55,7 +55,7 @@ test(
   },
 );
 
-test("T-181 two candidates sharing the same count come back in file name order", () => {
+test("two candidates sharing the same count come back in file name order", () => {
   withTempHome((home) => {
     const workDir = mkdtempSync(join(tmpdir(), "find-prior-research-tie-"));
     try {
@@ -77,7 +77,7 @@ test("T-181 two candidates sharing the same count come back in file name order",
 });
 
 test(
-  "T-182 the script is tracked with mode 100755 in the git index and opens with " +
+  "the script is tracked with mode 100755 in the git index and opens with " +
     "#!/usr/bin/env node",
   () => {
     const entries = trackedEntries(["skills/scoping/scripts/find-prior-research.ts"]);
@@ -89,7 +89,7 @@ test(
   },
 );
 
-test("T-262 a broken symlink ending in .md is skipped and the real candidates are still reported", () => {
+test("a broken symlink ending in .md is skipped and the real candidates are still reported", () => {
   withTempHome((home) => {
     const workDir = mkdtempSync(join(tmpdir(), "find-prior-research-broken-link-"));
     try {

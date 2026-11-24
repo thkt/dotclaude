@@ -40,7 +40,7 @@ function notifiedContext(stdout: string): string {
   }
 }
 
-test("T-307 a Japanese body reaches notify with the checklist text unchanged", () => {
+test("a Japanese body reaches notify with the checklist text unchanged", () => {
   const out = runHook('gh issue create --title "test" --body "テストです。"');
   assert.equal(
     notifiedContext(out),
@@ -49,12 +49,12 @@ test("T-307 a Japanese body reaches notify with the checklist text unchanged", (
   );
 });
 
-test("T-308 a body below the Japanese threshold produces no output", () => {
+test("a body below the Japanese threshold produces no output", () => {
   const out = runHook('git commit -m "fix: 少し直した"');
   assert.equal(out, "", "a commit message below COMMIT's threshold must print nothing");
 });
 
-test("T-309 a commit message longer than the mode's threshold is proofread and a shorter one is not", () => {
+test("a commit message longer than the mode's threshold is proofread and a shorter one is not", () => {
   const longer = runHook(
     'git commit -m "fix: これは、テスト、です、が、読点、が、多すぎ、ます。"',
   );

@@ -6,7 +6,7 @@ import test from "node:test";
 import { historyPath, isoTimestamp, parseJson, parsePayload } from "../cli.ts";
 import { withTempHome } from "./_cli-fixture.ts";
 
-test("T-139 parseJson returns the parsed value for a JSON array, object, and scalar alike", () => {
+test("parseJson returns the parsed value for a JSON array, object, and scalar alike", () => {
   for (const text of ["[1, 2, 3]", '{"a": 1}', '"hello"', "42"]) {
     const result = parseJson(text);
     assert.ok("value" in result, `${text}: expected a value, got ${JSON.stringify(result)}`);
@@ -14,7 +14,7 @@ test("T-139 parseJson returns the parsed value for a JSON array, object, and sca
   }
 });
 
-test("T-140 parseJson returns the parser's message and no value for text that is not JSON", () => {
+test("parseJson returns the parser's message and no value for text that is not JSON", () => {
   const text = "not json at all";
   let expectedMessage: string;
   try {
@@ -31,7 +31,7 @@ test("T-140 parseJson returns the parser's message and no value for text that is
 });
 
 test(
-  "T-116 parsing text that is not JSON yields no payload and the message that starts with " +
+  "parsing text that is not JSON yields no payload and the message that starts with " +
     "the python recorder's prefix Error: unparseable payload:",
   () => {
     const result = parsePayload("not json at all");
@@ -45,7 +45,7 @@ test(
 );
 
 test(
-  "T-117 parsing JSON that is not an object yields no payload and the message " +
+  "parsing JSON that is not an object yields no payload and the message " +
     "Error: payload must be a JSON object",
   () => {
     const result = parsePayload("[1, 2, 3]");
@@ -55,7 +55,7 @@ test(
 );
 
 test(
-  "T-118 the history path for a home and a file name is <home>/.claude/history/<name>, " +
+  "the history path for a home and a file name is <home>/.claude/history/<name>, " +
     "and ensuring it creates that directory under a temp directory",
   () => {
     withTempHome((home) => {
@@ -68,7 +68,7 @@ test(
   },
 );
 
-test("T-119 the UTC timestamp has second precision and ends with Z", () => {
+test("the UTC timestamp has second precision and ends with Z", () => {
   const timestamp = isoTimestamp(new Date("2026-09-08T12:34:56.789Z"));
   assert.equal(timestamp, "2026-09-08T12:34:56Z");
   assert.match(timestamp, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);

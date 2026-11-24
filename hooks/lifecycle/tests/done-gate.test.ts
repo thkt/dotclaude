@@ -92,7 +92,7 @@ function snapshot(cwd: string): string {
   return `${files.join("\n---\n")}\n===\n${git(cwd, "status", "--porcelain")}`;
 }
 
-test("T-546 on copies check from .dotagents.json and records mode record, and --mode enforce records mode enforce", () => {
+test("on copies check from .dotagents.json and records mode record, and --mode enforce records mode enforce", () => {
   const dir = repo({ ".dotagents.json": '{"check": ["sh", "-c", "exit 0"]}' });
 
   const plain = gate(dir, "on");
@@ -110,7 +110,7 @@ test("T-546 on copies check from .dotagents.json and records mode record, and --
   });
 });
 
-test("T-547 check runs the command that on copied, not one written into .dotagents.json afterwards", () => {
+test("check runs the command that on copied, not one written into .dotagents.json afterwards", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 3"}' });
   assert.equal(gate(dir, "on").status, 0);
   writeFileSync(path.join(dir, ".dotagents.json"), '{"check": "exit 0"}');
@@ -119,7 +119,7 @@ test("T-547 check runs the command that on copied, not one written into .dotagen
   assert.equal(gate(dir, "check").status, 3);
 });
 
-test("T-548 on exits 2 and creates no record when .dotagents.json is missing, is not JSON, carries a check of the wrong shape, or --mode names an unknown mode", () => {
+test("on exits 2 and creates no record when .dotagents.json is missing, is not JSON, carries a check of the wrong shape, or --mode names an unknown mode", () => {
   const cases: Array<[string, Record<string, string>, string[]]> = [
     ["missing .dotagents.json", { "tracked.txt": "one\n" }, []],
     ["not JSON", { ".dotagents.json": "{check: exit 0" }, []],
@@ -138,7 +138,7 @@ test("T-548 on exits 2 and creates no record when .dotagents.json is missing, is
   }
 });
 
-test("T-549 a check is accepted only as a non-empty shell string or a non-empty argv array of strings", () => {
+test("a check is accepted only as a non-empty shell string or a non-empty argv array of strings", () => {
   assert.equal(checkCommand("exit 0"), "exit 0");
   assert.deepEqual(checkCommand(["sh", "-c", "exit 0"]), ["sh", "-c", "exit 0"]);
   for (const value of ["", "  ", [], [""], ["sh", 1], 42, null, undefined, { cmd: "exit 0" }]) {
@@ -146,7 +146,7 @@ test("T-549 a check is accepted only as a non-empty shell string or a non-empty 
   }
 });
 
-test("T-550 check runs a shell string and an argv array and exits with the exit code of the command it ran", () => {
+test("check runs a shell string and an argv array and exits with the exit code of the command it ran", () => {
   const cases: Array<[string, number]> = [
     ['"exit 0"', 0],
     ['"exit 3"', 3],
@@ -162,7 +162,7 @@ test("T-550 check runs a shell string and an argv array and exits with the exit 
   }
 });
 
-test("T-551 status prints done and exits 0 after a passing check, and exits 1 telling to run check after a failing one", () => {
+test("status prints done and exits 0 after a passing check, and exits 1 telling to run check after a failing one", () => {
   const passing = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(passing, "on");
   gate(passing, "check");
@@ -186,7 +186,7 @@ test("T-551 status prints done and exits 0 after a passing check, and exits 1 te
   assert.match(noRecord.stdout, /done_gate\.ts check/);
 });
 
-test("T-552 after a passing check, a tracked edit or a new untracked file makes status exit 1, and a file .gitignore excludes leaves it at 0", () => {
+test("after a passing check, a tracked edit or a new untracked file makes status exit 1, and a file .gitignore excludes leaves it at 0", () => {
   const dir = repo({
     ".dotagents.json": '{"check": "exit 0"}',
     ".gitignore": "*.log\n",
@@ -213,7 +213,7 @@ test("T-552 after a passing check, a tracked edit or a new untracked file makes 
   assert.equal(ignored.status, 0, ignored.stdout);
 });
 
-test("T-558 after a passing check, editing a tracked file that .gitignore also matches makes status exit 1", () => {
+test("after a passing check, editing a tracked file that .gitignore also matches makes status exit 1", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', ".gitignore": "*.log\n" });
   writeFileSync(path.join(dir, "forced.log"), "one\n");
   git(dir, "add", "-f", "forced.log");
@@ -226,7 +226,7 @@ test("T-558 after a passing check, editing a tracked file that .gitignore also m
   assert.equal(gate(dir, "status").status, 1);
 });
 
-test("T-553 a check that edits a tracked file and exits 0 makes check exit 1 saying it modified the tree, and status exit 1", () => {
+test("a check that edits a tracked file and exits 0 makes check exit 1 saying it modified the tree, and status exit 1", () => {
   const dir = repo({
     ".dotagents.json": '{"check": "printf x >> tracked.txt"}',
     "tracked.txt": "one\n",
@@ -238,7 +238,7 @@ test("T-553 a check that edits a tracked file and exits 0 makes check exit 1 say
   assert.equal(gate(dir, "status").status, 1);
 });
 
-test("T-554 status leaves every file in the record directory and the git status --porcelain output unchanged, both when done and when not", () => {
+test("status leaves every file in the record directory and the git status --porcelain output unchanged, both when done and when not", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
   gate(dir, "on");
   gate(dir, "check");
@@ -254,7 +254,7 @@ test("T-554 status leaves every file in the record directory and the git status 
   assert.equal(snapshot(dir), notDoneBefore);
 });
 
-test("T-555 check and status exit 2 before on, and off removes the record directory so status exits 2 again", () => {
+test("check and status exit 2 before on, and off removes the record directory so status exits 2 again", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   assert.equal(gate(dir, "check").status, 2);
   assert.equal(gate(dir, "status").status, 2);
@@ -269,7 +269,7 @@ test("T-555 check and status exit 2 before on, and off removes the record direct
   assert.equal(gate(dir, "off").status, 0, "off with no record directory must still exit 0");
 });
 
-test("T-556 a second worktree does not see the passing record of the first, and status there exits 2", () => {
+test("a second worktree does not see the passing record of the first, and status there exits 2", () => {
   const first = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(first, "on");
   gate(first, "check");
@@ -283,7 +283,7 @@ test("T-556 a second worktree does not see the passing record of the first, and 
   assert.equal(gate(first, "status").status, 0);
 });
 
-test("T-557 outside a git working tree and with an unknown or missing action, the gate exits 2 with a one-line reason", () => {
+test("outside a git working tree and with an unknown or missing action, the gate exits 2 with a one-line reason", () => {
   const outside = realpathSync(mkdtempSync(path.join(tmpdir(), "done-gate-outside-")));
   const result = spawnSync(process.execPath, [GATE, "status"], {
     cwd: outside,
@@ -343,7 +343,7 @@ function stopLog(cwd: string): Array<Record<string, unknown>> {
     .map((line) => JSON.parse(line));
 }
 
-test("T-559 stop prints {} and appends nothing for stdin that is not a JSON object, a cwd outside git, a repo without on, and a non-empty background_tasks", () => {
+test("stop prints {} and appends nothing for stdin that is not a JSON object, a cwd outside git, a repo without on, and a non-empty background_tasks", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   assert.equal(gate(dir, "on").status, 0);
   const notOn = repo({ ".dotagents.json": '{"check": "exit 0"}' });
@@ -360,7 +360,7 @@ test("T-559 stop prints {} and appends nothing for stdin that is not a JSON obje
   assert.equal(stopLog(dir).length, 1, "an empty background_tasks must reach the gate");
 });
 
-test("T-560 in mode record, stop prints {} and appends one line saying done after a passing check, and one saying not done with reason no-record before any check", () => {
+test("in mode record, stop prints {} and appends one line saying done after a passing check, and one saying not done with reason no-record before any check", () => {
   const passing = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(passing, "on");
   assert.equal(gate(passing, "check").status, 0);
@@ -385,7 +385,7 @@ test("T-560 in mode record, stop prints {} and appends one line saying done afte
   );
 });
 
-test("T-561 in mode enforce, stop prints {} after a passing check and blocks with the text status prints once the tree changes", () => {
+test("in mode enforce, stop prints {} after a passing check and blocks with the text status prints once the tree changes", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(dir, "on", "--mode", "enforce");
   assert.equal(gate(dir, "check").status, 0);
@@ -399,7 +399,7 @@ test("T-561 in mode enforce, stop prints {} after a passing check and blocks wit
   assert.deepEqual(stopLog(dir), [], "mode enforce must not append to stop-log.jsonl");
 });
 
-test("T-562 in mode enforce, the same not-done event blocks 8 stops, allows the 9th with a systemMessage and no decision, and blocks the 10th again", () => {
+test("in mode enforce, the same not-done event blocks 8 stops, allows the 9th with a systemMessage and no decision, and blocks the 10th again", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(dir, "on", "--mode", "enforce");
   const event = stopEvent(dir);
@@ -413,7 +413,7 @@ test("T-562 in mode enforce, the same not-done event blocks 8 stops, allows the 
   assert.equal(stopHook(event).decision, "block", "call 10");
 });
 
-test("T-563 in mode enforce, a new check exit code or a new file restarts the count, so the next stop blocks and 8 stops block before one is allowed", () => {
+test("in mode enforce, a new check exit code or a new file restarts the count, so the next stop blocks and 8 stops block before one is allowed", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 3"}' });
   gate(dir, "on", "--mode", "enforce");
   const event = stopEvent(dir);
@@ -433,7 +433,7 @@ test("T-563 in mode enforce, a new check exit code or a new file restarts the co
   assert.equal(typeof allowed.systemMessage, "string");
 });
 
-test("T-564 stop leaves the tree hash and git status --porcelain unchanged in mode record and in mode enforce", () => {
+test("stop leaves the tree hash and git status --porcelain unchanged in mode record and in mode enforce", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
   writeFileSync(path.join(dir, "tracked.txt"), "two\n");
   writeFileSync(path.join(dir, "new.txt"), "untracked\n");
@@ -450,7 +450,7 @@ test("T-564 stop leaves the tree hash and git status --porcelain unchanged in mo
   assert.deepEqual(current(), before);
 });
 
-test("T-565 running on again after a passing check makes status exit 1 and leaves stop-log.jsonl as it was", () => {
+test("running on again after a passing check makes status exit 1 and leaves stop-log.jsonl as it was", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(dir, "on");
   assert.equal(gate(dir, "check").status, 0);
@@ -464,7 +464,7 @@ test("T-565 running on again after a passing check makes status exit 1 and leave
   assert.equal(readFileSync(logFile, "utf8"), log);
 });
 
-test("T-566 when stop cannot write its record, it prints {} and one stderr line and exits 0", () => {
+test("when stop cannot write its record, it prints {} and one stderr line and exits 0", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(dir, "on");
   mkdirSync(path.join(gateDir(dir), "stop-log.jsonl"));
@@ -519,7 +519,7 @@ function addTestFailingOnBase(dir: string): void {
   writeFiles(dir, { "src/a.txt": "new\n", "tests/new.sh": "grep -q new src/a.txt\n" });
 }
 
-test("T-581 on copies remote, baseBranch and setup, records --require red in either order with --mode, and still succeeds when the three are absent", () => {
+test("on copies remote, baseBranch and setup, records --require red in either order with --mode, and still succeeds when the three are absent", () => {
   const dir = repo({
     ".dotagents.json": JSON.stringify({
       remote: "origin",
@@ -552,7 +552,7 @@ test("T-581 on copies remote, baseBranch and setup, records --require red in eit
   }
 });
 
-test("T-582 red exits 0 and records a nonzero exit code and the added test when the added test fails on base", () => {
+test("red exits 0 and records a nonzero exit code and the added test when the added test fails on base", () => {
   const dir = redRepo({ ...RED_CONFIG, check: `echo check-output; ${RUN_TESTS}` });
   addTestFailingOnBase(dir);
   const result = gate(dir, "red");
@@ -567,7 +567,7 @@ test("T-582 red exits 0 and records a nonzero exit code and the added test when 
   assert.equal(typeof record.at, "string");
 });
 
-test("T-583 red exits 1 saying the change is not verified when the added test also passes on base", () => {
+test("red exits 1 saying the change is not verified when the added test also passes on base", () => {
   const dir = redRepo();
   writeFiles(dir, { "tests/always.sh": "exit 0\n" });
   const result = gate(dir, "red");
@@ -576,7 +576,7 @@ test("T-583 red exits 1 saying the change is not verified when the added test al
   assert.equal(readRecordFile(dir, RED_FILE).exitCode, 0);
 });
 
-test("T-584 red exits 1 and records an empty list when only a non-test file changed", () => {
+test("red exits 1 and records an empty list when only a non-test file changed", () => {
   const dir = redRepo();
   writeFiles(dir, { "src/a.txt": "new\n" });
   const result = gate(dir, "red");
@@ -585,7 +585,7 @@ test("T-584 red exits 1 and records an empty list when only a non-test file chan
   assert.deepEqual(readRecordFile(dir, RED_FILE).tests, []);
 });
 
-test("T-585 red selects files under tests, test or __tests__ and named *.test.*, *.spec.* or *_test.*, and no other file", () => {
+test("red selects files under tests, test or __tests__ and named *.test.*, *.spec.* or *_test.*, and no other file", () => {
   const dir = redRepo();
   const selected = ["a/tests/x.sh", "a/test/x.sh", "a/__tests__/x.sh", "x.test.sh", "x.spec.sh", "x_test.sh"];
   writeFiles(
@@ -596,7 +596,7 @@ test("T-585 red selects files under tests, test or __tests__ and named *.test.*,
   assert.deepEqual([...(readRecordFile(dir, RED_FILE).tests as string[])].sort(), [...selected].sort());
 });
 
-test("T-586 red runs setup in the clone before check, and the file setup creates stays out of the working tree", () => {
+test("red runs setup in the clone before check, and the file setup creates stays out of the working tree", () => {
   const dir = redRepo({
     ...RED_CONFIG,
     setup: "touch made-by-setup",
@@ -609,7 +609,7 @@ test("T-586 red runs setup in the clone before check, and the file setup creates
   assert.equal(existsSync(path.join(dir, "made-by-setup")), false);
 });
 
-test("T-587 red leaves git status --porcelain, the tree hash and the git worktree list line count unchanged", () => {
+test("red leaves git status --porcelain, the tree hash and the git worktree list line count unchanged", () => {
   const dir = redRepo();
   addTestFailingOnBase(dir);
   git(dir, "add", "src/a.txt");
@@ -623,7 +623,7 @@ test("T-587 red leaves git status --porcelain, the tree hash and the git worktre
   assert.deepEqual(current(), before);
 });
 
-test("T-588 red leaves no clone in the temporary directory", () => {
+test("red leaves no clone in the temporary directory", () => {
   const dir = redRepo();
   addTestFailingOnBase(dir);
   const scratch = realpathSync(mkdtempSync(path.join(tmpdir(), "done-gate-tmp-")));
@@ -632,7 +632,7 @@ test("T-588 red leaves no clone in the temporary directory", () => {
   assert.deepEqual(readdirSync(scratch), []);
 });
 
-test("T-589 red exits 2 with a one-line reason and writes no red.json before on, without remote, without the base ref, and when setup fails", () => {
+test("red exits 2 with a one-line reason and writes no red.json before on, without remote, without the base ref, and when setup fails", () => {
   const cases: Array<[string, string]> = [
     ["not on", pushedRepo(RED_CONFIG)],
     ["no remote", redRepo({ baseBranch: "main", check: RUN_TESTS })],
@@ -648,7 +648,7 @@ test("T-589 red exits 2 with a one-line reason and writes no red.json before on,
   }
 });
 
-test("T-590 with --require red, status exits 1 telling to run red after a passing check without a red record, exits 0 once red passes, and exits 1 after a later edit with the check side first", () => {
+test("with --require red, status exits 1 telling to run red after a passing check without a red record, exits 0 once red passes, and exits 1 after a later edit with the check side first", () => {
   const dir = redRepo(RED_CONFIG, "--require", "red");
   addTestFailingOnBase(dir);
   const check = gate(dir, "check");
@@ -673,7 +673,7 @@ test("T-590 with --require red, status exits 1 telling to run red after a passin
   assert.ok(checkAt >= 0 && redAt > checkAt, changed.stdout);
 });
 
-test("T-591 with --require red, status exits 1 when red.json records a check that passed on base or an empty test list", () => {
+test("with --require red, status exits 1 when red.json records a check that passed on base or an empty test list", () => {
   const passing = redRepo(RED_CONFIG, "--require", "red");
   writeFiles(passing, { "tests/always.sh": "exit 0\n" });
   assert.equal(gate(passing, "check").status, 0);
@@ -692,7 +692,7 @@ test("T-591 with --require red, status exits 1 when red.json records a check tha
   assert.match(none.stdout, /done_gate\.ts red/);
 });
 
-test("T-592 without --require red, whether red.json exists does not change status", () => {
+test("without --require red, whether red.json exists does not change status", () => {
   const dir = redRepo();
   assert.equal(gate(dir, "check").status, 0);
   const without = gate(dir, "status");
@@ -703,7 +703,7 @@ test("T-592 without --require red, whether red.json exists does not change statu
   assert.equal(withRed.stdout, "done\n");
 });
 
-test("T-593 with --require red in mode enforce, the stop block reason equals the status output and the publish_gate denial contains it", () => {
+test("with --require red in mode enforce, the stop block reason equals the status output and the publish_gate denial contains it", () => {
   const dir = redRepo(RED_CONFIG, "--mode", "enforce", "--require", "red");
   assert.equal(gate(dir, "check").status, 0);
   const status = gate(dir, "status");
@@ -725,7 +725,7 @@ test("T-593 with --require red in mode enforce, the stop block reason equals the
   assert.ok((reason as string).includes(statusText), String(reason));
 });
 
-test("T-594 red with GIT_INDEX_FILE pointing at the repository index leaves git ls-files -s unchanged and checks out base in the clone", () => {
+test("red with GIT_INDEX_FILE pointing at the repository index leaves git ls-files -s unchanged and checks out base in the clone", () => {
   const dir = redRepo();
   addTestFailingOnBase(dir);
   git(dir, "add", "src/a.txt");
@@ -738,7 +738,7 @@ test("T-594 red with GIT_INDEX_FILE pointing at the repository index leaves git 
   assert.equal(readRecordFile(dir, RED_FILE).exitCode, 1);
 });
 
-test("T-595 running on after red removes red.json", () => {
+test("running on after red removes red.json", () => {
   const dir = redRepo();
   addTestFailingOnBase(dir);
   assert.equal(gate(dir, "red").status, 0);
@@ -747,7 +747,7 @@ test("T-595 running on after red removes red.json", () => {
   assert.equal(existsSync(path.join(gateDir(dir), RED_FILE)), false);
 });
 
-test("T-596 a setup and a check that print to stdout leave the stdout of red at one line", () => {
+test("a setup and a check that print to stdout leave the stdout of red at one line", () => {
   const dir = redRepo({ ...RED_CONFIG, setup: "echo setup-output", check: `echo check-output; ${RUN_TESTS}` });
   writeFiles(dir, { "tests/always.sh": "exit 0\n" });
   const result = gate(dir, "red");
@@ -757,7 +757,7 @@ test("T-596 a setup and a check that print to stdout leave the stdout of red at 
   assert.match(result.stderr, /check-output/);
 });
 
-test("T-597 red exits 2 with one done_gate line on stderr, empty stdout, no red.json, no clone left and git status unchanged when check cannot start, check is killed by a signal, or a changed test file is a dangling or directory symlink", () => {
+test("red exits 2 with one done_gate line on stderr, empty stdout, no red.json, no clone left and git status unchanged when check cannot start, check is killed by a signal, or a changed test file is a dangling or directory symlink", () => {
   const cases: Array<[string, string, boolean]> = [];
   const unstartable = redRepo({ ...RED_CONFIG, check: ["no-such-binary-xyz"] });
   writeFiles(unstartable, { "tests/new.sh": "exit 0\n" });
@@ -788,7 +788,7 @@ test("T-597 red exits 2 with one done_gate line on stderr, empty stdout, no red.
   }
 });
 
-test("T-598 check exits 1 and records exit code 1 when its argv command cannot start", () => {
+test("check exits 1 and records exit code 1 when its argv command cannot start", () => {
   const dir = repo({ ".dotagents.json": '{"check": ["no-such-binary-xyz"]}' });
   assert.equal(gate(dir, "on").status, 0);
   const result = gate(dir, "check");
@@ -796,7 +796,7 @@ test("T-598 check exits 1 and records exit code 1 when its argv command cannot s
   assert.equal(readRecordFile(dir, CHECK_FILE).exitCode, 1);
 });
 
-test("T-599 red copies the content of a changed test file that is a symlink to a regular file and exits 0 when that content fails on base", () => {
+test("red copies the content of a changed test file that is a symlink to a regular file and exits 0 when that content fails on base", () => {
   const dir = redRepo();
   writeFiles(dir, { "src/fails.txt": "exit 1\n" });
   symlinkSync("../src/fails.txt", path.join(dir, "tests", "ln.sh"));
@@ -805,7 +805,7 @@ test("T-599 red copies the content of a changed test file that is a symlink to a
   assert.deepEqual(readRecordFile(dir, RED_FILE).tests, ["tests/ln.sh"]);
 });
 
-test("T-614 check passes a check that reads a new untracked file from the index, and status prints done", () => {
+test("check passes a check that reads a new untracked file from the index, and status prints done", () => {
   const dir = repo({ ".dotagents.json": '{"check": "git ls-files --error-unmatch new.txt"}' });
   gate(dir, "on");
   writeFileSync(path.join(dir, "new.txt"), "untracked\n");
@@ -816,7 +816,7 @@ test("T-614 check passes a check that reads a new untracked file from the index,
   assert.equal(status.stdout, "done\n");
 });
 
-test("T-615 after check, a new untracked file shows as intent-to-add and nothing is staged", () => {
+test("after check, a new untracked file shows as intent-to-add and nothing is staged", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(dir, "on");
   writeFileSync(path.join(dir, "new.txt"), "untracked\n");
@@ -829,7 +829,7 @@ test("T-615 after check, a new untracked file shows as intent-to-add and nothing
   assert.equal(git(dir, "diff", "--cached", "--name-only"), "");
 });
 
-test("T-616 check leaves an edit to a tracked file unstaged", () => {
+test("check leaves an edit to a tracked file unstaged", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
   gate(dir, "on");
   writeFileSync(path.join(dir, "tracked.txt"), "two\n");
@@ -838,7 +838,7 @@ test("T-616 check leaves an edit to a tracked file unstaged", () => {
   assert.equal(git(dir, "diff", "--cached", "--name-only"), "");
 });
 
-test("T-617 check leaves a file .gitignore excludes out of the index and puts a new file in a subdirectory into it", () => {
+test("check leaves a file .gitignore excludes out of the index and puts a new file in a subdirectory into it", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', ".gitignore": "*.log\n" });
   gate(dir, "on");
   writeFileSync(path.join(dir, "build.log"), "ignored\n");
@@ -851,7 +851,7 @@ test("T-617 check leaves a file .gitignore excludes out of the index and puts a 
   assert.equal(indexed.includes("sub/deeper/nested.txt"), true);
 });
 
-test("T-618 check run twice in a row with a new untracked file exits 0 both times", () => {
+test("check run twice in a row with a new untracked file exits 0 both times", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(dir, "on");
   writeFileSync(path.join(dir, "new.txt"), "untracked\n");
@@ -862,7 +862,7 @@ test("T-618 check run twice in a row with a new untracked file exits 0 both time
   assert.equal(second.status, 0, second.stderr);
 });
 
-test("T-619 when untracked files cannot be marked intent-to-add, check exits 2 with one stderr line, does not run the check and leaves check.json as it was", () => {
+test("when untracked files cannot be marked intent-to-add, check exits 2 with one stderr line, does not run the check and leaves check.json as it was", () => {
   const dir = repo({ ".dotagents.json": '{"check": "touch ran.marker"}', ".gitignore": "*.marker\n" });
   gate(dir, "on");
   assert.equal(gate(dir, "check").status, 0);
@@ -880,7 +880,7 @@ test("T-619 when untracked files cannot be marked intent-to-add, check exits 2 w
   assert.equal(readFileSync(path.join(gateDir(dir), CHECK_FILE), "utf8"), recordBefore);
 });
 
-test("T-620 check leaves the deletion of a tracked file unstaged", () => {
+test("check leaves the deletion of a tracked file unstaged", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
   gate(dir, "on");
   rmSync(path.join(dir, "tracked.txt"));
@@ -895,7 +895,7 @@ test("T-620 check leaves the deletion of a tracked file unstaged", () => {
   assert.equal(git(dir, "ls-files", "new.txt"), "new.txt\n");
 });
 
-test("T-621 check leaves the index entries of a file with an unresolved merge conflict as they were and marks a new file", () => {
+test("check leaves the index entries of a file with an unresolved merge conflict as they were and marks a new file", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "conflict.txt": "base\n" });
   git(dir, "checkout", "-q", "-b", "other");
   writeFileSync(path.join(dir, "conflict.txt"), "other\n");
@@ -915,7 +915,7 @@ test("T-621 check leaves the index entries of a file with an unresolved merge co
   assert.equal(git(dir, "ls-files", "new.txt"), "new.txt\n");
 });
 
-test("T-622 check marks an untracked file whose name contains a space", () => {
+test("check marks an untracked file whose name contains a space", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}' });
   gate(dir, "on");
   writeFileSync(path.join(dir, "with space.txt"), "untracked\n");
@@ -924,7 +924,7 @@ test("T-622 check marks an untracked file whose name contains a space", () => {
   assert.equal(git(dir, "ls-files", "with space.txt"), "with space.txt\n");
 });
 
-test("T-623 with no untracked file, check exits with the exit code of the configured check", () => {
+test("with no untracked file, check exits with the exit code of the configured check", () => {
   for (const expected of [0, 3]) {
     const dir = repo({ ".dotagents.json": `{"check": "exit ${expected}"}` });
     gate(dir, "on");
@@ -936,7 +936,7 @@ test("T-623 with no untracked file, check exits with the exit code of the config
   }
 });
 
-test("T-624 an untracked file named * is marked by name only and leaves the deletion of a tracked file unstaged", () => {
+test("an untracked file named * is marked by name only and leaves the deletion of a tracked file unstaged", () => {
   const dir = repo({ ".dotagents.json": '{"check": "exit 0"}', "tracked.txt": "one\n" });
   gate(dir, "on");
   rmSync(path.join(dir, "tracked.txt"));

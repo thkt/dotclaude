@@ -9,14 +9,14 @@ ENTRYPOINT="$SCRIPT_DIR/../entrypoint.sh"
 AGENT_NAME="codex"
 
 test_codex_resolves_an_exec_command_an_auth_directory_and_an_allowlist() {
-  echo "T-019: codex resolves an exec command, an auth directory, and an allowlist"
+  echo "codex resolves an exec command, an auth directory, and an allowlist"
   assert_contains "exec command names the codex CLI" "codex" "$("$AGENTS" exec codex)"
   assert_eq "auth directory" "/home/node/.codex" "$("$AGENTS" auth-dir codex)"
   assert_contains "allowlist resolves" "github.com" "$("$AGENTS" allowlist codex)"
 }
 
 test_the_domain_set_entering_ipset_for_codex_differs_from_the_one_for_claude() {
-  echo "T-020: the domain set entering ipset for codex differs from the one for claude"
+  echo "the domain set entering ipset for codex differs from the one for claude"
   local claude_list codex_list
   claude_list="$("$AGENTS" allowlist claude 2>/dev/null)" || true
   codex_list="$("$AGENTS" allowlist codex 2>/dev/null)" || true
@@ -137,7 +137,7 @@ run_chain() {
 }
 
 test_the_chain_execs_codex_when_hako_sh_is_given_codex() {
-  echo "T-021: the chain execs codex when hako.sh is given codex"
+  echo "the chain execs codex when hako.sh is given codex"
   local status=0
   run_chain || status=$?
   assert_eq "the whole chain exits zero" "0" "$status"

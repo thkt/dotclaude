@@ -1,6 +1,6 @@
 [
   {
-    "id": "T-001-pretooluse-bash",
+    "id": "pretooluse-bash",
     "payload": {
       "hook_event_name": "PreToolUse",
       "tool_name": "Bash",
@@ -10,7 +10,7 @@
     }
   },
   {
-    "id": "T-002-posttooluse-write",
+    "id": "posttooluse-write",
     "payload": {
       "hook_event_name": "PostToolUse",
       "tool_name": "Write",
@@ -21,7 +21,7 @@
     }
   },
   {
-    "id": "T-540-missing-key",
+    "id": "missing-key",
     "payload": {
       "hook_event_name": "PreToolUse",
       "tool_name": "Bash",
@@ -29,7 +29,7 @@
     }
   },
   {
-    "id": "T-540-type-mismatch",
+    "id": "type-mismatch",
     "payload": {
       "hook_event_name": "PreToolUse",
       "tool_name": "Bash",

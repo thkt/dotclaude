@@ -22,7 +22,7 @@ function runHook(filePath: string): string {
   return run(HOOK, { tool_name: "Write", tool_input: { file_path: filePath } });
 }
 
-test("T-372 an edit that leaves the mirror behind is reported with the python version's text", () => {
+test("an edit that leaves English prose in a .ja file is reported with the MIRROR.md message and the file path", () => {
   const filePath = writeFixture(
     ".ja/hooks/sample.ts",
     "// why-not: Convert the payload and persist it.\n",
@@ -41,7 +41,7 @@ test("T-372 an edit that leaves the mirror behind is reported with the python ve
   );
 });
 
-test("T-373 an edit whose mirror is present produces no output", () => {
+test("an edit whose mirror is present produces no output", () => {
   const filePath = writeFixture(
     ".ja/hooks/mixed.ts",
     "// why-not: Convert the payload and persist it.\n// why-not: 変換する\n",

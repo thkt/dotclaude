@@ -44,7 +44,7 @@ function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): 
   }
 }
 
-test("T-204 every frozen case in validate-dr-cases.json reproduces the python script's exit code and stdout JSON", () => {
+test("every frozen case in validate-dr-cases.json reproduces the frozen exit code and stdout JSON", () => {
   for (const entry of CASES) {
     withCaseDir(entry.setup, (dir) => {
       const run = runCli(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
@@ -54,7 +54,7 @@ test("T-204 every frozen case in validate-dr-cases.json reproduces the python sc
   }
 });
 
-test("T-205 STATUS_VALUES accepts the five lifecycle values including superseded by DR-NNNN and rejects a capitalised or free-text status as invalid_status", () => {
+test("STATUS_VALUES accepts the five lifecycle values including superseded by DR-NNNN and rejects a capitalised or free-text status as invalid_status", () => {
   for (const value of ["proposed", "accepted", "rejected", "deprecated", "superseded by DR-0001"]) {
     assert.equal(STATUS_VALUES.test(value), true, `${value}: accepted as a valid lifecycle value`);
   }
@@ -63,7 +63,7 @@ test("T-205 STATUS_VALUES accepts the five lifecycle values including superseded
   }
 });
 
-test("T-206 options are counted only under the Considered Options heading and a heading of the same or shallower depth ends the count", () => {
+test("options are counted only under the Considered Options heading and a heading of the same or shallower depth ends the count", () => {
   const deeperHeadingStaysInSection = [
     "## Considered Options",
     "",
@@ -105,7 +105,7 @@ test("T-206 options are counted only under the Considered Options heading and a 
   );
 });
 
-test("T-207 with markdownlint-cli2 absent from PATH the checks carry markdown_lint=skipped", () => {
+test("with markdownlint-cli2 absent from PATH the checks carry markdown_lint=skipped", () => {
   const entry = fixture(CASES, "four-required-sections-frontmatter-and-two-options-exit-0");
   withCaseDir(entry.setup, (dir) => {
     const run = runCli(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
@@ -118,7 +118,7 @@ test("T-207 with markdownlint-cli2 absent from PATH the checks carry markdown_li
   });
 });
 
-test("T-196 a directory argument fails with the same one stderr line and exit 1 the python validator gave, not a node stack trace", () => {
+test("a directory argument fails with exit 1 and a single file-not-found stderr line, not a node stack trace", () => {
   withTempHome((home) => {
     const dir = mkdtempSync(join(home, "not-a-dr-file-"));
     const run = runCli(TS_SCRIPT, home, "", [dir], { cwd: home });

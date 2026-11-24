@@ -33,17 +33,17 @@ function fixturePair(scenario) {
   };
 }
 
-test("T-003 an EN and .ja .ts pair differing only in comments is judged identical", () => {
+test("an EN and .ja .ts pair differing only in comments is judged identical", () => {
   const { en, ja } = fixturePair("comment-only");
   assert.equal(tsBodiesMatch(en, ja), true);
 });
 
-test("T-004 a pair whose identifier differs is judged divergent", () => {
+test("a pair whose identifier differs is judged divergent", () => {
   const { en, ja } = fixturePair("identifier-diff");
   assert.equal(tsBodiesMatch(en, ja), false);
 });
 
-test("T-005 a pair with one extra statement on the EN side is judged divergent", () => {
+test("a pair with one extra statement on the EN side is judged divergent", () => {
   const { en, ja } = fixturePair("extra-statement");
   assert.equal(tsBodiesMatch(en, ja), false);
 });
@@ -66,26 +66,26 @@ test("every tracked .ja .ts file has its EN counterpart and matches it once comm
   assert.deepEqual(diverged, [], "these .ja mirrors differ from their EN side outside comments");
 });
 
-test("T-018 a // inside a string literal survives comment removal", () => {
+test("a // inside a string literal survives comment removal", () => {
   const { en, ja } = fixturePair("url-in-string");
   assert.equal(tsBodiesMatch(en, ja), true);
   assert.match(extractBody(en), /http:\/\/example\.com\/v1/, "the URL is still in the body");
 });
 
-test("T-019 a comment-shaped literal inside a template interpolation survives", () => {
+test("a comment-shaped literal inside a template interpolation survives", () => {
   const { en, ja } = fixturePair("comment-in-template");
   assert.equal(tsBodiesMatch(en, ja), true);
   assert.match(extractBody(en), /not a comment/, "the interpolated literal is still in the body");
 });
 
-test("T-020 a regex literal holding an escaped slash keeps its flag and its trailing code", () => {
+test("a regex literal holding an escaped slash keeps its flag and its trailing code", () => {
   const { en, ja } = fixturePair("regex-literal");
   assert.equal(tsBodiesMatch(en, ja), false);
   assert.equal(extractBody(en), String.raw`export const PROTOCOL = /https?:\/\//g;`);
   assert.equal(extractBody(ja), String.raw`export const PROTOCOL = /https?:\/\//i;`);
 });
 
-test("T-021 stripComments over the golden input fixture yields exactly the recorded expected text", () => {
+test("stripComments over the golden input fixture yields exactly the recorded expected text", () => {
   const input = read("strip-golden.input.txt");
   const expected = read("strip-golden.expected.txt");
   assert.equal(stripComments(input), expected);

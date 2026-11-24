@@ -5,7 +5,7 @@ import test from "node:test";
 import { SHEBANG } from "../shebang_scope.ts";
 
 test(
-  "T-008 on a darwin host the interpreter path named by the bun shebang constant exists on disk",
+  "on a darwin host the interpreter path named by the bun shebang constant exists on disk",
   {
     skip:
       process.platform !== "darwin" && `only applies on darwin, this host is ${process.platform}`,

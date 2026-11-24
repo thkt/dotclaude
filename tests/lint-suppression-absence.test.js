@@ -35,21 +35,21 @@ const OTHER_FORMS = [
   ["// biome-", "ignore-start lint: range\n"].join(""),
 ];
 
-test('T-011 a file carrying the bare "biome-ignore lint:" comment is reported by the suppression scan', () => {
+test('a file carrying the bare "biome-ignore lint:" comment is reported by the suppression scan', () => {
   assert.ok(suppressionIn(BARE_FORM + NESTED_FUNCTION));
 });
 
-test("T-012 the same file with the comment removed is not reported", () => {
+test("the same file with the comment removed is not reported", () => {
   assert.equal(suppressionIn(NESTED_FUNCTION), null);
 });
 
-test("T-013 the biome-ignore-all and biome-ignore-start forms are each reported", () => {
+test("the biome-ignore-all and biome-ignore-start forms are each reported", () => {
   for (const form of OTHER_FORMS) {
     assert.ok(suppressionIn(form + NESTED_FUNCTION), `not reported: ${form.trim()}`);
   }
 });
 
-test("T-014 no tracked file carries any suppression form the scan names", () => {
+test("no tracked file carries any suppression form the scan names", () => {
   const files = execFileSync("git", ["ls-files", "-z"], { cwd: ROOT, encoding: "utf8" })
     .split("\0")
     .filter(Boolean);

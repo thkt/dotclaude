@@ -26,7 +26,7 @@ function loadFrozenCases(): FrozenCase[] {
   return parsed.cases;
 }
 
-test("T-273 the generated corpus carries at least 150 cases and every row of the frozen-behavior table appears in it by its exact command string", () => {
+test("the generated corpus carries at least 150 cases and every row of the frozen-behavior table appears in it by its exact command string", () => {
   const corpus = commandScanCorpus();
   assert.ok(corpus.length >= 150, `expected at least 150 corpus cases, got ${corpus.length}`);
 
@@ -39,7 +39,7 @@ test("T-273 the generated corpus carries at least 150 cases and every row of the
   }
 });
 
-test("T-274 the corpus carries every input the generator's three products yield, compared as a set against a fresh call rather than as a count", () => {
+test("the corpus carries every input the generator's three products yield, compared as a set against a fresh call rather than as a count", () => {
   const corpus = commandScanCorpus();
   const corpusCommands = new Set(corpus.map((c) => c.command));
 

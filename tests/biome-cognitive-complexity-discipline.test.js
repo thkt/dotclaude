@@ -91,12 +91,12 @@ test.after(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
 });
 
-test("T-001 a function with cognitive complexity 16 exits non-zero under the repository's biome.json", () => {
+test("a function with cognitive complexity 16 exits non-zero under the repository's biome.json", () => {
   const { exitCode } = lint("complexity-16", "src/complexity-16.ts", COMPLEXITY_16);
   assert.notEqual(exitCode, 0);
 });
 
-test("T-002 the same function flattened to complexity 15 exits zero", () => {
+test("the same function flattened to complexity 15 exits zero", () => {
   const { exitCode } = lint("complexity-15", "src/complexity-15.ts", COMPLEXITY_15);
   assert.equal(exitCode, 0);
 });
@@ -121,7 +121,7 @@ function biomeHoles(config) {
   return holes;
 }
 
-test("T-005 biome.json keeps noExcessiveCognitiveComplexity at error with maxAllowedComplexity at most 15", () => {
+test("biome.json keeps noExcessiveCognitiveComplexity at error with maxAllowedComplexity at most 15", () => {
   const rule = biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity;
   assert.equal(rule.level, "error", `level is ${rule.level}`);
   assert.ok(
@@ -130,12 +130,12 @@ test("T-005 biome.json keeps noExcessiveCognitiveComplexity at error with maxAll
   );
 });
 
-test("T-006 biome.json's files.includes equals the four planned entries exactly and the file carries no overrides key", () => {
+test("biome.json's files.includes equals the four planned entries exactly and the file carries no overrides key", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
   assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
 });
 
-test("T-019 biome.json opens none of the holes the config check names", () => {
+test("biome.json opens none of the holes the config check names", () => {
   assert.deepEqual(biomeHoles(biomeConfig), []);
 });
 
@@ -157,7 +157,7 @@ const BIOME_MUTATIONS = [
   ],
 ];
 
-test("T-020 each biome.json mutation that hides files or silences the rule is named by the config check", () => {
+test("each biome.json mutation that hides files or silences the rule is named by the config check", () => {
   for (const [hole, mutate] of BIOME_MUTATIONS) {
     const copy = structuredClone(biomeConfig);
     mutate(copy);

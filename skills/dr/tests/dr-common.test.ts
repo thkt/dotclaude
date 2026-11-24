@@ -37,7 +37,7 @@ const GIT_OK = (path: string): GitTopLevelResult => ({ status: 0, stdout: `${pat
 const GIT_NON_ZERO: GitTopLevelResult = { status: 128, stdout: "" };
 const GIT_SPAWN_FAILED: GitTopLevelResult = { status: null, stdout: "", error: new Error("ENOENT") };
 
-test("T-196 splitFrontmatter treats only a --- on the first line as the opening fence and a later --- in the body never splits the file", () => {
+test("splitFrontmatter treats only a --- on the first line as the opening fence and a later --- in the body never splits the file", () => {
   const opened = "---\nstatus: accepted\n---\nBody text\n";
   const [openedFrontmatter, openedBody] = splitFrontmatter(opened);
   assert.deepEqual(openedFrontmatter, ["status: accepted"]);
@@ -49,7 +49,7 @@ test("T-196 splitFrontmatter treats only a --- on the first line as the opening 
   assert.deepEqual(body, noFence.split("\n"), "the whole file, --- lines included, stays body");
 });
 
-test("T-197 resolveDrDir prefers DR_DIR over the argument and the argument over the git top level, and returns null when git exits non-zero or fails to spawn", () => {
+test("resolveDrDir prefers DR_DIR over the argument and the argument over the git top level, and returns null when git exits non-zero or fails to spawn", () => {
   assert.equal(
     resolveDrDir({ DR_DIR: "/from/env" }, "/from/arg", GIT_OK("/from/git")),
     "/from/env",
@@ -77,7 +77,7 @@ test("T-197 resolveDrDir prefers DR_DIR over the argument and the argument over 
   );
 });
 
-test("T-198 guardSkillDir fails with the hint when the directory carries SKILL.md and returns when it does not", () => {
+test("guardSkillDir fails with the hint when the directory carries SKILL.md and returns when it does not", () => {
   const withSkillMd = mkdtempSync(join(tmpdir(), "dr-common-guard-"));
   writeFileSync(join(withSkillMd, "SKILL.md"), "# a skill\n");
   try {
@@ -99,14 +99,14 @@ test("T-198 guardSkillDir fails with the hint when the directory carries SKILL.m
   }
 });
 
-test("T-199 fail writes each line to stderr and exits 1", () => {
+test("fail writes each line to stderr and exits 1", () => {
   const run = runInSubprocess(`m.fail("line one", "line two")`);
   assert.equal(run.status, 1, `exit code (stderr: ${run.stderr})`);
   assert.equal(run.stdout, "");
   assert.equal(run.stderr, "line one\nline two\n");
 });
 
-test("T-484 filesUnder returns every file at any depth whose name the predicate keeps, and never a directory whose name it would keep", () => {
+test("filesUnder returns every file at any depth whose name the predicate keeps, and never a directory whose name it would keep", () => {
   const dir = mkdtempSync(join(tmpdir(), "dr-files-under-"));
   try {
     mkdirSync(join(dir, "nested", "deeper"), { recursive: true });
@@ -131,12 +131,12 @@ test("T-484 filesUnder returns every file at any depth whose name the predicate 
   }
 });
 
-test("T-485 localDate renders the local calendar date as zero-padded YYYY-MM-DD", () => {
+test("localDate renders the local calendar date as zero-padded YYYY-MM-DD", () => {
   assert.equal(localDate(new Date(2026, 0, 5, 23, 59)), "2026-01-05");
   assert.equal(localDate(new Date(987, 10, 30)), "0987-11-30");
 });
 
-test("T-486 gitTopLevel answers the repository root with status 0 inside a git work tree and a non-zero status outside one", () => {
+test("gitTopLevel answers the repository root with status 0 inside a git work tree and a non-zero status outside one", () => {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "dr-git-top-")));
   const probe = `import(${JSON.stringify(MODULE_URL)}).then((m) => process.stdout.write(JSON.stringify(m.gitTopLevel())));`;
   const run = (cwd: string) =>
@@ -155,7 +155,7 @@ test("T-486 gitTopLevel answers the repository root with status 0 inside a git w
   }
 });
 
-test("T-636 resolveDrDir returns $DR_HOME/<repo name> when DR_HOME and the origin URL are set and neither DR_DIR nor the argument is, for an https URL, an ssh URL, and a URL without .git", () => {
+test("resolveDrDir returns $DR_HOME/<repo name> when DR_HOME and the origin URL are set and neither DR_DIR nor the argument is, for an https URL, an ssh URL, and a URL without .git", () => {
   for (const originUrl of [
     "https://github.com/thkt/dotclaude.git",
     "git@github.com:thkt/dotclaude.git",
@@ -169,7 +169,7 @@ test("T-636 resolveDrDir returns $DR_HOME/<repo name> when DR_HOME and the origi
   }
 });
 
-test("T-637 resolveDrDir returns DR_DIR when DR_DIR and DR_HOME are both set, and the argument when the argument and DR_HOME are both set", () => {
+test("resolveDrDir returns DR_DIR when DR_DIR and DR_HOME are both set, and the argument when the argument and DR_HOME are both set", () => {
   const originUrl = "https://github.com/thkt/dotclaude.git";
   assert.equal(
     resolveDrDir({ DR_DIR: "/from/env", DR_HOME: "/home/decisions" }, undefined, GIT_OK("/from/git"), originUrl),

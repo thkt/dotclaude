@@ -56,7 +56,7 @@ function listOxlintFiles(): string[] {
   return oxlintFiles;
 }
 
-test("T-005 the tsc --listFilesOnly output carries hooks/_lib/hook_payload.ts", () => {
+test("the tsc --listFilesOnly output carries hooks/_lib/hook_payload.ts", () => {
   const files = listTypeCheckedFiles();
   assert.ok(
     files.some((file) => file.endsWith("hooks/_lib/hook_payload.ts")),
@@ -64,7 +64,7 @@ test("T-005 the tsc --listFilesOnly output carries hooks/_lib/hook_payload.ts", 
   );
 });
 
-test("T-006 the Node tests step in .github/workflows/test.yml carries hooks/**/tests/*.test.ts", () => {
+test("the Node tests step in .github/workflows/test.yml carries hooks/**/tests/*.test.ts", () => {
   const workflow = readFileSync(path.join(ROOT, ".github", "workflows", "test.yml"), "utf8");
   const step = workflow.slice(workflow.indexOf("- name: Node tests"));
   assert.ok(step.startsWith("- name: Node tests"), "the Node tests step is missing from test.yml");
@@ -79,7 +79,7 @@ function listHooksTsFiles(): string[] {
   return hooksTsFiles;
 }
 
-test("T-007 neither .oxlintrc.json's ignorePatterns nor tsconfig.json's exclude drops hooks/", () => {
+test("neither .oxlintrc.json's ignorePatterns nor tsconfig.json's exclude drops hooks/", () => {
   assert.ok(listHooksTsFiles().length > 0, "the derived hooks/*.ts set is empty");
   const oxlintSet = listOxlintFiles();
   const tscSet = listTypeCheckedFiles();

@@ -14,7 +14,7 @@ function runHook(command: string): string {
   return run(HOOK, { tool_name: "Bash", tool_input: { command } });
 }
 
-test("T-279 each verb the table names is denied with the reason string that verb maps to", () => {
+test("each verb the table names is denied with the reason string that verb maps to", () => {
   for (const verb of VERBS) {
     const reason = denyReason(runHook(`${verb} /tmp/x`));
     assert.match(
@@ -25,7 +25,7 @@ test("T-279 each verb the table names is denied with the reason string that verb
   }
 });
 
-test("T-280 find with -delete is denied and find without it is allowed", () => {
+test("find with -delete is denied and find without it is allowed", () => {
   const deniedReason = denyReason(runHook('find . -name "*.tmp" -delete'));
   assert.match(
     deniedReason ?? "",
@@ -37,7 +37,7 @@ test("T-280 find with -delete is denied and find without it is allowed", () => {
   assert.equal(allowedReason, null, "find without -delete must not be denied");
 });
 
-test("T-281 a command whose lexing raises is denied rather than allowed through", () => {
+test("a command whose lexing raises is denied rather than allowed through", () => {
   const reason = denyReason(runHook('rm -rf "/tmp/x'));
   assert.match(
     reason ?? "",

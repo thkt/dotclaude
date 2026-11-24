@@ -89,7 +89,7 @@ function markers(f: Fixture, prefix = "session-"): string[] {
   }
 }
 
-test("T-396 acquire with no session running starts one and leaves one marker, release of the last reference ends it and clears the marker, and a subagent's background call reissues it with a bg marker", () => {
+test("acquire with no session running starts one and leaves one marker, release of the last reference ends it and clears the marker, and a subagent's background call reissues it with a bg marker", () => {
   const f = fixture();
 
   runHook(f, "acquire", { session_id: "session-a" });
@@ -119,7 +119,7 @@ test("T-396 acquire with no session running starts one and leaves one marker, re
   assert.deepEqual(markers(f, "bg-"), ["bg-session-b"], "background must leave one bg marker");
 });
 
-test("T-397 a background call from a subagent is honoured and one from the main session is not", () => {
+test("a background call from a subagent is honoured and one from the main session is not", () => {
   const f = fixture();
 
   assert.equal(
@@ -143,7 +143,7 @@ test("T-397 a background call from a subagent is honoured and one from the main 
   assert.deepEqual(markers(f, "bg-"), ["bg-session-a"], "a main-session background call must leave no new bg marker");
 });
 
-test("T-398 an unknown action exits silently", () => {
+test("an unknown action exits silently", () => {
   const f = fixture();
 
   runHook(f, "status", { session_id: "session-a" });
@@ -151,7 +151,7 @@ test("T-398 an unknown action exits silently", () => {
   assert.deepEqual(markers(f), [], "an unknown action must leave no marker");
 });
 
-test("T-399 a repeated background call inside the throttle window returns early without touching the marker", () => {
+test("a repeated background call inside the throttle window returns early without touching the marker", () => {
   const f = fixture();
 
   runHook(f, "background", { session_id: "session-a", agent_id: "agent-1" });

@@ -28,7 +28,7 @@ const EXCLUSIONS: readonly Exclusion[] = [
     path: "plugins/",
     kind: "prefix",
     reason:
-      "DR-0112 excluded plugins/'s vendored scripts from the TypeScript migration as code " +
+      "Excluded plugins/'s vendored scripts from the TypeScript migration as code " +
       "this repository does not author; this sweep keeps the same boundary",
   },
 ];
@@ -65,7 +65,7 @@ function invokesPython3(content: string): boolean {
 }
 
 test(
-  "T-461 no tracked file outside the exclusions invokes python3 as a hook command, a shebang " +
+  "no tracked file outside the exclusions invokes python3 as a hook command, a shebang " +
     "or a heredoc launcher, and the same predicate flags a fixture line for each of the three " +
     "shapes",
   () => {
@@ -113,7 +113,7 @@ test(
 );
 
 test(
-  "T-462 the exclusion list names each excluded path with the reason it is excluded, read " +
+  "the exclusion list names each excluded path with the reason it is excluded, read " +
     "from the test's own constant rather than restated",
   () => {
     assert.deepEqual(

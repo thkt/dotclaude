@@ -11,7 +11,7 @@ import {
   subcommand,
 } from "../command_scan.ts";
 
-test("T-269 subcommand and git_subcommand skip the valued flags their tables name and return the first non-flag token with the rest", () => {
+test("subcommand and git_subcommand skip the valued flags their tables name and return the first non-flag token with the rest", () => {
   assert.deepEqual(git_subcommand(["git", "clean", "-fd"]), ["clean", ["-fd"]]);
   assert.deepEqual(git_subcommand(["git", "status"]), ["status", []]);
   assert.deepEqual(git_subcommand(["git", "-C", "/tmp", "clean"]), ["clean", []]);
@@ -32,7 +32,7 @@ test("T-269 subcommand and git_subcommand skip the valued flags their tables nam
   assert.deepEqual(subcommand(["npm"], npmValuedFlags), [null, []]);
 });
 
-test("T-270 flag_value returns the value after the named flag and null when the flag is absent or carries no value", () => {
+test("flag_value returns the value after the named flag and null when the flag is absent or carries no value", () => {
   const tokens = ["gh", "issue", "create", "--title", "[Bug] x", "--body-file", "/tmp/b.md"];
   assert.equal(flag_value(tokens, "--title"), "[Bug] x");
   assert.equal(flag_value(tokens, "--body-file"), "/tmp/b.md");
@@ -41,7 +41,7 @@ test("T-270 flag_value returns the value after the named flag and null when the 
   assert.equal(flag_value(["gh", "--title"], "--title"), null);
 });
 
-test("T-271 starts_with matches a prefix by position and before_pathspec cuts the list at the -- separator", () => {
+test("starts_with matches a prefix by position and before_pathspec cuts the list at the -- separator", () => {
   const cmd = ["gh", "issue", "create", "--title", "x"];
   assert.equal(starts_with(cmd, ["gh", "issue", "create"]), true);
   assert.equal(starts_with(cmd, ["gh", "pr", "create"]), false);
@@ -52,7 +52,7 @@ test("T-271 starts_with matches a prefix by position and before_pathspec cuts th
   assert.deepEqual(before_pathspec([]), []);
 });
 
-test("T-272 git_clean_only_lists is true for a dry-run clean and false once a force flag appears", () => {
+test("git_clean_only_lists is true for a dry-run clean and false once a force flag appears", () => {
   assert.equal(git_clean_only_lists(["--dry-run"]), true);
   assert.equal(git_clean_only_lists(["-n"]), true);
   assert.equal(git_clean_only_lists(["-nd"]), true);
@@ -63,7 +63,7 @@ test("T-272 git_clean_only_lists is true for a dry-run clean and false once a fo
   assert.equal(git_clean_only_lists(["-n", "--", "-notes"]), true);
 });
 
-test("T-600 commands drops a comment up to its line end, including a line ending in a backslash, and splits the next line as a command", () => {
+test("commands drops a comment up to its line end, including a line ending in a backslash, and splits the next line as a command", () => {
   const cases: Array<[string, string[][]]> = [
     ["# note\ngit push", [["git", "push"]]],
     ["echo hi # note\ngit push", [["echo", "hi"], ["git", "push"]]],
@@ -79,7 +79,7 @@ test("T-600 commands drops a comment up to its line end, including a line ending
   }
 });
 
-test("T-603 commands splits the next line as a command after a blank line or a line ending in a separator, and keeps non-newline punctuation joined", () => {
+test("commands splits the next line as a command after a blank line or a line ending in a separator, and keeps non-newline punctuation joined", () => {
   const cases: Array<[string, string[][]]> = [
     ["echo a\n\ngit push", [["echo", "a"], ["git", "push"]]],
     ["echo a;\ngit push", [["echo", "a"], ["git", "push"]]],
@@ -97,7 +97,7 @@ test("T-603 commands splits the next line as a command after a blank line or a l
   }
 });
 
-test("T-606 commands skips a reserved word at the head of a command, in any order with env assignments and wrappers, and keeps one in argument position", () => {
+test("commands skips a reserved word at the head of a command, in any order with env assignments and wrappers, and keeps one in argument position", () => {
   const cases: Array<[string, string[][]]> = [
     ["if true; then git push; fi", [["true"], ["git", "push"], ["fi"]]],
     ["if git push; then echo ok; fi", [["git", "push"], ["echo", "ok"], ["fi"]]],
@@ -124,7 +124,7 @@ test("T-606 commands skips a reserved word at the head of a command, in any orde
   }
 });
 
-test("T-607 commands returns each parenthesis as its own command and splits the commands around it", () => {
+test("commands returns each parenthesis as its own command and splits the commands around it", () => {
   const cases: Array<[string, string[][]]> = [
     ["(git push)", [["("], ["git", "push"], [")"]]],
     ["(cd /b && git push)", [["("], ["cd", "/b"], ["git", "push"], [")"]]],

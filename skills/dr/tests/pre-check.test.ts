@@ -53,7 +53,7 @@ function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): 
   }
 }
 
-test("T-200 every frozen case in pre-check-cases.json reproduces the python script's exit code and stdout keys in the order OUTPUT_KEYS declares, with date compared by shape and dr_dir by the literal DR_DIR env value", () => {
+test("every frozen case in pre-check-cases.json reproduces the frozen exit code and stdout keys in the order OUTPUT_KEYS declares, with date compared by shape and dr_dir by the literal DR_DIR env value", () => {
   for (const entry of CASES) {
     withCaseDir(entry.setup, (dir) => {
       const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
@@ -82,7 +82,7 @@ test("T-200 every frozen case in pre-check-cases.json reproduces the python scri
   }
 });
 
-test("T-201 the number is one more than the largest NNNN- prefix in the directory and 0001 in an empty one", () => {
+test("the number is one more than the largest NNNN- prefix in the directory and 0001 in an empty one", () => {
   withCaseDir({}, (dir) => {
     const run = runCliWithoutHostDrHome(TS_SCRIPT, dir, "", ["Test Title Here"], { cwd: dir, env: { DR_DIR: "archive" } });
     assert.equal(run.status, 0, `empty dir: exit code (stderr: ${run.stderr})`);
@@ -101,7 +101,7 @@ test("T-201 the number is one more than the largest NNNN- prefix in the director
   );
 });
 
-test("T-202 a title outside 5 to 64 characters or carrying a forbidden character exits 1 with the python script's first stderr line and writes nothing", () => {
+test("a title outside 5 to 64 characters or carrying a forbidden character exits 1 with an error naming the violation as its first stderr line and writes nothing", () => {
   withCaseDir({}, (dir) => {
     for (const name of ["title-under-5-chars-errors", "title-over-64-chars-errors"]) {
       const entry = fixture(CASES, name);
@@ -112,7 +112,7 @@ test("T-202 a title outside 5 to 64 characters or carrying a forbidden character
       assert.equal(
         run.stderr.split("\n")[0],
         `Error: title length ${title.length} chars (required 5-64)`,
-        `${name}: first stderr line matches the retired Python pre-check's fail(f"Error: title length {len(title)} chars (required 5-64)")`,
+        `${name}: first stderr line states the title length and the 5-64 range`,
       );
     }
 
@@ -123,12 +123,12 @@ test("T-202 a title outside 5 to 64 characters or carrying a forbidden character
     assert.equal(
       run.stderr.split("\n")[0],
       'Error: forbidden characters in title (/:*?"<>|)',
-      `${forbidden.name}: first stderr line matches the retired Python pre-check's fail('Error: forbidden characters in title (/:*?"<>|)')`,
+      `${forbidden.name}: first stderr line lists the forbidden characters`,
     );
   });
 });
 
-test("T-203 formatScore renders an exact tie such as 0.625 as 0.62 the way python's .2f does, and renders 0.375 as 0.38", () => {
+test("formatScore rounds an exact tie half to even at two decimals, rendering 0.625 as 0.62 and 0.375 as 0.38", () => {
   assert.equal(formatScore(0.625), "0.62");
   assert.equal(formatScore(0.375), "0.38");
 });
@@ -191,7 +191,7 @@ function runWithGh(dir: string, bin: string, env: Record<string, string> = {}) {
   return { ...run, parsed };
 }
 
-test("T-204 an open pull request adding 0007 to the archive above the local 0005 moves the number to 0008 and names 0007 and the pull request on stderr", () => {
+test("an open pull request adding 0007 to the archive above the local 0005 moves the number to 0008 and names 0007 and the pull request on stderr", () => {
   withGitRepoHoldingDrs0002And0005((dir) => {
     const { bin } = writeFakeGh(dir, { changedFilesByPr: { 12: ["docs/decisions/0007-x.md", "README.md"] } });
     const run = runWithGh(dir, bin);
@@ -201,7 +201,7 @@ test("T-204 an open pull request adding 0007 to the archive above the local 0005
   });
 });
 
-test("T-205 an open pull request number at or below the local maximum leaves the number at the local maximum plus one", () => {
+test("an open pull request number at or below the local maximum leaves the number at the local maximum plus one", () => {
   withGitRepoHoldingDrs0002And0005((dir) => {
     const { bin } = writeFakeGh(dir, { changedFilesByPr: { 12: ["docs/decisions/0003-x.md", "docs/decisions/0005-b.md"] } });
     const run = runWithGh(dir, bin);
@@ -210,7 +210,7 @@ test("T-205 an open pull request number at or below the local maximum leaves the
   });
 });
 
-test("T-206 a numbered file an open pull request adds outside the archive, or inside a numbered subdirectory of it, leaves the number unchanged", () => {
+test("a numbered file an open pull request adds outside the archive, or inside a numbered subdirectory of it, leaves the number unchanged", () => {
   withGitRepoHoldingDrs0002And0005((dir) => {
     const { bin } = writeFakeGh(dir, {
       changedFilesByPr: { 12: ["notes/0009-x.md", "docs/decisions/0009-drafts/x.md", "docs/0009-x.md"] },
@@ -219,7 +219,7 @@ test("T-206 a numbered file an open pull request adds outside the archive, or in
   });
 });
 
-test("T-207 a DR at the 120th of 150 files a pull request changes still counts", () => {
+test("a DR at the 120th of 150 files a pull request changes still counts", () => {
   withGitRepoHoldingDrs0002And0005((dir) => {
     const files = Array.from({ length: 150 }, (_, i) => `src/file-${i}.ts`);
     files[119] = "docs/decisions/0009-late.md";
@@ -228,7 +228,7 @@ test("T-207 a DR at the 120th of 150 files a pull request changes still counts",
   });
 });
 
-test("T-208 when gh fails or prints something other than JSON, the run exits 0 with the local maximum plus one and says on stderr that the check could not run", () => {
+test("when gh fails or prints something other than JSON, the run exits 0 with the local maximum plus one and says on stderr that the check could not run", () => {
   for (const fake of [{ exit: 1 }, { prListStdout: "not json" }] satisfies FakeGh[]) {
     withGitRepoHoldingDrs0002And0005((dir) => {
       const { bin, calledMarker } = writeFakeGh(dir, fake);
@@ -242,7 +242,7 @@ test("T-208 when gh fails or prints something other than JSON, the run exits 0 w
   }
 });
 
-test("T-209 an archive outside a git work tree never calls gh and says on stderr that the check could not run", () => {
+test("an archive outside a git work tree never calls gh and says on stderr that the check could not run", () => {
   withCaseDir({ "archive/0005-b.md": "# B\n" }, (dir) => {
     const { bin, calledMarker } = writeFakeGh(dir, { changedFilesByPr: { 12: ["archive/0007-x.md"] } });
     const run = runWithGh(dir, bin, { DR_DIR: join(dir, "archive") });
@@ -261,7 +261,7 @@ function withDrHome<T>(fn: (drHome: string) => T): T {
   }
 }
 
-test("T-638 with DR_HOME set in a repository whose origin is https://example.invalid/owner/sample.git, the run exits 0, answers dr_dir as $DR_HOME/sample, and creates that directory", () => {
+test("with DR_HOME set in a repository whose origin is https://example.invalid/owner/sample.git, the run exits 0, answers dr_dir as $DR_HOME/sample, and creates that directory", () => {
   withTempRepo((repo) => {
     spawnSync("git", ["-C", repo, "remote", "add", "origin", "https://example.invalid/owner/sample.git"]);
     withDrHome((drHome) => {
@@ -277,7 +277,7 @@ test("T-638 with DR_HOME set in a repository whose origin is https://example.inv
   });
 });
 
-test("T-639 with DR_HOME set in a repository without an origin remote, the run exits 1, names DR_HOME and origin on stderr, writes nothing to stdout, and creates no directory under DR_HOME", () => {
+test("with DR_HOME set in a repository without an origin remote, the run exits 1, names DR_HOME and origin on stderr, writes nothing to stdout, and creates no directory under DR_HOME", () => {
   withTempRepo((repo) => {
     withDrHome((drHome) => {
       const run = runCli(TS_SCRIPT, repo, "", ["Test Title Here"], {

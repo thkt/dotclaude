@@ -61,7 +61,7 @@ run_entrypoint() {
 }
 
 test_the_entrypoint_does_not_exec_the_agent_and_exits_non_zero_when_the_firewall_script_fails() {
-  echo "T-008: the entrypoint does not exec the agent and exits non-zero when the firewall script fails"
+  echo "the entrypoint does not exec the agent and exits non-zero when the firewall script fails"
   local dir status=0
   dir="$(make_sandbox_copy 1)"
   : > "$GOSU_LOG"
@@ -73,7 +73,7 @@ test_the_entrypoint_does_not_exec_the_agent_and_exits_non_zero_when_the_firewall
 }
 
 test_the_entrypoint_aborts_when_an_iptables_operation_succeeds_as_the_demoted_user() {
-  echo "T-009: the entrypoint aborts when an iptables operation succeeds as the demoted user"
+  echo "the entrypoint aborts when an iptables operation succeeds as the demoted user"
   local dir status=0
   dir="$(make_sandbox_copy 0)"
   : > "$GOSU_LOG"
@@ -86,7 +86,7 @@ test_the_entrypoint_aborts_when_an_iptables_operation_succeeds_as_the_demoted_us
 }
 
 test_the_exec_d_command_comes_from_the_agents_table_rather_than_a_name_written_into_the_entrypoint() {
-  echo "T-010: the exec'd command comes from the agents table rather than a name written into the entrypoint"
+  echo "the exec'd command comes from the agents table rather than a name written into the entrypoint"
   assert_empty "no agent exec command is hardcoded in entrypoint.sh" \
     "$(grep -oE 'claude --dangerously-skip-permissions' "$ENTRYPOINT" 2>/dev/null || true)"
 

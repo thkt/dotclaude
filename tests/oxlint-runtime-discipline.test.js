@@ -67,18 +67,18 @@ test.after(() => {
   if (workspace) rmSync(workspace, { recursive: true, force: true });
 });
 
-test("T-001 a .ts calling Bun.file() exits non-zero under the repository's oxlint config", () => {
+test("a .ts calling Bun.file() exits non-zero under the repository's oxlint config", () => {
   assert.notEqual(lint("bun-global", BUN_GLOBAL), 0);
 });
 
-test("T-002 the same source with its Bun reference removed exits zero", () => {
+test("the same source with its Bun reference removed exits zero", () => {
   assert.equal(lint("bun-global-removed", BUN_GLOBAL_REMOVED), 0);
 });
 
-test('T-003 a .ts importing from "bun:test" exits non-zero under the repository\'s oxlint config', () => {
+test('a .ts importing from "bun:test" exits non-zero under the repository\'s oxlint config', () => {
   assert.notEqual(lint("bun-specifier", BUN_SPECIFIER), 0);
 });
 
-test('T-004 a .ts reaching Bun through globalThis or require("bun:sqlite") exits zero', () => {
+test('a .ts reaching Bun through globalThis or require("bun:sqlite") exits zero', () => {
   assert.equal(lint("bun-obfuscated", BUN_OBFUSCATED), 0);
 });

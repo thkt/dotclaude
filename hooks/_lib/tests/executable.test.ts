@@ -33,7 +33,7 @@ function scratch(): { dir: string; exec: (name: string) => string; plain: (name:
   return { dir, exec: (name) => make(name, 0o755), plain: (name) => make(name, 0o644) };
 }
 
-test("T-487 isExecutableFile is true only for a regular file carrying the execute bit", () => {
+test("isExecutableFile is true only for a regular file carrying the execute bit", () => {
   const { dir, exec, plain } = scratch();
   try {
     mkdirSync(join(dir, "a-directory"));
@@ -46,7 +46,7 @@ test("T-487 isExecutableFile is true only for a regular file carrying the execut
   }
 });
 
-test("T-488 which returns the first PATH entry carrying an executable of that name, skips empty entries, and returns null when none does", () => {
+test("which returns the first PATH entry carrying an executable of that name, skips empty entries, and returns null when none does", () => {
   const { dir, exec, plain } = scratch();
   try {
     const first = join(dir, "first");
@@ -66,7 +66,7 @@ test("T-488 which returns the first PATH entry carrying an executable of that na
   }
 });
 
-test("T-489 tsRuntime takes CLAUDE_BUN_BIN when it is executable and otherwise falls back to node on PATH, null when neither runs", () => {
+test("tsRuntime takes CLAUDE_BUN_BIN when it is executable and otherwise falls back to node on PATH, null when neither runs", () => {
   const { dir, exec, plain } = scratch();
   try {
     const bun = exec("bun");

@@ -15,7 +15,7 @@ function runHook(command: string, cwd: string, env: NodeJS.ProcessEnv): string {
   return run(HOOK, { tool_name: "Bash", cwd, tool_input: { command } }, env);
 }
 
-test("T-288 a probe that does not answer within the timeout is denied with the unresolved-probe reason, driven by a git stub that sleeps", () => {
+test("a probe that does not answer within the timeout is denied with the unresolved-probe reason, driven by a git stub that sleeps", () => {
   const shimDir = mkdtempSync(path.join(tmpdir(), "git-sandbox-guard-probe-shim-"));
   const stub = path.join(shimDir, "git");
   writeFileSync(stub, "#!/bin/sh\nsleep 60\n");
@@ -38,7 +38,7 @@ test("T-288 a probe that does not answer within the timeout is denied with the u
   );
 });
 
-test("T-289 a directory that is not a repository is allowed and one reached through GIT_DIR/GIT_WORK_TREE under the sandbox is denied", () => {
+test("a directory that is not a repository is allowed and one reached through GIT_DIR/GIT_WORK_TREE under the sandbox is denied", () => {
   const outside = mkdtempSync(path.join(tmpdir(), "git-sandbox-guard-probe-outside-"));
   assert.equal(
     denyReason(runHook("git checkout main", outside, { ...process.env, CLAUDE_CONFIG_DIR: outside })),
