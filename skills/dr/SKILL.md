@@ -50,7 +50,7 @@ The Publish stage passes publish.md the values below. When the Adoption Gate cre
 
 ## Decision Type
 
-The decision type only affects which recommended More Information topics to include. Per-section guidance is common to all types: Context states the problem and why it had to be decided, each option carries what separates it from the others, and Consequences lists every loss the decision accepts. Reassessment Triggers goes into More Information whatever the type, which makes it an h3 in a new DR. Whoever proposes removing or merging existing structure reads that section to judge, so a missing one leaves that judgment nothing to read.
+The decision type only affects which recommended More Information topics to include. Per-section guidance is common to all types: Context states the problem and why it had to be decided, each option carries what separates it from the others, and Consequences lists every loss the decision accepts. Reassessment Triggers goes into More Information whatever the type, which makes it an h3 in a new DR.
 
 | Decision type        | Use Case                   | Recommended topics                                                            |
 | -------------------- | -------------------------- | ----------------------------------------------------------------------------- |

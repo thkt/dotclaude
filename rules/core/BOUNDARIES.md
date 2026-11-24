@@ -73,6 +73,5 @@ Concretizes AI-Assisted Development.
 - Put validation at system boundaries (user input, external APIs)
 - Create a helper or abstraction once call sites reach 2
 - Return split decisions to the user in the same message as your next action on the parts that do not depend on them, and follow the existing directory structure
-- Before proposing to remove or merge existing structure, read the related DR's Reassessment Triggers and judge whether they are unmet
 - Before giving up on the grounds of a past rejection, read the criterion that rejection was judged against. Judge the same candidate again when the current objective calls for a different criterion
 - Before importing an external design, read your own deliverables (output templates, implementation) and confirm the failure that design addresses actually occurs

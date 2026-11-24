@@ -20,7 +20,7 @@ These go under More Information as an h3. A DR without a More Information sectio
 
 | Section               | Purpose                                                                                                  |
 | --------------------- | -------------------------------------------------------------------------------------------------------- |
-| Reassessment Triggers | Conditions for revisiting the decision. Whoever proposes removing or merging existing structure reads it |
+| Reassessment Triggers | Conditions for revisiting the decision |
 
 ## Optional Sections
 
