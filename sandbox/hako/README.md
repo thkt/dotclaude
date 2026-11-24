@@ -1,6 +1,6 @@
 # hako
 
-`hako.sh` runs one coding agent (`claude` or `codex`) inside an apple/container guest VM, network-locked to that agent's own allowlist, so a `--dangerously-skip-permissions` / `--dangerously-bypass-approvals-and-sandbox` run cannot reach the host or the network beyond what the agent needs. The runtime choice, the options it was weighed against, and the constraints this design accepts are recorded in [DR-0111](../../docs/decisions/0111-adopt-apple-container-for-agent-sandbox.md); this file covers running it and extending it.
+`hako.sh` runs one coding agent (`claude` or `codex`) inside an apple/container guest VM, network-locked to that agent's own allowlist, so a `--dangerously-skip-permissions` / `--dangerously-bypass-approvals-and-sandbox` run cannot reach the host or the network beyond what the agent needs. The runtime choice, the options it was weighed against, and the constraints this design accepts are recorded in DR-0111; this file covers running it and extending it.
 
 ## Usage
 

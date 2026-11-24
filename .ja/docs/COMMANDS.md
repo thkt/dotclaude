@@ -39,8 +39,8 @@ Issue を経ない変更は `/sweep`、`/dr`、`/outcome` が自分で draft PR 
 
 | DR                                                                                                                  | 決定                                                                 |
 | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [DR-0128](../../docs/decisions/0128-retire-the-plan-based-build-path-for-scoping-and-implement.md)                  | Issue から PR までの経路を `/scoping` → `/implement` の 1 本にする   |
-| [DR-0090](../../docs/decisions/0090-unify-workspace-and-history-storage-locations.md)                               | 成果物は `.claude/workspace/`、履歴は `~/.claude/history/`           |
+| DR-0128                  | Issue から PR までの経路を `/scoping` → `/implement` の 1 本にする   |
+| DR-0090                               | 成果物は `.claude/workspace/`、履歴は `~/.claude/history/`           |
 
 ## Command → 実装マッピング
 

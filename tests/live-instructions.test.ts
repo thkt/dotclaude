@@ -239,15 +239,15 @@ test("TESTING.md lists the five shapes of a test that swings at nothing, on both
 });
 
 test("DOCUMENTS.md divides the ground between four documents and routes with three rules, on both sides", async () => {
-  for (const [rel, routing] of [
-    ["rules/conventions/DOCUMENTS.md", "Routing"],
-    [".ja/rules/conventions/DOCUMENTS.md", "ルーティング"],
+  for (const [rel, routing, archive] of [
+    ["rules/conventions/DOCUMENTS.md", "Routing", "`/dr`'s archive"],
+    [".ja/rules/conventions/DOCUMENTS.md", "ルーティング", "`/dr` の置き場"],
   ]) {
     const doc = await readFile(join(root, rel), "utf8");
     const intro = doc.split(/^## /m)[0];
     assert.deepEqual(
       firstColumn(intro),
-      ["`rules/`", "`docs/decisions/`", "`CLAUDE.md`", "`docs/research/`"],
+      ["`rules/`", archive, "`CLAUDE.md`", "`docs/research/`"],
       `${rel} document table`,
     );
     const items = sectionOf(doc, routing)

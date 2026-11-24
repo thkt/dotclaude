@@ -27,7 +27,7 @@ Claude AI のためのカスタムコマンド、開発原則、ワークフロ�
 ├── skills/               # スキルベースのナレッジモジュール (8 skills)
 ├── agents/               # 専門 AI エージェント (1 agent)
 │   └── critics/          # 設計案への反論 (critic-design)
-├── docs/                 # 設計ドキュメント・ガイド (decisions/ に DR)
+├── docs/                 # 設計ドキュメント・ガイド
 ├── hooks/                # Pre/Post tool-use フック
 ├── output-styles/        # 出力スタイル定義
 ├── .claude-plugin/       # プラグインマーケットプレイス設定

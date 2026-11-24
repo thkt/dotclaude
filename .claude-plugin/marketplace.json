@@ -7,8 +7,7 @@
   },
   "metadata": {
     "description": "Autonomous development workflow toolkit distributed as one self-contained plugin. Installing build clones the whole repository once, so every skill and agent loads under the build: namespace with no cross-plugin duplication.",
-    "architecture": "single-plugin",
-    "adr": "docs/decisions/0083-collapse-marketplace-to-single-build-plugin.md"
+    "architecture": "single-plugin"
   },
   "plugins": [
     {

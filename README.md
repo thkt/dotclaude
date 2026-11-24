@@ -29,7 +29,7 @@ This repository contains personal configurations for Claude AI, including:
 ├── skills/               # Skill-based knowledge modules (8 skills)
 ├── agents/               # Specialized AI agents (1 agent)
 │   └── critics/          # Design proposal challenger (critic-design)
-├── docs/                  # Design docs & guides (DRs under decisions/)
+├── docs/                  # Design docs & guides
 ├── hooks/                 # Pre/Post tool-use hooks
 ├── output-styles/         # Output style definitions
 ├── .claude-plugin/        # Plugin marketplace config

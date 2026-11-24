@@ -14,7 +14,6 @@
 | レイヤー構成の設計意図             | [DESIGN.md](./DESIGN.md)                                   |
 | hook の設計意図と命名              | [HOOKS.md](./HOOKS.md)                                     |
 | Skill と Agent の使い分け          | [SKILLS_AGENTS.md](./SKILLS_AGENTS.md)                     |
-| 個別の決定に至った経緯             | [docs/decisions](../../docs/decisions)                     |
 | 外部 CLI の役割                    | [CLI_TOOLS.md](./CLI_TOOLS.md)                             |
 | 用語の定義                         | [GLOSSARY.md](./GLOSSARY.md)                               |
 
@@ -43,7 +42,7 @@
 | `skills/`     | 手順と知識のモジュール                     | Skill tool / モデル  |
 | `agents/`     | fork 実行される専門エージェント定義        | Agent tool           |
 | `hooks/`      | ツール呼び出しに割り込むスクリプト         | Claude Code harness  |
-| `docs/`       | 人間向けの設計文書と決定記録               | 人間                 |
+| `docs/`       | 人間向けの設計文書               | 人間                 |
 | `tests/`      | 規約をコードで縛る横断テスト               | `node --test`        |
 
 ## Hook 契約
@@ -256,5 +255,4 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `node --test "hooks/**/tests/*.test.ts"` と `find hooks sandbox -name '*.test.sh'` |
 | skill        | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
 | agent        | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
-| DR           | `docs/decisions/NNNN-*.md`                                              | `node --test tests/decision-records.test.js`|
 | 文書         | `.ja/docs/<NAME>.md` を先、`docs/<NAME>.md` を同一コミットで            | `npx textlint '.ja/**/*.md'` と `rumdl check .` |
