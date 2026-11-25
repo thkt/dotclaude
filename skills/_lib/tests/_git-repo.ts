@@ -26,8 +26,3 @@ export function withTempRepo<T>(fn: (repo: string) => T): T {
     rmSync(repo, { recursive: true, force: true });
   }
 }
-
-export function gcAutoValue(repo: string): string {
-  const result = spawnSync("git", ["-C", repo, "config", "gc.auto"], { encoding: "utf8" });
-  return result.status === 0 ? result.stdout.trim() : "";
-}
