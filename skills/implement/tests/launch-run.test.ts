@@ -376,18 +376,50 @@ test("run stops with not-prepared and a null launch_file when --worktree names a
   assert.equal(out.launch_file, null);
 });
 
+const ROUND_TRIP_SCRIPT: Script = {
+  ...REJECTED_SCRIPT,
+  self: [REJECTED.self as Turn, judged("self-2", allStates("fixed"))],
+  independent: [REJECTED.independent as Turn, judged("ind-2", allStates("fixed"))],
+  repair: [REPAIRED],
+};
+
+const ROUND_TRIP_ROLES = ["implement", "independent", "independent", "repair", "self", "self"];
+
 test("run passes --model to every claude it starts", () => {
   const f = prepared();
-  fakeRounds(f, {
-    ...REJECTED_SCRIPT,
-    self: [REJECTED.self as Turn, judged("self-2", allStates("fixed"))],
-    independent: [REJECTED.independent as Turn, judged("ind-2", allStates("fixed"))],
-    repair: [REPAIRED],
-  });
+  fakeRounds(f, ROUND_TRIP_SCRIPT);
   assert.equal(runLaunch(f, "--model", "sonnet").status, 0);
   const calls = roundCalls(f);
-  assert.deepEqual(calls.map((call) => call.role).sort(), ["implement", "independent", "independent", "repair", "self", "self"]);
+  assert.deepEqual(calls.map((call) => call.role).sort(), ROUND_TRIP_ROLES);
   for (const call of calls) assert.equal(flagValue(call.args, "--model"), "sonnet", call.role);
+});
+
+test("run passes the --effort level to every claude it starts", () => {
+  const f = prepared();
+  fakeRounds(f, ROUND_TRIP_SCRIPT);
+  assert.equal(runLaunch(f, "--effort", "high").status, 0);
+  const calls = roundCalls(f);
+  assert.deepEqual(calls.map((call) => call.role).sort(), ROUND_TRIP_ROLES);
+  for (const call of calls) assert.equal(flagValue(call.args, "--effort"), "high", call.role);
+});
+
+test("run without --effort starts every claude without --effort", () => {
+  const f = prepared();
+  fakeRounds(f, ROUND_TRIP_SCRIPT);
+  assert.equal(runLaunch(f).status, 0);
+  const calls = roundCalls(f);
+  assert.deepEqual(calls.map((call) => call.role).sort(), ROUND_TRIP_ROLES);
+  for (const call of calls) assert.ok(!call.args.includes("--effort"), call.role);
+});
+
+test("run with an --effort level outside low, medium, high, xhigh, and max prints the usage, exits 2, and starts no claude", () => {
+  const f = prepared();
+  fakeRounds(f, ROUND_TRIP_SCRIPT);
+  const result = runLaunch(f, "--effort", "fast");
+  assert.equal(result.status, 2);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /^usage: /);
+  assert.deepEqual(roundCalls(f), []);
 });
 
 test("a run call without --worktree or with a relative path prints the usage and nothing on stdout, and exits 2", () => {

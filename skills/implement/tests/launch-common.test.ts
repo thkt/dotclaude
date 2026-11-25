@@ -194,7 +194,7 @@ test("--fresh twice, --fresh with a value, or --fresh on another action prints t
     assert.match(result.stderr, /^usage: /, args.join(" "));
   }
   assert.deepEqual(implementCalls(f), []);
-  assert.ok(run(f, []).stderr.includes("launch.ts implement --worktree <abs path> [--model <name>] [--fresh]\n"));
+  assert.ok(run(f, []).stderr.includes("launch.ts implement --worktree <abs path> [--model <name>] [--effort <level>] [--fresh]\n"));
 });
 
 const deadPid = (): number => spawnSync("true").pid as number;

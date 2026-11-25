@@ -5,58 +5,75 @@ import { createHash, randomUUID } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { type GateLocation, gateLocation, git, readJson, treeHash } from "../../../hooks/_lib/gate_record.ts";
-import { type ChildOutcome, type ChildRun, endAll, GIVE_REPLY, runClaudeOnce } from "./claude-child.ts";
+import { type GateLocation, gateLocation, git, LAUNCH_FILE, readJson, treeHash } from "../../../hooks/_lib/gate_record.ts";
+import { type ChildOutcome, type ChildRun, endAll, endGroup, GIVE_REPLY, runClaudeOnce } from "./claude-child.ts";
 import { isMainModule } from "../../_lib/entry-point.ts";
 import { type HolderStop, type Holding, hold } from "./holders.ts";
 
 export const TYPE_BY_PREFIX: Record<string, string> = { bug: "fix", feature: "feat", docs: "docs", chore: "chore" };
 
 const DONE_GATE = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "hooks", "lifecycle", "done_gate.ts");
-const LAUNCH_FILE = "launch.json";
 const CHILD_TIMEOUT_MS = 3_600_000;
 const DESCRIPTION = /^[a-z0-9]+(-[a-z0-9]+){1,3}$/;
 const DIGEST = /^[0-9a-f]{64}$/;
+const EFFORTS = ["low", "medium", "high", "xhigh", "max"];
 
 const USAGE =
   "usage: launch.ts prepare --repo <abs path> --issue <number> [--description <words>] [--gate-mode record|enforce]\n" +
-  "       launch.ts implement --worktree <abs path> [--model <name>] [--fresh]\n" +
-  "       launch.ts review --worktree <abs path> [--model <name>]\n" +
-  "       launch.ts repair --worktree <abs path> [--model <name>]\n" +
+  "       launch.ts implement --worktree <abs path> [--model <name>] [--effort <level>] [--fresh]\n" +
+  "       launch.ts review --worktree <abs path> [--model <name>] [--effort <level>]\n" +
+  "       launch.ts repair --worktree <abs path> [--model <name>] [--effort <level>]\n" +
   "       launch.ts agree --worktree <abs path>\n" +
-  "       launch.ts reread --worktree <abs path> [--model <name>]\n" +
-  "       launch.ts continue --worktree <abs path> [--model <name>]\n" +
-  "       launch.ts run --worktree <abs path> [--model <name>]\n" +
+  "       launch.ts reread --worktree <abs path> [--model <name>] [--effort <level>]\n" +
+  "       launch.ts continue --worktree <abs path> [--model <name>] [--effort <level>]\n" +
+  "       launch.ts run --worktree <abs path> [--model <name>] [--effort <level>]\n" +
   "       launch.ts publishable --worktree <abs path>\n" +
   "       launch.ts published --worktree <abs path>\n" +
   "       launch.ts body --worktree <abs path>\n" +
   "       launch.ts capture --worktree <abs path>\n" +
   "       launch.ts publish --worktree <abs path>\n";
 
+const viewIssueCommand = (issue: number, repository: string): string =>
+  `\`gh issue view ${issue} --repo ${repository} --json title,body\``;
+
+const AGREED_SCOPE = "The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.";
+
+const FULL_CHECK = " It runs the repository's full check and records the result for the current working tree.";
+
+const checkSteps = (doneGate: string, first: number, explained = ""): string =>
+  `${first}. Run \`${doneGate} check\`.${explained} Fix what fails and run it again.
+${first + 1}. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.`;
+
+const STAY_IN_WORKTREE = "Do not commit, push, or open a pull request. Do not edit files outside this worktree.";
+
+const firstReply = (doneGate: string): string =>
+  `When you are done, reply with: the files you changed, what \`${doneGate} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.`;
+
+const laterReply = (doneGate: string, opening: string): string =>
+  `When you are done, reply with: ${opening}; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.`;
+
 const promptFor = (issue: number, repository: string, doneGate: string): string =>
   `Implement GitHub Issue #${issue} of ${repository} in this worktree.
 
-1. Read the Issue with \`gh issue view ${issue} --repo ${repository} --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
+1. Read the Issue with ${viewIssueCommand(issue, repository)}. ${AGREED_SCOPE}
 2. Make the change the Issue asks for, following the repository's rules that apply to the files you touch.
-3. Run \`${doneGate} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
-4. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+${checkSteps(doneGate, 3, FULL_CHECK)}
 
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+${STAY_IN_WORKTREE}
 
-When you are done, reply with: the files you changed, what \`${doneGate} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
+${firstReply(doneGate)}
 `;
 
 const resumePrompt = (issue: number, repository: string, base: string, doneGate: string): string =>
   `Your turn implementing GitHub Issue #${issue} of ${repository} in this worktree was interrupted before you replied.
 
-1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you had done and what was left. Keep the changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view ${issue} --repo ${repository} --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
+1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you had done and what was left. Keep the changes that are in the worktree. If you had not read the Issue yet, read it with ${viewIssueCommand(issue, repository)}. ${AGREED_SCOPE}
 2. Finish the change the Issue asks for, following the repository's rules that apply to the files you touch.
-3. Run \`${doneGate} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
-4. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+${checkSteps(doneGate, 3, FULL_CHECK)}
 
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+${STAY_IN_WORKTREE}
 
-When you are done, reply with: the files you changed, what \`${doneGate} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
+${firstReply(doneGate)}
 `;
 
 const repairPrompt = (issue: number, base: string, findings: string, doneGate: string): string =>
@@ -65,37 +82,34 @@ const repairPrompt = (issue: number, base: string, findings: string, doneGate: s
 ${findings}
 
 1. For each finding, read the code it names and reproduce the problem, and judge whether the finding holds. Fix each finding that holds, and add or change a test that fails without the fix. Do not change the scope of the Issue.
-2. Run \`${doneGate} check\`. Fix what fails and run it again.
-3. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+${checkSteps(doneGate, 2)}
 
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+${STAY_IN_WORKTREE}
 
-When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
+${laterReply(doneGate, "for each finding, its `key` and what you changed, or why you changed nothing")}
 `;
 
 const rereadPrompt = (issue: number, repository: string, base: string, doneGate: string): string =>
   `GitHub Issue #${issue} of ${repository} changed after you last read it. The Issue as it is now is the agreed requirement.
 
-1. Read the Issue again with \`gh issue view ${issue} --repo ${repository} --json title,body\`, and find what changed from the version you read before.
+1. Read the Issue again with ${viewIssueCommand(issue, repository)}, and find what changed from the version you read before.
 2. Compare every requirement, done condition, and out-of-scope item of the Issue with your change. The change is everything in this worktree that differs from commit ${base}, committed or not. Read it with \`git diff ${base}\` and \`git status --short\`. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
-3. Run \`${doneGate} check\`. Fix what fails and run it again.
-4. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+${checkSteps(doneGate, 3)}
 
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+${STAY_IN_WORKTREE}
 
-When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
+${laterReply(doneGate, "what changed in the Issue; for each change, what you changed or why you changed nothing")}
 `;
 
 const continuePrompt = (issue: number, repository: string, base: string, doneGate: string): string =>
   `Your work on GitHub Issue #${issue} of ${repository} in this worktree is not finished. \`${doneGate} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
 
 1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the changes that are in the worktree, and finish that work.
-2. Run \`${doneGate} check\`. Fix what fails and run it again.
-3. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+${checkSteps(doneGate, 2)}
 
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+${STAY_IN_WORKTREE}
 
-When you are done, reply with: what was unfinished; what you changed; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
+${laterReply(doneGate, "what was unfinished; what you changed")}
 `;
 
 interface CapturePromptInput {
@@ -118,14 +132,13 @@ CAPTURE_OUTPUT_END
 The capture command is ${command}. launch.ts replaces {harness} with its adapter directory, appends an output directory, and runs the command in this worktree outside the sandbox. You cannot run it in this session. The capture runs again after you are done.
 
 1. Find why the capture failed. Read the capture definition that the command names, the code it exercises, \`git status --short\`, and \`git diff ${base}\`. Fix the cause in this worktree. Do not change \`.dotagents.json\`.
-2. Run \`${doneGate} check\`. Fix what fails and run it again.
-3. You are done when \`${doneGate} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
+${checkSteps(doneGate, 2)}
 
 If the cause is outside this worktree, change nothing and say so in your reply.
 
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
+${STAY_IN_WORKTREE}
 
-When you are done, reply with: why the capture failed; what you changed; the files you changed; what \`${doneGate} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
+${laterReply(doneGate, "why the capture failed; what you changed")}
 `;
 
 const REVIEW_TOOLS = "Read,Glob,Grep,LS";
@@ -329,6 +342,23 @@ const parseObject = (text: string): Record<string, unknown> | null => {
   } catch {
     return null;
   }
+};
+
+const isDigest = (value: unknown): value is string => typeof value === "string" && DIGEST.test(value);
+
+const listOf = (stored: Record<string, unknown>, name: string): unknown[] => (Array.isArray(stored[name]) ? stored[name] : []);
+
+const writeLaunch = (path: string, value: unknown): void => writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+
+const gateStatusOf = (worktree: string): SpawnSyncReturns<string> => runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
+
+const notDoneOf = (status: SpawnSyncReturns<string>): string => `done_gate.ts status is not done: ${outputOf(status)}`;
+
+const gateAt = (worktree: string): GateLocation | null => (existsSync(worktree) ? gateLocation(worktree) : null);
+
+const baseConfigOf = (worktree: string, base: string): Record<string, unknown> | null => {
+  const shown = runQuiet("git", ["show", `${base}:.dotagents.json`], worktree);
+  return shown.status === 0 ? parseObject(shown.stdout) : null;
 };
 
 const parseArray = (text: string): unknown[] | null => {
@@ -590,7 +620,7 @@ const prepare = (argv: string[]): Result | null => {
   const gate = gateOn.status === 0 ? gateLocation(worktree) : null;
   if (gate === null) return prepareStop(issue, "gate-failed", `done_gate.ts on --mode ${gateMode} ${exitOf(gateOn)}. ${kept}`);
   const launch: Launch = { issue, repository, branch, base, issue_digest: issueDigest };
-  writeFileSync(join(gate.dir, LAUNCH_FILE), `${JSON.stringify(launch, null, 2)}\n`);
+  writeLaunch(join(gate.dir, LAUNCH_FILE), launch);
   return { action: "prepare", ok: true, issue, branch, worktree, base, gate_mode: gateMode };
 };
 
@@ -599,23 +629,26 @@ const launchOf = (value: unknown): Launch | null => {
   if (!fields) return null;
   const { issue, repository, branch, base, issue_digest } = fields;
   if (!Number.isInteger(issue) || !nonEmpty(repository) || !nonEmpty(branch) || !nonEmpty(base)) return null;
-  if (typeof issue_digest !== "string" || !DIGEST.test(issue_digest)) return null;
+  if (!isDigest(issue_digest)) return null;
   return { issue: issue as number, repository, branch, base, issue_digest };
 };
 
 interface WorktreeCall {
   worktree: string;
   model: string;
+  effort: string | undefined;
   fresh: boolean;
 }
 
-const MODEL_FLAGS = ["--worktree", "--model"];
+const CHILD_FLAGS = ["--worktree", "--model", "--effort"];
 
 const worktreeCall = (argv: string[], allowed: readonly string[], switches: readonly string[] = []): WorktreeCall | null => {
   const flags = readFlags(argv, allowed, switches);
   const worktree = flags?.["--worktree"];
   if (!flags || !worktree || !isAbsolute(worktree)) return null;
-  return { worktree, model: flags["--model"] ?? "opus", fresh: Object.hasOwn(flags, "--fresh") };
+  const effort = flags["--effort"];
+  if (effort !== undefined && !EFFORTS.includes(effort)) return null;
+  return { worktree, model: flags["--model"] ?? "opus", effort, fresh: Object.hasOwn(flags, "--fresh") };
 };
 
 interface Prepared {
@@ -626,7 +659,7 @@ interface Prepared {
 }
 
 const preparedAt = (worktree: string): Prepared | null => {
-  const gate = existsSync(worktree) ? gateLocation(worktree) : null;
+  const gate = gateAt(worktree);
   const launchPath = gate ? join(gate.dir, LAUNCH_FILE) : "";
   const stored = gate ? objectOf(readJson(launchPath)) : null;
   const launch = launchOf(stored);
@@ -712,7 +745,14 @@ const runChild = async (run: ChildRun): Promise<ChildOutcome> => {
   return outcome;
 };
 
-const implement = async ({ worktree, model, fresh }: WorktreeCall): Promise<Result> => {
+const implementingRun = ({ worktree, model, effort }: WorktreeCall) =>
+  ({ model, effort, schema: undefined, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, everyTurn: true });
+
+const resumeImplementing = (call: WorktreeCall, prompt: string, resume: string): Promise<ChildOutcome> =>
+  runChild({ ...implementingRun(call), prompt, resume });
+
+const implement = async (call: WorktreeCall): Promise<Result> => {
+  const { worktree, fresh } = call;
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("implement", reason, detail, extra);
 
@@ -724,30 +764,26 @@ const implement = async ({ worktree, model, fresh }: WorktreeCall): Promise<Resu
   const changed = issueChange(launch, worktree);
   if (changed !== null) return stop(changed.reason, changed.detail);
 
-  const common = { model, effort: undefined, schema: undefined, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, everyTurn: true };
   const startNew = async (): Promise<ImplementChild> => {
     const sessionId = randomUUID();
     const kept = Object.hasOwn(stored, "publications") ? { publications: stored.publications } : {};
     const implementRecord = { session_id: sessionId, issue_digest: launch.issue_digest, started_at: new Date().toISOString() };
     const base = { ...launch, ...kept, implement: implementRecord };
-    writeFileSync(launchPath, `${JSON.stringify(base, null, 2)}\n`);
-    const outcome = await runChild({ ...common, prompt: promptFor(launch.issue, launch.repository, DONE_GATE), sessionId });
+    writeLaunch(launchPath, base);
+    const outcome = await runChild({ ...implementingRun(call), prompt: promptFor(launch.issue, launch.repository, DONE_GATE), sessionId });
     return { outcome, resumed: false, issueDigest: launch.issue_digest, base };
   };
   const resume = async (): Promise<ImplementChild> => {
     const earlier = objectOf(stored.implement) ?? {};
-    const outcome = await runChild({
-      ...common,
-      prompt: resumePrompt(launch.issue, launch.repository, launch.base, DONE_GATE),
-      resume: earlier.session_id as string,
-    });
+    const prompt = resumePrompt(launch.issue, launch.repository, launch.base, DONE_GATE);
+    const outcome = await resumeImplementing(call, prompt, earlier.session_id as string);
     return noSessionOf(outcome) ? startNew() : { outcome, resumed: true, issueDigest: earlier.issue_digest, base: stored };
   };
   const child = state === "unfinished" && !fresh ? await resume() : await startNew();
   const reply = sessionReplyOf(child.outcome);
   if (typeof reply === "string") return stop("child-failed", reply);
 
-  const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
+  const status = gateStatusOf(worktree);
   const tree = treeHash(gate.root);
   const finished = {
     session_id: reply.session_id,
@@ -756,9 +792,9 @@ const implement = async ({ worktree, model, fresh }: WorktreeCall): Promise<Resu
     reply: typeof reply.result === "string" ? reply.result : "",
     at: new Date().toISOString(),
   };
-  writeFileSync(launchPath, `${JSON.stringify({ ...child.base, implement: finished }, null, 2)}\n`);
+  writeLaunch(launchPath, { ...child.base, implement: finished });
   const shown = { session_id: reply.session_id, tree, ...shownOf(reply), ...(child.resumed ? { resumed: true } : {}) };
-  if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
+  if (status.status !== 0) return stop("not-done", notDoneOf(status), shown);
   return { action: "implement", ok: true, ...shown };
 };
 
@@ -896,7 +932,7 @@ const earlierLine = ({ key, side, location, condition, problem, action }: Record
   JSON.stringify({ key, side, location, condition, problem, action });
 
 const repairAnswering = (stored: Record<string, unknown>, reviewRound: unknown): Record<string, unknown> | null => {
-  const repairs = Array.isArray(stored.repairs) ? stored.repairs : [];
+  const repairs = listOf(stored, "repairs");
   const last = objectOf(repairs[repairs.length - 1]);
   return last !== null && last.review_round === reviewRound ? last : null;
 };
@@ -940,7 +976,7 @@ const capturedReviewOf = (worktree: string, stored: Record<string, unknown>, lau
   const config = captureConfigOf(worktree, launch.base);
   if (config === null || "reason" in config) return null;
   if (tree === null) return { reason: "capture-unavailable", detail: `The working tree of ${worktree} has no tree id.` };
-  const passed = lastPassedOf(Array.isArray(stored.captures) ? stored.captures : []);
+  const passed = lastPassedOf(listOf(stored, "captures"));
   const decision = captureDecisionOf(worktree, launch.base, config, tree, passed);
   if (decision === "reused" && passed !== null) return capturedParagraph(config.destination, passed.files, passed.installed !== tree);
   if (decision === "not_required") return notCapturedParagraph(config.destination, launch.base);
@@ -954,7 +990,7 @@ const reviewStartOf = (worktree: string, stored: Record<string, unknown>, launch
   return issueChange(launch, worktree) ?? (captured === null ? [] : [captured]);
 };
 
-const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
+const review = async ({ worktree, model, effort }: WorktreeCall): Promise<Result> => {
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("review", reason, detail, extra);
 
@@ -963,13 +999,13 @@ const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const { gate, launchPath, stored, launch } = prepared;
   const implemented = finishedSessionOf(stored);
   if (implemented === null) return stop("not-implemented", notImplemented(worktree, stored));
-  const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
-  if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`);
+  const status = gateStatusOf(worktree);
+  if (status.status !== 0) return stop("not-done", notDoneOf(status));
   const tree = treeHash(gate.root);
   const capturedParagraphs = reviewStartOf(worktree, stored, launch, tree);
   if (!Array.isArray(capturedParagraphs)) return stop(capturedParagraphs.reason, capturedParagraphs.detail);
 
-  const earlier = Array.isArray(stored.reviews) ? stored.reviews : [];
+  const earlier = listOf(stored, "reviews");
   const round = earlier.length + 1;
   const judged = earlierRequired(earlier) ?? [];
   const keys = judged.length > 0 ? judged.map((entry) => String(entry.key)) : null;
@@ -977,7 +1013,7 @@ const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const judging = keys === null ? [] : [earlierParagraph(judged.map(earlierLine).join("\n"))];
   const closing = keys === null ? [] : [JUDGE_EARLIER];
 
-  const common = { model, effort: undefined, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, tools: REVIEW_TOOLS };
+  const common = { model, effort, cwd: worktree, timeoutMs: CHILD_TIMEOUT_MS, tools: REVIEW_TOOLS };
   const selfSchema = keys === null ? REVIEW_SCHEMA : JUDGING_SCHEMA;
   const independentSchema = keys === null ? INDEPENDENT_REVIEW_SCHEMA : INDEPENDENT_JUDGING_SCHEMA;
   const selfPrompt = reviewPrompt(selfOpening(launch.issue, launch.base), capturedParagraphs, [...judging, ...closing], []);
@@ -1011,7 +1047,7 @@ const review = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
     self: recordOf(reviews.self),
     independent: recordOf(reviews.independent),
   };
-  writeFileSync(launchPath, `${JSON.stringify({ ...stored, reviews: [...earlier, record] }, null, 2)}\n`);
+  writeLaunch(launchPath, { ...stored, reviews: [...earlier, record] });
   return { action: "review", ok: true, round, tree, verdict, required, reviews };
 };
 
@@ -1020,7 +1056,8 @@ const repairLine = (entry: unknown): string => {
   return JSON.stringify({ key, side, location, condition, problem, action, reopened });
 };
 
-const repair = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
+const repair = async (call: WorktreeCall): Promise<Result> => {
+  const { worktree } = call;
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("repair", reason, detail, extra);
 
@@ -1051,22 +1088,12 @@ const repair = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   const changed = issueChange(launch, worktree);
   if (changed !== null) return stop(changed.reason, changed.detail);
 
-  const reply = sessionReplyOf(
-    await runChild({
-      prompt: repairPrompt(launch.issue, launch.base, required.map(repairLine).join("\n"), DONE_GATE),
-      model,
-      effort: undefined,
-      schema: undefined,
-      cwd: worktree,
-      timeoutMs: CHILD_TIMEOUT_MS,
-      resume: implemented,
-      everyTurn: true,
-    }),
-  );
+  const prompt = repairPrompt(launch.issue, launch.base, required.map(repairLine).join("\n"), DONE_GATE);
+  const reply = sessionReplyOf(await resumeImplementing(call, prompt, implemented));
   if (typeof reply === "string") return stop("child-failed", reply);
 
   const tree = treeHash(gate.root);
-  const earlier = Array.isArray(stored.repairs) ? stored.repairs : [];
+  const earlier = listOf(stored, "repairs");
   const record = {
     round: earlier.length + 1,
     review_round: last.round,
@@ -1074,13 +1101,10 @@ const repair = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
     tree,
     changed: tree !== before,
   };
-  writeFileSync(
-    launchPath,
-    `${JSON.stringify({ ...stored, repairs: [...earlier, { ...record, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] }, null, 2)}\n`,
-  );
+  writeLaunch(launchPath, { ...stored, repairs: [...earlier, { ...record, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] });
   const shown = { ...record, ...shownOf(reply) };
-  const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
-  if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
+  const status = gateStatusOf(worktree);
+  if (status.status !== 0) return stop("not-done", notDoneOf(status), shown);
   return { action: "repair", ok: true, ...shown };
 };
 
@@ -1098,16 +1122,17 @@ const agree = ({ worktree }: WorktreeCall): Result => {
   if (found.state !== "OPEN") return stop("issue-not-open", `Issue #${launch.issue} is ${found.state}, not OPEN.`);
   const digest = digestOf(found);
   const changed = digest !== launch.issue_digest;
-  if (changed) writeFileSync(launchPath, `${JSON.stringify({ ...stored, issue_digest: digest }, null, 2)}\n`);
+  if (changed) writeLaunch(launchPath, { ...stored, issue_digest: digest });
   return { action: "agree", ok: true, issue: launch.issue, issue_digest: digest, changed, title: found.title, body: found.body };
 };
 
 const readDigestOf = (stored: Record<string, unknown>): unknown => {
-  const rereads = Array.isArray(stored.rereads) ? stored.rereads : [];
+  const rereads = listOf(stored, "rereads");
   return rereads.length > 0 ? objectOf(rereads[rereads.length - 1])?.issue_digest : objectOf(stored.implement)?.issue_digest;
 };
 
-const reread = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
+const reread = async (call: WorktreeCall): Promise<Result> => {
+  const { worktree } = call;
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("reread", reason, detail, extra);
 
@@ -1123,23 +1148,13 @@ const reread = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
   if (issueChanged !== null) return stop(issueChanged.reason, issueChanged.detail);
 
   const before = treeHash(gate.root);
-  const reply = sessionReplyOf(
-    await runChild({
-      prompt: rereadPrompt(launch.issue, launch.repository, launch.base, DONE_GATE),
-      model,
-      effort: undefined,
-      schema: undefined,
-      cwd: worktree,
-      timeoutMs: CHILD_TIMEOUT_MS,
-      resume: implemented,
-      everyTurn: true,
-    }),
-  );
+  const prompt = rereadPrompt(launch.issue, launch.repository, launch.base, DONE_GATE);
+  const reply = sessionReplyOf(await resumeImplementing(call, prompt, implemented));
   if (typeof reply === "string") return stop("child-failed", reply);
 
-  const status = runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
+  const status = gateStatusOf(worktree);
   const tree = treeHash(gate.root);
-  const earlier = Array.isArray(stored.rereads) ? stored.rereads : [];
+  const earlier = listOf(stored, "rereads");
   const record = {
     round: earlier.length + 1,
     session_id: reply.session_id,
@@ -1148,15 +1163,10 @@ const reread = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
     issue_digest: launch.issue_digest,
   };
   const shown = { ...record, ...shownOf(reply) };
-  if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
-  writeFileSync(
-    launchPath,
-    `${JSON.stringify({ ...stored, rereads: [...earlier, { ...record, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] }, null, 2)}\n`,
-  );
+  if (status.status !== 0) return stop("not-done", notDoneOf(status), shown);
+  writeLaunch(launchPath, { ...stored, rereads: [...earlier, { ...record, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] });
   return { action: "reread", ok: true, ...shown };
 };
-
-const gateStatusOf = (worktree: string): SpawnSyncReturns<string> => runQuiet(process.execPath, [DONE_GATE, "status"], worktree);
 
 interface CaptureState {
   config: CaptureConfig;
@@ -1173,7 +1183,7 @@ const captureStateOf = (worktree: string, { gate, stored, launch }: Prepared): C
   if (config === null || "reason" in config) return null;
   const tree = treeHash(gate.root);
   if (tree === null) return null;
-  const captures = Array.isArray(stored.captures) ? stored.captures : [];
+  const captures = listOf(stored, "captures");
   if (captureDecisionOf(worktree, launch.base, config, tree, lastPassedOf(captures)) !== "execute") return null;
   const last = objectOf(captures[captures.length - 1]);
   const unrepaired = last !== null && last.outcome === "failed" && last.tree === tree && isPositiveInteger(last.n);
@@ -1196,7 +1206,8 @@ const capturePromptOf = ({ issue, repository, base }: Launch, { config, failed }
     command: JSON.stringify(config.command),
   });
 
-const continueWork = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
+const continueWork = async (call: WorktreeCall): Promise<Result> => {
+  const { worktree } = call;
   const stop = (reason: string, detail: string, extra: Record<string, unknown> = {}) =>
     stopped("continue", reason, detail, extra);
 
@@ -1218,23 +1229,13 @@ const continueWork = async ({ worktree, model }: WorktreeCall): Promise<Result> 
   if (issueChanged !== null) return stop(issueChanged.reason, issueChanged.detail);
 
   const before = treeHash(gate.root);
-  const reply = sessionReplyOf(
-    await runChild({
-      prompt: unrepaired === null ? continuePrompt(launch.issue, launch.repository, launch.base, DONE_GATE) : capturePromptOf(launch, unrepaired),
-      model,
-      effort: undefined,
-      schema: undefined,
-      cwd: worktree,
-      timeoutMs: CHILD_TIMEOUT_MS,
-      resume: implemented,
-      everyTurn: true,
-    }),
-  );
+  const prompt = unrepaired === null ? continuePrompt(launch.issue, launch.repository, launch.base, DONE_GATE) : capturePromptOf(launch, unrepaired);
+  const reply = sessionReplyOf(await resumeImplementing(call, prompt, implemented));
   if (typeof reply === "string") return stop("child-failed", reply);
 
   const status = gateStatusOf(worktree);
   const tree = treeHash(gate.root);
-  const earlier = Array.isArray(stored.continues) ? stored.continues : [];
+  const earlier = listOf(stored, "continues");
   const record = {
     round: earlier.length + 1,
     session_id: reply.session_id,
@@ -1243,12 +1244,9 @@ const continueWork = async ({ worktree, model }: WorktreeCall): Promise<Result> 
     ...(unrepaired === null ? {} : { capture: unrepaired.failed.n }),
   };
   const done = status.status === 0;
-  writeFileSync(
-    launchPath,
-    `${JSON.stringify({ ...stored, continues: [...earlier, { ...record, done, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] }, null, 2)}\n`,
-  );
+  writeLaunch(launchPath, { ...stored, continues: [...earlier, { ...record, done, reply: typeof reply.result === "string" ? reply.result : "", at: new Date().toISOString() }] });
   const shown = { ...record, ...shownOf(reply) };
-  if (!done) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`, shown);
+  if (!done) return stop("not-done", notDoneOf(status), shown);
   return { action: "continue", ok: true, ...shown };
 };
 
@@ -1281,7 +1279,7 @@ const advancesAfterStop = (action: StepAction, result: Result): boolean =>
 const amountOf = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) ? value : 0);
 
 const currentReviewOf = (stored: Record<string, unknown>): (Record<string, unknown> & { required: unknown[] }) | null => {
-  const reviews = Array.isArray(stored.reviews) ? stored.reviews : [];
+  const reviews = listOf(stored, "reviews");
   const last = objectOf(reviews[reviews.length - 1]);
   return last !== null && Array.isArray(last.required) ? (last as Record<string, unknown> & { required: unknown[] }) : null;
 };
@@ -1318,7 +1316,7 @@ const reviewOrCapture = (worktree: string, prepared: Prepared): Next => {
   if (state === null) return { kind: "call", action: "review" };
   const { failed } = state;
   if (failed === null) return { kind: "call", action: "capture" };
-  const continues = Array.isArray(prepared.stored.continues) ? prepared.stored.continues : [];
+  const continues = listOf(prepared.stored, "continues");
   if (objectOf(continues[continues.length - 1])?.capture === failed.n) {
     const detail = `Capture ${String(failed.n)} failed on the working tree ${String(failed.tree)}, and the implementing session changed nothing after it. Read its log_tail in launch.json. Call capture directly to try again.`;
     return { kind: "stop", reason: "capture-failed", detail };
@@ -1329,7 +1327,7 @@ const reviewOrCapture = (worktree: string, prepared: Prepared): Next => {
 const reviewOrContinue = (worktree: string, prepared: Prepared): Next => {
   const { gate, stored } = prepared;
   if (gateStatusOf(worktree).status === 0) return reviewOrCapture(worktree, prepared);
-  const continues = Array.isArray(stored.continues) ? stored.continues : [];
+  const continues = listOf(stored, "continues");
   const last = objectOf(continues[continues.length - 1]);
   if (last !== null && last.done === false && last.tree === treeHash(gate.root)) {
     const detail = `continue round ${String(last.round)} ended without passing the check, and the working tree has not changed since. Call continue directly to try again.`;
@@ -1371,7 +1369,7 @@ const stepOf = (action: StepAction, result: Result): Record<string, unknown> => 
 };
 
 const launchFileOf = (worktree: string): string | null => {
-  const gate = existsSync(worktree) ? gateLocation(worktree) : null;
+  const gate = gateAt(worktree);
   return gate === null ? null : join(gate.dir, LAUNCH_FILE);
 };
 
@@ -1381,7 +1379,7 @@ const runFields = (worktree: string, steps: Record<string, unknown>[], cost: num
   return {
     verdict: current?.verdict ?? null,
     required: current?.required ?? [],
-    rounds: Array.isArray(stored.reviews) ? stored.reviews.length : 0,
+    rounds: listOf(stored, "reviews").length,
     steps,
     cost_usd: cost,
     launch_file: launchFileOf(worktree),
@@ -1393,8 +1391,8 @@ const runOutput = (worktree: string, steps: Record<string, unknown>[], cost: num
   return stop?.kind === "stop" ? stopped("run", stop.reason, stop.detail, fields) : { action: "run", ok: true, ...fields };
 };
 
-const runRounds = async ({ worktree, model }: WorktreeCall): Promise<Result> => {
-  const childCall = { worktree, model, fresh: false };
+const runRounds = async ({ worktree, model, effort }: WorktreeCall): Promise<Result> => {
+  const childCall = { worktree, model, effort, fresh: false };
   const steps: Record<string, unknown>[] = [];
   let cost = 0;
   let previous: StepAction | null = null;
@@ -1455,8 +1453,7 @@ const headStateOf = (worktree: string, base: string, tree: unknown, last: Public
 };
 
 const publishConfigOf = (worktree: string, { base, repository }: Launch): { remote: string; baseBranch: string } | Problem => {
-  const shown = runQuiet("git", ["show", `${base}:.dotagents.json`], worktree);
-  const config = shown.status === 0 ? parseObject(shown.stdout) : null;
+  const config = baseConfigOf(worktree, base);
   if (config !== null && nonEmpty(config.remote) && nonEmpty(config.baseBranch) && config.repository === repository) {
     return { remote: config.remote, baseBranch: config.baseBranch };
   }
@@ -1519,7 +1516,7 @@ const publishFactsOf = (worktree: string): PublishFacts | Problem => {
     return { reason: "not-accepted", detail };
   }
   const status = gateStatusOf(worktree);
-  if (status.status !== 0) return { reason: "not-done", detail: `done_gate.ts status is not done: ${outputOf(status)}` };
+  if (status.status !== 0) return { reason: "not-done", detail: notDoneOf(status) };
   const tree = currentReviewOf(stored)?.tree;
   const last = lastPublicationOf(prepared);
   if (last !== null && "reason" in last) return last;
@@ -1580,8 +1577,6 @@ const differingOf = (pull: Record<string, unknown>, facts: PublishFacts, commit:
 };
 
 const sha256Of = (text: string): string => createHash("sha256").update(text, "utf8").digest("hex");
-
-const isDigest = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{64}$/.test(value);
 
 const headShaOf = (pull: Record<string, unknown>): unknown => objectOf(pull.head)?.sha;
 
@@ -1760,8 +1755,7 @@ const recordPublication = (facts: PublishFacts, pull: Record<string, unknown>, p
     body_digest: sha256Of(publicBody),
     at: new Date().toISOString(),
   };
-  const publications = Array.isArray(stored.publications) ? [...stored.publications, record] : [record];
-  writeFileSync(launchPath, `${JSON.stringify({ ...stored, publications }, null, 2)}\n`);
+  writeLaunch(launchPath, { ...stored, publications: [...listOf(stored, "publications"), record] });
   return record;
 };
 
@@ -1919,8 +1913,7 @@ interface BodyConfig {
 }
 
 const bodyConfigOf = (worktree: string, base: string): BodyConfig | Problem => {
-  const shown = runQuiet("git", ["show", `${base}:.dotagents.json`], worktree);
-  const config = shown.status === 0 ? parseObject(shown.stdout) : null;
+  const config = baseConfigOf(worktree, base);
   const ciChecks = config?.ciChecks;
   if (config !== null && isShellOrArgv(config.check) && isUniqueNames(ciChecks) && ciChecks.length > 0) {
     return { check: config.check, ciChecks };
@@ -1960,7 +1953,7 @@ interface RequiredFirst {
 }
 
 const requiredLines = (stored: Record<string, unknown>, publicText: (value: string) => string): string[] => {
-  const reviews = (Array.isArray(stored.reviews) ? stored.reviews : []).map((entry) => objectOf(entry) ?? {});
+  const reviews = listOf(stored, "reviews").map((entry) => objectOf(entry) ?? {});
   const firsts = new Map<string, RequiredFirst>();
   for (const record of reviews) {
     for (const entry of Array.isArray(record.required) ? record.required : []) {
@@ -2137,8 +2130,7 @@ const captureTimeoutMs = (): number => {
 };
 
 const captureConfigOf = (worktree: string, base: string): CaptureConfig | null | Problem => {
-  const shown = runQuiet("git", ["show", `${base}:.dotagents.json`], worktree);
-  const config = shown.status === 0 ? parseObject(shown.stdout) : null;
+  const config = baseConfigOf(worktree, base);
   if (config !== null && isCapture(config.capture)) return config.capture as CaptureConfig | null;
   const detail = `The base commit ${base} of ${worktree} has no .dotagents.json with a capture that is null or {command, destination, required}.`;
   return { reason: "no-config", detail };
@@ -2198,12 +2190,6 @@ const setAsideOutput = (output: string): string | null => {
   }
 };
 
-const signalGroup = (pid: number, signal: NodeJS.Signals): void => {
-  try {
-    process.kill(-pid, signal);
-  } catch {}
-};
-
 const runInGroup = (argv: string[], cwd: string, timeoutMs: number | null): Promise<Shot | { error: string }> =>
   new Promise((done) => {
     const [file, ...args] = argv;
@@ -2228,10 +2214,10 @@ const runInGroup = (argv: string[], cwd: string, timeoutMs: number | null): Prom
       let killed: Promise<void> = Promise.resolve();
       const timer = timeoutMs === null ? undefined : setTimeout(() => {
         timedOut = true;
-        signalGroup(pid, "SIGTERM");
+        endGroup(pid, "SIGTERM");
         killed = new Promise((wake) =>
           setTimeout(() => {
-            signalGroup(pid, "SIGKILL");
+            endGroup(pid, "SIGKILL");
             wake();
           }, CAPTURE_KILL_DELAY_MS),
         );
@@ -2301,7 +2287,7 @@ const settleShot = async (shot: Shot, { worktree, root, launchPath, stored, capt
   const exitCode = shot.timedOut ? null : shot.code;
   const record = (outcome: string, extra: Record<string, unknown> = {}) => {
     const entry = { n, tree, output, outcome, exit_code: exitCode, log_tail: outcome === "passed" ? "" : logTailOf(shot.text), ...extra, at: new Date().toISOString() };
-    writeFileSync(launchPath, `${JSON.stringify({ ...stored, captures: [...captures, entry] }, null, 2)}\n`);
+    writeLaunch(launchPath, { ...stored, captures: [...captures, entry] });
     return entry;
   };
   const stopAfterStart = (outcome: string, { reason, detail }: Problem) => {
@@ -2337,14 +2323,14 @@ const capture = async ({ worktree }: WorktreeCall): Promise<Result> => {
   const { gate, launchPath, stored, launch } = prepared;
   if (finishedSessionOf(stored) === null) return stop("not-implemented", notImplemented(worktree, stored));
   const status = gateStatusOf(worktree);
-  if (status.status !== 0) return stop("not-done", `done_gate.ts status is not done: ${outputOf(status)}`);
+  if (status.status !== 0) return stop("not-done", notDoneOf(status));
   const config = captureConfigOf(worktree, launch.base);
   if (config === null) return { action: "capture", ok: true, decision: "not_configured" };
   if ("reason" in config) return stop(config.reason, config.detail);
   const tree = treeHash(gate.root);
   if (tree === null) return stop("capture-unavailable", `The working tree of ${worktree} has no tree id.`);
 
-  const captures = Array.isArray(stored.captures) ? stored.captures : [];
+  const captures = listOf(stored, "captures");
   const passed = lastPassedOf(captures);
   const decision = captureDecisionOf(worktree, launch.base, config, tree, passed);
   if (decision === "not_required") return { action: "capture", ok: true, decision, tree };
@@ -2371,13 +2357,13 @@ interface HeldAction {
 }
 
 const HELD_ACTIONS: Record<string, HeldAction> = {
-  implement: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS, ["--fresh"]), act: implement },
-  review: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: review },
-  repair: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: repair },
+  implement: { parse: (argv) => worktreeCall(argv, CHILD_FLAGS, ["--fresh"]), act: implement },
+  review: { parse: (argv) => worktreeCall(argv, CHILD_FLAGS), act: review },
+  repair: { parse: (argv) => worktreeCall(argv, CHILD_FLAGS), act: repair },
   agree: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: agree },
-  reread: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: reread },
-  continue: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: continueWork },
-  run: { parse: (argv) => worktreeCall(argv, MODEL_FLAGS), act: runRounds },
+  reread: { parse: (argv) => worktreeCall(argv, CHILD_FLAGS), act: reread },
+  continue: { parse: (argv) => worktreeCall(argv, CHILD_FLAGS), act: continueWork },
+  run: { parse: (argv) => worktreeCall(argv, CHILD_FLAGS), act: runRounds },
   publishable: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: publishable },
   published: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: published },
   body: { parse: (argv) => worktreeCall(argv, ["--worktree"]), act: body },
@@ -2386,7 +2372,7 @@ const HELD_ACTIONS: Record<string, HeldAction> = {
 };
 
 const gateDirOf = (worktree: string): string | null => {
-  const gate = existsSync(worktree) ? gateLocation(worktree) : null;
+  const gate = gateAt(worktree);
   return gate !== null && statSync(gate.dir, { throwIfNoEntry: false })?.isDirectory() ? gate.dir : null;
 };
 
@@ -2412,7 +2398,7 @@ const actOn = async (action: string, argv: string[]): Promise<Result | null> => 
 };
 
 const endCapture = () => {
-  if (captureGroup !== null) signalGroup(captureGroup, "SIGTERM");
+  if (captureGroup !== null) endGroup(captureGroup, "SIGTERM");
 };
 
 const ENDS_ON_SIGNAL: Record<string, (() => void)[]> = {
