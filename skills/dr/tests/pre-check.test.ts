@@ -6,52 +6,19 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { assertStdoutShape, fixture, runCli, type RunCliOptions } from "../../_lib/tests/_cli-fixture.ts";
+import { assertStdoutShape, fixture, runCli } from "../../_lib/tests/_cli-fixture.ts";
 import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
 import { formatScore, OUTPUT_KEYS } from "../scripts/pre-check.ts";
+import { type DrFixtureCase, runCliWithoutHostDrHome, withCaseDir } from "./_dr-cases.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TS_SCRIPT = join(HERE, "..", "scripts", "pre-check.ts");
 
-interface FixtureCase {
-  name: string;
-  setup: Record<string, string>;
-  argv: string[];
-  env: Record<string, string>;
-  exit: number;
-  stdout: string;
-  files_after: Record<string, string>;
-}
-
 const CASES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "pre-check-cases.json"), "utf8"),
-) as FixtureCase[];
+) as DrFixtureCase[];
 
 const DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
-
-function runCliWithoutHostDrHome(
-  scriptPath: string,
-  home: string,
-  stdin: string,
-  argv: readonly string[],
-  options: RunCliOptions,
-) {
-  return runCli(scriptPath, home, stdin, argv, { ...options, env: { DR_HOME: "", ...options.env } });
-}
-
-function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): T {
-  const dir = mkdtempSync(join(tmpdir(), "pre-check-case-"));
-  try {
-    for (const [relPath, content] of Object.entries(setup)) {
-      const full = join(dir, relPath);
-      mkdirSync(dirname(full), { recursive: true });
-      writeFileSync(full, content);
-    }
-    return fn(dir);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-}
 
 test("every frozen case in pre-check-cases.json reproduces the frozen exit code and stdout keys in the order OUTPUT_KEYS declares, with date compared by shape and dr_dir by the literal DR_DIR env value", () => {
   for (const entry of CASES) {

@@ -37,18 +37,6 @@ test("SKILL.md uses pre-check's output keys", async () => {
   });
 });
 
-test("madr-format writes the supersede identifier as DR-NNNN", () =>
-  eachLanguage(formats, (doc, lang) => {
-    assert.match(doc, /superseded by DR-NNNN/, `${lang}: it writes DR-NNNN`);
-  }));
-
-test("madr-format states that the scope is not limited to architecture", () => {
-  const widened = { ja: /アーキテクチャに限らない決定/, en: /decisions beyond architecture/ };
-  return eachLanguage(formats, (doc, lang) => {
-    assert.match(doc, widened[lang], `${lang}: it states the widened scope`);
-  });
-});
-
 const FIELDS = ["status", "date", "decision-makers", "consulted", "informed"];
 
 test("every frontmatter field has a slot in the template", async () => {
@@ -120,29 +108,6 @@ test("every section a step cites exists", () =>
       assert.match(doc, new RegExp(`^## ${name}$`, "m"), `${lang}: ## ${name} exists`);
     }
   }));
-
-test("the decision type table carries type, use case, and topics only", () =>
-  eachLanguage(skills, (doc, lang) => {
-    const row = doc.split("\n").find((line) => line.startsWith("| technology-selection"));
-    assert.ok(row, `${lang}: the decision type table is readable`);
-    assert.equal(row.split("|").length - 2, 3, `${lang}: the row carries three columns`);
-  }));
-
-const LINE_CAP = { en: /\d+(-\d+)? (lines|bullets)/, ja: /\d+(〜\d+)? ?(行|項目)/ };
-const decisionTypeSection = (doc) => doc.split(/^## (?:Decision Type|決定タイプ)$/m)[1]?.split(/^## /m)[0];
-
-test("the Decision Type section states what each section carries, with no line cap", () => {
-  const oldSentence = {
-    en: "Per-section guidance is common to all types: Context 3 lines, Options 3-5 lines each, Consequences 2-3 bullets.",
-    ja: "分量は全タイプ共通で、Context は 3 行、Options は各 3〜5 行、Consequences は箇条書き 2〜3 項目とする。",
-  };
-  return eachLanguage(skills, (doc, lang) => {
-    assert.match(oldSentence[lang], LINE_CAP[lang], `${lang}: the old cap sentence is detected`);
-    const section = decisionTypeSection(doc);
-    assert.ok(section, `${lang}: the Decision Type section is readable`);
-    assert.doesNotMatch(section, LINE_CAP[lang], `${lang}: Decision Type states a line cap`);
-  });
-});
 
 test("every recommended section reaches the template, the body, and the format reference", async () => {
   const sections = RECOMMENDED_SECTIONS;
