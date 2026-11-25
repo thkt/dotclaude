@@ -1,5 +1,4 @@
 /// <reference types="node" />
-import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -48,22 +47,4 @@ export function trackedFiles(repoRoot: string): string[] {
     trackedFilesCache.set(repoRoot, files);
   }
   return files;
-}
-
-export function assertDetectsAndMisses(
-  matches: (content: string) => boolean,
-  retiredName: string,
-): void {
-  const positiveControl = `# stale doc example: run workflows/${retiredName} < payload.json`;
-  assert.equal(
-    matches(positiveControl),
-    true,
-    `positive control (${retiredName}): a fixture line carrying the cue is detected`,
-  );
-  const masked = positiveControl.replace(retiredName, "REMOVED");
-  assert.equal(
-    matches(masked),
-    false,
-    `positive control (${retiredName}): the same line goes undetected once the cue is removed`,
-  );
 }

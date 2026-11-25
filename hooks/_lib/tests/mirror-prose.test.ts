@@ -7,7 +7,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { editedFile } from "../hook_payload.ts";
 import { check, checkEnglish } from "../mirror_prose.ts";
-import { trackedFiles } from "../../../tests/_retirement.ts";
+import { trackedFiles } from "../../../tests/_tracked-files.ts";
 
 function tempRoot(prefix: string): string {
   return mkdtempSync(path.join(tmpdir(), prefix));

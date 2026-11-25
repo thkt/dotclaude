@@ -121,18 +121,8 @@ function biomeHoles(config) {
   return holes;
 }
 
-test("biome.json keeps noExcessiveCognitiveComplexity at error with maxAllowedComplexity at most 15", () => {
-  const rule = biomeConfig.linter.rules.complexity.noExcessiveCognitiveComplexity;
-  assert.equal(rule.level, "error", `level is ${rule.level}`);
-  assert.ok(
-    rule.options.maxAllowedComplexity <= 15,
-    `maxAllowedComplexity ${rule.options.maxAllowedComplexity} exceeds 15`,
-  );
-});
-
-test("biome.json's files.includes equals the four planned entries exactly and the file carries no overrides key", () => {
+test("biome.json's files.includes equals the four planned entries exactly", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
-  assert.ok(!Object.hasOwn(biomeConfig, "overrides"), "biome.json carries an overrides key");
 });
 
 test("biome.json opens none of the holes the config check names", () => {

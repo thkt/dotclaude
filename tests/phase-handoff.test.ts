@@ -7,8 +7,6 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const skillsDir = join(root, ".ja", "skills");
 
-const CONTROL_ONLY = new Map<string, string>();
-
 const phaseSections = (doc: string) => {
   const parts = doc.split(/^## (Phase \d+[^\n]*)$/m);
   const out = new Map();
@@ -48,23 +46,12 @@ test("a Phase in a canonical .ja skill that hands something forward is named bac
     ...new Set(
       refs
         .filter((r) => r.to > r.from && !pairs.has(key(r.name, r.to, r.from)))
-        .map((r) => key(r.name, r.from, r.to))
-        .filter((k) => !CONTROL_ONLY.has(k)),
+        .map((r) => key(r.name, r.from, r.to)),
     ),
   ].sort();
   assert.deepEqual(
     unanswered,
     [],
-    `a forward reference with no landing point. Write the source into the receiving Phase, or add it to CONTROL_ONLY with the reason:\n${unanswered.join("\n")}`,
-  );
-});
-
-test("every CONTROL_ONLY entry still names a forward reference that exists", async () => {
-  const { pairs } = await crossReferences();
-  const stale = [...CONTROL_ONLY.keys()].filter((k) => !pairs.has(k)).sort();
-  assert.deepEqual(
-    stale,
-    [],
-    `CONTROL_ONLY holds entries that no longer occur:\n${stale.join("\n")}`,
+    `a forward reference with no landing point. Write the source into the receiving Phase:\n${unanswered.join("\n")}`,
   );
 });

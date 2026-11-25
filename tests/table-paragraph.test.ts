@@ -3,18 +3,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { trackedFiles } from "./_retirement.ts";
+import { trackedFiles } from "./_tracked-files.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SCANNED = ["agents", "rules", "skills", "docs"];
 const SKIPPED = new Set(["docs/decisions", "docs/research"]);
 
-const DERIVED_CONCLUSIONS = new Map<string, string>();
-
 const CONTINUES_A_BLOCK = /^(?:[|#>*-]|\d+[.)]\s)/;
 const OPENS_A_BLOCK = /^(?:[|*-]|\d+[.)]\s|```)/;
 
-const keyFor = (path: string, text: string) => `${path} :: ${text.split(/(?<=[。.])\s*/)[0]}`;
 const nextNonEmpty = (lines: string[], i: number) => {
   for (let j = i + 1; j < lines.length; j++) if (lines[j].trim()) return lines[j].trim();
   return "";
@@ -52,21 +49,16 @@ const paragraphsAfterTables = (source: string): { line: number; text: string }[]
 
 const scan = async () => {
   const offenders = [];
-  const seen = new Set();
   for (const prefix of ["", ".ja"]) {
     for (const dir of SCANNED) {
       for (const path of markdownUnder(join(root, prefix, dir))) {
         for (const { line, text } of paragraphsAfterTables(await readFile(path, "utf8"))) {
-          const key = keyFor(relative(root, path), text);
-          seen.add(key);
-          if (!DERIVED_CONCLUSIONS.has(key)) {
-            offenders.push(`${relative(root, path)}:${line} ${text.slice(0, 70)}`);
-          }
+          offenders.push(`${relative(root, path)}:${line} ${text.slice(0, 70)}`);
         }
       }
     }
   }
-  return { offenders, seen };
+  return { offenders };
 };
 
 test("no explanation sits below the table it explains", async () => {
@@ -83,16 +75,6 @@ test("historical originals are excluded while current docs pages remain scanned"
   const files = markdownUnder(join(root, "docs")).map((path) => relative(root, path));
   assert.ok(files.includes("docs/HOOKS.md"));
   assert.ok(!files.some((path) => path.startsWith("docs/research/")));
-});
-
-test("every DERIVED_CONCLUSIONS entry still names a paragraph that exists", async () => {
-  const { seen } = await scan();
-  const stale = [...DERIVED_CONCLUSIONS.keys()].filter((k) => !seen.has(k)).sort();
-  assert.deepEqual(
-    stale,
-    [],
-    `DERIVED_CONCLUSIONS holds entries that no longer occur:\n${stale.join("\n")}`,
-  );
 });
 
 test("the classifier separates a trailing explanation from the shapes that are not one", () => {
