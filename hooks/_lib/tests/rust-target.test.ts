@@ -1,34 +1,16 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { clippyOutput, MAX_FINDINGS } from "../rust_target.ts";
+import { installStub, withEnv } from "./_stub-bin.ts";
 
 const EDITED_RELATIVE = "src/edited.rs";
 
 function makeFixtureRoot(): string {
   return mkdtempSync(path.join(tmpdir(), "rust-target-tests-"));
-}
-
-function installStubCargo(root: string, script: string): string {
-  const binDir = path.join(root, "bin");
-  mkdirSync(binDir);
-  const stub = path.join(binDir, "cargo");
-  writeFileSync(stub, script);
-  chmodSync(stub, 0o755);
-  return binDir;
-}
-
-function withOnlyPath<T>(binDir: string, fn: () => T): T {
-  const original = process.env.PATH;
-  process.env.PATH = binDir;
-  try {
-    return fn();
-  } finally {
-    process.env.PATH = original;
-  }
 }
 
 test("a clippy run yielding more than the cap returns exactly the cap, cut after collecting the whole output", () => {
@@ -45,9 +27,9 @@ test("a clippy run yielding more than the cap returns exactly the cap, cut after
     "echo 'src/edited.rs:1:1: warning: the edited file, last line of the raw output'",
     "exit 0",
   ].join("\n");
-  const binDir = installStubCargo(root, script);
+  const binDir = installStub(root, "cargo", script);
 
-  const result = withOnlyPath(binDir, () =>
+  const result = withEnv({ PATH: binDir }, () =>
     clippyOutput("PreToolUse", root, path.join(root, EDITED_RELATIVE)),
   );
 
@@ -74,7 +56,7 @@ test("a missing cargo binary leaves the hook silent instead of reporting a failu
   const emptyBinDir = path.join(root, "empty-bin");
   mkdirSync(emptyBinDir);
 
-  const result = withOnlyPath(emptyBinDir, () =>
+  const result = withEnv({ PATH: emptyBinDir }, () =>
     clippyOutput("PreToolUse", root, path.join(root, EDITED_RELATIVE)),
   );
 
@@ -92,9 +74,9 @@ test("an output larger than node's default maxBuffer is not truncated", () => {
     "echo 'src/edited.rs:1:1: warning: printed after the default 1MB maxBuffer boundary'",
     "exit 0",
   ].join("\n");
-  const binDir = installStubCargo(root, script);
+  const binDir = installStub(root, "cargo", script);
 
-  const result = withOnlyPath(binDir, () =>
+  const result = withEnv({ PATH: binDir }, () =>
     clippyOutput("PreToolUse", root, path.join(root, EDITED_RELATIVE)),
   );
 

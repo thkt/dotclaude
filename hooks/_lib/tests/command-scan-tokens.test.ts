@@ -17,9 +17,13 @@ interface FrozenCase {
   readonly raises: string | null;
 }
 
-function loadFrozenCases(): Map<string, FrozenCase> {
+function loadFrozenRows(): FrozenCase[] {
   const parsed = JSON.parse(readFileSync(FIXTURES_PATH, "utf8")) as { cases: FrozenCase[] };
-  return new Map(parsed.cases.map((row) => [row.command, row]));
+  return parsed.cases;
+}
+
+function loadFrozenCases(): Map<string, FrozenCase> {
+  return new Map(loadFrozenRows().map((row) => [row.command, row]));
 }
 
 function frozenRow(frozen: Map<string, FrozenCase>, command: string): FrozenCase {
@@ -28,10 +32,17 @@ function frozenRow(frozen: Map<string, FrozenCase>, command: string): FrozenCase
   return row;
 }
 
-test("every corpus case reproduces the frozen commands_with_env output, compared as parsed JSON", () => {
+test("the corpus carries exactly the frozen table's commands, and every corpus case reproduces the frozen commands_with_env output, compared as parsed JSON", () => {
   const frozen = loadFrozenCases();
   const corpus = commandScanCorpus();
   assert.ok(corpus.length > 0, "the corpus must not be empty");
+  assert.deepEqual(
+    corpus.map((c) => c.command).sort(),
+    loadFrozenRows()
+      .map((row) => row.command)
+      .sort(),
+    "the corpus commands differ from the frozen table's commands",
+  );
 
   for (const { command } of corpus) {
     const row = frozenRow(frozen, command);

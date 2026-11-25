@@ -5,22 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { isExecutableFile, tsRuntime, which } from "../executable.ts";
-
-function withEnv<T>(vars: Record<string, string | undefined>, body: () => T): T {
-  const saved = Object.fromEntries(Object.keys(vars).map((key) => [key, process.env[key]]));
-  try {
-    for (const [key, value] of Object.entries(vars)) {
-      if (value === undefined) delete process.env[key];
-      else process.env[key] = value;
-    }
-    return body();
-  } finally {
-    for (const [key, value] of Object.entries(saved)) {
-      if (value === undefined) delete process.env[key];
-      else process.env[key] = value;
-    }
-  }
-}
+import { withEnv } from "./_stub-bin.ts";
 
 function scratch(): { dir: string; exec: (name: string) => string; plain: (name: string) => string } {
   const dir = mkdtempSync(join(tmpdir(), "hooks-executable-"));

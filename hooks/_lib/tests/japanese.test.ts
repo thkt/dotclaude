@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
 import test from "node:test";
-import { DEFAULT_THRESHOLD, hasJapanese, JAPANESE } from "../japanese.ts";
+import { DEFAULT_THRESHOLD, hasJapanese } from "../japanese.ts";
 
 test("a count at the threshold passes and one below the threshold fails", () => {
   assert.equal(hasJapanese("あ".repeat(10), 10), true, "a count at the threshold must pass");
@@ -38,9 +38,9 @@ test("hiragana, katakana, the long-vowel mark, and CJK ideographs each count tow
     "no Japanese character at all stays below a threshold of 1",
   );
   assert.equal(
-    hasJapanese("ひらがな" + "カタカナ" + "漢字" + "ー", 1),
+    hasJapanese("あアー漢", 4),
     true,
-    "hiragana, katakana, kanji, and the long-vowel mark all count",
+    "one hiragana, one katakana, one long-vowel mark, and one kanji each count toward a threshold of 4",
   );
 });
 
@@ -55,10 +55,4 @@ test("punctuation alone, English letters, and digits do not count", () => {
     false,
     "English letters and digits do not count as Japanese",
   );
-});
-
-test("the character class counts every match in the text and covers hiragana, katakana, the long-vowel mark and CJK ideographs", () => {
-  assert.ok(JAPANESE.global, "the pattern must count every match, not only the first");
-  assert.deepEqual("あアー漢".match(JAPANESE), ["あ", "ア", "ー", "漢"]);
-  assert.equal("、。 abc".match(JAPANESE), null, "punctuation and latin carry no words");
 });

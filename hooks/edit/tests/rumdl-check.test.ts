@@ -1,12 +1,13 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { run } from "../../_lib/tests/_hook-harness.ts";
+import { installStub } from "../../_lib/tests/_stub-bin.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "rumdl_check.ts");
@@ -14,14 +15,6 @@ const HOOK = path.join(HERE, "..", "rumdl_check.ts");
 const VIOLATING_MD = "# Heading\n## Another Heading\n";
 const FINDING = "violation.md:2:1 [MD022] headings should be surrounded by blank lines";
 
-function installStubRumdl(root: string): string {
-  const binDir = path.join(root, "bin");
-  mkdirSync(binDir, { recursive: true });
-  const stub = path.join(binDir, "rumdl");
-  writeFileSync(stub, ["#!/bin/sh", `echo "${FINDING}"`, "exit 1"].join("\n") + "\n");
-  chmodSync(stub, 0o755);
-  return binDir;
-}
 
 function runHook(filePath: string, env: NodeJS.ProcessEnv): string {
   const payload = { tool_name: "Write", tool_input: { file_path: filePath } };
@@ -33,7 +26,7 @@ test("an edited markdown file reaches rumdl and its findings arrive through noti
   const mdPath = path.join(root, "violation.md");
   writeFileSync(mdPath, VIOLATING_MD);
 
-  const binDir = installStubRumdl(root);
+  const binDir = installStub(root, "rumdl", ["#!/bin/sh", `echo "${FINDING}"`, "exit 1"].join("\n") + "\n");
   const withRumdl = { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` };
   const out = runHook(mdPath, withRumdl);
   assert.ok(

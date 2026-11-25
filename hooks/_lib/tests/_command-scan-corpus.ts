@@ -72,7 +72,7 @@ const LEXICAL_TEMPLATES: Readonly<Record<string, (char: string) => string>> = {
   },
 };
 
-export function lexicalCases(): CorpusCase[] {
+function lexicalCases(): CorpusCase[] {
   const cases: CorpusCase[] = [];
   SPECIAL_CHARACTERS.forEach((char, charIndex) => {
     const label = CHAR_LABELS[charIndex];
@@ -101,7 +101,7 @@ function fakeMarkerHeredoc(terminated: boolean): string {
   return lines.join("\n");
 }
 
-export function heredocCases(): CorpusCase[] {
+function heredocCases(): CorpusCase[] {
   const cases: CorpusCase[] = [];
   for (const form of HEREDOC_FORMS) {
     for (const terminated of [true, false]) {
@@ -155,7 +155,7 @@ function envAssignmentCases(): CorpusCase[] {
   ];
 }
 
-export function resolveCases(): CorpusCase[] {
+function resolveCases(): CorpusCase[] {
   const cases: CorpusCase[] = [];
   for (const wrapper of WRAPPERS) {
     for (const form of WRAPPER_FORMS) {

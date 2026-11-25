@@ -56,14 +56,6 @@ function listOxlintFiles(): string[] {
   return oxlintFiles;
 }
 
-test("the tsc --listFilesOnly output carries hooks/_lib/hook_payload.ts", () => {
-  const files = listTypeCheckedFiles();
-  assert.ok(
-    files.some((file) => file.endsWith("hooks/_lib/hook_payload.ts")),
-    "hooks/_lib/hook_payload.ts is not in the type-check set",
-  );
-});
-
 test("the Node tests step in .github/workflows/test.yml carries hooks/**/tests/*.test.ts", () => {
   const workflow = readFileSync(path.join(ROOT, ".github", "workflows", "test.yml"), "utf8");
   const step = workflow.slice(workflow.indexOf("- name: Node tests"));

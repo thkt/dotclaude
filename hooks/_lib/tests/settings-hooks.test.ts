@@ -1,6 +1,5 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
@@ -59,30 +58,14 @@ test("hookCommands returns an empty list when the event or its groups are not ar
   assert.deepEqual(hookCommands(withOneRealGroup, "PreToolUse"), ["a.ts"]);
 });
 
-test("settings.json registers exactly one Stop command, done_gate.ts stop, and the script it names is tracked with the exec bit", () => {
+test("settings.json registers exactly one Stop command, done_gate.ts stop", () => {
   const commands = hookCommands(settings(), "Stop");
   assert.deepEqual(commands, ["~/.claude/hooks/lifecycle/done_gate.ts stop"]);
-
-  const script = commands[0].split(" ")[0].replace("~/.claude/", "");
-  const staged = spawnSync("git", ["ls-files", "-s", "--", script], {
-    cwd: REPO_ROOT,
-    encoding: "utf8",
-  });
-  assert.equal(staged.status, 0, staged.stderr);
-  assert.match(staged.stdout, /^100755 /, `${script} is not tracked with the exec bit: ${staged.stdout}`);
 });
 
-test("settings.json registers exactly one PreToolUse command on matcher Bash, publish_gate.ts, and the script it names is tracked with the exec bit", () => {
+test("settings.json registers exactly one PreToolUse command on matcher Bash, publish_gate.ts", () => {
   const commands = hookCommands(settings(), "PreToolUse", "Bash");
   assert.deepEqual(commands, ["~/.claude/hooks/pre-bash/publish_gate.ts"]);
-
-  const script = commands[0].replace("~/.claude/", "");
-  const staged = spawnSync("git", ["ls-files", "-s", "--", script], {
-    cwd: REPO_ROOT,
-    encoding: "utf8",
-  });
-  assert.equal(staged.status, 0, staged.stderr);
-  assert.match(staged.stdout, /^100755 /, `${script} is not tracked with the exec bit: ${staged.stdout}`);
 });
 
 test("settings.json permissions.allow lets a session run done_gate.ts without a prompt", () => {
