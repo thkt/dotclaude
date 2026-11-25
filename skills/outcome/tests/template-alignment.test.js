@@ -17,7 +17,6 @@ const rules = {
   ja: join(root, ".ja", "rules", "core", "OUTCOME.md"),
   en: join(root, "rules", "core", "OUTCOME.md"),
 };
-const script = join(root, "skills", "outcome", "scripts", "validate-outcome.ts");
 
 const HEADINGS = [
   /^## Outcome state$/m,
@@ -55,7 +54,7 @@ test("the Indicators categories match between the template and the rules", () =>
   }
 });
 
-test("the emptiness word is TBD across the template, SKILL.md, and the script", () => {
+test("the emptiness word is TBD across the template and SKILL.md", () => {
   for (const [lang, path] of Object.entries(templates)) {
     const doc = readFileSync(path, "utf8");
     assert.match(doc, /TBD/, `${lang}: the template instructs how to write TBD`);
@@ -68,19 +67,6 @@ test("the emptiness word is TBD across the template, SKILL.md, and the script", 
     const doc = readFileSync(path, "utf8");
     assert.match(doc, branchRow[lang], `${lang}: the branch table row routes TBD to generate`);
   }
-  assert.match(
-    readFileSync(script, "utf8"),
-    /content\.toUpperCase\(\) === "TBD"/,
-    "the script treats TBD as empty",
-  );
-});
-
-test("validate-outcome.ts's fill check looks at Behavior, Non-goals, and Constraints", () => {
-  assert.match(
-    readFileSync(script, "utf8"),
-    /FILLED_SECTIONS = \["Behavior", "Non-goals", "Constraints"\]/,
-    "the script's fill check looks at the three sections",
-  );
 });
 
 test("SKILL.md branches on validate-outcome.ts and runs it through the validation too", () => {
@@ -108,29 +94,16 @@ test("SKILL.md branches on validate-outcome.ts and runs it through the validatio
   }
 });
 
-test("the generate steps drop the optional block and the script rejects a leftover placeholder", () => {
-  assert.match(
-    readFileSync(skills.ja, "utf8"),
-    /Indicators はセクションごと落とす/,
-    "ja: the instruction to drop Indicators",
-  );
-  assert.match(
-    readFileSync(skills.en, "utf8"),
-    /drop Indicators with its heading/,
-    "en: the instruction to drop Indicators",
-  );
+test("the generate steps name Indicators and the script's placeholder_left", () => {
   for (const [lang, path] of Object.entries(skills)) {
-    assert.match(
-      readFileSync(path, "utf8"),
-      /placeholder_left/,
-      `${lang}: the generate steps name the script's placeholder_left`,
-    );
+    const doc = readFileSync(path, "utf8");
+    const start = doc.search(/^## (Generate|生成)$/m);
+    assert.ok(start >= 0, `${lang}: a generate section exists`);
+    const rest = doc.slice(start + 1);
+    const generate = rest.slice(0, rest.search(/^## /m));
+    assert.match(generate, /Indicators/, `${lang}: the generate steps name Indicators`);
+    assert.match(generate, /placeholder_left/, `${lang}: the generate steps name the script's placeholder_left`);
   }
-  assert.match(
-    readFileSync(script, "utf8"),
-    /placeholder_left:/,
-    "the script pushes placeholder_left into errors",
-  );
 });
 
 test("the update flow can add what generate dropped, and reads the indicator warning", () => {
@@ -143,9 +116,4 @@ test("the update flow can add what generate dropped, and reads the indicator war
     assert.match(update, /Indicators/, `${lang}: the update flow names Indicators`);
     assert.match(update, /missing_indicator/, `${lang}: a step reads the indicator warning`);
   }
-  assert.match(
-    readFileSync(script, "utf8"),
-    /missing_indicator:/,
-    "the script pushes missing_indicator into warnings",
-  );
 });

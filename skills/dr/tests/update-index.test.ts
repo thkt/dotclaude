@@ -6,52 +6,19 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { runCli, type RunCliOptions } from "../../_lib/tests/_cli-fixture.ts";
+import { runCli } from "../../_lib/tests/_cli-fixture.ts";
 import { withTempRepo } from "../../_lib/tests/_git-repo.ts";
 import { STATUS_SECTIONS } from "../scripts/update-index.ts";
+import { type DrFixtureCase, runCliWithoutHostDrHome, withCaseDir } from "./_dr-cases.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TS_SCRIPT = join(HERE, "..", "scripts", "update-index.ts");
 
-interface FixtureCase {
-  name: string;
-  setup: Record<string, string>;
-  argv: string[];
-  env: Record<string, string>;
-  exit: number;
-  stdout: string;
-  files_after: Record<string, string>;
-}
-
 const CASES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "update-index-cases.json"), "utf8"),
-) as FixtureCase[];
+) as DrFixtureCase[];
 
 const DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
-
-function runCliWithoutHostDrHome(
-  scriptPath: string,
-  home: string,
-  stdin: string,
-  argv: readonly string[],
-  options: RunCliOptions,
-) {
-  return runCli(scriptPath, home, stdin, argv, { ...options, env: { DR_HOME: "", ...options.env } });
-}
-
-function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): T {
-  const dir = mkdtempSync(join(tmpdir(), "update-index-case-"));
-  try {
-    for (const [relPath, content] of Object.entries(setup)) {
-      const full = join(dir, relPath);
-      mkdirSync(dirname(full), { recursive: true });
-      writeFileSync(full, content);
-    }
-    return fn(dir);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-}
 
 function assertReadmeDateShape(actual: string, expectedWithPlaceholder: string, label: string): void {
   const [prefix, suffix] = expectedWithPlaceholder.split("<date>");

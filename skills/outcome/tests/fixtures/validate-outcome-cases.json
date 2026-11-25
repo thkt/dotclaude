@@ -31,6 +31,17 @@
     "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"empty\",\n  \"flow\": \"generate\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"placeholder=none\",\n    \"behavior=unfilled\",\n    \"all_sections=unfilled\",\n    \"indicators=omitted\"\n  ]\n}\n"
   },
   {
+    "name": "tbd_behavior_with_filled_non_goals_is_empty_without_all_sections_unfilled",
+    "files": {
+      "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\nTBD\n\n## Non-goals\n\n- Rewriting the release pipeline.\n\n## Constraints\n\nTBD\n"
+    },
+    "argv": [
+      "<target-path>"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"file\": \"<target-path>\",\n  \"state\": \"empty\",\n  \"flow\": \"generate\",\n  \"errors\": [],\n  \"warnings\": [],\n  \"checks\": [\n    \"section:Outcome state=ok\",\n    \"section:Behavior=ok\",\n    \"section:Non-goals=ok\",\n    \"section:Constraints=ok\",\n    \"placeholder=none\",\n    \"behavior=unfilled\",\n    \"indicators=omitted\"\n  ]\n}\n"
+  },
+  {
     "name": "filled_behavior_with_tbd_elsewhere_routes_to_update",
     "files": {
       "OUTCOME.md": "# OUTCOME\n\n## Outcome state\n\n### Behavior\n\n- A user sees the total.\n\n## Non-goals\n\nTBD\n\n## Constraints\n\nTBD\n"

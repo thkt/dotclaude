@@ -10,17 +10,14 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".."
 const SIDES = [
   {
     root: ".ja/skills/dr",
-    childLine:
-      "  - {確かめた。動かしたか読んだもの、その版と日付、分かったこと | 確かめていない。その理由 | 方針による。どの方針か}",
-    prosAndConsGuide: "{選ばなかった option ごとに必須。選んだ option は任意。option ごとに以下を繰り返す}",
+    openerClause: { from: "子の行は", to: "のどれかで始める" },
+    prosAndConsMarker: "必須",
     notVerifiedWord: "`確かめていない。`",
   },
   {
     root: "skills/dr",
-    childLine:
-      "  - {Verified. What was run or read, its version and date, and what it showed | Not verified. Why | By policy. Which policy}",
-    prosAndConsGuide:
-      "{Required for each rejected option, optional for the chosen one. Repeat the following per option}",
+    openerClause: { from: "opens with", to: "`. " },
+    prosAndConsMarker: "Required",
     notVerifiedWord: "`Not verified.`",
   },
 ];
@@ -43,20 +40,46 @@ function linesAfter(section: string[], prefix: string): string[] {
   return next;
 }
 
+function draftRow(root: string): string {
+  const row = readLines(`${root}/SKILL.md`).find((line) => line.startsWith("| 4    | Draft     |"));
+  assert.ok(row, `${root}: SKILL.md has a Draft row`);
+  return row;
+}
+
+function childLineOpeners(row: string, clause: { from: string; to: string }): string[] {
+  const start = row.indexOf(clause.from);
+  assert.notEqual(start, -1, `Draft row lacks ${clause.from}`);
+  const end = row.indexOf(clause.to, start);
+  assert.notEqual(end, -1, `Draft row lacks ${clause.to} after ${clause.from}`);
+  return [...row.slice(start, end + 1).matchAll(/`([^`]+)`/g)].map((m) => m[1]);
+}
+
+function assertChildLine(next: string, openers: string[]): void {
+  assert.ok(next.startsWith("  - {"), next);
+  for (const opener of openers) {
+    assert.ok(next.includes(opener), `${opener} missing from ${next}`);
+  }
+}
+
 for (const side of SIDES) {
   const template = readLines(`${side.root}/templates/madr-template.md`);
+  const openers = childLineOpeners(draftRow(side.root), side.openerClause);
+
+  test(`${side.root} SKILL.md Draft row lists three child-line openers`, () => {
+    assert.equal(openers.length, 3, openers.join(" / "));
+  });
 
   test(`${side.root} template puts the verification child line right under each Decision Drivers bullet`, () => {
     for (const next of linesAfter(sectionLines(template, "## Decision Drivers"), "- ")) {
-      assert.equal(next, side.childLine);
+      assertChildLine(next, openers);
     }
   });
 
   test(`${side.root} template requires Pros and Cons for rejected options and puts the child line right under each Bad, because`, () => {
     const section = sectionLines(template, "## Pros and Cons of the Options");
-    assert.ok(section.includes(side.prosAndConsGuide));
+    assert.ok(section.some((line) => line.startsWith("{") && line.includes(side.prosAndConsMarker)));
     for (const next of linesAfter(section, "- Bad, because")) {
-      assert.equal(next, side.childLine);
+      assertChildLine(next, openers);
     }
   });
 
@@ -67,10 +90,9 @@ for (const side of SIDES) {
   });
 
   test(`${side.root} SKILL.md Draft row names the not-verified opener, proposed status, and AskUserQuestion`, () => {
-    const draftRow = readLines(`${side.root}/SKILL.md`).find((line) => line.startsWith("| 4    | Draft     |"));
-    assert.ok(draftRow);
+    const row = draftRow(side.root);
     for (const word of [side.notVerifiedWord, "`proposed`", "AskUserQuestion"]) {
-      assert.ok(draftRow.includes(word), word);
+      assert.ok(row.includes(word), word);
     }
   });
 }

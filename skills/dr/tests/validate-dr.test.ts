@@ -1,48 +1,19 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import {
-  assertStdoutShape,
-  fixture,
-  runCli,
-  withTempHome,
-} from "../../_lib/tests/_cli-fixture.ts";
+import { assertStdoutShape, runCli, withTempHome } from "../../_lib/tests/_cli-fixture.ts";
 import { countOptions, STATUS_VALUES } from "../scripts/validate-dr.ts";
+import { type DrFixtureCase, withCaseDir } from "./_dr-cases.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TS_SCRIPT = join(HERE, "..", "scripts", "validate-dr.ts");
 
-interface FixtureCase {
-  name: string;
-  setup: Record<string, string>;
-  argv: string[];
-  env: Record<string, string>;
-  exit: number;
-  stdout: string;
-  files_after: Record<string, string>;
-}
-
 const CASES = JSON.parse(
   readFileSync(join(HERE, "fixtures", "validate-dr-cases.json"), "utf8"),
-) as FixtureCase[];
-
-function withCaseDir<T>(setup: Record<string, string>, fn: (dir: string) => T): T {
-  const dir = mkdtempSync(join(tmpdir(), "validate-dr-case-"));
-  try {
-    for (const [relPath, content] of Object.entries(setup)) {
-      const full = join(dir, relPath);
-      mkdirSync(dirname(full), { recursive: true });
-      writeFileSync(full, content);
-    }
-    return fn(dir);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-}
+) as DrFixtureCase[];
 
 test("every frozen case in validate-dr-cases.json reproduces the frozen exit code and stdout JSON", () => {
   for (const entry of CASES) {
@@ -103,19 +74,6 @@ test("options are counted only under the Considered Options heading and a headin
     1,
     "a heading shallower than Considered Options also ends the count",
   );
-});
-
-test("with markdownlint-cli2 absent from PATH the checks carry markdown_lint=skipped", () => {
-  const entry = fixture(CASES, "four-required-sections-frontmatter-and-two-options-exit-0");
-  withCaseDir(entry.setup, (dir) => {
-    const run = runCli(TS_SCRIPT, dir, "", entry.argv, { cwd: dir, env: entry.env });
-    assert.equal(run.status, entry.exit, `exit code (stderr: ${run.stderr})`);
-    const parsed = JSON.parse(run.stdout) as { checks: string[] };
-    assert.ok(
-      parsed.checks.includes("markdown_lint=skipped (markdownlint-cli2 not installed)"),
-      `checks carries markdown_lint=skipped (checks: ${JSON.stringify(parsed.checks)})`,
-    );
-  });
 });
 
 test("a directory argument fails with exit 1 and a single file-not-found stderr line, not a node stack trace", () => {

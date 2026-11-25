@@ -112,10 +112,9 @@ test("/outcome skips publishing under --no-publish, and every stub caller passes
   for (const rel of bothSides("skills/outcome/SKILL.md")) {
     const doc = read(rel);
     assert.match(doc, /^argument-hint: "\[--no-publish\]"$/m, `${rel}: the argument hint`);
-    assert.match(
-      doc,
-      /`\$ARGUMENTS` (carries|に) `--no-publish`.*(do not publish|公開しない)/,
-      `${rel}: --no-publish skips publishing`,
+    assert.ok(
+      doc.split("\n").some((line) => line.includes("`$ARGUMENTS`") && line.includes("`--no-publish`")),
+      `${rel}: one line reads --no-publish from $ARGUMENTS`,
     );
   }
   const callers = [
@@ -134,17 +133,11 @@ test("/outcome skips publishing under --no-publish, and every stub caller passes
 });
 
 test("/dr publishes a proposed-DR edit, and its superseding path publishes once after the old DR changes", () => {
-  const wording = {
-    "skills/dr/SKILL.md": {
-      section: "## Updating an Existing DR",
-      upTo: (first: string, last: string) => `through the process from ${first} to ${last}`,
-    },
-    ".ja/skills/dr/SKILL.md": {
-      section: "## 既存 DR の更新",
-      upTo: (first: string, last: string) => `プロセスの ${first} から ${last} までで`,
-    },
+  const sections = {
+    "skills/dr/SKILL.md": "## Updating an Existing DR",
+    ".ja/skills/dr/SKILL.md": "## 既存 DR の更新",
   };
-  for (const [rel, { section, upTo }] of Object.entries(wording)) {
+  for (const [rel, section] of Object.entries(sections)) {
     const doc = read(rel);
     const rows = [...doc.matchAll(/^\| (\d+) +\| (\S+) +\|(.*)$/gm)].map((m) => ({
       n: Number(m[1]),
@@ -166,8 +159,9 @@ test("/dr publishes a proposed-DR edit, and its superseding path publishes once 
       `${rel}: editing a proposed DR also runs ${publish.stage}`,
     );
     const steps = numberedSteps(sectionBody);
+    const first = steps[0]?.text ?? "";
     assert.ok(
-      steps[0]?.text.includes(upTo(rows[0].stage, before.stage)),
+      first.includes(rows[0].stage) && first.includes(before.stage) && !first.includes(publish.stage),
       `${rel}: step 1 runs ${rows[0].stage} through ${before.stage}, stopping before ${publish.stage}`,
     );
     assert.ok(

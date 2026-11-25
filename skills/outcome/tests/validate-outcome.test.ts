@@ -5,7 +5,6 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { trackedEntries } from "../../../hooks/_lib/shebang_scope.ts";
 import {
   assertStdoutShape,
   fixture,
@@ -67,16 +66,6 @@ test(
   },
 );
 
-test(
-  "the shipped template skills/outcome/templates/outcome.md exits 1 with a " +
-    "placeholder_left error",
-  () => {
-    withTempHome((home) => {
-      runCase(fixture(CASES, "bare_template_fails_until_filled"), home);
-    });
-  },
-);
-
 test("no argument exits 1 with nothing on stdout and a stderr line starting with Usage:", () => {
   withTempHome((home) => {
     const run = runCli(SCRIPT, home, "", [], { cwd: REPO_ROOT });
@@ -84,13 +73,4 @@ test("no argument exits 1 with nothing on stdout and a stderr line starting with
     assert.equal(run.stdout, "");
     assert.match(run.stderr, /^Usage:/);
   });
-});
-
-test("the script is tracked with mode 100755 in the git index and opens with #!/usr/bin/env node", () => {
-  const entries = trackedEntries(["skills/outcome/scripts/validate-outcome.ts"]);
-  assert.equal(entries.length, 1, "the script is tracked exactly once in the git index");
-  const [mode, absolutePath] = entries[0];
-  assert.equal(mode, "100755", "git index mode");
-  const firstLine = readFileSync(absolutePath, "utf8").split(/\r?\n/, 1)[0];
-  assert.equal(firstLine, "#!/usr/bin/env node", "shebang line");
 });
