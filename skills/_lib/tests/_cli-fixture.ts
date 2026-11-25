@@ -1,11 +1,9 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { historyPath } from "../cli.ts";
-export { historyPath };
 
 export interface FixtureCase {
   name: string;
@@ -17,7 +15,7 @@ export interface FixtureCase {
   rows?: Array<Record<string, unknown> | string>;
 }
 
-export interface CliRun {
+interface CliRun {
   status: number | null;
   stdout: string;
   stderr: string;
@@ -53,7 +51,7 @@ export function withTempHome<T>(fn: (home: string) => T): T {
   }
 }
 
-export function assertRowShape(
+function assertRowShape(
   actual: Record<string, unknown>,
   expected: Record<string, unknown>,
   shapeChecks: Record<string, RegExp>,
@@ -100,35 +98,4 @@ export function fixture<T extends { name: string }>(fixtures: readonly T[], name
   const found = fixtures.find((entry) => entry.name === name);
   assert.ok(found, `fixture case ${name} exists in the loaded fixtures`);
   return found as T;
-}
-
-export function seedHistory(home: string, name: string, lines: readonly string[]): string {
-  const path = historyPath(home, name);
-  writeFileSync(path, lines.map((line) => `${line}\n`).join(""));
-  return path;
-}
-
-export function readLines(path: string): string[] {
-  if (!existsSync(path)) return [];
-  return readFileSync(path, "utf8")
-    .split("\n")
-    .filter((line) => line.trim() !== "");
-}
-
-export function assertRowLine(
-  actualLine: string,
-  expectedRow: Record<string, unknown> | string,
-  shapeChecks: Record<string, RegExp>,
-  label: string,
-): void {
-  if (typeof expectedRow === "string") {
-    assert.equal(actualLine, expectedRow, `${label}: raw line`);
-    return;
-  }
-  assertRowShape(
-    JSON.parse(actualLine) as Record<string, unknown>,
-    expectedRow,
-    shapeChecks,
-    label,
-  );
 }
