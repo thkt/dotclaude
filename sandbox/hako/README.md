@@ -37,10 +37,12 @@ api.github.com registry.npmjs.org`; put only the new agent's own domains in its 
 node:node ...` block that currently lists `/workspace /home/node/.claude
 /home/node/.codex`. Skipping this leaves the agent's named volume mounted on a
    root-owned directory.
-4. **Tests**: add a test file mirroring `tests/agents-codex.test.sh`'s shape (exec/auth-dir/
-   allowlist resolution, then the full `hako.sh` -> `container` -> `entrypoint.sh` ->
-   `init-firewall.sh` -> `agents.sh` chain with the new agent's stub) so the new row's
-   behavior is under the same coverage the existing two rows have.
+4. **Tests**: add the new agent's row to the agent list in `tests/agents.test.sh` (name, a
+   word its exec command carries, auth directory) and to the agent list in
+   `tests/hako-seam.test.sh` (name, the flag its exec command carries). The loops over those
+   lists cover the new row with the same exec/auth-dir resolution and the full `hako.sh` ->
+   `container` -> `entrypoint.sh` -> `init-firewall.sh` -> `agents.sh` chain the existing two
+   rows have.
 
 No change to `hako.sh`, `entrypoint.sh`, or `init-firewall.sh` is expected; if one turns out
 to be necessary, that is a signal the third agent needs something the table-driven design
