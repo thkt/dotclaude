@@ -249,6 +249,7 @@ export interface Step {
   reply?: Record<string, unknown> | string;
   exit?: number;
   edit?: string;
+  git?: string[][];
   issue?: Record<string, unknown>;
 }
 
@@ -289,6 +290,7 @@ if (name === "self" || name === "independent") {
 }
 const step = JSON.parse(fs.readFileSync(logs + "/plan.json", "utf8"))[name] || {};
 if (step.edit) fs.writeFileSync(step.edit, "changed by the reviewer\\n");
+for (const argv of step.git || []) require("node:child_process").execFileSync("git", argv, { stdio: "ignore" });
 if (step.issue) fs.writeFileSync(logs + "/gh-reply.json", JSON.stringify(step.issue));
 if (step.reply !== undefined) process.stdout.write(typeof step.reply === "string" ? step.reply : JSON.stringify(step.reply));
 process.exit(step.exit || 0);
