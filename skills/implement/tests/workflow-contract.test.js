@@ -145,9 +145,9 @@ test("the skill does not route an Issue by its Plan section", () => {
 
 test("the six procedure documents name launch.ts and its stop reasons, not the retired workflow and host", () => {
   const retired = /\bworkflows?\b|\bhost\b|human-decision-required|repair-no-progress|needs_host/i;
-  const launch = readFileSync(join(root, "skills", "implement", "scripts", "launch.ts"), "utf8");
+  const rounds = readFileSync(join(root, "skills", "implement", "scripts", "rounds.ts"), "utf8");
   for (const reason of ["disagreement", "not-converging"])
-    assert.ok(launch.includes(`reason: "${reason}"`), `launch.ts no longer stops as ${reason}`);
+    assert.ok(rounds.includes(`reason: "${reason}"`), `rounds.ts no longer stops as ${reason}`);
   assert.match("the workflow stops", retired);
   assert.doesNotMatch("launch.ts stops", retired);
   for (const prefix of [[], [".ja"]])
