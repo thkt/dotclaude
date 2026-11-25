@@ -15,7 +15,7 @@
       "hook_event_name": "PostToolUse",
       "tool_name": "Write",
       "tool_input": {
-        "file_path": "/tmp/hook-payload-parity-example.txt",
+        "file_path": "/tmp/hook-payload-example.txt",
         "content": "hello"
       }
     }

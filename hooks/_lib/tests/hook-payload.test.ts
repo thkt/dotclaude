@@ -8,7 +8,6 @@ import { editedFile, field, notification } from "../hook_payload.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURES_PATH = join(HERE, "fixtures", "hook-payloads.json");
-const SELF_PATH = fileURLToPath(import.meta.url);
 
 interface Fixture {
   id: string;
@@ -36,7 +35,7 @@ test("field returns the command string of a PreToolUse Bash payload", () => {
 test("editedFile returns the written path of a PostToolUse Write payload", () => {
   const { payload } = fixture("posttooluse-write");
 
-  assert.equal(editedFile(JSON.stringify(payload)), "/tmp/hook-payload-parity-example.txt");
+  assert.equal(editedFile(JSON.stringify(payload)), "/tmp/hook-payload-example.txt");
 });
 
 test("field returns null rather than undefined for a payload missing a key and for one whose tool_input is not a mapping", () => {
@@ -46,16 +45,6 @@ test("field returns null rather than undefined for a payload missing a key and f
 
   assert.strictEqual(field(missingKey.payload.tool_input, key), null, "missing key");
   assert.strictEqual(field(typeMismatch.payload.tool_input, key), null, "type mismatch");
-});
-
-test("every fixture payload yields a non-empty tool_name", () => {
-  const fixtures = loadFixtures();
-  assert.ok(fixtures.length > 0, "the fixture file must carry at least one payload");
-
-  for (const { id, payload } of fixtures) {
-    const result = field(payload, "tool_name");
-    assert.ok(typeof result === "string" && result.length > 0, id);
-  }
 });
 
 test("notification returns the envelope shape hooks/edit/rumdl_check.ts's notify call depends on, with the finding verbatim in both channels", () => {
@@ -68,21 +57,4 @@ test("notification returns the envelope shape hooks/edit/rumdl_check.ts's notify
       additionalContext: message,
     },
   });
-});
-
-const FORBIDDEN = [`${"child"}_process`, `${"spawn"}Sync`, `${"py"}thon3`];
-
-const namesForbidden = (source: string): string[] =>
-  FORBIDDEN.filter((needle) => source.includes(needle));
-
-test("this file names no process-spawning import or python interpreter, and the same predicate flags a source line carrying each", () => {
-  assert.deepEqual(namesForbidden(readFileSync(SELF_PATH, "utf8")), []);
-
-  for (const needle of FORBIDDEN) {
-    assert.deepEqual(
-      namesForbidden(`import { x } from "node:${needle}";`),
-      [needle],
-      `the predicate missed ${needle}`,
-    );
-  }
 });

@@ -1,11 +1,12 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { run } from "../../_lib/tests/_hook-harness.ts";
+import { installStub } from "../../_lib/tests/_stub-bin.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(HERE, "..", "textlint_fix.ts");
@@ -15,22 +16,12 @@ const JAPANESE_MD =
 const ENGLISH_MD =
   "# English Document\n\nThis is a test document written entirely in English. It should not trigger textlint processing because it does not contain enough Japanese characters.\n";
 
-function installStubBun(root: string): string {
-  const binDir = path.join(root, "bin");
-  mkdirSync(binDir, { recursive: true });
-  const stub = path.join(binDir, "bun");
-  writeFileSync(
-    stub,
-    [
-      "#!/bin/sh",
-      '[ "$1" = "x" ] && [ "$2" = "textlint" ] && [ "$3" = "--fix" ] || exit 0',
-      'echo "$4" >> "$TEXTLINT_CALLS"',
-      "exit 0",
-    ].join("\n") + "\n",
-  );
-  chmodSync(stub, 0o755);
-  return binDir;
-}
+const STUB_BUN = [
+  "#!/bin/sh",
+  '[ "$1" = "x" ] && [ "$2" = "textlint" ] && [ "$3" = "--fix" ] || exit 0',
+  'echo "$4" >> "$TEXTLINT_CALLS"',
+  "exit 0",
+].join("\n") + "\n";
 
 interface Fixture {
   binDir: string;
@@ -40,7 +31,7 @@ interface Fixture {
 
 function fixture(): Fixture {
   const root = mkdtempSync(path.join(tmpdir(), "textlint-fix-tests-"));
-  const binDir = installStubBun(root);
+  const binDir = installStub(root, "bun", STUB_BUN);
   const callsFile = path.join(root, "calls");
   writeFileSync(callsFile, "");
   return {

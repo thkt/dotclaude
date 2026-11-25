@@ -1,6 +1,6 @@
 /// <reference types="node" />
 
-export const JAPANESE: RegExp = /[ぁ-んァ-ヶー一-龥]/g;
+const JAPANESE: RegExp = /[ぁ-んァ-ヶー一-龥]/g;
 
 export const DEFAULT_THRESHOLD: number = 50;
 

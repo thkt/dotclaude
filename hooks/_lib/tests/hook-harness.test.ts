@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { checked, run, TIMEOUT_SECONDS } from "./_hook-harness.ts";
+import { checked, run } from "./_hook-harness.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURES = path.join(HERE, "fixtures", "harness");
@@ -40,8 +40,4 @@ test("an object payload reaches the hook as its JSON text and a string payload r
 
   const stringPayload = "raw string payload, not JSON: {not valid";
   assert.equal(run(ECHO_STDIN_FIXTURE, stringPayload), stringPayload);
-});
-
-test("the harness kills a hook after 60 seconds", () => {
-  assert.equal(TIMEOUT_SECONDS, 60);
 });

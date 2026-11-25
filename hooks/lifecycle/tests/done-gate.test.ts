@@ -24,33 +24,11 @@ import {
   RED_FILE,
   treeHash,
 } from "../../_lib/gate_record.ts";
+import { git, isolatedEnv } from "../../_lib/tests/_hook-harness.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const GATE = path.join(HERE, "..", "done_gate.ts");
 const PUBLISH_GATE = path.join(HERE, "..", "..", "pre-bash", "publish_gate.ts");
-
-function isolatedEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    GIT_CONFIG_GLOBAL: "/dev/null",
-    GIT_CONFIG_NOSYSTEM: "1",
-    GIT_AUTHOR_NAME: "done-gate-test",
-    GIT_AUTHOR_EMAIL: "done-gate-test@example.invalid",
-    GIT_COMMITTER_NAME: "done-gate-test",
-    GIT_COMMITTER_EMAIL: "done-gate-test@example.invalid",
-    ...extra,
-  };
-  for (const key of ["GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE", "GIT_OBJECT_DIRECTORY"]) {
-    delete env[key];
-  }
-  return env;
-}
-
-function git(cwd: string, ...args: string[]): string {
-  const result = spawnSync("git", args, { cwd, env: isolatedEnv(), encoding: "utf8" });
-  assert.equal(result.status, 0, `git ${args.join(" ")} failed: ${result.stderr}`);
-  return result.stdout;
-}
 
 function repo(files: Record<string, string>): string {
   const dir = realpathSync(mkdtempSync(path.join(tmpdir(), "done-gate-")));
