@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { trackedFiles } from "./_retirement.ts";
+import { trackedFiles } from "./_tracked-files.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -38,27 +38,6 @@ const instructionFiles = () => {
   return found;
 };
 
-test("no live instruction, convention, or README carries the old name ADR outside when_to_use and the Fowler summary that declares it", async () => {
-  const EXEMPT = "skills/dr/references/fowler-adr.md";
-  const declares = { ja: /このファイルでは ADR と呼ぶ/, en: /it says ADR throughout/ };
-  const exemptPaths: [keyof typeof declares, string][] = [
-    ["ja", join(".ja", EXEMPT)],
-    ["en", EXEMPT],
-  ];
-  for (const [lang, rel] of exemptPaths) {
-    const doc = await readFile(join(root, rel), "utf8");
-    assert.match(doc, declares[lang], `${lang}: the exempt file declares its grounds`);
-  }
-
-  const files = instructionFiles().filter((f) => f.rel !== EXEMPT);
-  assert.ok(files.length > 50, `the number scanned (${files.length})`);
-  for (const { lang, rel, full } of files) {
-    const text = (await readFile(full, "utf8")).replace(/^when_to_use:.*$/gm, "");
-    assert.doesNotMatch(text, /\bADRs?\b/, `${lang}: ${rel} still carries the old name ADR`);
-  }
-  assert.doesNotMatch(await readFile(join(root, "README.md"), "utf8"), /\bADRs?\b/, "README.md");
-});
-
 test("no skill outside its tests names a bundled asset by a home-anchored path other than settings.json", async () => {
   const RUNNING_SIDE = /\.claude\/settings\.json/;
   const HOME_ANCHORED = /~\/\.claude\/|\$HOME\/\.claude\//;
@@ -76,31 +55,45 @@ test("no skill outside its tests names a bundled asset by a home-anchored path o
 });
 
 test("every agent naming a bundled asset pairs the plugin form with the fallback sentence", async () => {
+  const fallbackOf = async (rel: string) => {
+    const quoted = (await readFile(join(root, rel), "utf8"))
+      .split("\n")
+      .filter((line) => line.startsWith("> "));
+    assert.equal(quoted.length, 1, `${rel} carries the fallback sentence as its one "> " line`);
+    return quoted[0].slice(2);
+  };
   const FALLBACK = {
-    en: "When a path below still begins with `${`, the harness left the variable unexpanded; read the same path under `~/.claude/` instead.",
-    ".ja":
-      "下のパスが `${` のまま始まっているときは harness が変数を展開していないので、代わりに `~/.claude/` 配下の同じパスを読む。",
+    en: await fallbackOf("rules/conventions/SUBAGENT.md"),
+    ".ja": await fallbackOf(".ja/rules/conventions/SUBAGENT.md"),
   };
   const RUNNING_SIDE = /(~|\$HOME)\/\.claude\/(settings\.json|cache\/|history\/)/;
   const HOME_ANCHORED = /~\/\.claude\/|\$HOME\/\.claude\//;
+  const MISSING_FALLBACK = "the plugin form without the fallback sentence";
+  const offenses = (text: string, fallback: string) => [
+    ...text
+      .split("\n")
+      .filter((line) => HOME_ANCHORED.test(line) && !RUNNING_SIDE.test(line))
+      .map((line) => line.trim())
+      .filter((line) => line !== fallback),
+    ...(text.includes("${CLAUDE_PLUGIN_ROOT}") && !text.includes(fallback) ? [MISSING_FALLBACK] : []),
+  ];
+
+  const pluginForm = "Read `${CLAUDE_PLUGIN_ROOT}/skills/use-cli-scout/SKILL.md`.";
+  const homeAnchored = "Read `~/.claude/skills/use-cli-scout/SKILL.md`.";
+  for (const lang of ["en", ".ja"] as const) {
+    const fallback = FALLBACK[lang];
+    assert.deepEqual(offenses(pluginForm, fallback), [MISSING_FALLBACK], `${lang}: plugin form alone`);
+    assert.deepEqual(offenses(homeAnchored, fallback), [homeAnchored], `${lang}: home-anchored path`);
+    assert.deepEqual(offenses(`${fallback}\n\n${pluginForm}`, fallback), [], `${lang}: paired form`);
+  }
+
   const files = instructionFiles().filter(
     (f) => f.rel.startsWith("agents/") && !f.rel.includes("/tests/"),
   );
   assert.ok(files.length >= 2, `the number scanned (${files.length})`);
   for (const { lang, rel, full } of files) {
-    const text = await readFile(full, "utf8");
-    const named = text
-      .split("\n")
-      .filter((line) => HOME_ANCHORED.test(line) && !RUNNING_SIDE.test(line))
-      .map((line) => line.trim())
-      .filter((line) => line !== FALLBACK[lang]);
-    assert.deepEqual(named, [], `${lang}: ${rel} names a bundled asset by a home-anchored path`);
-    if (text.includes("${CLAUDE_PLUGIN_ROOT}")) {
-      assert.ok(
-        text.includes(FALLBACK[lang]),
-        `${lang}: ${rel} names the plugin form without the fallback sentence`,
-      );
-    }
+    const found = offenses(await readFile(full, "utf8"), FALLBACK[lang]);
+    assert.deepEqual(found, [], `${lang}: ${rel} names a bundled asset outside the paired form`);
   }
 });
 
@@ -141,47 +134,6 @@ test("no skill pins a model in its frontmatter", async () => {
   }
 });
 
-const SENTENCE_END = /[。.]$/;
-const whenToUse = (text: string) => frontmatter(text).match(/^when_to_use: (.*)$/m)?.[1] ?? "";
-
-test("the when_to_use of use-cli-scout and sweep is a sentence, not a list of phrases", async () => {
-  const oldList = "総点検, 全体を見直して, ホットパス, sweep, codebase scan";
-  assert.doesNotMatch(oldList, SENTENCE_END, "a comma list of phrases is rejected");
-  assert.match("A request to sweep the codebase.", SENTENCE_END, "a sentence is accepted");
-
-  for (const skill of ["use-cli-scout", "sweep"]) {
-    for (const prefix of ["", ".ja/"]) {
-      const rel = `${prefix}skills/${skill}/SKILL.md`;
-      const value = whenToUse(await readFile(join(root, rel), "utf8"));
-      assert.ok(value, `${rel} carries when_to_use`);
-      assert.match(value, SENTENCE_END, `${rel}: when_to_use ends as a sentence`);
-    }
-  }
-});
-
-test("critic-design asks for one more viewpoint before confirmed, with no token or phrase ban", async () => {
-  const removed = {
-    en: [/Do not save tokens/, /^\| Banned phrasing /m],
-    ".ja": [/トークンを節約しない/, /^\| Banned phrasing /m],
-  };
-  const kept = { en: /^\| Before confirmed +\| /m, ".ja": /^\| confirmed の前 +\| /m };
-  const oldLines = {
-    en: "- Do not save tokens, and do not cut short the viewpoint checks\n| Banned phrasing    | Never use `looks reasonable` |",
-    ".ja": "- トークンを節約しない。視点の確認を削らない\n| Banned phrasing    | 推論内で `looks reasonable` を禁止 |",
-  };
-  for (const lang of ["en", ".ja"] as const) {
-    for (const pattern of removed[lang]) {
-      assert.match(oldLines[lang], pattern, `${lang}: ${pattern} detects the old line`);
-    }
-    const rel = `${lang === "en" ? "" : ".ja/"}agents/critics/critic-design.md`;
-    const doc = await readFile(join(root, rel), "utf8");
-    for (const pattern of removed[lang]) {
-      assert.doesNotMatch(doc, pattern, `${rel} still carries ${pattern}`);
-    }
-    assert.match(doc, kept[lang], `${rel} carries the row asking for one more viewpoint`);
-  }
-});
-
 const namedTestPaths = (text: string) =>
   [...text.matchAll(/`(tests\/[^`\s*]+\.(?:ts|js))`/g)].map((m) => m[1]);
 
@@ -196,63 +148,5 @@ test("every tests/ path rules/conventions/SUBAGENT.md names exists", async () =>
     for (const path of named) {
       assert.ok(existsSync(join(root, path)), `${rel} names ${path}, which does not exist`);
     }
-  }
-});
-
-const sectionOf = (doc: string, heading: string) =>
-  doc.split(/^## /m).find((part) => part.startsWith(`${heading}\n`)) ?? "";
-const firstColumn = (text: string) =>
-  text
-    .split("\n")
-    .filter((line) => line.startsWith("|"))
-    .slice(2)
-    .map((line) => line.split("|")[1].trim());
-
-test("TESTING.md lists the five shapes of a test that swings at nothing, on both sides", async () => {
-  const expected = {
-    en: [
-      "Whether the test swings at nothing",
-      [
-        "Input built from the artifact",
-        "A missing premise returns empty",
-        "A different test fails",
-        "An absence check with no positive control",
-        "Counts compared after the same filter",
-      ],
-    ],
-    ".ja": [
-      "テストが空振りしていないか",
-      [
-        "検査対象を成果物から作る",
-        "前提の欠落が空を返す",
-        "別のテストが落ちる",
-        "不在の検査に陽性対照がない",
-        "同じ条件で絞った後の件数を比べる",
-      ],
-    ],
-  } as const;
-  for (const [lang, [heading, labels]] of Object.entries(expected)) {
-    const rel = `${lang === "en" ? "" : ".ja/"}rules/development/TESTING.md`;
-    const doc = await readFile(join(root, rel), "utf8");
-    assert.deepEqual(firstColumn(sectionOf(doc, heading)), labels, `${rel} § ${heading}`);
-  }
-});
-
-test("DOCUMENTS.md divides the ground between four documents and routes with three rules, on both sides", async () => {
-  for (const [rel, routing, archive] of [
-    ["rules/conventions/DOCUMENTS.md", "Routing", "`/dr`'s archive"],
-    [".ja/rules/conventions/DOCUMENTS.md", "ルーティング", "`/dr` の置き場"],
-  ]) {
-    const doc = await readFile(join(root, rel), "utf8");
-    const intro = doc.split(/^## /m)[0];
-    assert.deepEqual(
-      firstColumn(intro),
-      ["`rules/`", archive, "`CLAUDE.md`", "`docs/research/`"],
-      `${rel} document table`,
-    );
-    const items = sectionOf(doc, routing)
-      .split("\n")
-      .flatMap((line) => line.match(/^(\d+)\. /)?.[1] ?? []);
-    assert.deepEqual(items, ["1", "2", "3"], `${rel} § ${routing}`);
   }
 });

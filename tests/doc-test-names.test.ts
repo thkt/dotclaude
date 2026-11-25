@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { trackedFiles } from "./_retirement.ts";
+import { trackedFiles } from "./_tracked-files.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..");

@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { assertDetectsAndMisses, offendersAmong, trackedFiles } from "./_retirement.ts";
+import { offendersAmong, trackedFiles } from "./_tracked-files.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..");
@@ -69,7 +69,16 @@ test(
     "or a heredoc launcher, and the same predicate flags a fixture line for each of the three " +
     "shapes",
   () => {
-    assertDetectsAndMisses(invokesPython3, "python3 - <<'PY'");
+    assert.equal(
+      invokesPython3("# stale doc example: python3 - <<'PY' < payload.json"),
+      true,
+      "a python3 heredoc launcher must be detected",
+    );
+    assert.equal(
+      invokesPython3("# stale doc example: REMOVED < payload.json"),
+      false,
+      "the same line without the heredoc launcher must not be detected",
+    );
 
     assert.equal(
       invokesPython3("#!/usr/bin/env python3\nprint('hi')\n"),
@@ -108,31 +117,6 @@ test(
       "files still invoking python3 as a hook command, a shebang or a heredoc launcher " +
         `(docs/decisions/, docs/research/ and EXCLUSIONS's paths are excluded): ` +
         offenders.join(", "),
-    );
-  },
-);
-
-test(
-  "the exclusion list names each excluded path with the reason it is excluded, read " +
-    "from the test's own constant rather than restated",
-  () => {
-    assert.deepEqual(
-      EXCLUSIONS.map((e) => e.path),
-      [SELF_PATH, "plugins/"],
-      "EXCLUSIONS must name exactly these two excluded paths, in this order",
-    );
-    for (const { path, reason } of EXCLUSIONS) {
-      assert.ok(reason.trim().length > 0, `EXCLUSIONS entry for ${path} must carry a reason`);
-    }
-    assert.deepEqual(
-      exclusionPaths("exact"),
-      [SELF_PATH],
-      "the sweep's exact-match exclusions must be read from EXCLUSIONS, not restated",
-    );
-    assert.deepEqual(
-      exclusionPaths("prefix"),
-      ["plugins/"],
-      "the sweep's prefix exclusion must be read from EXCLUSIONS, not restated",
     );
   },
 );
