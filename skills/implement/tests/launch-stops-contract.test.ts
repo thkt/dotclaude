@@ -1,22 +1,31 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const read = (...path: string[]) => readFileSync(join(root, ...path), "utf8");
 
-const sources = [
-  read("skills", "implement", "scripts", "launch.ts"),
-  read("skills", "implement", "scripts", "holders.ts"),
-];
+const scripts = join(root, "skills", "implement", "scripts");
+const sources = readdirSync(scripts)
+  .filter((name) => name.endsWith(".ts"))
+  .map((name) => readFileSync(join(scripts, name), "utf8"));
 const tables = {
   ja: read(".ja", "skills", "implement", "references", "launch-stops.md"),
   en: read("skills", "implement", "references", "launch-stops.md"),
 };
 
-const NOT_REASONS = ["rev-parse", "ls-tree", "rev-list", "ls-remote", "diff-tree", "launch-holders"];
+const NOT_REASONS = [
+  "rev-parse",
+  "ls-tree",
+  "rev-list",
+  "ls-remote",
+  "diff-tree",
+  "launch-holders",
+  "stream-json",
+  "check-ignore",
+];
 const UNHYPHENATED_REASONS = ["busy", "disagreement"];
 
 const extractReasons = (): string[] => {
@@ -41,7 +50,7 @@ const tableRows = (markdown: string): string[][] =>
 const sorted = (values: Iterable<string>) => [...values].sort();
 
 for (const [language, markdown] of Object.entries(tables)) {
-  test(`the ${language} table's first column names exactly the reasons launch.ts and holders.ts can return`, () => {
+  test(`the ${language} table's first column names exactly the reasons the scripts under skills/implement/scripts can return`, () => {
     assert.deepEqual(sorted(tableRows(markdown).flat()), sorted(extractReasons()));
   });
 
@@ -61,7 +70,7 @@ test("the ja and en tables list the same reasons in the same rows and the same o
   assert.deepEqual(tableRows(tables.en), tableRows(tables.ja));
 });
 
-test("the extraction reaches reasons written in each of the forms launch.ts uses", () => {
+test("the extraction reaches reasons written in each of the forms the scripts use", () => {
   const reasons = extractReasons();
   for (const known of [
     "uncommitted-start-inputs",
@@ -76,11 +85,11 @@ test("the extraction reaches reasons written in each of the forms launch.ts uses
   }
 });
 
-test("each unhyphenated reason appears as a double-quoted literal in launch.ts or holders.ts", () => {
+test("each unhyphenated reason appears as a double-quoted literal in a script", () => {
   for (const reason of UNHYPHENATED_REASONS) {
     assert.ok(
       sources.some((source) => source.includes(`"${reason}"`)),
-      `"${reason}" is in neither file`,
+      `"${reason}" is in no script`,
     );
   }
 });
@@ -91,11 +100,11 @@ test("the extraction finds 68 reasons, 66 hyphenated plus busy and disagreement"
   assert.equal(reasons.filter((reason) => reason.includes("-")).length, 66);
 });
 
-test("every name on the not-a-reason list appears as a double-quoted literal in launch.ts or holders.ts", () => {
+test("every name on the not-a-reason list appears as a double-quoted literal in a script", () => {
   for (const name of NOT_REASONS) {
     assert.ok(
       sources.some((source) => source.includes(`"${name}"`)),
-      `"${name}" is in neither file`,
+      `"${name}" is in no script`,
     );
   }
 });
