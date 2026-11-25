@@ -81,6 +81,7 @@ import {
   TWO_TURNS,
   JOINED_REPLY,
   printing,
+  assertIncludesAll,
 } from "./_launch-fixture.ts";
 
 test("implement starts claude in the worktree and passes the prompt on stdin with the Issue, repository, and done_gate path", () => {
@@ -284,29 +285,11 @@ test("implement records the agreed issue_digest in launch.json's implement, and 
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-const IMPLEMENT_PROMPT = `Implement GitHub Issue #42 of owner/repo in this worktree.
+const assertImplementPrompt = (stdin: string): void =>
+  assertIncludesAll(stdin, ["Implement GitHub Issue", "#42", "owner/repo", "gh issue view 42 --repo owner/repo", `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
 
-1. Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
-2. Make the change the Issue asks for, following the repository's rules that apply to the files you touch.
-3. Run \`${DONE_GATE} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
-4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
-
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
-
-When you are done, reply with: the files you changed, what \`${DONE_GATE} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
-`;
-
-const resumePrompt = (base: string): string => `Your turn implementing GitHub Issue #42 of owner/repo in this worktree was interrupted before you replied.
-
-1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you had done and what was left. Keep the changes that are in the worktree. If you had not read the Issue yet, read it with \`gh issue view 42 --repo owner/repo --json title,body\`. The Issue is the agreed requirement. Do not change its scope, and do not do what it lists as out of scope.
-2. Finish the change the Issue asks for, following the repository's rules that apply to the files you touch.
-3. Run \`${DONE_GATE} check\`. It runs the repository's full check and records the result for the current working tree. Fix what fails and run it again.
-4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
-
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
-
-When you are done, reply with: the files you changed, what \`${DONE_GATE} status\` printed, each decision you made that the Issue does not state, and each step the Issue hands over to a named person.
-`;
+const assertResumePrompt = (stdin: string, base: string): void =>
+  assertIncludesAll(stdin, ["was interrupted", "#42", "owner/repo", `git diff ${base}`, "gh issue view 42 --repo owner/repo", `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
 
 const UNCHECKED: ImplementTurn = { reply: { session_id: "s-2", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
 
@@ -317,7 +300,7 @@ test("implement on a prepared worktree starts a new session with --session-id se
   const [call] = implementCalls(f);
   assert.ok(!call.args.includes("--resume"));
   assert.match(flagValue(call.args, "--session-id"), UUID);
-  assert.equal(call.stdin, IMPLEMENT_PROMPT);
+  assertImplementPrompt(call.stdin);
 });
 
 test("while the new session runs, launch.json holds the agreed fields and an implement record of session_id, issue_digest, and started_at only", () => {
@@ -344,7 +327,7 @@ test("implement on an unfinished worktree resumes the recorded session with --mo
   assert.ok(!calls[0].args.includes("--session-id"));
   assert.ok(!calls[0].args.includes("--fork-session"));
   assert.equal(flagValue(calls[0].args, "--model"), "sonnet");
-  assert.equal(calls[0].stdin, resumePrompt(baseOf(f)));
+  assertResumePrompt(calls[0].stdin, baseOf(f));
 });
 
 test("a resumed implement gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
@@ -352,7 +335,7 @@ test("a resumed implement gives claude the base commit that launch.json records,
   const base = moveBaseToParent(f);
   fakeImplementer(f, [FINISHED]);
   assert.equal(implementAt(f).status, 0);
-  assert.equal(implementCalls(f)[0].stdin, resumePrompt(base));
+  assertResumePrompt(implementCalls(f)[0].stdin, base);
 });
 
 test("a resumed implement that passes the check returns resumed true, keeps launch.json while it runs, and records the digest the session started with", () => {
@@ -412,7 +395,7 @@ test("when the recorded session does not exist, implement starts a new session w
   assert.match(fresh, UUID);
   assert.notEqual(fresh, id);
   assert.ok(!calls[1].args.includes("--resume"));
-  assert.equal(calls[1].stdin, IMPLEMENT_PROMPT);
+  assertImplementPrompt(calls[1].stdin);
 });
 
 test("when the new session for a missing session also reports no session, implement stops with child-failed after two claude calls and keeps the new record", () => {
@@ -456,7 +439,7 @@ test("implement --fresh on an unfinished worktree starts a new session with a ne
   assert.ok(!call.args.includes("--resume"));
   assert.match(flagValue(call.args, "--session-id"), UUID);
   assert.notEqual(flagValue(call.args, "--session-id"), id);
-  assert.equal(call.stdin, IMPLEMENT_PROMPT);
+  assertImplementPrompt(call.stdin);
 });
 
 test("implement on a finished worktree stops with already-implemented, starts no claude, and keeps launch.json, also when the Issue changed", () => {

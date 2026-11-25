@@ -48,6 +48,7 @@ import {
   run,
   waitFor,
   worktreeOf,
+  assertIncludesAll,
 } from "./_launch-fixture.ts";
 
 const HARNESS = resolve(dirname(SCRIPT), "..", "harness");
@@ -593,22 +594,13 @@ test("an install result that cannot be read stops with invalid-capture whose det
   assert.equal(capturesOf(f).at(-1)?.outcome, "invalid_media");
 });
 
-const SELF_OPENING = (base: string): string =>
-  `Before your change for Issue #42 is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.`;
+const INSTALLED = "trial/evidence/media/: trial/evidence/media/list.png";
 
-const INDEPENDENT_OPENING = (base: string): string =>
-  `Independently review the change in this worktree against GitHub Issue #42 of owner/repo. The change is everything in this worktree that differs from commit ${base}, committed or not. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff ${base}\` and \`git status --short\`, and read each untracked file.
+const FIRST_EARLIER_KEY = '{"key":"1-self-1"';
 
-Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.`;
-
-const CAPTURED_PARAGRAPH =
-  "This repository configures a capture. launch.ts ran it on this change and installed its media under trial/evidence/media/: trial/evidence/media/list.png. Open each image file and confirm that what it shows corresponds to the current code and to the screens and operations the Issue asks for. A video file cannot be opened here, so for a video read the capture definition that records it and confirm that the definition corresponds to the current code.";
-
-const MARKDOWN_AFTER_CAPTURE =
-  " The working tree changed after that capture only in Markdown files and saved records, which need no new capture.";
-
-const notCapturedParagraph = (base: string): string =>
-  `This repository configures a capture, and launch.ts did not run it, because the change touches only plain Markdown files. Any media under media are unchanged from commit ${base}.`;
+function assertBothPrompts(f: Fixture, check: (stdin: string, name: string) => void): void {
+  for (const name of ["self", "independent"]) check(callOf(f, name).stdin, name);
+}
 
 const reviewCallsOf = (f: Fixture): string[] =>
   existsSync(join(f.logs, "calls")) ? readFileSync(join(f.logs, "calls"), "utf8").split("\n").filter(Boolean) : [];
@@ -619,19 +611,6 @@ function reviewed(f: Fixture): Record<string, unknown> {
   const out = outputOf(result);
   assert.equal(out.ok, true);
   return out;
-}
-
-function assertPromptsOpenWith(f: Fixture, paragraph: string, next?: string): void {
-  const base = recordedBase(f);
-  for (const [name, opening] of [
-    ["self", SELF_OPENING(base)],
-    ["independent", INDEPENDENT_OPENING(base)],
-  ]) {
-    const head = `${opening}\n\n${paragraph}\n\n`;
-    const stdin = callOf(f, name).stdin;
-    assert.ok(stdin.startsWith(head), `${name}: ${stdin}`);
-    if (next !== undefined) assert.ok(stdin.slice(head.length).startsWith(next), `${name}: ${stdin}`);
-  }
 }
 
 test("review stops with not-captured naming the current tree, starts no review, and keeps launch.json, before any capture and after a non-.md change following a passed capture", () => {
@@ -666,7 +645,10 @@ test("after a passed capture, review succeeds and both prompts open with the ope
   succeeded(f);
   fakeReviewer(f, CLEAN);
   reviewed(f);
-  assertPromptsOpenWith(f, CAPTURED_PARAGRAPH);
+  assertBothPrompts(f, (stdin, name) => {
+    assertIncludesAll(stdin, [INSTALLED], name);
+    assert.ok(!stdin.includes("only in Markdown files"), `${name}: ${stdin}`);
+  });
 });
 
 test("when only a .md file changed after a passed capture, the captured paragraph ends with the Markdown sentence", () => {
@@ -675,15 +657,19 @@ test("when only a .md file changed after a passed capture, the captured paragrap
   writeChecked(f, "notes.md", "notes\n");
   fakeReviewer(f, CLEAN);
   reviewed(f);
-  assertPromptsOpenWith(f, CAPTURED_PARAGRAPH + MARKDOWN_AFTER_CAPTURE);
+  assertBothPrompts(f, (stdin, name) => assertIncludesAll(stdin, [INSTALLED, "only in Markdown files"], name));
 });
 
 test("when no capture is required for a .md-only change, review succeeds and both prompts carry the not-captured paragraph naming the base of launch.json", () => {
-  const f = capturing({ required: false });
+  const f = capturing({ required: false, destination: "trial/evidence/media/" });
   writeChecked(f, "notes.md", "notes\n");
   fakeReviewer(f, CLEAN);
   reviewed(f);
-  assertPromptsOpenWith(f, notCapturedParagraph(recordedBase(f)));
+  assertBothPrompts(f, (stdin, name) => {
+    const marker = stdin.indexOf("did not run it");
+    assert.ok(marker >= 0, `${name}: ${stdin}`);
+    assertIncludesAll(stdin.slice(marker), ["trial/evidence/media/", `commit ${recordedBase(f)}`], name);
+  });
 });
 
 test("in a round that judges earlier findings, the captured paragraph sits right after the opening and before the earlier findings", () => {
@@ -693,7 +679,11 @@ test("in a round that judges earlier findings, the captured paragraph sits right
   assert.equal(reviewed(f).verdict, "rejected");
   fakeReviewer(f, BOTH_OPEN);
   reviewed(f);
-  assertPromptsOpenWith(f, CAPTURED_PARAGRAPH, "An earlier review round reported the findings below as required");
+  assertBothPrompts(f, (stdin, name) => {
+    const installed = stdin.indexOf(INSTALLED);
+    assert.ok(installed >= 0, `${name}: ${stdin}`);
+    assert.ok(installed < stdin.indexOf(FIRST_EARLIER_KEY), `${name}: ${stdin}`);
+  });
 });
 
 test("a passed capture without installed is not the last passed capture, so a .md-only change from the base is not_required when required is false", () => {

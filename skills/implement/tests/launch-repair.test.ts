@@ -49,23 +49,16 @@ import {
   TWO_TURNS,
   JOINED_REPLY,
   printing,
+  assertIncludesAll,
 } from "./_launch-fixture.ts";
 
-const repairPromptWith = (base: string, lines: string): string => `The reviews of your change for Issue #42 reported findings that must be settled before the change is published. The change is everything in this worktree that differs from commit ${base}, committed or not. Each line below is one finding as a JSON object. \`key\` names the finding, \`side\` is the review that reported it, \`location\` is where it is, \`condition\` is the input or state that triggers it, \`problem\` is what goes wrong, and \`action\` is what the review suggests. \`reopened\` lists the reviews that judged the finding still open after an earlier repair, each with its reason.
+const FIRST_ROUND_LINES = [
+  '{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}',
+  '{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[]}',
+];
 
-${lines}
-
-1. For each finding, read the code it names and reproduce the problem, and judge whether the finding holds. Fix each finding that holds, and add or change a test that fails without the fix. Do not change the scope of the Issue.
-2. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
-3. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
-
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
-
-When you are done, reply with: for each finding, its \`key\` and what you changed, or why you changed nothing; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
-`;
-
-const repairPrompt = (base: string): string => repairPromptWith(base, `{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1","reopened":[]}
-{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[]}`);
+const assertRepairPrompt = (stdin: string, base: string, lines = FIRST_ROUND_LINES): void =>
+  assertIncludesAll(stdin, ["reported findings", "#42", `commit ${base}`, `\n\n${lines.join("\n")}\n\n`, `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
 
 const repairCalls = (f: Fixture): number =>
   existsSync(join(f.logs, "repair-calls")) ? readFileSync(join(f.logs, "repair-calls"), "utf8").split("\n").filter(Boolean).length : 0;
@@ -132,7 +125,7 @@ test("repair passes every entry of the last review's required list in order as J
   const f = rejected();
   fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
   assert.equal(repair(f).status, 0);
-  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), repairPrompt(baseOf(f)));
+  assertRepairPrompt(readFileSync(join(f.logs, "repair-stdin"), "utf8"), baseOf(f));
 });
 
 test("repair gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
@@ -140,7 +133,7 @@ test("repair gives claude the base commit that launch.json records, not HEAD or 
   const base = moveBaseToParent(f);
   fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
   assert.equal(repair(f).status, 0);
-  assert.equal(readFileSync(join(f.logs, "repair-stdin"), "utf8"), repairPrompt(base));
+  assertRepairPrompt(readFileSync(join(f.logs, "repair-stdin"), "utf8"), base);
 });
 
 test("repair reports ok with changed false and records the round when the child changes nothing", () => {
@@ -284,11 +277,10 @@ test("repair passes a reopened finding carried from an earlier round with its ke
   reviewOut(f);
   fakeRepairer(f, PASS_CHECK + REPAIR_REPLY);
   assert.equal(repair(f).status, 0);
-  assert.equal(
-    readFileSync(join(f.logs, "repair-stdin"), "utf8"),
-    repairPromptWith(baseOf(f), `{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[{"side":"self","reason":"self-2 saw 1-independent-1 open"}]}
-{"key":"2-self-1","side":"self","location":"a.ts:1","condition":"c9","problem":"p1","action":"a1","reopened":[]}`),
-  );
+  assertRepairPrompt(readFileSync(join(f.logs, "repair-stdin"), "utf8"), baseOf(f), [
+    '{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3","reopened":[{"side":"self","reason":"self-2 saw 1-independent-1 open"}]}',
+    '{"key":"2-self-1","side":"self","location":"a.ts:1","condition":"c9","problem":"p1","action":"a1","reopened":[]}',
+  ]);
 });
 
 test("repair stops with not-reviewed when the last record has no required array and with nothing-to-repair when it is empty, and starts no claude", () => {

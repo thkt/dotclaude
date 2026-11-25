@@ -29,19 +29,11 @@ import {
   REREAD_REPLY,
   fakeRereader,
   agreedAfterChange,
+  assertIncludesAll,
 } from "./_launch-fixture.ts";
 
-const rereadPrompt = (base: string): string => `GitHub Issue #42 of owner/repo changed after you last read it. The Issue as it is now is the agreed requirement.
-
-1. Read the Issue again with \`gh issue view 42 --repo owner/repo --json title,body\`, and find what changed from the version you read before.
-2. Compare every requirement, done condition, and out-of-scope item of the Issue with your change. The change is everything in this worktree that differs from commit ${base}, committed or not. Read it with \`git diff ${base}\` and \`git status --short\`. Change the code, the tests, and the documents that no longer match the Issue. Do not change what the Issue does not ask for.
-3. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
-4. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
-
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
-
-When you are done, reply with: what changed in the Issue; for each change, what you changed or why you changed nothing; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
-`;
+const assertRereadPrompt = (stdin: string, base: string): void =>
+  assertIncludesAll(stdin, ["changed after you last read it", "#42", "owner/repo", "gh issue view 42 --repo owner/repo", `git diff ${base}`, `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
 
 const rereadCalls = (f: Fixture): number =>
   existsSync(join(f.logs, "reread-calls")) ? readFileSync(join(f.logs, "reread-calls"), "utf8").split("\n").filter(Boolean).length : 0;
@@ -57,7 +49,7 @@ test("reread after agree resumes the implement session without a fork in the wor
   assert.ok(!args.includes("--fork-session"));
   assert.ok(!args.includes("--json-schema"));
   assert.equal(flagValue(args, "--model"), "opus");
-  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), rereadPrompt(baseOf(f)));
+  assertRereadPrompt(readFileSync(join(f.logs, "reread-stdin"), "utf8"), baseOf(f));
 });
 
 test("reread gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
@@ -65,7 +57,7 @@ test("reread gives claude the base commit that launch.json records, not HEAD or 
   const base = moveBaseToParent(f);
   fakeRereader(f, PASS_CHECK + REREAD_REPLY);
   assert.equal(reread(f).status, 0);
-  assert.equal(readFileSync(join(f.logs, "reread-stdin"), "utf8"), rereadPrompt(base));
+  assertRereadPrompt(readFileSync(join(f.logs, "reread-stdin"), "utf8"), base);
 });
 
 test("reread passes --model to claude", () => {

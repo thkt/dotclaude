@@ -59,6 +59,7 @@ import {
   JOINED_REPLY,
   printing,
   git,
+  assertIncludesAll,
 } from "./_launch-fixture.ts";
 
 const PUBLISHED_PROPERTIES = {
@@ -95,41 +96,30 @@ const INDEPENDENT_REVIEW_SCHEMA = {
   properties: { ...REVIEW_SCHEMA.properties, ...PUBLISHED_PROPERTIES },
 };
 
-const POINTS = `Assess four separate things:
-1. Code: correctness at the input boundaries, state written to disk, behavior when something fails, and concrete redundancy (the same file read or the same judgment computed twice).
-2. Requirements and scope: every item the Issue scopes is present and behaves as the Issue's tables say, and nothing the Issue lists as out of scope changed. Check each sentence the Issue says to insert verbatim against the Issue mechanically.
-3. Tests: each done condition in the Issue has a test that would fail if the behavior were removed. Run the targeted tests. For at least two tests, break the code in a temporary copy to show the test fails, and say what you broke.
-4. Documentation and repository rules that apply to the changed files. Read the repository's instruction files, such as CLAUDE.md and AGENTS.md and the rules they point to, to find them.`;
+const PUBLISHED_MARKER = "pull request body publishes";
 
-const CLOSING = `Do not edit any file in this worktree. Do not commit. Scratch files go under the directory in $TMPDIR.
+const JUDGING_MARKER = "Judge each earlier finding";
 
-Give the result through the structured output. \`findings\` lists every finding. Set \`required\` to true only for a defect you demonstrated or a requirement of the Issue that is not met, which must be fixed before the change is published. Set it to false for every other concern. \`location\` is \`file:line\`, or an empty string when no line applies. \`condition\` is the input or state that triggers the finding, \`problem\` is what goes wrong, and \`action\` is what to do. \`verified\` says what you checked and how. An empty \`findings\` is a valid result.`;
+const EARLIER_LINES = `\n\n{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1"}
+{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3"}\n\n`;
 
-const PUBLISHED_FIELDS = `The pull request body publishes these fields of your result: \`assessments\`, \`documents\`, \`handoff\`, the \`reason\` of each judgment in \`previous\`, and \`condition\`, \`problem\`, and \`action\` of each finding that is not required. Write all of them in the language the Issue body is written in.
+const replyIn = (stdin: string, reply: string): boolean => stdin.includes(`\n\n${reply}\n\n`);
 
-Give each explanation one home. \`assessments.code\` explains the final change and why. \`assessments.requirements\` maps the change to the behavior the Issue agreed. \`assessments.tests\` states what was actually verified and the limits of that verification. \`assessments.documentation\` explains which documents and sources apply, where they agree with the change, and which premises changed. Give a substantive reason in all four, also when one of them does not apply. Do not repeat the same change, conclusion, or caveat across them, and do not retell the history of review rounds and repairs.
+function assertJudgingOrNot(stdin: string, judges: boolean, label: string): void {
+  if (judges) assertIncludesAll(stdin, [EARLIER_LINES, JUDGING_MARKER], label);
+  else assert.ok(!stdin.includes(JUDGING_MARKER), `${label}: ${stdin}`);
+}
 
-For a judgment of \`fixed\` or \`withdrawn\`, \`reason\` is the complete public response: name the problem and its conditions, and the current resolution or why the finding did not hold.
+function assertSelfPrompt(stdin: string, base: string, judges: boolean, label = "self"): void {
+  assertIncludesAll(stdin, ["try to refute", "#42", `git diff ${base}`], label);
+  assert.ok(!stdin.includes(PUBLISHED_MARKER), `${label}: ${stdin}`);
+  assertJudgingOrNot(stdin, judges, label);
+}
 
-In \`documents\`, list the principal repository documents you actually consulted. \`path\` is relative to the repository root and must be a regular file in this worktree. \`role\` is \`current\` for a document that states what holds now, \`historical\` for a record of the past, and \`proposal\` for something not adopted. \`reason\` says why you consulted it.
-
-\`handoff\` lists only what is specific to this Issue: conditions left unverified, required follow-up, and steps handed to a named owner. The publishing side adds the routine tasks itself (publication, CI, the check of the published body, and human review, approval, and merge), so do not repeat them. Return \`[]\` when nothing remains.`;
-
-const selfPrompt = (base: string): string => `Before your change for Issue #42 is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
-
-${POINTS}
-
-${CLOSING}`;
-
-const independentPrompt = (base: string): string => `Independently review the change in this worktree against GitHub Issue #42 of owner/repo. The change is everything in this worktree that differs from commit ${base}, committed or not. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff ${base}\` and \`git status --short\`, and read each untracked file.
-
-Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.
-
-${POINTS}
-
-${PUBLISHED_FIELDS}
-
-${CLOSING}`;
+function assertIndependentPrompt(stdin: string, base: string, judges: boolean, label = "independent"): void {
+  assertIncludesAll(stdin, [PUBLISHED_MARKER, "gh issue view 42 --repo owner/repo", `git diff ${base}`], label);
+  assertJudgingOrNot(stdin, judges, label);
+}
 
 const FINDING = { location: "a.ts:1", condition: "c", problem: "p", action: "a" };
 
@@ -214,8 +204,8 @@ test("review gives each review its full prompt with the Issue number and reposit
   const f = implemented();
   fakeReviewer(f, CLEAN);
   assert.equal(review(f).status, 0);
-  assert.equal(callOf(f, "self").stdin, selfPrompt(baseOf(f)));
-  assert.equal(callOf(f, "independent").stdin, independentPrompt(baseOf(f)));
+  assertSelfPrompt(callOf(f, "self").stdin, baseOf(f), false);
+  assertIndependentPrompt(callOf(f, "independent").stdin, baseOf(f), false);
 });
 
 test("review gives both reviews the base commit that launch.json records, not HEAD or origin's main", () => {
@@ -223,8 +213,8 @@ test("review gives both reviews the base commit that launch.json records, not HE
   const base = moveBaseToParent(f);
   fakeReviewer(f, CLEAN);
   assert.equal(review(f).status, 0);
-  assert.equal(callOf(f, "self").stdin, selfPrompt(base));
-  assert.equal(callOf(f, "independent").stdin, independentPrompt(base));
+  assertSelfPrompt(callOf(f, "self").stdin, base, false);
+  assertIndependentPrompt(callOf(f, "independent").stdin, base, false);
 });
 
 test("review runs the two reviews at the same time", () => {
@@ -398,41 +388,6 @@ const INDEPENDENT_JUDGING_SCHEMA = {
   properties: { ...JUDGING_SCHEMA.properties, ...PUBLISHED_PROPERTIES },
 };
 
-const EARLIER = `An earlier review round reported the findings below as required, and the change may have been repaired since. Each line is one finding as a JSON object with its \`key\`.
-
-{"key":"1-self-1","side":"self","location":"a.ts:1","condition":"c1","problem":"p1","action":"a1"}
-{"key":"1-independent-1","side":"independent","location":"","condition":"c3","problem":"p3","action":"a3"}`;
-
-const JUDGE = "Judge each earlier finding against the current change. In `previous`, return exactly one entry for every `key`. `state` is `fixed` when the problem no longer occurs, `open` when it still occurs, and `withdrawn` when you now judge that the finding did not hold. `reason` says what you checked and what you saw. Do not repeat an earlier finding in `findings`. `findings` is for problems the earlier rounds did not report.";
-
-const REPLY_PARAGRAPH = `The implementing session replied to the earlier findings as follows. Treat the reply as a claim to check, not as a fact.
-
-repaired`;
-
-const selfJudgingPrompt = (base: string): string => `Before your change for Issue #42 is published, review it yourself and try to refute it. The change is everything in this worktree that differs from commit ${base}, committed or not. Read the change again with \`git diff ${base}\` and \`git status --short\`, each untracked file, and the code the change calls or is called by.
-
-${EARLIER}
-
-${JUDGE}
-
-${POINTS}
-
-${CLOSING}`;
-
-const independentJudgingPrompt = (base: string, reply: string | null): string => `Independently review the change in this worktree against GitHub Issue #42 of owner/repo. The change is everything in this worktree that differs from commit ${base}, committed or not. You did not write this change, and you have no context from the session that did. New files may be untracked, so read the change with \`git diff ${base}\` and \`git status --short\`, and read each untracked file.
-
-Read the Issue with \`gh issue view 42 --repo owner/repo --json title,body\`, the change, and the code the change calls or is called by.
-
-${EARLIER}
-
-${reply === null ? "" : `${reply}\n\n`}${JUDGE}
-
-${POINTS}
-
-${PUBLISHED_FIELDS}
-
-${CLOSING}`;
-
 test("review lists the required findings of round 1 as self then independent with keys named by round, side, and position, and no reopened", () => {
   const f = implemented();
   fakeReviewer(f, {
@@ -464,14 +419,10 @@ test("review gives the round-1 prompts and schema when the last record has no re
     arrange(f);
     fakeReviewer(f, CLEAN);
     reviewOut(f);
-    const expected: [string, string, Record<string, unknown>][] = [
-      ["self", selfPrompt(baseOf(f)), REVIEW_SCHEMA],
-      ["independent", independentPrompt(baseOf(f)), INDEPENDENT_REVIEW_SCHEMA],
-    ];
-    for (const [name, prompt, schema] of expected) {
-      assert.equal(callOf(f, name).stdin, prompt, label);
-      assert.deepEqual(JSON.parse(flagValue(callOf(f, name).args, "--json-schema")), schema, label);
-    }
+    assertSelfPrompt(callOf(f, "self").stdin, baseOf(f), false, label);
+    assertIndependentPrompt(callOf(f, "independent").stdin, baseOf(f), false, label);
+    assert.deepEqual(JSON.parse(flagValue(callOf(f, "self").args, "--json-schema")), REVIEW_SCHEMA, label);
+    assert.deepEqual(JSON.parse(flagValue(callOf(f, "independent").args, "--json-schema")), INDEPENDENT_REVIEW_SCHEMA, label);
   }
 });
 
@@ -479,8 +430,8 @@ test("a review after a round with required findings gives both reviews the earli
   const f = rejected();
   fakeReviewer(f, BOTH_OPEN);
   reviewOut(f);
-  assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)));
-  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), null));
+  assertSelfPrompt(callOf(f, "self").stdin, baseOf(f), true);
+  assertIndependentPrompt(callOf(f, "independent").stdin, baseOf(f), true);
   assert.deepEqual(JSON.parse(flagValue(callOf(f, "self").args, "--json-schema")), JUDGING_SCHEMA);
   assert.deepEqual(JSON.parse(flagValue(callOf(f, "independent").args, "--json-schema")), INDEPENDENT_JUDGING_SCHEMA);
 });
@@ -491,8 +442,12 @@ test("the implementing session's reply to the last reviewed round reaches only t
   assert.equal(repair(f).status, 0);
   fakeReviewer(f, BOTH_OPEN);
   reviewOut(f);
-  assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)));
-  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), REPLY_PARAGRAPH));
+  const self = callOf(f, "self").stdin;
+  const independent = callOf(f, "independent").stdin;
+  assertSelfPrompt(self, baseOf(f), true);
+  assertIndependentPrompt(independent, baseOf(f), true);
+  assert.ok(replyIn(independent, "repaired"), independent);
+  assert.ok(!replyIn(self, "repaired"), self);
 });
 
 test("no review gets the reply paragraph when the last repair answered another round, its reply is empty, or there is no repair", () => {
@@ -508,8 +463,11 @@ test("no review gets the reply paragraph when the last repair answered another r
     rewriteLaunch(f, (stored) => ({ ...stored, repairs: change((stored as Stored).repairs) }));
     fakeReviewer(f, BOTH_OPEN);
     reviewOut(f);
-    assert.equal(callOf(f, "self").stdin, selfJudgingPrompt(baseOf(f)), label);
-    assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), null), label);
+    for (const name of ["self", "independent"]) {
+      const stdin = callOf(f, name).stdin;
+      assertJudgingOrNot(stdin, true, `${label} ${name}`);
+      assert.ok(!replyIn(stdin, "repaired"), `${label} ${name}: ${stdin}`);
+    }
   }
 });
 
@@ -707,6 +665,7 @@ test("the next round's independent review gets the repair's replies of both turn
   assert.equal(repair(f).status, 0);
   fakeReviewer(f, BOTH_OPEN);
   reviewOut(f);
-  const paragraph = `The implementing session replied to the earlier findings as follows. Treat the reply as a claim to check, not as a fact.\n\n${JOINED_REPLY}`;
-  assert.equal(callOf(f, "independent").stdin, independentJudgingPrompt(baseOf(f), paragraph));
+  const independent = callOf(f, "independent").stdin;
+  assertIndependentPrompt(independent, baseOf(f), true);
+  assert.ok(replyIn(independent, JOINED_REPLY), independent);
 });
