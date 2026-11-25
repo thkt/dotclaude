@@ -299,7 +299,7 @@ test("the usage has the publishable line after the run line, and a publishable c
     assert.equal(result.stdout, "", args.join(" "));
     assert.match(result.stderr, /^usage: /, args.join(" "));
     assert.ok(
-      result.stderr.includes("launch.ts run --worktree <abs path> [--model <name>]\n       launch.ts publishable --worktree <abs path>\n"),
+      result.stderr.includes("launch.ts run --worktree <abs path> [--model <name>] [--effort <level>]\n       launch.ts publishable --worktree <abs path>\n"),
       result.stderr,
     );
   }

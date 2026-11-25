@@ -209,7 +209,7 @@ test("continue ends claude and its child, exits 143, and keeps launch.json on SI
 test("the usage has the continue line, and a continue call without --worktree or with a relative path prints the usage and nothing on stdout, and exits 2", () => {
   const f = fixture();
   const bare = run(f, []);
-  assert.ok(bare.stderr.includes("launch.ts continue --worktree <abs path> [--model <name>]\n"), bare.stderr);
+  assert.ok(bare.stderr.includes("launch.ts continue --worktree <abs path> [--model <name>] [--effort <level>]\n"), bare.stderr);
   for (const args of [["continue"], ["continue", "--model", "opus"], ["continue", "--worktree", "relative/worktree"]]) {
     const result = run(f, args);
     assert.equal(result.status, 2, args.join(" "));

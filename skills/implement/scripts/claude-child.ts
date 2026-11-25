@@ -28,7 +28,7 @@ export interface ChildOutcome {
 }
 
 const runningChildren = new Set<number>();
-const endGroup = (pid: number, name: NodeJS.Signals) => {
+export const endGroup = (pid: number, name: NodeJS.Signals) => {
   try {
     process.kill(-pid, name);
   } catch {

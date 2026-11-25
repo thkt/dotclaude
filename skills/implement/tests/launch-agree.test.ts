@@ -87,7 +87,7 @@ test("the usage printed for a call with no arguments has the agree and reread li
   const result = run(fixture(), []);
   assert.equal(result.status, 2);
   assert.ok(result.stderr.includes("launch.ts agree --worktree <abs path>\n"), result.stderr);
-  assert.ok(result.stderr.includes("launch.ts reread --worktree <abs path> [--model <name>]\n"), result.stderr);
+  assert.ok(result.stderr.includes("launch.ts reread --worktree <abs path> [--model <name>] [--effort <level>]\n"), result.stderr);
 });
 
 test("an agree or reread call without --worktree, with a relative path, or agree with --model prints the usage and nothing on stdout, and exits 2", () => {
