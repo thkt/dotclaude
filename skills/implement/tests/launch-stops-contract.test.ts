@@ -18,6 +18,7 @@ const tables = {
 
 const NOT_REASONS = [
   "rev-parse",
+  "symbolic-ref",
   "ls-tree",
   "rev-list",
   "ls-remote",
@@ -94,10 +95,10 @@ test("each unhyphenated reason appears as a double-quoted literal in a script", 
   }
 });
 
-test("the extraction finds 68 reasons, 66 hyphenated plus busy and disagreement", () => {
+test("the extraction finds 69 reasons, 67 hyphenated plus busy and disagreement", () => {
   const reasons = extractReasons();
-  assert.equal(reasons.length, 68);
-  assert.equal(reasons.filter((reason) => reason.includes("-")).length, 66);
+  assert.equal(reasons.length, 69);
+  assert.equal(reasons.filter((reason) => reason.includes("-")).length, 67);
 });
 
 test("every name on the not-a-reason list appears as a double-quoted literal in a script", () => {

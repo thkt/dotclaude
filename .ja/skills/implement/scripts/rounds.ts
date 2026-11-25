@@ -295,6 +295,20 @@ const requiredAfter = (round: number, earlier: Record<string, unknown>[], review
   return [...carried, ...reported];
 };
 
+type Head = { commit: string | null; branch: string };
+
+const headOf = (root: string): Head => ({
+  commit: git(["rev-parse", "HEAD"], root),
+  branch: git(["symbolic-ref", "-q", "HEAD"], root) ?? "",
+});
+
+const headLine = ({ commit, branch }: Head): string => `${commit} on ${branch === "" ? "a detached HEAD" : branch}`;
+
+const headMoved = (before: Head, after: Head): Problem | null =>
+  before.commit === after.commit && before.branch === after.branch
+    ? null
+    : { reason: "head-moved", detail: `The worktree's HEAD was ${headLine(before)} before the reviews and ${headLine(after)} after them.` };
+
 const changeDuringReviews = (tree: string | null, after: string | null, launch: Launch, worktree: string): { reason: string; detail: string } | null =>
   after === tree
     ? issueChange(launch, worktree)
@@ -348,6 +362,7 @@ export const review = async ({ worktree, model, effort }: WorktreeCall): Promise
   const independentJudging = [...judging, ...(reply === null ? [] : [replyParagraph(reply)]), ...closing];
   const independentOpened = independentOpening(launch.issue, launch.repository, launch.base);
   const independentPrompt = reviewPrompt(independentOpened, capturedParagraphs, independentJudging, [PUBLISHED_FIELDS]);
+  const head = headOf(gate.root);
   const [self, independent] = await Promise.all([
     runReview({ ...common, schema: selfSchema, prompt: selfPrompt, resume: implemented, fork: true }, keys, null),
     runReview({ ...common, schema: independentSchema, prompt: independentPrompt }, keys, publishedCheck(gate.root, tree)),
@@ -355,6 +370,8 @@ export const review = async ({ worktree, model, effort }: WorktreeCall): Promise
   const results: Record<Side, Review | string> = { self, independent };
   const readable = Object.fromEntries(Object.entries(results).filter(([, result]) => typeof result !== "string"));
   const failures = Object.entries(results).filter((entry): entry is [Side, string] => typeof entry[1] === "string");
+  const moved = headMoved(head, headOf(gate.root));
+  if (moved !== null) return stop(moved.reason, moved.detail, { reviews: readable });
   if (failures.length > 0) {
     const detail = failures.map(([side, why]) => `The ${side} review gave no readable result: ${why}`).join(" ");
     return stop("review-failed", detail, { reviews: readable });

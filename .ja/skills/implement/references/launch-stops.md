@@ -16,6 +16,7 @@
 | `not-implemented` `not-reviewed` `not-captured` `not-accepted` `nothing-to-repair` `nothing-to-reread` `nothing-to-continue` | 直に呼んだ action が、今の状態では走れない。`run` を呼ぶ。`run` が、次に要る action を決める |
 | `already-implemented` | 実装は済んでいる。`run` を呼ぶ。`--fresh` は、レビューと撮影の記録を捨てる。人が決めた場合にだけ使う |
 | `review-stale` `tree-changed` | レビューの後に、worktree か Issue が変わった。自分が worktree を編集していないことを確かめ、`run` を呼ぶ |
+| `head-moved` | レビューの間に、worktree の HEAD か branch が動いた。`git reflog` で動きを確かめ、detail の元の commit と branch に戻してから、`run` を呼ぶ |
 | `busy` | 別の `launch.ts` が、同じ worktree で動いている。止めずに、終わるのを待って、呼び直す |
 | `holder-write-failed` | `launch.ts` が、自分の記録を書けない。sandbox の中で呼んでいる。sandbox の外で呼び直す |
 | `claude-left-running` `holder-unreadable` | 前の `launch.ts` が、process か記録を残している。`detail` を人に示す。process を止めるか、記録を消すかは、人が決める |

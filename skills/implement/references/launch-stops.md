@@ -16,6 +16,7 @@ After a stop, do not continue with changed conditions or limits. Do not edit the
 | `not-implemented` `not-reviewed` `not-captured` `not-accepted` `nothing-to-repair` `nothing-to-reread` `nothing-to-continue` | The action called directly cannot run in the current state. Call `run`. `run` decides the next action needed |
 | `already-implemented` | The implementation is done. Call `run`. `--fresh` discards the review and capture records. Use it only when the human decided so |
 | `review-stale` `tree-changed` | The worktree or the Issue changed after the review. Confirm that you did not edit the worktree, then call `run` |
+| `head-moved` | A review moved the worktree's HEAD or switched its branch. Read `git reflog`, restore the commit and branch named in the detail, then call `run` |
 | `busy` | Another `launch.ts` is running in the same worktree. Do not stop it. Wait for it to finish, then call again |
 | `holder-write-failed` | `launch.ts` cannot write its own record. It is being called inside the sandbox. Call again outside the sandbox |
 | `claude-left-running` `holder-unreadable` | An earlier `launch.ts` left a process or a record behind. Show `detail` to the human. Whether to stop the process or delete the record, the human decides |

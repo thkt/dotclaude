@@ -58,6 +58,7 @@ import {
   TWO_TURNS,
   JOINED_REPLY,
   printing,
+  git,
 } from "./_launch-fixture.ts";
 
 const PUBLISHED_PROPERTIES = {
@@ -336,6 +337,36 @@ test("review stops with tree-changed and keeps launch.json when a review edits t
   fakeReviewer(f, { ...CLEAN, self: { ...CLEAN.self, edit: "README.md" } });
   const out = assertStopped(review(f), "tree-changed") as { reviews: Record<string, unknown> };
   assert.deepEqual(Object.keys(out.reviews).sort(), ["independent", "self"]);
+  assert.deepEqual(launchRecord(worktreeOf(f)), before);
+});
+
+test("review stops with head-moved and keeps launch.json when a review commits in the worktree", () => {
+  const f = implemented();
+  const before = launchRecord(worktreeOf(f));
+  const head = git(worktreeOf(f), "rev-parse", "HEAD");
+  fakeReviewer(f, { ...CLEAN, self: { ...CLEAN.self, git: [["commit", "--allow-empty", "-m", "by the reviewer"]] } });
+  const out = assertStopped(review(f), "head-moved") as { detail: string; reviews: Record<string, unknown> };
+  assert.match(out.detail, new RegExp(`was ${head} on refs/heads/`));
+  assert.notEqual(git(worktreeOf(f), "rev-parse", "HEAD"), head);
+  assert.deepEqual(Object.keys(out.reviews).sort(), ["independent", "self"]);
+  assert.deepEqual(launchRecord(worktreeOf(f)), before);
+});
+
+test("review stops with head-moved rather than review-failed when a review commits and gives no readable result", () => {
+  const f = implemented();
+  const before = launchRecord(worktreeOf(f));
+  fakeReviewer(f, { ...CLEAN, self: { git: [["commit", "--allow-empty", "-m", "by the reviewer"]], exit: 4 } });
+  const out = assertStopped(review(f), "head-moved") as { reviews: Record<string, unknown> };
+  assert.deepEqual(Object.keys(out.reviews), ["independent"]);
+  assert.deepEqual(launchRecord(worktreeOf(f)), before);
+});
+
+test("review stops with head-moved naming both branches when a review switches the worktree to another branch", () => {
+  const f = implemented();
+  const before = launchRecord(worktreeOf(f));
+  fakeReviewer(f, { ...CLEAN, independent: { ...CLEAN.independent, git: [["branch", "reviewer-branch"], ["switch", "reviewer-branch"]] } });
+  const out = assertStopped(review(f), "head-moved") as { detail: string };
+  assert.match(out.detail, /on refs\/heads\/reviewer-branch after them/);
   assert.deepEqual(launchRecord(worktreeOf(f)), before);
 });
 
