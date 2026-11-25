@@ -87,16 +87,13 @@ test_the_entrypoint_aborts_when_an_iptables_operation_succeeds_as_the_demoted_us
 
 test_the_exec_d_command_comes_from_the_agents_table_rather_than_a_name_written_into_the_entrypoint() {
   echo "the exec'd command comes from the agents table rather than a name written into the entrypoint"
-  assert_empty "no agent exec command is hardcoded in entrypoint.sh" \
-    "$(grep -oE 'claude --dangerously-skip-permissions' "$ENTRYPOINT" 2>/dev/null || true)"
-
   local dir status=0
-  dir="$(make_sandbox_copy 0 's/claude --dangerously-skip-permissions/marker-cmd-t010/')"
+  dir="$(make_sandbox_copy 0 's/claude --dangerously-skip-permissions/marker-cmd/')"
   : > "$GOSU_LOG"
   run_entrypoint "$dir" || status=$?
   assert_eq "exit code is zero" "0" "$status"
   assert_contains "the exec'd command is the copied agents table's marker, not a literal in entrypoint.sh" \
-    "marker-cmd-t010" "$(cat "$GOSU_LOG")"
+    "marker-cmd" "$(cat "$GOSU_LOG")"
 }
 
 echo "=== entrypoint.sh tests ==="

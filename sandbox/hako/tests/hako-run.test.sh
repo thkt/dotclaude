@@ -36,17 +36,12 @@ EOF
 chmod +x "$STUB_BIN/git"
 
 run_hako() {
-  local agent="$1" extra_flag="${2:-}"
   : > "$CONTAINER_LOG"
   : > "$GIT_LOG"
   (
     cd "$FAKE_REPO"
     export PATH="$STUB_BIN:$PATH"
-    if [[ -n "$extra_flag" ]]; then
-      "$HAKO" "$agent" "$extra_flag"
-    else
-      "$HAKO" "$agent"
-    fi
+    "$HAKO" "$@"
   ) >"$TEST_TMPDIR/run.out" 2>&1
 }
 
@@ -86,9 +81,49 @@ test_the_generated_run_arguments_carry_cap_add_net_admin_and_the_per_agent_named
   assert_contains "run mounts the same per-agent volume volume-create made" "$volume_name" "$run_line"
 }
 
-echo "=== hako.sh run-argument tests ==="
+test_the_login_subcommand_starts_in_interactive_mode_and_passes_no_permission_skipping_flag() {
+  echo "the login subcommand starts in interactive mode and passes no permission-skipping flag"
+  run_hako login "$AGENT_NAME" || true
+  local run_line
+  run_line="$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null | head -1 || true)"
+  assert_contains "login opens stdin" "interactive" "$run_line"
+  assert_contains "login opens a tty" "tty" "$run_line"
+  assert_empty "login carries no permission-skipping flag" \
+    "$(printf '%s' "$run_line" | grep -F "dangerously-skip-permissions" 2>/dev/null || true)"
+}
+
+test_an_omitted_or_unknown_agent_name_exits_non_zero_without_calling_container_run() {
+  echo "an omitted or unknown agent name exits non-zero without calling container run"
+  local status
+
+  status=0
+  run_hako || status=$?
+  assert_eq "no args: exit code is non-zero" "yes" "$([[ "$status" -ne 0 ]] && echo yes || echo no)"
+  assert_empty "no args: container run was never called" "$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null || true)"
+
+  status=0
+  run_hako "bogus-agent" || status=$?
+  assert_eq "unknown agent: exit code is non-zero" "yes" "$([[ "$status" -ne 0 ]] && echo yes || echo no)"
+  assert_empty "unknown agent: container run was never called" "$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null || true)"
+  assert_empty "unknown agent: no throwaway clone was left behind" "$(cat "$GIT_LOG" 2>/dev/null || true)"
+
+  status=0
+  run_hako login || status=$?
+  assert_eq "login, agent omitted: exit code is non-zero" "yes" "$([[ "$status" -ne 0 ]] && echo yes || echo no)"
+  assert_empty "login, agent omitted: container run was never called" "$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null || true)"
+
+  status=0
+  run_hako login "bogus-agent" || status=$?
+  assert_eq "login, unknown agent: exit code is non-zero" "yes" "$([[ "$status" -ne 0 ]] && echo yes || echo no)"
+  assert_empty "login, unknown agent: container run was never called" "$(grep '^run ' "$CONTAINER_LOG" 2>/dev/null || true)"
+  assert_empty "login, unknown agent: no throwaway clone was left behind" "$(cat "$GIT_LOG" 2>/dev/null || true)"
+}
+
+echo "=== hako.sh run-argument and CLI tests ==="
 test_the_default_run_mounts_a_temporary_clone_of_the_repo_and_no_mount_argument_carries_pwd
 test_only_live_mounts_pwd_as_the_workspace
 test_the_generated_run_arguments_carry_cap_add_net_admin_and_the_per_agent_named_volume_mount
+test_the_login_subcommand_starts_in_interactive_mode_and_passes_no_permission_skipping_flag
+test_an_omitted_or_unknown_agent_name_exits_non_zero_without_calling_container_run
 
 report_results

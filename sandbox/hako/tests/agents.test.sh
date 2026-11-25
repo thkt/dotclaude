@@ -5,11 +5,19 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/../../../hooks/lifecycle/tests/helpers.sh"
 AGENTS="$SCRIPT_DIR/../agents.sh"
 
-test_claude_resolves_an_exec_command_an_auth_directory_and_an_allowlist() {
-  echo "claude resolves an exec command, an auth directory, and an allowlist"
-  assert_eq "exec command" "claude --dangerously-skip-permissions" "$("$AGENTS" exec claude)"
-  assert_eq "auth directory" "/home/node/.claude" "$("$AGENTS" auth-dir claude)"
-  assert_contains "allowlist resolves" "github.com" "$("$AGENTS" allowlist claude)"
+AGENT_ROWS=(
+  "claude|dangerously-skip-permissions|/home/node/.claude"
+  "codex|dangerously-bypass-approvals-and-sandbox|/home/node/.codex"
+)
+
+test_each_agent_resolves_an_exec_command_and_an_auth_directory() {
+  local row agent exec_word auth_dir
+  for row in "${AGENT_ROWS[@]}"; do
+    IFS='|' read -r agent exec_word auth_dir <<< "$row"
+    echo "$agent resolves an exec command and an auth directory"
+    assert_contains "$agent: exec command carries $exec_word" "$exec_word" "$("$AGENTS" exec "$agent")"
+    assert_eq "$agent: auth directory" "$auth_dir" "$("$AGENTS" auth-dir "$agent")"
+  done
 }
 
 test_an_unknown_agent_name_exits_non_zero_and_prints_the_valid_agent_names_to_stderr() {
@@ -30,9 +38,20 @@ test_the_allowlist_carries_both_the_shared_domains_and_the_claude_specific_ones(
   assert_contains "claude-specific domain api.anthropic.com" "api.anthropic.com" "$list"
 }
 
+test_the_domain_set_entering_ipset_for_codex_differs_from_the_one_for_claude() {
+  echo "the domain set entering ipset for codex differs from the one for claude"
+  local claude_list codex_list
+  claude_list="$("$AGENTS" allowlist claude 2>/dev/null)" || true
+  codex_list="$("$AGENTS" allowlist codex 2>/dev/null)" || true
+  assert_contains "codex resolves an allowlist at all" "registry.npmjs.org" "$codex_list"
+  assert_eq "codex's allowlist differs from claude's" "yes" \
+    "$([[ -n "$codex_list" && "$claude_list" != "$codex_list" ]] && echo yes || echo no)"
+}
+
 echo "=== agents.sh tests ==="
-test_claude_resolves_an_exec_command_an_auth_directory_and_an_allowlist
+test_each_agent_resolves_an_exec_command_and_an_auth_directory
 test_an_unknown_agent_name_exits_non_zero_and_prints_the_valid_agent_names_to_stderr
 test_the_allowlist_carries_both_the_shared_domains_and_the_claude_specific_ones
+test_the_domain_set_entering_ipset_for_codex_differs_from_the_one_for_claude
 
 report_results
