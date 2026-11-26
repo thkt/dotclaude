@@ -456,11 +456,11 @@ const role = schema
       ? "self"
       : "again"
     : "independent"
-  : stdin.startsWith("GitHub Issue #")
+  : stdin.includes("changed after you last read it")
     ? "reread"
-    : stdin.startsWith("Your work on GitHub Issue #")
+    : stdin.includes("does not print") || stdin.includes("CAPTURE_OUTPUT_BEGIN")
       ? "continue"
-      : stdin.startsWith("Your turn implementing")
+      : stdin.includes("was interrupted")
         ? "implement"
         : resumed
           ? "repair"
@@ -1187,3 +1187,7 @@ export const originBranchOf = (f: Fixture): string | null => {
 };
 
 export const publish = (f: Fixture, env: Record<string, string> = {}) => run(f, ["publish", "--worktree", worktreeOf(f)], env);
+
+export function assertIncludesAll(text: string, parts: string[], label = ""): void {
+  for (const part of parts) assert.ok(text.includes(part), `${label} expected ${JSON.stringify(part)} in:\n${text}`);
+}

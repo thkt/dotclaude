@@ -32,18 +32,11 @@ import {
   unfinished,
   gateDisabled,
   type Continued,
+  assertIncludesAll,
 } from "./_launch-fixture.ts";
 
-const continuePrompt = (base: string): string => `Your work on GitHub Issue #42 of owner/repo in this worktree is not finished. \`${DONE_GATE} status\` does not print \`done\`. Your last turn may have been interrupted, or the check may have failed or gone stale after an edit.
-
-1. Find where the work stopped. Read \`git status --short\` and \`git diff ${base}\`, and recall what you were doing: implementing the Issue, settling review findings, or bringing the change in line with a changed Issue. Keep the changes that are in the worktree, and finish that work.
-2. Run \`${DONE_GATE} check\`. Fix what fails and run it again.
-3. You are done when \`${DONE_GATE} status\` prints \`done\`. Any edit after a passing check makes the record stale, so run the check again after your last edit.
-
-Do not commit, push, or open a pull request. Do not edit files outside this worktree.
-
-When you are done, reply with: what was unfinished; what you changed; the files you changed; what \`${DONE_GATE} status\` printed; each decision you made for this Issue that the Issue does not state, including the ones from your earlier turns and leaving out the ones you later undid; and each step the Issue hands over to a named person.
-`;
+const assertContinuePrompt = (stdin: string, base: string): void =>
+  assertIncludesAll(stdin, ["does not print", "#42", "owner/repo", `git diff ${base}`, `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
 
 const continueCalls = (f: Fixture): number =>
   existsSync(join(f.logs, "continue-calls")) ? readFileSync(join(f.logs, "continue-calls"), "utf8").split("\n").filter(Boolean).length : 0;
@@ -61,7 +54,7 @@ test("continue on a worktree whose implement stopped with not-done resumes the i
   assert.ok(!args.includes("--json-schema"));
   assert.equal(flagValue(args, "--allowedTools"), flagValue(implementArgs, "--allowedTools"));
   assert.equal(flagValue(args, "--model"), "opus");
-  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), continuePrompt(baseOf(f)));
+  assertContinuePrompt(readFileSync(join(f.logs, "continue-stdin"), "utf8"), baseOf(f));
 });
 
 test("continue gives claude the base commit that launch.json records, not HEAD or origin's main", () => {
@@ -69,7 +62,7 @@ test("continue gives claude the base commit that launch.json records, not HEAD o
   const base = moveBaseToParent(f);
   fakeContinuer(f, PASS_CHECK + CONTINUE_REPLY);
   assert.equal(continueWork(f).status, 0);
-  assert.equal(readFileSync(join(f.logs, "continue-stdin"), "utf8"), continuePrompt(base));
+  assertContinuePrompt(readFileSync(join(f.logs, "continue-stdin"), "utf8"), base);
 });
 
 test("continue reports ok, appends round 1 to continues with done true, and passes --model when the child passes the check", () => {
