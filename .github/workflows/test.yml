@@ -25,14 +25,11 @@ jobs:
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
 
-      # The two remaining shell tests exec hooks that open with a zsh shebang. The Python
-      # tests pipe Japanese through subprocess in text mode, which reads the locale encoding,
-      # and this image does not generate en_US.UTF-8.
-      - name: Install zsh and generate the locale
+      # The two remaining shell tests exec hooks that open with a zsh shebang.
+      - name: Install zsh
         run: |
           sudo apt-get update
-          sudo apt-get install -y zsh locales
-          sudo locale-gen en_US.UTF-8
+          sudo apt-get install -y zsh
 
       # node_modules is not tracked; the lockfile is. The root install is what puts
       # oxlint on PATH for the static-gate tests, which reach for it through npx. The
@@ -41,8 +38,7 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
-      # typescript は ruff と違い JS 依存にあるので、上の Install がそのまま入れる。
-      # 版の固定は package.json/bun.lock 側 (ruff の --spec と同じ役割)。
+      # typescript は JS 依存にあるので、上の Install がそのまま入れる。版の固定は package.json/bun.lock 側。
       - name: Type check
         run: npx tsc
 
@@ -58,16 +54,6 @@ jobs:
           "skills/**/tests/*.test.js"
           "skills/**/tests/*.test.ts"
 
-      # hooks/edit/tests/rumdl_check_test.py runs the real binary. The rumdl step below
-      # reaches it through `pipx run`, which puts nothing on PATH for this step.
-      - name: Install rumdl
-        run: pipx install rumdl==0.2.58
-
-      # Not unittest discovery: it cannot recurse from the root, where the test
-      # directories are not packages.
-      - name: Python tests
-        run: find agents hooks skills -name '*_test.py' -print0 | xargs -0 -r -n1 python3
-
       # Runs only on a failed suite (#589). A test that builds a git repo under
       # tempfile.TemporaryDirectory has failed here in teardown with
       # "Directory not empty: 'pack'", and the same commit passed on rerun. The values below
@@ -82,7 +68,7 @@ jobs:
           find "${TMPDIR:-/tmp}" -maxdepth 4 -name pack -path '*objects*' -exec ls -la {} +
 
       # glob でなく find なのは、bash 3.2 に globstar が無く ** の階層解釈が版で割れるため。
-      # Python tests と同じ形で、階層が増えても suite を落とさない。-t が実行行を stderr へ出す。
+      # 階層が増えても suite を落とさない。-t が実行行を stderr へ出す。
       - name: Shell tests
         run: find hooks sandbox -name '*.test.sh' -print0 | xargs -0 -r -n1 -t bash
 
@@ -108,14 +94,7 @@ jobs:
       - name: textlint
         run: npx textlint '.ja/**/*.md'
 
-      # ruff は JS 依存に無いので版を直に固定する。手元は uvx ruff (2026-08-21 時点 0.16.4)。
-      - name: ruff
-        run: pipx run --spec ruff==0.16.4 ruff check .
-
-      - name: ruff format
-        run: pipx run --spec ruff==0.16.4 ruff format --check .
-
-      # rumdl は JS 依存に無いので版を直に固定する。ruff と同じ形。`fmt` でなく `check` なのは、
+      # rumdl は JS 依存に無いので版を直に固定する。`fmt` でなく `check` なのは、
       # コードスパン内の末尾スペースと見出しレベルで、自動修正が内容を壊す実例が出たため (#329)。
       - name: rumdl
         run: pipx run --spec rumdl==0.2.58 rumdl check .
