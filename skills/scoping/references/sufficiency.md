@@ -1,6 +1,6 @@
 # Judging sufficiency
 
-First identify what to decide next, then judge the needed evidence and the gaps with six questions. Do not demand the same amount of information for starting an investigation as for starting implementation.
+First identify what to decide next, then judge the needed evidence and the gaps with seven questions. Do not demand the same amount of information for starting an investigation as for starting implementation.
 
 Do not save answers to every item in a separate form. Do not count the unconfirmed as sufficient, and do not offset a serious gap with other items.
 
@@ -14,6 +14,7 @@ Check how the current implementation, sources, and agreement bear on this decisi
 | Uncertainty                | Could an unconfirmed item change the next decision? Is there evidence that it does not?                                                                                                                      |
 | Consistency                | Did you resolve contradictions among requirements, facts, policy, and agreement?                                                                                                                             |
 | Permission                 | Is there agreement on the target and scope, and the permission, that the next work needs?                                                                                                                    |
+| Need                       | Can you show that this requirement is needed, by something that happened, a statement by the person who agrees to the Issue, or an agreed Issue?                                                            |
 
 ## Organizing evidence and direction
 
@@ -30,6 +31,22 @@ Check how the current implementation, sources, and agreement bear on this decisi
 Check the implementation version, scope of application, and usage policy of the parts used this time against the design system, Storybook, existing screens, and tests. Confirm the states and operations the requirement involves, and keyboard, focus, and screen width, and separate the existing verification of a part alone from the verification added for this placement, data, and navigation.
 
 Do not make the existence of Storybook a requirement or evidence of agreement. When existing material leaves the interaction spec unclear and it drives the decision, close that gap before agreeing on a UI proposal.
+
+## Evidence of need
+
+For each Issue, show at least one piece of evidence of need. Write each as one line of the form `Evidence: <kind>: <locator>`, right after the paragraph of the body that states the purpose. Write the line in the language of the Issue body: `根拠: 観測: …` in a Japanese body, and `Evidence: observed: …` in an English body. The line points to where the evidence is, and having the line does not by itself make the evidence enough. Before writing it, open the locator and confirm that it states the same matter as the requirement. When you reopen an existing Issue that has no such line, confirm then and add the line.
+
+A failing test and the output of a run back up a claim. They show that a defect exists, not that it needs fixing.
+
+For a requirement an AI agent brought in, when the Issue has neither of the following two, write the sentence "This has not happened in use or in a run." in the question that asks for agreement. The two are an `observed` line, and a `parent issue` line that points to an Issue with evidence lines. Quote the answer to that question as the `decision` line.
+
+There are exactly these three kinds. In a Japanese body, write the three kinds as `観測`, `決定`, and `上位の要求`.
+
+| Kind | What counts | What the locator gives | What does not count |
+| --- | --- | --- | --- |
+| `observed` | What happened during use or a run, without anyone trying to check it. Reports from people and upstream announcements count | The date it happened, and one of a PR, an Issue, a CI run, a session ID, or the announcement URL | A result an AI agent got by running something to check it, from any session. Reproductions, trial code, tests written locally to fail, and findings of an AI agent that reviewed are such results |
+| `decision` | A statement in which the person who agrees to the Issue raised this requirement on their own. Or, for a requirement an AI agent brought in, the answer to a question that showed "This has not happened in use or in a run." | The date and a quote of the statement, with the session ID when there is one | For a requirement an AI agent brought in, the answer to a question that did not show that sentence. A reply that states nothing, such as "go ahead" |
+| `parent issue` | An agreed Issue names this work in its scope. That Issue itself need not have evidence lines | The Issue number and the sentence that names this work | The repo goal (`.claude/OUTCOME.md`) and decision records. They can explain the purpose, but are not evidence of need |
 
 ## Steps the target repo's policy imposes
 
