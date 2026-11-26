@@ -56,11 +56,9 @@ function listOxlintFiles(): string[] {
   return oxlintFiles;
 }
 
-test("the Node tests step in .github/workflows/test.yml carries hooks/**/tests/*.test.ts", () => {
-  const workflow = readFileSync(path.join(ROOT, ".github", "workflows", "test.yml"), "utf8");
-  const step = workflow.slice(workflow.indexOf("- name: Node tests"));
-  assert.ok(step.startsWith("- name: Node tests"), "the Node tests step is missing from test.yml");
-  assert.match(step.slice(0, step.indexOf("- name:", 1)), /"hooks\/\*\*\/tests\/\*\.test\.ts"/);
+test("the package.json test script that CI runs carries ./hooks", () => {
+  const packageJson = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8")) as { scripts: { test: string } };
+  assert.ok(packageJson.scripts.test.split(" ").includes("./hooks"));
 });
 
 let hooksTsFiles: string[] | undefined;
