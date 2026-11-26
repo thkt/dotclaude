@@ -99,10 +99,6 @@ mcp-needs-auth-cache.json
 # codegraph init は .codegraph/.gitignore も置くが、無視の指定はここだけに持たせる
 .codegraph/
 
-# Python
-__pycache__/
-*.pyc
-
 # Cache
 stats-cache.json
 # ディレクトリに限る。末尾が cache のソースファイルまで飲まないため
