@@ -138,3 +138,54 @@ test("the type prefixes scoping puts on a title are the keys launch.ts maps to a
   ])
     assert.deepEqual(prefixesIn(path), keys, path.join("/"));
 });
+
+test("scoping asks a seventh question on the need and names three kinds of evidence of need, on both sides", () => {
+  const sides = [
+    {
+      prefix: [],
+      need: "Need",
+      heading: "## Evidence of need",
+      next: "## Steps the target repo's policy imposes",
+      kinds: ["observed", "decision", "parent issue"],
+      otherKinds: ["観測", "決定", "上位の要求"],
+      count: "seven questions",
+      staleCount: "six questions",
+    },
+    {
+      prefix: [".ja"],
+      need: "必要",
+      heading: "## 必要の根拠",
+      next: "## 対象 repo の方針が課す手順",
+      kinds: ["観測", "決定", "上位の要求"],
+      otherKinds: ["observed", "decision", "parent issue"],
+      count: "7 つの問い",
+      staleCount: "6 つの問い",
+    },
+  ];
+  const tableRows = (text, header) =>
+    text.split("\n").filter((line) => line.startsWith("| ") && !header.test(line));
+  const firstColumn = (row) => row.split("|")[1].trim().replaceAll("`", "");
+  for (const { prefix, need, heading, next, kinds, otherKinds, count, staleCount } of sides) {
+    const skillDir = join(root, ...prefix, "skills", "scoping");
+    const label = [...prefix, "skills/scoping"].join("/");
+    const sufficiency = readFileSync(join(skillDir, "references", "sufficiency.md"), "utf8");
+    const doc = readFileSync(join(skillDir, "SKILL.md"), "utf8");
+
+    const questions = tableRows(sufficiency.slice(0, sufficiency.indexOf("\n## ")), /^\| (観点|Aspect|-)/);
+    assert.equal(questions.length, 7, `${label}: the question table`);
+    assert.equal(firstColumn(questions.at(-1)), need, `${label}: the last question`);
+
+    assert.match(sufficiency, new RegExp(`^${heading}$`, "m"), `${label}: sufficiency.md lost "${heading}"`);
+    const start = sufficiency.indexOf(heading);
+    const end = sufficiency.indexOf("\n## ", start + heading.length) + 1;
+    assert.ok(end > 0 && sufficiency.startsWith(next, end), `${label}: "${heading}" is not followed by "${next}"`);
+    const section = sufficiency.slice(start, end);
+    assert.deepEqual(tableRows(section, /^\| (種類|Kind|-)/).map(firstColumn), kinds, `${label}: the kinds of evidence`);
+    for (const kind of otherKinds) assert.ok(section.includes(kind), `${label}: the section does not name "${kind}"`);
+
+    for (const [name, text] of [["sufficiency.md", sufficiency], ["SKILL.md", doc]]) {
+      assert.ok(text.includes(count), `${label}/${name} does not say "${count}"`);
+      assert.ok(!text.includes(staleCount), `${label}/${name} still says "${staleCount}"`);
+    }
+  }
+});

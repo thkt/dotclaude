@@ -19,7 +19,7 @@ argument-hint: "[request or issue number]"
 ## Phase 2: 判断
 
 1. slug は依頼の語から小文字とハイフンで作る。過去の調査は `${CLAUDE_SKILL_DIR}/scripts/find-prior-research.ts <slug> docs/research research .claude/workspace/research` で探す。`shared` が 2 以上か `slug_words` と等しい候補を読み、今回への適用条件を確かめる。それ以外の候補は読まない。選んだ過去の調査を現行コード・合意と照合する。文書が無くても調査を続ける。
-2. `${CLAUDE_SKILL_DIR}/references/sufficiency.md` を先頭から最後まで読む。次に決めることを定め、その表の 6 つの問いで根拠・代替案・不確実さ・権限を確認する。事実で解ける不足は調べる。
+2. `${CLAUDE_SKILL_DIR}/references/sufficiency.md` を先頭から最後まで読む。次に決めることを定め、その表の 7 つの問いで根拠・代替案・不確実さ・権限を確認する。事実で解ける不足は調べる。
 3. Issue へ書く主張のうち、「存在しない」「唯一である」「網羅している」と述べるものと、この session で実行していない外部の挙動を前提とするものへ、`${CLAUDE_SKILL_DIR}/references/verification.md` の検証を当てる。既存のコードが要求と違う結果を返すことを直す要求で根本原因を確かめたときは、`${CLAUDE_SKILL_DIR}/references/verification.md` § Same-origin sweep を当てる。公開する Issue が実装に前提を課すときは、`${CLAUDE_SKILL_DIR}/references/verification.md` § 前提の実地検証を当てる。
 4. 意図・優先順位・許容範囲・権限が未確定なら、AskUserQuestion で選択肢と影響を示して質問する。仮説を先頭の選択肢に置く。判断を左右する根拠が変わったら再評価する。
 5. 既存の資料では判断できず、観測結果で方針が変わる場合だけ `${CLAUDE_SKILL_DIR}/references/experiment.md` の小さな実験を検討する。
