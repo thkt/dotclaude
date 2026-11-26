@@ -501,6 +501,14 @@ export const prepared = (): Fixture => {
 
 export const CHANGED_BODY = { ...ISSUE_REPLY, body: "body changed after prepare" };
 
+export const issueBlockOf = ({ title, body }: { title: string; body: string }): string =>
+  `\nISSUE_TEXT_BEGIN\n${title}\n\n${body}\nISSUE_TEXT_END\n`;
+
+export const assertIssueInPrompt = (stdin: string, issue: { title: string; body: string }, label = "prompt"): void => {
+  assert.ok(stdin.includes(issueBlockOf(issue)), `${label}: ${stdin}`);
+  assert.ok(!stdin.includes("gh issue view"), `${label}: ${stdin}`);
+};
+
 export function fakeHangingClaude(f: Fixture): void {
   writeFileSync(
     join(f.bin, "claude"),

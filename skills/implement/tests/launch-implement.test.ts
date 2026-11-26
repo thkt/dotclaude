@@ -82,6 +82,7 @@ import {
   JOINED_REPLY,
   printing,
   assertIncludesAll,
+  assertIssueInPrompt,
 } from "./_launch-fixture.ts";
 
 test("implement starts claude in the worktree and passes the prompt on stdin with the Issue, repository, and done_gate path", () => {
@@ -96,7 +97,7 @@ test("implement starts claude in the worktree and passes the prompt on stdin wit
   assert.equal(args[args.indexOf("--model") + 1], "opus");
   const prompt = readFileSync(join(f.logs, "stdin"), "utf8");
   assert.ok(prompt.includes(`Issue #${ISSUE} of owner/repo`));
-  assert.ok(prompt.includes(`gh issue view ${ISSUE} --repo owner/repo`));
+  assertIssueInPrompt(prompt, ISSUE_REPLY);
   assert.ok(prompt.includes(`\`${DONE_GATE} check\``));
   assert.ok(prompt.includes(`\`${DONE_GATE} status\``));
 });
@@ -269,11 +270,15 @@ test("implement records the agreed issue_digest in launch.json's implement, and 
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-const assertImplementPrompt = (stdin: string): void =>
-  assertIncludesAll(stdin, ["Implement GitHub Issue", "#42", "owner/repo", "gh issue view 42 --repo owner/repo", `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
+const assertImplementPrompt = (stdin: string): void => {
+  assertIncludesAll(stdin, ["Implement GitHub Issue", "#42", "owner/repo", `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
+  assertIssueInPrompt(stdin, ISSUE_REPLY);
+};
 
-const assertResumePrompt = (stdin: string, base: string): void =>
-  assertIncludesAll(stdin, ["was interrupted", "#42", "owner/repo", `git diff ${base}`, "gh issue view 42 --repo owner/repo", `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
+const assertResumePrompt = (stdin: string, base: string): void => {
+  assertIncludesAll(stdin, ["was interrupted", "#42", "owner/repo", `git diff ${base}`, `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
+  assertIssueInPrompt(stdin, ISSUE_REPLY);
+};
 
 const UNCHECKED: ImplementTurn = { reply: { session_id: "s-2", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
 

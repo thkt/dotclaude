@@ -4,14 +4,21 @@ import { join } from "node:path";
 import { git, LAUNCH_FILE, treeHash } from "../../../hooks/_lib/gate_record.ts";
 import { type ChildOutcome, type ChildRun, GIVE_REPLY, runClaudeOnce } from "./claude-child.ts";
 import { agreedIssueOf, ASSESSED, digestOf, DONE_GATE, finishedSessionOf, gateAt, gateStatusOf, holding, implementStateOf, type Launch, listOf, nonEmpty, notDoneOf, notImplemented, notPrepared, objectOf, oneLine, outputOf, parseObject, type Prepared, preparedAt, type Problem, type Result, stopped, viewIssue, type WorktreeCall, writeLaunch } from "./launch-state.ts";
-import { capturedParagraph, captureFailedPrompt, continuePrompt, earlierParagraph, INDEPENDENT_JUDGING_SCHEMA, INDEPENDENT_REVIEW_SCHEMA, independentOpening, JUDGE_EARLIER, JUDGING_SCHEMA, notCapturedParagraph, promptFor, PUBLISHED_FIELDS, repairPrompt, replyParagraph, rereadPrompt, resumePrompt, REVIEW_SCHEMA, REVIEW_TOOLS, reviewPrompt, ROLES, selfOpening, STATES } from "./prompts.ts";
+import { capturedParagraph, captureFailedPrompt, continuePrompt, earlierParagraph, INDEPENDENT_JUDGING_SCHEMA, INDEPENDENT_REVIEW_SCHEMA, independentOpening, type IssueText, JUDGE_EARLIER, JUDGING_SCHEMA, notCapturedParagraph, promptFor, PUBLISHED_FIELDS, repairPrompt, replyParagraph, rereadPrompt, resumePrompt, REVIEW_SCHEMA, REVIEW_TOOLS, reviewPrompt, ROLES, selfOpening, STATES } from "./prompts.ts";
 import { capture, type CaptureConfig, captureConfigOf, captureDecisionOf, captureStateOf, lastPassedOf } from "./capture.ts";
 
 const CHILD_TIMEOUT_MS = 3_600_000;
 
-const issueChange = (launch: Launch, worktree: string): Problem | null => {
+const agreedTextOf = (launch: Launch, worktree: string): IssueText | Problem => {
   const agreed = agreedIssueOf(launch, worktree);
-  return "found" in agreed ? null : agreed;
+  if (!("found" in agreed)) return agreed;
+  const { title, body } = agreed.found;
+  return { title, body: typeof body === "string" ? body : "" };
+};
+
+const issueChange = (launch: Launch, worktree: string): Problem | null => {
+  const agreed = agreedTextOf(launch, worktree);
+  return "reason" in agreed ? agreed : null;
 };
 
 const alreadyImplemented = (worktree: string): string =>
@@ -89,8 +96,8 @@ export const implement = async (call: WorktreeCall): Promise<Result> => {
   const { gate, launchPath, stored, launch } = prepared;
   const state = implementStateOf(stored);
   if (state === "finished" && !fresh) return stop("already-implemented", alreadyImplemented(worktree));
-  const changed = issueChange(launch, worktree);
-  if (changed !== null) return stop(changed.reason, changed.detail);
+  const issueText = agreedTextOf(launch, worktree);
+  if ("reason" in issueText) return stop(issueText.reason, issueText.detail);
 
   const startNew = async (): Promise<ImplementChild> => {
     const sessionId = randomUUID();
@@ -98,12 +105,12 @@ export const implement = async (call: WorktreeCall): Promise<Result> => {
     const implementRecord = { session_id: sessionId, issue_digest: launch.issue_digest, started_at: new Date().toISOString() };
     const base = { ...launch, ...kept, implement: implementRecord };
     writeLaunch(launchPath, base);
-    const outcome = await runChild({ ...implementingRun(call), prompt: promptFor(launch.issue, launch.repository, DONE_GATE), sessionId });
+    const outcome = await runChild({ ...implementingRun(call), prompt: promptFor(launch.issue, launch.repository, issueText, DONE_GATE), sessionId });
     return { outcome, resumed: false, issueDigest: launch.issue_digest, base };
   };
   const resume = async (): Promise<ImplementChild> => {
     const earlier = objectOf(stored.implement) ?? {};
-    const prompt = resumePrompt(launch.issue, launch.repository, launch.base, DONE_GATE);
+    const prompt = resumePrompt(launch.issue, launch.repository, issueText, launch.base, DONE_GATE);
     const outcome = await resumeImplementing(call, prompt, earlier.session_id as string);
     return noSessionOf(outcome) ? startNew() : { outcome, resumed: true, issueDigest: earlier.issue_digest, base: stored };
   };
@@ -326,10 +333,17 @@ const capturedReviewOf = (worktree: string, stored: Record<string, unknown>, lau
   return { reason: "not-captured", detail };
 };
 
-const reviewStartOf = (worktree: string, stored: Record<string, unknown>, launch: Launch, tree: string | null): string[] | Problem => {
+interface ReviewStart {
+  captured: string[];
+  issueText: IssueText;
+}
+
+const reviewStartOf = (worktree: string, stored: Record<string, unknown>, launch: Launch, tree: string | null): ReviewStart | Problem => {
   const captured = capturedReviewOf(worktree, stored, launch, tree);
   if (typeof captured === "object" && captured !== null) return captured;
-  return issueChange(launch, worktree) ?? (captured === null ? [] : [captured]);
+  const issueText = agreedTextOf(launch, worktree);
+  if ("reason" in issueText) return issueText;
+  return { captured: captured === null ? [] : [captured], issueText };
 };
 
 export const review = async ({ worktree, model, effort }: WorktreeCall): Promise<Result> => {
@@ -344,8 +358,9 @@ export const review = async ({ worktree, model, effort }: WorktreeCall): Promise
   const status = gateStatusOf(worktree);
   if (status.status !== 0) return stop("not-done", notDoneOf(status));
   const tree = treeHash(gate.root);
-  const capturedParagraphs = reviewStartOf(worktree, stored, launch, tree);
-  if (!Array.isArray(capturedParagraphs)) return stop(capturedParagraphs.reason, capturedParagraphs.detail);
+  const start = reviewStartOf(worktree, stored, launch, tree);
+  if ("reason" in start) return stop(start.reason, start.detail);
+  const { captured: capturedParagraphs, issueText } = start;
 
   const earlier = listOf(stored, "reviews");
   const round = earlier.length + 1;
@@ -360,7 +375,7 @@ export const review = async ({ worktree, model, effort }: WorktreeCall): Promise
   const independentSchema = keys === null ? INDEPENDENT_REVIEW_SCHEMA : INDEPENDENT_JUDGING_SCHEMA;
   const selfPrompt = reviewPrompt(selfOpening(launch.issue, launch.base), capturedParagraphs, [...judging, ...closing], []);
   const independentJudging = [...judging, ...(reply === null ? [] : [replyParagraph(reply)]), ...closing];
-  const independentOpened = independentOpening(launch.issue, launch.repository, launch.base);
+  const independentOpened = independentOpening(launch.issue, launch.repository, issueText, launch.base);
   const independentPrompt = reviewPrompt(independentOpened, capturedParagraphs, independentJudging, [PUBLISHED_FIELDS]);
   const head = headOf(gate.root);
   const [self, independent] = await Promise.all([
@@ -489,11 +504,11 @@ export const reread = async (call: WorktreeCall): Promise<Result> => {
   if (readDigestOf(stored) === launch.issue_digest) {
     return stop("nothing-to-reread", `The implementing session of ${worktree} has already read the agreed version of Issue #${launch.issue}.`);
   }
-  const issueChanged = issueChange(launch, worktree);
-  if (issueChanged !== null) return stop(issueChanged.reason, issueChanged.detail);
+  const issueText = agreedTextOf(launch, worktree);
+  if ("reason" in issueText) return stop(issueText.reason, issueText.detail);
 
   const before = treeHash(gate.root);
-  const prompt = rereadPrompt(launch.issue, launch.repository, launch.base, DONE_GATE);
+  const prompt = rereadPrompt(launch.issue, launch.repository, issueText, launch.base, DONE_GATE);
   const reply = sessionReplyOf(await resumeImplementing(call, prompt, implemented));
   if (typeof reply === "string") return stop("child-failed", reply);
 

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { endAll, runClaudeOnce } from "../scripts/claude-child.ts";
@@ -102,7 +102,7 @@ const hangingClaude = (): string => {
   return bin;
 };
 
-test("runClaudeOnce starts claude with -p, the model, the output format, the tools, the denied tools, the effort, the schema, and the settings in that order, with the prompt on stdin in cwd", async () => {
+test("runClaudeOnce starts claude with -p, the model, the output format, the tools, the denied tools, the effort, the schema, and one --settings last, with sandbox.enabled true even when CLAUDE_RUN_SETTINGS disables the sandbox, and the prompt on stdin in cwd", async () => {
   const dir = mkdtempSync(join(tmpdir(), "claude-child-argv-"));
   const bin = join(dir, "bin");
   mkdirSync(bin);
@@ -122,7 +122,7 @@ fs.writeFileSync(${JSON.stringify(join(dir, "call.json"))}, JSON.stringify({ arg
   });
   assert.equal(outcome.code, 0, outcome.stderr);
   const call = JSON.parse(readFileSync(join(dir, "call.json"), "utf8"));
-  assert.deepEqual(call.argv, [
+  assert.deepEqual(call.argv.slice(0, -1), [
     "-p",
     "--model",
     "opus",
@@ -137,8 +137,9 @@ fs.writeFileSync(${JSON.stringify(join(dir, "call.json"))}, JSON.stringify({ arg
     "--json-schema",
     JSON.stringify(schema),
     "--settings",
-    settings,
   ]);
+  assert.equal(call.argv.filter((arg: string) => arg === "--settings").length, 1);
+  assert.equal(JSON.parse(call.argv[call.argv.length - 1]).sandbox.enabled, true);
   assert.equal(call.stdin, "implement 本文");
   assert.equal(call.cwd, realpathSync(dir));
 });
@@ -180,3 +181,98 @@ test("endAll ends a running claude before its time limit, and runClaudeOnce retu
   assert.equal(outcome.code, null);
   assert.equal(outcome.timedOut, false);
 });
+
+const SANDBOX_TABLE = { enabled: true, failIfUnavailable: true, allowUnsandboxedCommands: false };
+const GITHUB_HOSTS = ["github.com", "api.github.com", "*.github.com"];
+
+const recordingClaude = (): { bin: string; dir: string; called: string } => {
+  const dir = mkdtempSync(join(tmpdir(), "claude-child-settings-"));
+  const bin = join(dir, "bin");
+  mkdirSync(bin);
+  const called = join(dir, "called");
+  writeFileSync(
+    join(bin, "claude"),
+    `#!/usr/bin/env node
+require("node:fs").writeFileSync(${JSON.stringify(called)}, JSON.stringify(process.argv.slice(2)));
+`,
+    { mode: 0o755 },
+  );
+  return { bin, dir, called };
+};
+
+const runWithSettings = async (settings: string | undefined) => {
+  const claude = recordingClaude();
+  const outcome = await withPath(`${claude.bin}:${process.env.PATH}`, () => {
+    if (settings === undefined) delete process.env.CLAUDE_RUN_SETTINGS;
+    else process.env.CLAUDE_RUN_SETTINGS = settings;
+    return runClaudeOnce({ prompt: "p", model: "opus", effort: undefined, schema: undefined, cwd: claude.dir, timeoutMs: 60_000 });
+  });
+  return { outcome, claude };
+};
+
+const passedSettingsOf = async (settings: string | undefined): Promise<Record<string, any>> => {
+  const { outcome, claude } = await runWithSettings(settings);
+  assert.equal(outcome.code, 0, outcome.stderr);
+  const argv: string[] = JSON.parse(readFileSync(claude.called, "utf8"));
+  assert.equal(argv[argv.length - 2], "--settings");
+  return JSON.parse(argv[argv.length - 1]);
+};
+
+const assertSandboxTable = (passed: Record<string, any>): void => {
+  for (const [key, value] of Object.entries(SANDBOX_TABLE)) assert.equal(passed.sandbox[key], value, `sandbox.${key}`);
+  assert.equal(passed.sandbox.network.strictAllowlist, true, "sandbox.network.strictAllowlist");
+  for (const host of GITHUB_HOSTS) assert.ok(passed.sandbox.network.deniedDomains.includes(host), `deniedDomains lacks ${host}`);
+};
+
+test("runClaudeOnce without CLAUDE_RUN_SETTINGS passes --settings with the sandbox enabled, failIfUnavailable, no unsandboxed commands, strictAllowlist, and the three GitHub hosts denied", async () => {
+  assertSandboxTable(await passedSettingsOf(undefined));
+});
+
+test("runClaudeOnce keeps the sandbox values when CLAUDE_RUN_SETTINGS sets each of them to the opposite value", async () => {
+  const opposite = {
+    sandbox: { enabled: false, failIfUnavailable: false, allowUnsandboxedCommands: true, network: { strictAllowlist: false, deniedDomains: [] } },
+  };
+  assertSandboxTable(await passedSettingsOf(JSON.stringify(opposite)));
+});
+
+test("runClaudeOnce keeps the other keys and the deniedDomains entries of CLAUDE_RUN_SETTINGS in the JSON it passes with --settings", async () => {
+  const given = {
+    env: { FOO: "bar" },
+    sandbox: { excludedCommands: ["docker"], network: { allowedDomains: ["example.com"], deniedDomains: ["evil.example", "github.com"] } },
+  };
+  const passed = await passedSettingsOf(JSON.stringify(given));
+  assert.deepEqual(passed.env, { FOO: "bar" });
+  assert.deepEqual(passed.sandbox.excludedCommands, ["docker"]);
+  assert.deepEqual(passed.sandbox.network.allowedDomains, ["example.com"]);
+  assert.deepEqual(passed.sandbox.network.deniedDomains, ["evil.example", "github.com", "api.github.com", "*.github.com"]);
+  assertSandboxTable(passed);
+});
+
+test("runClaudeOnce reads CLAUDE_RUN_SETTINGS as a file path relative to cwd when it does not start with { or [, and merges the sandbox values into that file's JSON", async () => {
+  const claude = recordingClaude();
+  writeFileSync(join(claude.dir, "child-settings.json"), JSON.stringify({ env: { FROM_FILE: "1" }, sandbox: { enabled: false } }));
+  const outcome = await withPath(`${claude.bin}:${process.env.PATH}`, () => {
+    process.env.CLAUDE_RUN_SETTINGS = "child-settings.json";
+    return runClaudeOnce({ prompt: "p", model: "opus", effort: undefined, schema: undefined, cwd: claude.dir, timeoutMs: 60_000 });
+  });
+  assert.equal(outcome.code, 0, outcome.stderr);
+  const argv: string[] = JSON.parse(readFileSync(claude.called, "utf8"));
+  const passed = JSON.parse(argv[argv.length - 1]);
+  assert.deepEqual(passed.env, { FROM_FILE: "1" });
+  assertSandboxTable(passed);
+});
+
+for (const [label, settings, reason] of [
+  ["text that is not JSON", "{not json", /not a JSON object/],
+  ["a JSON array", "[1]", /not a JSON object/],
+  ["a path to a missing file", "missing-settings.json", /could not be read/],
+] as const) {
+  test(`runClaudeOnce does not start claude and returns a nonzero code with the reason in stderr when CLAUDE_RUN_SETTINGS is ${label}`, async () => {
+    const { outcome, claude } = await runWithSettings(settings);
+    assert.notEqual(outcome.code, 0);
+    assert.match(outcome.stderr, /CLAUDE_RUN_SETTINGS/);
+    assert.match(outcome.stderr, reason);
+    assert.equal(outcome.timedOut, false);
+    assert.ok(!existsSync(claude.called), "claude was started");
+  });
+}

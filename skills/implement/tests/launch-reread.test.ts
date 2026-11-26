@@ -28,10 +28,13 @@ import {
   fakeRereader,
   agreedAfterChange,
   assertIncludesAll,
+  assertIssueInPrompt,
 } from "./_launch-fixture.ts";
 
-const assertRereadPrompt = (stdin: string, base: string): void =>
-  assertIncludesAll(stdin, ["changed after you last read it", "#42", "owner/repo", "gh issue view 42 --repo owner/repo", `git diff ${base}`, `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
+const assertRereadPrompt = (stdin: string, base: string): void => {
+  assertIncludesAll(stdin, ["changed after you last read it", "#42", "owner/repo", `git diff ${base}`, `\`${DONE_GATE} check\``, `\`${DONE_GATE} status\``]);
+  assertIssueInPrompt(stdin, CHANGED_BODY);
+};
 
 const rereadCalls = (f: Fixture): number =>
   existsSync(join(f.logs, "reread-calls")) ? readFileSync(join(f.logs, "reread-calls"), "utf8").split("\n").filter(Boolean).length : 0;

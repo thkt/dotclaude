@@ -57,6 +57,7 @@ import {
   printing,
   git,
   assertIncludesAll,
+  assertIssueInPrompt,
 } from "./_launch-fixture.ts";
 
 const PUBLISHED_PROPERTIES = {
@@ -114,7 +115,8 @@ function assertSelfPrompt(stdin: string, base: string, judges: boolean, label = 
 }
 
 function assertIndependentPrompt(stdin: string, base: string, judges: boolean, label = "independent"): void {
-  assertIncludesAll(stdin, [PUBLISHED_MARKER, "gh issue view 42 --repo owner/repo", `git diff ${base}`], label);
+  assertIncludesAll(stdin, [PUBLISHED_MARKER, `git diff ${base}`], label);
+  assertIssueInPrompt(stdin, ISSUE_REPLY, label);
   assertJudgingOrNot(stdin, judges, label);
 }
 
