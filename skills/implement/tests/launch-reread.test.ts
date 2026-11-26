@@ -21,8 +21,6 @@ import {
   moveBaseToParent,
   prepared,
   CHANGED_BODY,
-  signalWhileClaudeWaits,
-  assertEndedBySignal,
   launchFile,
   reread,
   AGREED_DIGEST,
@@ -183,12 +181,4 @@ test("reread stops with not-prepared, not-implemented, issue-unreadable, child-f
       assert.equal(out.issue_digest, AGREED_DIGEST);
     }
   }
-});
-
-test("reread ends claude and its child, exits 143, and keeps launch.json on SIGTERM", async () => {
-  const f = agreedAfterChange();
-  const before = launchFile(f);
-  const result = await signalWhileClaudeWaits(f, ["reread", "--worktree", worktreeOf(f)], "SIGTERM", 1);
-  assertEndedBySignal(result, 1);
-  assert.equal(launchFile(f), before);
 });

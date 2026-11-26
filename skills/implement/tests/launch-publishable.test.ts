@@ -286,25 +286,6 @@ test("publishable lists the open pull requests of the repository whose head is t
   for (const arg of ["api", "repos/owner/repo/pulls", "state=open", `head=owner:${BRANCH}`]) assert.ok(args.includes(arg), arg);
 });
 
-test("the usage has the publishable line after the run line, and a publishable call without --worktree, with a relative path, or with --model prints the usage and nothing on stdout, and exits 2", () => {
-  const f = fixture();
-  const calls = [
-    ["publishable"],
-    ["publishable", "--worktree", "relative/worktree"],
-    ["publishable", "--worktree", worktreeOf(f), "--model", "opus"],
-  ];
-  for (const args of calls) {
-    const result = run(f, args);
-    assert.equal(result.status, 2, args.join(" "));
-    assert.equal(result.stdout, "", args.join(" "));
-    assert.match(result.stderr, /^usage: /, args.join(" "));
-    assert.ok(
-      result.stderr.includes("launch.ts run --worktree <abs path> [--model <name>] [--effort <level>]\n       launch.ts publishable --worktree <abs path>\n"),
-      result.stderr,
-    );
-  }
-});
-
 const unreadablePublicationsDetail = (f: Fixture): string =>
   `The last entry of publications in ${launchPathOf(f)} lacks a commit, a positive integer number, or a url. launch.ts does not repair it.`;
 

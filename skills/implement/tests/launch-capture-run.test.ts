@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { type SpawnSyncReturns, spawn } from "node:child_process";
+import type { SpawnSyncReturns } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
@@ -14,11 +14,9 @@ import {
   IMPLEMENTED,
   PNG,
   REJECTED,
-  SCRIPT,
   type Script,
   type Turn,
   WRITE_PNG,
-  allEnded,
   allStates,
   assertStopped,
   captureAt,
@@ -28,19 +26,17 @@ import {
   fakeContinuer,
   fakeRounds,
   fixture,
-  isolatedEnv,
   judging,
   launchRecord,
   outputOf,
   passCheck,
-  pidsIn,
   prepare,
   recordedBase,
   rewriteLaunch,
   runLaunch,
+  signalWhileCommandWaits,
   settingOf,
   shaped,
-  waitFor,
   worktreeOf,
   assertIncludesAll,
 } from "./_launch-fixture.ts";
@@ -258,29 +254,9 @@ test("continue after a capture command that ended by a signal says the command f
 test("run ended by SIGTERM during a capture exits 143 with nothing on stdout and leaves no capture command or child", async () => {
   const f = capturedFixture({}, 'echo $$ >> "$LOGS/capture-pids"\nsleep 60 &\necho $! >> "$LOGS/capture-pids"\nwait\n');
   fakeRounds(f, { implement: [IMPLEMENTED], ...CLEAN_REVIEWS });
-  const child = spawn(SCRIPT, ["run", "--worktree", worktreeOf(f)], {
-    stdio: ["ignore", "pipe", "pipe"],
-    env: isolatedEnv({ PATH: `${f.bin}:${process.env.PATH}`, LOGS: f.logs, NODE: process.execPath, DONE_GATE }),
-  });
-  let stdout = "";
-  child.stdout.setEncoding("utf8").on("data", (chunk: string) => {
-    stdout += chunk;
-  });
-  const closed = new Promise<number | null>((done) => child.on("close", (code) => done(code)));
-  try {
-    assert.ok(await waitFor(() => pidsIn(f, "capture-pids").length >= 2, 20_000), "the capture command started");
-    child.kill("SIGTERM");
-    assert.equal(await closed, 143);
-    assert.equal(stdout, "");
-    const pids = pidsIn(f, "capture-pids");
-    assert.equal(pids.length, 2);
-    assert.ok(await allEnded(pids), `still running: ${pids.join(" ")}`);
-  } finally {
-    if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
-    for (const pid of pidsIn(f, "capture-pids")) {
-      try {
-        process.kill(pid, "SIGKILL");
-      } catch {}
-    }
-  }
+  const result = await signalWhileCommandWaits(f, ["run", "--worktree", worktreeOf(f)], "capture-pids", 2);
+  assert.equal(result.code, 143);
+  assert.equal(result.stdout, "");
+  assert.equal(result.pids.length, 2);
+  assert.deepEqual(result.survivors, [], `still running: ${result.survivors.join(" ")}`);
 });

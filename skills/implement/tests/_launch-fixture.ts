@@ -574,6 +574,40 @@ export async function signalWhileClaudeWaits(f: Fixture, args: string[], signal:
   }
 }
 
+interface CommandSignalled {
+  code: number | null;
+  stdout: string;
+  pids: number[];
+  survivors: number[];
+}
+
+export async function signalWhileCommandWaits(f: Fixture, args: string[], pidFile: string, count: number): Promise<CommandSignalled> {
+  const child = spawn(SCRIPT, args, {
+    stdio: ["ignore", "pipe", "pipe"],
+    env: isolatedEnv({ PATH: `${f.bin}:${process.env.PATH}`, LOGS: f.logs, NODE: process.execPath, DONE_GATE }),
+  });
+  let stdout = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk: string) => {
+    stdout += chunk;
+  });
+  const closed = new Promise<number | null>((done) => child.on("close", (code) => done(code)));
+  try {
+    assert.ok(await waitFor(() => pidsIn(f, pidFile).length >= count, 20_000), `${count} pids in ${pidFile} before the signal`);
+    child.kill("SIGTERM");
+    const code = await closed;
+    const pids = pidsIn(f, pidFile);
+    await waitFor(() => pids.every((pid) => !isRunning(pid)), 5_000);
+    return { code, stdout, pids, survivors: pids.filter(isRunning) };
+  } finally {
+    if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+    for (const pid of pidsIn(f, pidFile)) {
+      try {
+        process.kill(pid, "SIGKILL");
+      } catch {}
+    }
+  }
+}
+
 export function assertEndedBySignal(result: Signalled, claudes: number): void {
   assert.equal(result.code, 143, `exit ${result.code} signal ${result.signal}: ${result.stderr}`);
   assert.equal(result.stdout, "");

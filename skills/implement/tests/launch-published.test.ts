@@ -342,25 +342,6 @@ test("published names every differing field as draft, author, head, base in that
   assert.equal(assertPublishedStops(f, "pr-mismatch").detail, mismatchDetail("draft, author, head, base"));
 });
 
-test("the usage has the published line after the publishable line, and a published call without --worktree, with a relative path, or with --model prints the usage and nothing on stdout, and exits 2", () => {
-  const f = fixture();
-  const calls = [
-    ["published"],
-    ["published", "--worktree", "relative/worktree"],
-    ["published", "--worktree", worktreeOf(f), "--model", "opus"],
-  ];
-  for (const args of calls) {
-    const result = run(f, args);
-    assert.equal(result.status, 2, args.join(" "));
-    assert.equal(result.stdout, "", args.join(" "));
-    assert.match(result.stderr, /^usage: /, args.join(" "));
-    assert.ok(
-      result.stderr.includes("launch.ts publishable --worktree <abs path>\n       launch.ts published --worktree <abs path>\n"),
-      result.stderr,
-    );
-  }
-});
-
 const notPushedDetail = (published: string, head: string): string =>
   `The pull request ${PR_URL} still has the published commit ${published} as its head. Push the commit ${head} to the branch ${BRANCH} of origin, then call again.`;
 

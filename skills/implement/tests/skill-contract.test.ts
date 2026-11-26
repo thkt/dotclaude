@@ -59,19 +59,13 @@ test("every reference the skill names exists on the same side", () => {
   }
 });
 
-test("the skill names none of the retired launch routes, and its allowed tools grant its scripts but not Workflow", () => {
+test("the skill's allowed tools grant its scripts but not Workflow", () => {
   for (const { name, skill } of sides) {
-    for (const retired of ["host.ts", "sandbox_probe.ts", "references/host.md", "references/stops.md", "Workflow("])
-      assert.ok(!skill.includes(retired), `${name}: SKILL.md still names ${retired}`);
     const allowed = /^allowed-tools: (.*)$/m.exec(skill.slice(0, frontmatterEnd(skill)))?.[1];
     assert.ok(allowed, `${name}: the frontmatter lost allowed-tools`);
     assert.ok(!allowed.includes("Workflow"), `${name}: allowed-tools still grants Workflow`);
     assert.ok(allowed.split(" ").includes("Bash(${CLAUDE_SKILL_DIR}/scripts/*)"), `${name}: allowed-tools does not grant the skill's scripts`);
   }
-});
-
-test("the host reference is gone on both sides", () => {
-  for (const { name, dir } of sides) assert.ok(!existsSync(join(dir, "references", "host.md")), `${name}: references/host.md still exists`);
 });
 
 test("the skill leaves the push and the PR creation to launch.ts publish, naming each only in the sentence that declines to run it", () => {

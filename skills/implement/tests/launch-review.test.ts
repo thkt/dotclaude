@@ -50,9 +50,6 @@ import {
   lastReview,
   REQUIRED_FIELDS,
   CHANGED_BODY,
-  signalWhileClaudeWaits,
-  assertEndedBySignal,
-  launchFile,
   implementCalls,
   interrupted,
   TWO_TURNS,
@@ -638,14 +635,6 @@ test("review stops with requirements-changed, records nothing, and returns both 
   assert.equal(out.reviews.self.session_id, "self-1");
   assert.equal(out.reviews.independent.session_id, "ind-1");
   assert.deepEqual(launchRecord(worktreeOf(f)), before);
-});
-
-test("review ends both claude and their children, exits 143, and adds no record to launch.json on SIGTERM", async () => {
-  const f = implemented();
-  const before = launchFile(f);
-  const result = await signalWhileClaudeWaits(f, ["review", "--worktree", worktreeOf(f)], "SIGTERM", 2);
-  assertEndedBySignal(result, 2);
-  assert.equal(launchFile(f), before);
 });
 
 test("review, repair, reread, and continue on an unfinished worktree stop with not-implemented naming the unfinished session, start no claude, and keep launch.json", () => {

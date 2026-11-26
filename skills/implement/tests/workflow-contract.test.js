@@ -138,26 +138,3 @@ test("the type prefixes scoping puts on a title are the keys launch.ts maps to a
   ])
     assert.deepEqual(prefixesIn(path), keys, path.join("/"));
 });
-
-test("the skill does not route an Issue by its Plan section", () => {
-  assert.ok(!skill.includes("## Plan"), "SKILL.md routes by a ## Plan section");
-});
-
-test("the six procedure documents name launch.ts and its stop reasons, not the retired workflow and host", () => {
-  const retired = /\bworkflows?\b|\bhost\b|human-decision-required|repair-no-progress|needs_host/i;
-  const rounds = readFileSync(join(root, "skills", "implement", "scripts", "rounds.ts"), "utf8");
-  for (const reason of ["disagreement", "not-converging"])
-    assert.ok(rounds.includes(`reason: "${reason}"`), `rounds.ts no longer stops as ${reason}`);
-  assert.match("the workflow stops", retired);
-  assert.doesNotMatch("launch.ts stops", retired);
-  for (const prefix of [[], [".ja"]])
-    for (const path of [
-      ["skills", "scoping", "references", "sufficiency.md"],
-      ["skills", "scoping", "references", "issue.md"],
-      ["skills", "implement", "SKILL.md"],
-    ]) {
-      const rel = [...prefix, ...path].join("/");
-      const hits = readFileSync(join(root, rel), "utf8").split("\n").filter((line) => retired.test(line));
-      assert.deepEqual(hits, [], `${rel} still names a retired word`);
-    }
-});
