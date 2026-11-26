@@ -1,5 +1,8 @@
 /// <reference types="node" />
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { objectOf, parseObject } from "./launch-state.ts";
 
 const CHILD_TOOLS = process.env.CLAUDE_RUN_TOOLS || "Read,Write,Edit,MultiEdit,Glob,Grep,LS";
 const CHILD_DENIED = "Agent,Workflow";
@@ -38,7 +41,42 @@ export const endAll = () => {
   for (const pid of runningChildren) endGroup(pid, "SIGTERM");
 };
 
-const claudeArgv = ({ model, effort, schema, resume, fork, tools, sessionId, everyTurn }: ChildRun): string[] => {
+const GITHUB_HOSTS = ["github.com", "api.github.com", "*.github.com"];
+
+const givenSettingsOf = (given: string | undefined, cwd: string): Record<string, unknown> | string => {
+  if (!given) return {};
+  if (/^\s*[{[]/.test(given)) {
+    return parseObject(given) ?? `CLAUDE_RUN_SETTINGS is not a JSON object: ${given}`;
+  }
+  const path = resolve(cwd, given);
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch (err) {
+    return `CLAUDE_RUN_SETTINGS names a file that could not be read: ${(err as Error).message}`;
+  }
+  return parseObject(text) ?? `CLAUDE_RUN_SETTINGS names ${path}, which does not hold a JSON object.`;
+};
+
+const sandboxedSettingsOf = (given: Record<string, unknown>): Record<string, unknown> => {
+  const sandbox = objectOf(given.sandbox) ?? {};
+  const network = objectOf(sandbox.network) ?? {};
+  const denied = Array.isArray(network.deniedDomains) ? network.deniedDomains.filter((host) => typeof host === "string") : [];
+  return {
+    ...given,
+    sandbox: {
+      ...sandbox,
+      enabled: true,
+      failIfUnavailable: true,
+      allowUnsandboxedCommands: false,
+      network: { ...network, strictAllowlist: true, deniedDomains: [...new Set([...denied, ...GITHUB_HOSTS])] },
+    },
+  };
+};
+
+const claudeArgv = ({ model, effort, schema, resume, fork, tools, sessionId, everyTurn, cwd }: ChildRun): string[] | string => {
+  const given = givenSettingsOf(process.env.CLAUDE_RUN_SETTINGS, cwd);
+  if (typeof given === "string") return given;
   const format = everyTurn ? ["stream-json", "--verbose"] : ["json"];
   const argv = ["-p", "--model", model, "--output-format", ...format, "--allowedTools", tools ?? CHILD_TOOLS];
   argv.push("--disallowedTools", CHILD_DENIED);
@@ -47,7 +85,7 @@ const claudeArgv = ({ model, effort, schema, resume, fork, tools, sessionId, eve
   if (resume && fork) argv.push("--fork-session");
   if (sessionId) argv.push("--session-id", sessionId);
   if (schema) argv.push("--json-schema", JSON.stringify(schema));
-  if (process.env.CLAUDE_RUN_SETTINGS) argv.push("--settings", process.env.CLAUDE_RUN_SETTINGS);
+  argv.push("--settings", JSON.stringify(sandboxedSettingsOf(given)));
   return argv;
 };
 
@@ -55,6 +93,10 @@ export const runClaudeOnce = (run: ChildRun): Promise<ChildOutcome> =>
   new Promise((done) => {
     const { prompt, cwd, timeoutMs } = run;
     const argv = claudeArgv(run);
+    if (typeof argv === "string") {
+      done({ code: 1, stdout: "", stderr: `claude was not started: ${argv}`, timedOut: false });
+      return;
+    }
     const child = spawn("claude", argv, { cwd, stdio: ["pipe", "pipe", "pipe"], detached: true });
     const pid = child.pid ?? 0;
     if (pid) runningChildren.add(pid);
