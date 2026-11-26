@@ -13,7 +13,7 @@ Partly buildable. The answer differs between the two kinds of session.
 
 | Session | Verdict | Reason |
 | --- | --- | --- |
-| The `claude -p` children that `launch.ts` starts | Buildable | A `--settings` file that puts the GitHub hosts in `sandbox.network.deniedDomains` and sets `sandbox.allowUnsandboxedCommands` to `false` blocked every shell spelling tried, including the escape-hatch retry. The children never need to publish, because `launch.ts publish` runs in the process that calls `launch.ts`, not in a child |
+| The `claude -p` children that `launch.ts` starts | Buildable, with one route left when `capture` is set | A `--settings` file that puts the GitHub hosts in `sandbox.network.deniedDomains`, sets `sandbox.network.strictAllowlist` to `true`, and sets `sandbox.allowUnsandboxedCommands` to `false` blocked every route tried, including the escape-hatch retry, SSH, and a per-command request for a GitHub IP address. The whole `check` still passed. The children never need to publish, because `launch.ts publish` runs in the process that calls `launch.ts`, not in a child. When `capture` is set, `launch.ts` runs `check` over the worktree outside the sandbox (question F) |
 | The interactive session | Not buildable with the same settings | The sandbox applies per session, not per directory, so denying the hosts also takes away the `gh` reads thkt uses that session for. MCP tools that can create a PR run outside the sandbox |
 
 ## Setup
@@ -31,7 +31,7 @@ claude -p --model claude-haiku-5-5 --max-turns 3 --output-format json --allowedT
 | Repository | thkt/dotclaude main `c35d6bbb` |
 | Tools | macOS (arm64), git 2.56.1, Bun 1.4.5, gh logged in through the keyring |
 | Documents read | <https://code.claude.com/docs/en/sandboxing> and <https://code.claude.com/docs/en/settings>, read on the date above |
-| Total cost of the children | 0.12 USD |
+| Total cost of the children | 0.17 USD |
 
 The settings files passed with `--settings` follow.
 
@@ -40,6 +40,7 @@ The settings files passed with `--settings` follow.
 | `s0` | `{}` |
 | `s1` | `{"sandbox":{"enabled":true,"failIfUnavailable":true,"allowUnsandboxedCommands":false,"network":{"deniedDomains":["github.com","api.github.com","*.github.com"]}}}` |
 | `s2` | `s1` plus `"excludedCommands":["./publish.sh","./publish.sh *"]` |
+| `s4` | `s1` plus `"strictAllowlist":true` under `network` |
 | `s3` | `{"sandbox":{"enabled":true,"failIfUnavailable":true,"allowUnsandboxedCommands":false,"credentials":{"files":[{"path":"~/.config/gh/hosts.yml","mode":"deny"},{"path":"~/Library/Keychains","mode":"deny"}],"envVars":[{"name":"GH_TOKEN","mode":"deny"},{"name":"GITHUB_TOKEN","mode":"deny"}]}}}` |
 
 Every push and PR call targeted `https://github.com/thkt/nonexistent-probe-951.git` (`thkt/nonexistent-probe-951`), a repository that does not exist. A call that reaches GitHub ends with `Repository not found` or `Could not resolve to a Repository`, and a call the sandbox stops ends with `CONNECT tunnel failed, response 403` or `host is on the deny list`. No call could publish anything, whichever way it ended.
@@ -61,6 +62,17 @@ Yes. A probe script ran the 16 spellings that passed `publish_gate.ts` on 2026-1
 | `curl https://api.github.com/…` | reached | stopped (403) |
 | `gh api repos/…/pulls -f …`, `gh pr create`, `gh pr merge`, `gh workflow run` | reached | stopped (deny list) |
 | `git send-pack <url>` | not run, because send-pack does not speak https | not run |
+
+Three more routes were tried after the table above. SSH needs a host name or an address, and a per-command `allowed_domains` list is something a child in auto mode asks for on its own, as one did in question C. SSH keys for GitHub exist on this machine: `ssh -T git@github.com` authenticated as thkt outside the sandbox.
+
+| Route | `s1` | `s4` |
+| --- | --- | --- |
+| `ssh -T git@github.com`, `git ls-remote git@github.com:…` | stopped (host not resolved, and `github.com:22` on the deny list) | not run |
+| `ssh -T git@<GitHub IP>`, with and without `allowed_domains: ["<GitHub IP>"]` | stopped (`Operation not permitted`) | not run |
+| Python `urllib` over the sandbox proxy to `https://<GitHub IP>/…` without `allowed_domains` | stopped (not in the command's allowed domains) | stopped (not on the allow list) |
+| The same, with `allowed_domains: ["<GitHub IP>"]` | reached GitHub (HTTP 401) | refused before the call (`allowed_domains cannot widen network access in this session`) |
+
+`deniedDomains` names hosts, so a per-command list that names a GitHub IP address goes around it. `strictAllowlist` closes that route, because it makes the configured allowlist the whole allowlist and refuses per-command lists.
 
 `deniedDomains` won over the user settings, which allow the same hosts. The documentation agrees: a host in `deniedDomains` is refused in every permission mode, even when a broader `allowedDomains` entry would allow it. The sandbox follows child processes, so the spelling of the command does not matter. The 403 came from the sandbox proxy, before any connection to GitHub.
 
@@ -93,7 +105,7 @@ Denying `hosts.yml` stops `gh` entirely, because gh reads the file before it rea
 
 ### E. Are MCP tools and tools other than Bash in the sandbox?
 
-No. The documentation says local MCP servers, hooks, and the status line run with full access. The built-in file and web tools follow permission rules instead of the sandbox, and `allowedDomains` does not limit WebFetch. WebFetch issues GET requests only, so it cannot push or create a PR.
+No. The documentation says local MCP servers, hooks, and the status line run with full access. The built-in file and web tools follow permission rules instead of the sandbox, and `allowedDomains` does not limit WebFetch. Whether WebFetch can send a request that publishes was not checked.
 
 A child under `s1` was asked to list its `mcp__` tools without calling any. It listed 75 tools, all from claude.ai connectors (Claude Docs, Figma, Google Docs, Google Sheets, Google Slides). None can push or create a PR on GitHub. The list depends on the account's connectors and on the host that starts the session. `claude-child.ts` does not pass `--strict-mcp-config`, so a connector added later reaches the children too.
 
@@ -101,16 +113,19 @@ The interactive session that ran this research has the T3 Code tools, among them
 
 ### F. Does a session with the GitHub hosts denied still finish implementation and `check`?
 
-Yes for `check`. No for the prompts as written.
+Yes for `check`. No for the prompts as written. The whole `check` passed under `s4`, but the child cannot read the Issue.
 
 | Part | Result under `s1` |
 | --- | --- |
 | `gh issue view` | Stopped (A). The implement and review prompts tell the child to run it (`skills/implement/scripts/prompts.ts` lines 5 and 221), so the child cannot read the Issue. `launch.ts` would have to put the Issue text into the prompt |
 | `bun install --frozen-lockfile` | Passed in a clone (397 packages, 644 ms). The packages were cached locally, so this does not show the install with an empty cache. `launch.ts prepare` runs the setup in the calling process anyway, not in a child |
-| The whole `check` | Did not finish in one child Bash call. That call has a 10-minute limit, and the child stopped the command after it moved to the background, which left six `launch-*.test.ts` files pending |
+| The whole `check`, first run | Did not finish in one child Bash call. That call has a 10-minute limit, and the child stopped the command after it moved to the background, which left six `launch-*.test.ts` files pending |
 | `launch-run.test.ts` alone, to tell the limit from the denied hosts | Passed 46 of 46 tests in 106 seconds, the same as under `s0` |
+| The whole `check` under `s4`, with `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` so the child waits for the background command | Exit 0. `node --test` passed 777 of 777 tests in 321 seconds, and the ast-grep tests passed |
 
-Every command in `check` reads only local files, and `npx` resolves from `node_modules`. The `done_gate.ts stop` hook runs `check` as a hook, outside the sandbox, so the denied hosts do not reach it.
+Every command in `check` reads only local files, and `npx` resolves from `node_modules`. The `done_gate.ts stop` hook does not run `check`. It hashes the working tree and compares it with the last check record (`hooks/lifecycle/done_gate.ts`, `stopDecision`).
+
+One route stays open. When the target's `capture` is set, `launch.ts capture` runs `done_gate.ts check` itself (`skills/implement/scripts/capture.ts` line 211). That process is the caller of `launch.ts`, outside the child's sandbox. `check` runs the test files in the worktree, which the child wrote, so a test file that publishes would run with the network and the keyring token. This was read from the code, not tried. This repository's `capture` is `null`.
 
 ### G. Can the interactive session that starts publishing get the same settings?
 
@@ -131,13 +146,15 @@ This covers the `launch.ts` children only, and each item needs its own Issue. Th
 
 | Change | Where | What is lost |
 | --- | --- | --- |
-| Pass a `--settings` file with `deniedDomains` for the GitHub hosts and `allowUnsandboxedCommands: false` | `claude-child.ts`, which today passes `--settings` only from `CLAUDE_RUN_SETTINGS` | The child cannot read anything from GitHub |
+| Pass a `--settings` file with `deniedDomains` for the GitHub hosts, `strictAllowlist: true`, and `allowUnsandboxedCommands: false` | `claude-child.ts`, which today passes `--settings` only from `CLAUDE_RUN_SETTINGS` | The child cannot read anything from GitHub |
 | Put the Issue title and body into the implement and review prompts in place of `gh issue view` | `skills/implement/scripts/prompts.ts` | The prompt grows by the Issue's length. An edit to the Issue after `agree` reaches the child only through `reread` |
 | Pass `--strict-mcp-config` with no MCP config | `claude-child.ts` | The children lose the claude.ai connectors |
+| Run the `check` that `capture` starts under the same sandbox, or have the child run it and read the record | `skills/implement/scripts/capture.ts` | A hook or a process that `launch.ts` starts cannot be sandboxed through settings, so this needs its own design |
 | Add a test that the argv carries the settings and the flag | `skills/implement/tests/` | Nothing |
 
 ## Not covered
 
 - The variant of C that names a file the agent cannot write.
+- The `capture` route in F, beyond reading the code.
 - Whether an empty package cache needs `registry.npmjs.org`. This affects only a child that runs `bun install` itself.
 - Linux and WSL2, where `mask` works for files.
