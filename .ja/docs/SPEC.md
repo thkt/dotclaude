@@ -43,7 +43,7 @@
 | `agents/`     | fork 実行される専門エージェント定義        | Agent tool           |
 | `hooks/`      | ツール呼び出しに割り込むスクリプト         | Claude Code harness  |
 | `docs/`       | 人間向けの設計文書               | 人間                 |
-| `tests/`      | 規約をコードで縛る横断テスト               | `node --test`        |
+| `tests/`      | 規約をコードで縛る横断テスト               | `bun test`           |
 
 ## Hook 契約
 
@@ -185,7 +185,7 @@ agent は必ず fork 文脈で走り、呼び出し元の会話履歴を持た�
 
 | ステップ      | コマンド                                                                                     |
 | ------------- | -------------------------------------------------------------------------------------------- |
-| Node tests    | `node --test` を `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"` に対して実行 |
+| Bun tests     | `bun run test`。`package.json` の `scripts.test` が、`./tests`、`./agents`、`./hooks`、`./skills` の下のテストを 4 並列、1 件 300 秒の上限で実行 |
 | Shell tests   | `find hooks sandbox -name '*.test.sh'` を 1 ファイルずつ bash で実行                          |
 | oxlint        | `npx oxlint --format=github`                                                                  |
 | biome         | `npx biome lint --reporter=github`                                                            |
@@ -240,7 +240,7 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 
 | 追加するもの | 触るファイル                                                            | 確認                                        |
 | ------------ | ----------------------------------------------------------------------- | ------------------------------------------- |
-| hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `node --test "hooks/**/tests/*.test.ts"` と `find hooks sandbox -name '*.test.sh'` |
-| skill        | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
-| agent        | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
+| hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `bun test --timeout=300000 ./hooks` と `find hooks sandbox -name '*.test.sh'` |
+| skill        | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `bun test --timeout=300000 ./skills` |
+| agent        | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `bun test --timeout=300000 ./agents` |
 | 文書         | `.ja/docs/<NAME>.md` を先、`docs/<NAME>.md` を同一コミットで            | `npx textlint '.ja/**/*.md'` と `rumdl check .` |

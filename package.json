@@ -4,6 +4,10 @@
   "private": true,
   "description": "Claude Code harness config: hooks, skills, agents, rules.",
   "type": "module",
+  "scripts": {
+    "test": "bun test --parallel=4 --timeout=300000 ./tests ./agents ./hooks ./skills",
+    "check": "tsc && bun run test && oxlint && biome lint && textlint '.ja/**/*.md' && ast-grep scan . .ja && ast-grep test --skip-snapshot-tests"
+  },
   "devDependencies": {
     "@ast-grep/cli": "0.51.3",
     "@biomejs/biome": "2.5.12",

@@ -119,7 +119,11 @@ export const runClaudeOnce = (run: ChildRun): Promise<ChildOutcome> =>
     child.stderr.setEncoding("utf8").on("data", (chunk: string) => {
       stderr += chunk;
     });
-    child.on("error", (err) => finish({ code: -1, stdout, stderr: String(err.message), timedOut: false }));
+    child.on("error", (err) => {
+      const code = (err as NodeJS.ErrnoException).code;
+      const message = typeof code === "string" ? `${code}: ${err.message}` : String(err.message);
+      finish({ code: -1, stdout, stderr: message, timedOut: false });
+    });
     child.on("close", (code) => finish({ code, stdout, stderr: stderr.slice(-4000), timedOut }));
     child.stdin.on("error", () => {});
     child.stdin.end(prompt);

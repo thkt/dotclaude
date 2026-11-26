@@ -56,10 +56,7 @@ test("the type-check set contains every tracked .ts under the tests directory wh
   }
 });
 
-test("the Node tests step in .github/workflows/test.yml carries tests/*.test.ts", () => {
-  const workflow = readFileSync(path.join(ROOT, ".github", "workflows", "test.yml"), "utf8");
-  const step = workflow.slice(workflow.indexOf("- name: Node tests"));
-  assert.ok(step.startsWith("- name: Node tests"), "the Node tests step is missing from test.yml");
-  const stepBody = step.slice(0, step.indexOf("- name:", 1));
-  assert.match(stepBody, /"tests\/\*\.test\.ts"/);
+test("the package.json test script that CI runs carries ./tests", () => {
+  const packageJson = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8"));
+  assert.ok(packageJson.scripts.test.split(" ").includes("./tests"));
 });

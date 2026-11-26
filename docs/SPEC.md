@@ -43,7 +43,7 @@ The directory is the unit of responsibility. The runner column names who reads t
 | `agents/`     | Specialist definitions run in a fork       | Agent tool           |
 | `hooks/`      | Scripts that interrupt a tool call         | Claude Code harness  |
 | `docs/`       | Human-facing design docs     | Humans               |
-| `tests/`      | Cross-cutting tests that enforce rules     | `node --test`        |
+| `tests/`      | Cross-cutting tests that enforce rules     | `bun test`           |
 
 ## Hook contract
 
@@ -185,7 +185,7 @@ The only check before a write is `rust_pre_edit.ts`'s clippy, which takes `.rs`.
 
 | Step          | Command                                                                                      |
 | ------------- | -------------------------------------------------------------------------------------------- |
-| Node tests    | `node --test` over `"tests/*.test.js"`, `"tests/*.test.ts"`, `"agents/**/tests/*.test.js"`, `"agents/**/tests/*.test.ts"`, `"hooks/**/tests/*.test.js"`, `"hooks/**/tests/*.test.ts"`, `"skills/**/tests/*.test.js"`, `"skills/**/tests/*.test.ts"` |
+| Bun tests     | `bun run test`. `package.json`'s `scripts.test` runs the tests under `./tests`, `./agents`, `./hooks`, and `./skills`, 4 in parallel, with a 300-second limit per test |
 | Shell tests   | `find hooks sandbox -name '*.test.sh'`, one file per bash invocation                          |
 | oxlint        | `npx oxlint --format=github`                                                                  |
 | biome         | `npx biome lint --reporter=github`                                                            |
@@ -240,7 +240,7 @@ Here are the files a new component touches, and the command that confirms the ad
 
 | Adding   | Files to touch                                                          | Confirmation                                |
 | -------- | ----------------------------------------------------------------------- | ------------------------------------------- |
-| A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `node --test "hooks/**/tests/*.test.ts"` and `find hooks sandbox -name '*.test.sh'` |
-| A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `node --test "skills/**/tests/*.test.js" "skills/**/tests/*.test.ts"` |
-| An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `node --test "agents/**/tests/*.test.js" "agents/**/tests/*.test.ts"` |
+| A hook   | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `bun test --timeout=300000 ./hooks` and `find hooks sandbox -name '*.test.sh'` |
+| A skill  | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `bun test --timeout=300000 ./skills` |
+| An agent | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `bun test --timeout=300000 ./agents` |
 | A document | `.ja/docs/<NAME>.md` first, `docs/<NAME>.md` in the same commit       | `npx textlint '.ja/**/*.md'` and `rumdl check .` |
