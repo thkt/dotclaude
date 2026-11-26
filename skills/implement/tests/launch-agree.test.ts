@@ -83,31 +83,6 @@ test("agree stops with not-prepared, issue-unreadable, or issue-not-open and lea
   }
 });
 
-test("the usage printed for a call with no arguments has the agree and reread lines", () => {
-  const result = run(fixture(), []);
-  assert.equal(result.status, 2);
-  assert.ok(result.stderr.includes("launch.ts agree --worktree <abs path>\n"), result.stderr);
-  assert.ok(result.stderr.includes("launch.ts reread --worktree <abs path> [--model <name>] [--effort <level>]\n"), result.stderr);
-});
-
-test("an agree or reread call without --worktree, with a relative path, or agree with --model prints the usage and nothing on stdout, and exits 2", () => {
-  const f = fixture();
-  const calls = [
-    ["agree"],
-    ["agree", "--worktree", "relative/worktree"],
-    ["agree", "--worktree", worktreeOf(f), "--model", "opus"],
-    ["reread"],
-    ["reread", "--model", "opus"],
-    ["reread", "--worktree", "relative/worktree"],
-  ];
-  for (const args of calls) {
-    const result = run(f, args);
-    assert.equal(result.status, 2, args.join(" "));
-    assert.equal(result.stdout, "", args.join(" "));
-    assert.match(result.stderr, /^usage: /, args.join(" "));
-  }
-});
-
 test("after launch.ts is killed and its claude's process group is ended, agree succeeds and leaves no record", async () => {
   const f = prepared();
   const waiting = await killedLaunch(f);

@@ -422,16 +422,6 @@ test("run with an --effort level outside low, medium, high, xhigh, and max print
   assert.deepEqual(roundCalls(f), []);
 });
 
-test("a run call without --worktree or with a relative path prints the usage and nothing on stdout, and exits 2", () => {
-  const f = fixture();
-  for (const args of [["run"], ["run", "--model", "opus"], ["run", "--worktree", "relative/worktree"]]) {
-    const result = run(f, args);
-    assert.equal(result.status, 2, args.join(" "));
-    assert.equal(result.stdout, "", args.join(" "));
-    assert.match(result.stderr, /^usage: /, args.join(" "));
-  }
-});
-
 test("run calls implement once and stops with no-progress when the implement child returns an empty session_id and exits 0", () => {
   const f = prepared();
   const empty: Turn = { ...IMPLEMENTED, reply: { session_id: "", result: "finished", total_cost_usd: 0.5, duration_ms: 1200 } };
@@ -464,13 +454,6 @@ test("run stops at the review after implement with requirements-changed when the
   assert.equal(out.steps[out.steps.length - 1].ok, false);
   assert.equal(out.steps[out.steps.length - 1].reason, "requirements-changed");
   assert.deepEqual(roundCalls(f).map((call) => call.role), ["implement"]);
-});
-
-test("run ends the claude of the action it called, exits 143, and starts no claude after it on SIGTERM", async () => {
-  const f = prepared();
-  const result = await signalWhileClaudeWaits(f, ["run", "--worktree", worktreeOf(f)], "SIGTERM", 1);
-  assertEndedBySignal(result, 1);
-  assert.equal(pidsIn(f, "hanging-claude-pids").length, 1);
 });
 
 const REREAD_EDITED: Turn = { edit: true, check: true, reply: { session_id: "s-1", result: "reread", total_cost_usd: 0.3, duration_ms: 700 } };

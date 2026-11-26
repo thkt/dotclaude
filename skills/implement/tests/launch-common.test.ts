@@ -50,6 +50,12 @@ import {
   endWaiting,
   HELD_CALLS,
   killedLaunch,
+  type Fixture,
+  implemented,
+  agreedAfterChange,
+  unfinished,
+  signalWhileClaudeWaits,
+  assertEndedBySignal,
 } from "./_launch-fixture.ts";
 
 test("the script runs as a command", () => {
@@ -90,6 +96,33 @@ test("a call the script cannot read prints the usage and nothing on stdout, and 
     ["review", "--model", "opus"],
     ["review", "--worktree", "relative/worktree"],
     ["launch", "--repo", f.repo],
+    ["agree"],
+    ["agree", "--worktree", "relative/worktree"],
+    ["agree", "--worktree", worktreeOf(f), "--model", "opus"],
+    ["reread"],
+    ["reread", "--model", "opus"],
+    ["reread", "--worktree", "relative/worktree"],
+    ["repair"],
+    ["repair", "--model", "opus"],
+    ["repair", "--worktree", "relative/worktree"],
+    ["continue"],
+    ["continue", "--model", "opus"],
+    ["continue", "--worktree", "relative/worktree"],
+    ["run"],
+    ["run", "--model", "opus"],
+    ["run", "--worktree", "relative/worktree"],
+    ["body"],
+    ["body", "--worktree", "relative/worktree"],
+    ["body", "--worktree", worktreeOf(f), "--model", "opus"],
+    ["publish"],
+    ["publish", "--worktree", "relative/worktree"],
+    ["publish", "--worktree", worktreeOf(f), "--model", "opus"],
+    ["published"],
+    ["published", "--worktree", "relative/worktree"],
+    ["published", "--worktree", worktreeOf(f), "--model", "opus"],
+    ["publishable"],
+    ["publishable", "--worktree", "relative/worktree"],
+    ["publishable", "--worktree", worktreeOf(f), "--model", "opus"],
   ];
   for (const args of calls) {
     const result = run(f, args);
@@ -98,6 +131,48 @@ test("a call the script cannot read prints the usage and nothing on stdout, and 
     assert.match(result.stderr, /^usage: /, args.join(" "));
   }
   assert.ok(!existsSync(worktreeOf(f)));
+});
+
+interface SignalRow {
+  action: string;
+  arrange: () => Fixture;
+  claudes: number;
+  signals: NodeJS.Signals[];
+  keeps: (f: Fixture, before: string) => void;
+}
+
+const keepsLaunchFile = (f: Fixture, before: string): void => assert.equal(launchFile(f), before);
+
+const keepsImplementStart = (f: Fixture, before: string): void => {
+  const earlier = JSON.parse(before);
+  const after = JSON.parse(launchFile(f));
+  const args = readFileSync(join(f.logs, "hanging-args"), "utf8").split("\n");
+  assert.equal(typeof after.implement.started_at, "string");
+  assert.deepEqual(after, {
+    ...earlier,
+    implement: { session_id: args[args.indexOf("--session-id") + 1], issue_digest: earlier.issue_digest, started_at: after.implement.started_at },
+  });
+};
+
+const SIGNAL_ROWS: SignalRow[] = [
+  { action: "implement", arrange: prepared, claudes: 1, signals: ["SIGTERM", "SIGINT", "SIGHUP"], keeps: keepsImplementStart },
+  { action: "reread", arrange: () => agreedAfterChange(), claudes: 1, signals: ["SIGTERM"], keeps: keepsLaunchFile },
+  { action: "review", arrange: () => implemented(), claudes: 2, signals: ["SIGTERM"], keeps: keepsLaunchFile },
+  { action: "repair", arrange: rejected, claudes: 1, signals: ["SIGTERM"], keeps: keepsLaunchFile },
+  { action: "continue", arrange: unfinished, claudes: 1, signals: ["SIGTERM"], keeps: keepsLaunchFile },
+  { action: "run", arrange: prepared, claudes: 1, signals: ["SIGTERM"], keeps: (f) => assert.equal(pidsIn(f, "hanging-claude-pids").length, 1) },
+];
+
+test("an action ended by a signal while its claude waits ends every claude and its child, exits 143, prints nothing, and keeps its record", async (t) => {
+  for (const { action, arrange, claudes, signals, keeps } of SIGNAL_ROWS)
+    for (const signal of signals)
+      await t.test(`${action} on ${signal}`, async () => {
+        const f = arrange();
+        const before = launchFile(f);
+        const result = await signalWhileClaudeWaits(f, [action, "--worktree", worktreeOf(f)], signal, claudes);
+        assertEndedBySignal(result, claudes);
+        keeps(f, before);
+      });
 });
 
 test("an earlier finding that only independent judges open stays required under its key with independent's reason, and only independent is rejected", () => {

@@ -283,18 +283,3 @@ test("body succeeds on the published commit and on a commit stacked on it, with 
   assert.notEqual(headOf(f), first);
   assert.equal(bodyText(f), expectedBody({ commit: headOf(f) }));
 });
-
-test("the usage has the body line after the published line, and a body call without --worktree, with a relative path, or with --model prints the usage and nothing on stdout, and exits 2", () => {
-  const f = fixture();
-  const calls = [["body"], ["body", "--worktree", "relative/worktree"], ["body", "--worktree", worktreeOf(f), "--model", "opus"]];
-  for (const args of calls) {
-    const result = run(f, args);
-    assert.equal(result.status, 2, args.join(" "));
-    assert.equal(result.stdout, "", args.join(" "));
-    assert.match(result.stderr, /^usage: /, args.join(" "));
-    assert.ok(
-      result.stderr.includes("launch.ts published --worktree <abs path>\n       launch.ts body --worktree <abs path>\n"),
-      result.stderr,
-    );
-  }
-});

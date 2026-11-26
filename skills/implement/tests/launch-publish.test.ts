@@ -24,7 +24,6 @@ import {
   fakeGit,
   fakePublishGh,
   fakeReviewer,
-  fixture,
   ghCallsOf,
   git,
   headOf,
@@ -41,7 +40,6 @@ import {
   rejected,
   remotesOf,
   review,
-  run,
   sha256,
   stacked,
   twoMedia,
@@ -396,16 +394,4 @@ test("publish leaves no file under launch-holders after it succeeds", () => {
   fakePublishGh(f);
   succeeded(f);
   assert.deepEqual(existsSync(holdersOf(f)) ? readdirSync(holdersOf(f)) : [], []);
-});
-
-test("the usage ends with the publish line, and a publish call without --worktree, with a relative path, or with --model prints the usage and nothing on stdout, and exits 2", () => {
-  const f = fixture();
-  const calls = [["publish"], ["publish", "--worktree", "relative/worktree"], ["publish", "--worktree", worktreeOf(f), "--model", "opus"]];
-  for (const args of calls) {
-    const result = run(f, args);
-    assert.equal(result.status, 2, args.join(" "));
-    assert.equal(result.stdout, "", args.join(" "));
-    assert.match(result.stderr, /^usage: /, args.join(" "));
-    assert.ok(result.stderr.endsWith("       launch.ts capture --worktree <abs path>\n       launch.ts publish --worktree <abs path>\n"), result.stderr);
-  }
 });

@@ -259,22 +259,6 @@ test("implement, review, repair, and run stop with not-prepared and start no cla
   }
 });
 
-for (const signal of ["SIGTERM", "SIGINT", "SIGHUP"] as const) {
-  test(`implement ends claude and its child, exits 143, prints nothing, and keeps the record written before the launch on ${signal}`, async () => {
-    const f = prepared();
-    const before = JSON.parse(launchFile(f));
-    const result = await signalWhileClaudeWaits(f, ["implement", "--worktree", worktreeOf(f)], signal, 1);
-    assertEndedBySignal(result, 1);
-    const after = JSON.parse(launchFile(f));
-    const args = readFileSync(join(f.logs, "hanging-args"), "utf8").split("\n");
-    assert.equal(typeof after.implement.started_at, "string");
-    assert.deepEqual(after, {
-      ...before,
-      implement: { session_id: args[args.indexOf("--session-id") + 1], issue_digest: before.issue_digest, started_at: after.implement.started_at },
-    });
-  });
-}
-
 test("implement records the agreed issue_digest in launch.json's implement, and review records it in its round", () => {
   const f = implemented();
   assert.equal((launchRecord(worktreeOf(f)) as { implement: Record<string, unknown> }).implement.issue_digest, digestOf(ISSUE_REPLY));

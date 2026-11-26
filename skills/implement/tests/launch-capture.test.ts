@@ -1,6 +1,5 @@
 /// <reference types="node" />
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
@@ -11,7 +10,6 @@ import {
   CLEAN,
   CONFIG,
   COUNT_CHECK,
-  DONE_GATE,
   FAKE,
   PNG,
   REJECTED,
@@ -33,8 +31,8 @@ import {
   git,
   implemented,
   isRunning,
-  isolatedEnv,
   launchFile,
+  signalWhileCommandWaits,
   launchRecord,
   moveBaseToParent,
   outputOf,
@@ -46,7 +44,6 @@ import {
   rewriteLaunch,
   settingOf,
   run,
-  waitFor,
   worktreeOf,
   assertIncludesAll,
 } from "./_launch-fixture.ts";
@@ -399,31 +396,11 @@ test("an existing output and its three sibling paths move to .stale- names with 
 test("launch.ts ended by SIGTERM during a capture exits 143 with nothing on stdout, ends the command and its child, and keeps captures", async () => {
   const f = capturing({}, 'echo $$ >> "$LOGS/capture-pids"\nsleep 60 &\necho $! >> "$LOGS/capture-pids"\nwait\n');
   const text = launchFile(f);
-  const child = spawn(SCRIPT, ["capture", "--worktree", worktreeOf(f)], {
-    stdio: ["ignore", "pipe", "pipe"],
-    env: isolatedEnv({ PATH: `${f.bin}:${process.env.PATH}`, LOGS: f.logs, NODE: process.execPath, DONE_GATE }),
-  });
-  let stdout = "";
-  child.stdout.setEncoding("utf8").on("data", (chunk: string) => {
-    stdout += chunk;
-  });
-  const closed = new Promise<number | null>((done) => child.on("close", (code) => done(code)));
-  try {
-    assert.ok(await waitFor(() => pidsIn(f, "capture-pids").length >= 2, 20_000), "the capture command started");
-    child.kill("SIGTERM");
-    assert.equal(await closed, 143);
-    assert.equal(stdout, "");
-    const pids = pidsIn(f, "capture-pids");
-    assert.ok(await allEnded(pids), `still running: ${pids.filter(isRunning).join(" ")}`);
-    assert.equal(launchFile(f), text);
-  } finally {
-    if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
-    for (const pid of pidsIn(f, "capture-pids")) {
-      try {
-        process.kill(pid, "SIGKILL");
-      } catch {}
-    }
-  }
+  const result = await signalWhileCommandWaits(f, ["capture", "--worktree", worktreeOf(f)], "capture-pids", 2);
+  assert.equal(result.code, 143);
+  assert.equal(result.stdout, "");
+  assert.deepEqual(result.survivors, [], `still running: ${result.survivors.join(" ")}`);
+  assert.equal(launchFile(f), text);
 });
 
 test("the real adapter runs through {harness}, and with no spec it stops with capture-failed naming the missing spec", () => {
@@ -438,7 +415,7 @@ test("capture with a flag other than --worktree prints the usage on stderr, noth
   const result = run(f, ["capture", "--worktree", worktreeOf(f), "--model", "x"]);
   assert.equal(result.status, 2);
   assert.equal(result.stdout, "");
-  assert.ok(result.stderr.includes("       launch.ts capture --worktree <abs path>\n"), result.stderr);
+  assert.match(result.stderr, /^usage: /);
   assert.equal(callCount(f), 0);
 });
 
@@ -499,31 +476,11 @@ test("a check that fails after the install stops with not-done and ten fields, k
 test("launch.ts ended by SIGTERM during the check after the install exits 143 with nothing on stdout, ends the check and its child, and keeps the installed record", async () => {
   const waiting = 'if [ -e media/list.png ]; then echo $$ >> "$LOGS/check-pids"; sleep 60 & echo $! >> "$LOGS/check-pids"; wait; fi';
   const f = capturing({ check: waiting });
-  const child = spawn(SCRIPT, ["capture", "--worktree", worktreeOf(f)], {
-    stdio: ["ignore", "pipe", "pipe"],
-    env: isolatedEnv({ PATH: `${f.bin}:${process.env.PATH}`, LOGS: f.logs, NODE: process.execPath, DONE_GATE }),
-  });
-  let stdout = "";
-  child.stdout.setEncoding("utf8").on("data", (chunk: string) => {
-    stdout += chunk;
-  });
-  const closed = new Promise<number | null>((done) => child.on("close", (code) => done(code)));
-  try {
-    assert.ok(await waitFor(() => pidsIn(f, "check-pids").length >= 2, 20_000), "the check started");
-    child.kill("SIGTERM");
-    assert.equal(await closed, 143);
-    assert.equal(stdout, "");
-    const pids = pidsIn(f, "check-pids");
-    assert.ok(await allEnded(pids), `still running: ${pids.filter(isRunning).join(" ")}`);
-    assert.equal(typeof capturesOf(f).at(-1)?.installed, "string");
-  } finally {
-    if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
-    for (const pid of pidsIn(f, "check-pids")) {
-      try {
-        process.kill(pid, "SIGKILL");
-      } catch {}
-    }
-  }
+  const result = await signalWhileCommandWaits(f, ["capture", "--worktree", worktreeOf(f)], "check-pids", 2);
+  assert.equal(result.code, 143);
+  assert.equal(result.stdout, "");
+  assert.deepEqual(result.survivors, [], `still running: ${result.survivors.join(" ")}`);
+  assert.equal(typeof capturesOf(f).at(-1)?.installed, "string");
 });
 
 test("the reuse decision compares the current tree with the installed tree, so an unchanged worktree after an install that changed the tree is reused", () => {

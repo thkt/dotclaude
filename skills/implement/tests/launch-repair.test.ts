@@ -36,8 +36,6 @@ import {
   moveBaseToParent,
   reviewOut,
   CHANGED_BODY,
-  signalWhileClaudeWaits,
-  assertEndedBySignal,
   launchFile,
   reread,
   fakeRereader,
@@ -258,16 +256,6 @@ test("repair stops with child-failed and keeps launch.json when claude exits non
   }
 });
 
-test("a repair call without --worktree or with a relative path prints the usage and nothing on stdout, and exits 2", () => {
-  const f = fixture();
-  for (const args of [["repair"], ["repair", "--model", "opus"], ["repair", "--worktree", "relative/worktree"]]) {
-    const result = run(f, args);
-    assert.equal(result.status, 2, args.join(" "));
-    assert.equal(result.stdout, "", args.join(" "));
-    assert.match(result.stderr, /^usage: /, args.join(" "));
-  }
-});
-
 test("repair passes a reopened finding carried from an earlier round with its key and reopened, before the new finding", () => {
   const f = rejected();
   fakeReviewer(f, {
@@ -328,14 +316,6 @@ test("repair stops with requirements-changed, starts no claude, and keeps launch
   assert.equal(out.action, "repair");
   assert.equal(repairCalls(f), 0);
   assert.deepEqual(launchRecord(worktreeOf(f)), before);
-});
-
-test("repair ends claude and its child and exits 143 on SIGTERM", async () => {
-  const f = rejected();
-  const before = launchFile(f);
-  const result = await signalWhileClaudeWaits(f, ["repair", "--worktree", worktreeOf(f)], "SIGTERM", 1);
-  assertEndedBySignal(result, 1);
-  assert.equal(launchFile(f), before);
 });
 
 test("repair names the working tree in review-stale when both the tree and issue_digest differ from the last review", () => {
