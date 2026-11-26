@@ -6,7 +6,8 @@ source "$SCRIPT_DIR/../../../hooks/lifecycle/tests/helpers.sh"
 HAKO="$SCRIPT_DIR/../hako.sh"
 AGENT_NAME="claude"
 
-TEST_TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/hako-run-tests-XXXXXX")
+TMP_ROOT="${TMPDIR:-/tmp}"
+TEST_TMPDIR=$(mktemp -d "${TMP_ROOT%/}/hako-run-tests-XXXXXX")
 cleanup() { rm -rf "$TEST_TMPDIR"; }
 trap cleanup EXIT
 
