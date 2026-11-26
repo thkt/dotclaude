@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /// <reference types="node" />
 import { type SpawnSyncReturns, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";

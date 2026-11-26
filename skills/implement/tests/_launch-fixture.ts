@@ -270,7 +270,7 @@ export function fakeReviewer(f: Fixture, plan: Record<string, Step>): void {
   writeFileSync(join(f.logs, "plan.json"), JSON.stringify(plan));
   writeFileSync(
     join(f.bin, "claude"),
-    `#!/usr/bin/env node
+    `#!/usr/bin/env bun
 const fs = require("node:fs");
 const logs = process.env.LOGS;
 const args = process.argv.slice(2);
@@ -442,7 +442,7 @@ export function fakeRounds(f: Fixture, script: Script): void {
   writeFileSync(join(f.logs, "script.json"), JSON.stringify(script));
   writeFileSync(
     join(f.bin, "claude"),
-    `#!/usr/bin/env node
+    `#!/usr/bin/env bun
 const fs = require("node:fs");
 const { spawnSync } = require("node:child_process");
 const logs = process.env.LOGS;
@@ -706,7 +706,7 @@ export function fakeImplementer(f: Fixture, turns: ImplementTurn[]): void {
   rmSync(join(f.logs, "implement-calls"), { force: true });
   writeFileSync(
     join(f.bin, "claude"),
-    `#!/usr/bin/env node
+    `#!/usr/bin/env bun
 const fs = require("node:fs");
 const { spawnSync } = require("node:child_process");
 const logs = process.env.LOGS;
@@ -1120,7 +1120,7 @@ export function fakePublishGh(f: Fixture, plan: PublishGh = {}): void {
   };
   writeFileSync(
     join(f.bin, "gh"),
-    `#!/usr/bin/env node
+    `#!/usr/bin/env bun
 const fs = require("node:fs");
 const { spawnSync } = require("node:child_process");
 const s = ${JSON.stringify(settings)};

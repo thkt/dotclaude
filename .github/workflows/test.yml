@@ -17,12 +17,6 @@ jobs:
           # Nothing here pushes, and a token left in .git/config travels with an upload.
           persist-credentials: false
 
-      # Node 22 は型ストリップ (.ts をそのまま node --test に渡す機能) を無フラグで行わない。
-      # 24 (LTS) から無フラグで有効になる。
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24
-
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
 
       # The two remaining shell tests exec hooks that open with a zsh shebang.
@@ -31,16 +25,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y zsh
 
-      # node_modules is not tracked; the lockfile is. The root install is what puts
-      # oxlint on PATH for the static-gate tests, which reach for it through npx. The
-      # textlint hook runs from this same root, where .textlintrc.json sits beside
-      # node_modules.
+      # node_modules is not tracked; the lockfile is. The root install puts the lint
+      # binaries into node_modules/.bin, where bunx finds them. The textlint hook runs
+      # from this same root, where .textlintrc.json sits beside node_modules.
       - name: Install
         run: bun install --frozen-lockfile
 
       # typescript は JS 依存にあるので、上の Install がそのまま入れる。版の固定は package.json/bun.lock 側。
       - name: Type check
-        run: npx tsc
+        run: bunx tsc
 
       - name: Bun tests
         run: bun run test
@@ -67,23 +60,23 @@ jobs:
       # oxlint と textlint は devDependency なので、上の Install がそのまま入れる。
       # --format=github は error を PR の annotation にする。
       - name: oxlint
-        run: npx oxlint --format=github
+        run: bunx oxlint --format=github
 
       # 認知的複雑度の規則 1 本だけを持つ。formatter も他の lint 規則も biome.json が
       # 止めている。--reporter=github は oxlint の --format=github と同じ役。
       - name: biome
-        run: npx biome lint --reporter=github
+        run: bunx biome lint --reporter=github
 
       - name: ast-grep scan
-        run: npx ast-grep scan . .ja
+        run: bunx ast-grep scan . .ja
 
       - name: ast-grep rule tests
-        run: npx ast-grep test --skip-snapshot-tests
+        run: bunx ast-grep test --skip-snapshot-tests
 
       # クォートしたまま渡し、glob の展開は textlint 側にさせる。シェルに展開させると
       # globstar の有無で対象ファイル数が変わる。
       - name: textlint
-        run: npx textlint '.ja/**/*.md'
+        run: bunx textlint '.ja/**/*.md'
 
       # rumdl は JS 依存に無いので版を直に固定する。`fmt` でなく `check` なのは、
       # コードスパン内の末尾スペースと見出しレベルで、自動修正が内容を壊す実例が出たため (#329)。

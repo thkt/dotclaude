@@ -11,7 +11,7 @@ const argvOfOnce = async (extra: Partial<ChildRun>): Promise<string[]> => {
   const dir = mkdtempSync(join(tmpdir(), "claude-run-once-"));
   const bin = join(dir, "bin");
   mkdirSync(bin);
-  writeFileSync(join(bin, "claude"), "#!/usr/bin/env node\nconsole.log(JSON.stringify(process.argv.slice(2)));\n", { mode: 0o755 });
+  writeFileSync(join(bin, "claude"), "#!/usr/bin/env bun\nconsole.log(JSON.stringify(process.argv.slice(2)));\n", { mode: 0o755 });
   const before = { PATH: process.env.PATH, settings: process.env.CLAUDE_RUN_SETTINGS };
   process.env.PATH = `${bin}:${before.PATH}`;
   delete process.env.CLAUDE_RUN_SETTINGS;
@@ -61,7 +61,7 @@ test("runClaudeOnce calls onStart once with the pid of the child it started, whi
   const dir = mkdtempSync(join(tmpdir(), "claude-run-start-"));
   const bin = join(dir, "bin");
   mkdirSync(bin);
-  writeFileSync(join(bin, "claude"), "#!/usr/bin/env node\nconsole.log(JSON.stringify({ pid: process.pid }));\n", { mode: 0o755 });
+  writeFileSync(join(bin, "claude"), "#!/usr/bin/env bun\nconsole.log(JSON.stringify({ pid: process.pid }));\n", { mode: 0o755 });
   const before = process.env.PATH;
   process.env.PATH = `${bin}:${before}`;
   try {
@@ -98,7 +98,7 @@ const hangingClaude = (): string => {
   const dir = mkdtempSync(join(tmpdir(), "claude-child-hang-"));
   const bin = join(dir, "bin");
   mkdirSync(bin);
-  writeFileSync(join(bin, "claude"), "#!/usr/bin/env node\nsetTimeout(() => {}, 60_000);\n", { mode: 0o755 });
+  writeFileSync(join(bin, "claude"), "#!/usr/bin/env bun\nsetTimeout(() => {}, 60_000);\n", { mode: 0o755 });
   return bin;
 };
 
@@ -108,7 +108,7 @@ test("runClaudeOnce starts claude with -p, the model, the output format, the too
   mkdirSync(bin);
   writeFileSync(
     join(bin, "claude"),
-    `#!/usr/bin/env node
+    `#!/usr/bin/env bun
 const fs = require("node:fs");
 fs.writeFileSync(${JSON.stringify(join(dir, "call.json"))}, JSON.stringify({ argv: process.argv.slice(2), stdin: fs.readFileSync(0, "utf8"), cwd: process.cwd() }));
 `,
@@ -192,7 +192,7 @@ const recordingClaude = (): { bin: string; dir: string; called: string } => {
   const called = join(dir, "called");
   writeFileSync(
     join(bin, "claude"),
-    `#!/usr/bin/env node
+    `#!/usr/bin/env bun
 require("node:fs").writeFileSync(${JSON.stringify(called)}, JSON.stringify(process.argv.slice(2)));
 `,
     { mode: 0o755 },

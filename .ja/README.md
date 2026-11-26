@@ -90,7 +90,7 @@ Claude Code の sandbox 機能は、自動的なパーミッション処理を�
 #### システム要件
 
 - macOS または Linux (Windows は未対応)
-- npm/npx 付きの Node.js
+- Bun
 - ripgrep (通常はプリインストール済み)
 - jq (ステータスラインのスクリプトが使う): `brew install jq`
 

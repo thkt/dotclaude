@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /// <reference types="node" />
 
 import { lstatSync, readFileSync, readdirSync, realpathSync } from "node:fs";

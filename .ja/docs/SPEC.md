@@ -187,11 +187,11 @@ agent は必ず fork 文脈で走り、呼び出し元の会話履歴を持た�
 | ------------- | -------------------------------------------------------------------------------------------- |
 | Bun tests     | `bun run test`。`package.json` の `scripts.test` が、`./tests`、`./agents`、`./hooks`、`./skills` の下のテストを 4 並列、1 件 300 秒の上限で実行 |
 | Shell tests   | `find hooks sandbox -name '*.test.sh'` を 1 ファイルずつ bash で実行                          |
-| oxlint        | `npx oxlint --format=github`                                                                  |
-| biome         | `npx biome lint --reporter=github`                                                            |
-| ast-grep scan | `npx ast-grep scan . .ja`                                                                     |
-| ast-grep rule tests | `npx ast-grep test --skip-snapshot-tests`                                               |
-| textlint      | `npx textlint '.ja/**/*.md'`                                                                  |
+| oxlint        | `bunx oxlint --format=github`                                                                  |
+| biome         | `bunx biome lint --reporter=github`                                                            |
+| ast-grep scan | `bunx ast-grep scan . .ja`                                                                     |
+| ast-grep rule tests | `bunx ast-grep test --skip-snapshot-tests`                                               |
+| textlint      | `bunx textlint '.ja/**/*.md'`                                                                  |
 | rumdl         | `pipx run --spec rumdl==0.2.58 rumdl check .`                                                 |
 
 ### 設定ファイル
@@ -243,4 +243,4 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | hook         | `hooks/<event>/`, `settings.json`, `hooks/<event>/tests/`               | `bun test --timeout=300000 ./hooks` と `find hooks sandbox -name '*.test.sh'` |
 | skill        | `skills/<name>/SKILL.md`, `skills/<name>/tests/`, `.ja/skills/<name>/`  | `bun test --timeout=300000 ./skills` |
 | agent        | `agents/<category>/<name>.md`, `.ja/agents/<category>/`                 | `bun test --timeout=300000 ./agents` |
-| 文書         | `.ja/docs/<NAME>.md` を先、`docs/<NAME>.md` を同一コミットで            | `npx textlint '.ja/**/*.md'` と `rumdl check .` |
+| 文書         | `.ja/docs/<NAME>.md` を先、`docs/<NAME>.md` を同一コミットで            | `bunx textlint '.ja/**/*.md'` と `rumdl check .` |
