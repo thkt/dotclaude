@@ -104,7 +104,7 @@ permission handling, reducing approval fatigue while maintaining safety.
 #### System Requirements
 
 - macOS or Linux (Windows not yet supported)
-- Node.js with npm/npx
+- Bun
 - ripgrep (typically pre-installed)
 - jq (used by the status line script): `brew install jq`
 

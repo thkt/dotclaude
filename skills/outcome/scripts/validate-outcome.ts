@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /// <reference types="node" />
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { isMainModule } from "../../_lib/entry-point.ts";

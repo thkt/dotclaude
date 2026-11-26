@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /// <reference types="node" />
 import { accessSync, constants, existsSync, readFileSync, statSync } from "node:fs";
 import { basename, join } from "node:path";

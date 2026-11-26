@@ -17,11 +17,11 @@ const CLI_SCRIPTS = [
   "implement/scripts/launch.ts",
 ].flatMap((rel) => [`skills/${rel}`, `.ja/skills/${rel}`]);
 
-const CLI_SHEBANG = "#!/usr/bin/env node";
+const CLI_SHEBANG = "#!/usr/bin/env bun";
 const CLI_MODE = "100755";
 const LIB_MODE = "100644";
 
-test("the CLI scripts in EN and .ja are tracked with mode 100755 and open with #!/usr/bin/env node, and every other skill script is tracked with mode 100644", () => {
+test("the CLI scripts in EN and .ja are tracked with mode 100755 and open with #!/usr/bin/env bun, and every other skill script is tracked with mode 100644", () => {
   const modeByPath = new Map(
     trackedEntries([":(glob)skills/*/scripts/*.ts", ":(glob).ja/skills/*/scripts/*.ts"]).map(
       ([mode, absolutePath]) => [relative(REPO_ROOT, absolutePath), mode],
