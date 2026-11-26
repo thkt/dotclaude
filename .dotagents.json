@@ -3,11 +3,7 @@
   "remote": "origin",
   "baseBranch": "main",
   "setup": "bun install --frozen-lockfile",
-  "check": [
-    "sh",
-    "-ec",
-    "npx tsc\nnode --test \"tests/*.test.js\" \"tests/*.test.ts\" \"agents/**/tests/*.test.js\" \"agents/**/tests/*.test.ts\" \"hooks/**/tests/*.test.js\" \"hooks/**/tests/*.test.ts\" \"skills/**/tests/*.test.js\" \"skills/**/tests/*.test.ts\"\nnpx oxlint\nnpx biome lint\nnpx textlint '.ja/**/*.md'\nnpx ast-grep scan . .ja\nnpx ast-grep test --skip-snapshot-tests"
-  ],
+  "check": ["bun", "run", "check"],
   "ciChecks": ["test"],
   "capture": null
 }
