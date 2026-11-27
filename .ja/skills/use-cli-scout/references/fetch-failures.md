@@ -41,7 +41,7 @@ x.com には scout のルーティングが無く `fetch` へ流れるので、r
 
 `xr article` は Article でない投稿を exit 2 で返すので、出力を読む前に exit code で分ける。`xr tweet --thread` の出力は先頭が要求した投稿とは限らず、無関係なタイムライン投稿と同日の返信が混ざる。`id` か `url` が要求と一致する要素を起点に、起点と同じ author の要素を全体から拾い、`time` の連続は条件にしない。`--thread` は画像 URL と引用元の投稿を落とし、落ちたことを示すフィールドも出さない。`text` が `t.co` リンクで終わる投稿と、指示語の指す先が `text` に無い投稿は `--thread` 無しで引き直す。
 
-`--thread` 無しの出力に `[video: URL]` がある投稿で発話内容が要るときは、`xr tweet <URL> --transcribe` で引き直す。`--transcribe` は `dangerouslyDisableSandbox` を付けて Bash のサンドボックスの外で実行する。サンドボックスの中では whisper-cli が異常終了し、xr は exit 6 で終わる。Bash の timeout は 600000 ms にする。xr は動画のダウンロードだけで最大 600 秒待つので、それより短い timeout では xr より先に Bash が打ち切る。`--transcribe` が exit 6 で終わったら、`--transcribe` 無しの出力で続ける。exit 6 は、ffmpeg、whisper-cli、モデルのどれかが欠けているか、ダウンロード、変換、文字起こしのどこかで失敗したことを示す。
+`--thread` 無しの出力に `[video: URL]` がある投稿で発話内容が要るときは、`xr tweet <URL> --transcribe` で引き直す。`--transcribe` は `dangerouslyDisableSandbox` を付けて Bash のサンドボックスの外で実行する。サンドボックスの中では whisper-cli が異常終了し、xr は exit 6 で終わる。Bash の timeout は、Bash の timeout の上限である 600000 ms にする。xr はダウンロードの本文の受信を最大 600 秒待ち、その後に変換と文字起こしが続く。動画が複数あると、xr はこれを 1 本ずつ繰り返す。そのため、600000 ms でも、Bash は xr の終了より先に打ち切ることもある。Bash が打ち切ったら、`--transcribe` 無しの出力で続ける。`--transcribe` が exit 6 で終わったときも、`--transcribe` 無しの出力で続ける。exit 6 は次の 4 つのどれかを示す。1 つ目は ffmpeg、whisper-cli、モデルのどれかの欠落である。2 つ目はサンドボックスの中での実行である。3 つ目はダウンロードの応答が成功でないことである。4 つ目は変換か文字起こしの失敗である。ダウンロードの接続の失敗、時間切れ、受信の途中の失敗では、xr は exit 3 で終わる。このときも `--transcribe` 無しの出力で続ける。
 
 | 入力                     | コマンド                      |
 | ------------------------ | ----------------------------- |
