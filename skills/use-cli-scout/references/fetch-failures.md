@@ -41,10 +41,13 @@ scout has no route for x.com and falls through to `fetch`, so read those with `x
 
 `xr article` exits 2 on a post that carries no article, so branch on the exit code before reading the output. The first element of `xr tweet --thread` is not necessarily the post you asked for; unrelated timeline posts and same-day replies are mixed in. Take the element whose `id` or `url` matches your request as the anchor, collect the elements sharing that anchor's author from the whole output, and do not treat `time` continuity as a condition. `--thread` drops image URLs and the quoted post without any field marking the loss. Re-fetch without `--thread` when `text` ends at a `t.co` link, or when what a demonstrative points at is absent from `text`.
 
-| Input                     | Command                   |
-| ------------------------- | ------------------------- |
-| A Twitter Article         | `xr article <URL>`        |
-| A normal post or a thread | `xr tweet <URL> --thread` |
+When a post shows `[video: URL]` in the output without `--thread` and you need what is spoken in it, re-fetch with `xr tweet <URL> --transcribe`. Run `--transcribe` outside the Bash sandbox by passing `dangerouslyDisableSandbox`. Inside the sandbox whisper-cli aborts, and xr exits 6. Set the Bash timeout to 600000 ms. xr waits up to 600 seconds for the video download alone, so a shorter timeout lets Bash cut the run off before xr does. When `--transcribe` exits 6, continue with the output without `--transcribe`. Exit 6 means one of ffmpeg, whisper-cli, or the model is missing, or the download, the conversion, or the transcription failed.
+
+| Input                                | Command                       |
+| ------------------------------------ | ----------------------------- |
+| A Twitter Article                    | `xr article <URL>`            |
+| A normal post or a thread            | `xr tweet <URL> --thread`     |
+| A post whose video's speech you need | `xr tweet <URL> --transcribe` |
 
 ## The shape of the arguments
 
