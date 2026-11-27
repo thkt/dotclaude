@@ -41,10 +41,13 @@ x.com には scout のルーティングが無く `fetch` へ流れるので、r
 
 `xr article` は Article でない投稿を exit 2 で返すので、出力を読む前に exit code で分ける。`xr tweet --thread` の出力は先頭が要求した投稿とは限らず、無関係なタイムライン投稿と同日の返信が混ざる。`id` か `url` が要求と一致する要素を起点に、起点と同じ author の要素を全体から拾い、`time` の連続は条件にしない。`--thread` は画像 URL と引用元の投稿を落とし、落ちたことを示すフィールドも出さない。`text` が `t.co` リンクで終わる投稿と、指示語の指す先が `text` に無い投稿は `--thread` 無しで引き直す。
 
-| 入力                 | コマンド                  |
-| -------------------- | ------------------------- |
-| Twitter Article      | `xr article <URL>`        |
-| 通常の投稿とスレッド | `xr tweet <URL> --thread` |
+`--thread` 無しの出力に `[video: URL]` がある投稿で発話内容が要るときは、`xr tweet <URL> --transcribe` で引き直す。`--transcribe` は `dangerouslyDisableSandbox` を付けて Bash のサンドボックスの外で実行する。サンドボックスの中では whisper-cli が異常終了し、xr は exit 6 で終わる。Bash の timeout は 600000 ms にする。xr は動画のダウンロードだけで最大 600 秒待つので、それより短い timeout では xr より先に Bash が打ち切る。`--transcribe` が exit 6 で終わったら、`--transcribe` 無しの出力で続ける。exit 6 は、ffmpeg、whisper-cli、モデルのどれかが欠けているか、ダウンロード、変換、文字起こしのどこかで失敗したことを示す。
+
+| 入力                     | コマンド                      |
+| ------------------------ | ----------------------------- |
+| Twitter Article          | `xr article <URL>`            |
+| 通常の投稿とスレッド     | `xr tweet <URL> --thread`     |
+| 動画の発話内容が要る投稿 | `xr tweet <URL> --transcribe` |
 
 ## 引数の形
 
