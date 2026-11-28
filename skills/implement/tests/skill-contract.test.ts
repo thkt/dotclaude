@@ -15,6 +15,7 @@ const sides = [
 
 const REVIEWS_FILTER = ".reviews[-1] | .self, .independent | {findings, verified}";
 const REPLY_FILTER = ".implement.reply";
+const ONTO_FILTER = ".publications[-1].commit // .base";
 
 const launchSource = readFileSync(join(root, "skills", "implement", "scripts", "launch.ts"), "utf8");
 
@@ -149,6 +150,61 @@ test("the two jq filters of Phase 3 return the findings and verified of both rev
     const reviews = execFileSync("jq", ["-c", REVIEWS_FILTER, file], { encoding: "utf8" }).trim().split("\n").map((line) => JSON.parse(line));
     assert.deepEqual(reviews, [review("last-self"), review("last-independent")]);
     assert.equal(execFileSync("jq", ["-r", REPLY_FILTER, file], { encoding: "utf8" }), "decided to keep the old name\n");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("Phase 3 on both sides commits the leftover changes with commit -m when HEAD is the commit the jq filter names, and with commit --amend --no-edit otherwise", () => {
+  for (const { name, skill } of sides) {
+    const phase3 = section(skill, "## Phase 3");
+    for (const command of [
+      'git -C "<worktree>" status --porcelain',
+      'git -C "<worktree>" rev-parse HEAD',
+      `jq -r '${ONTO_FILTER}' "<launch_file>"`,
+      'git -C "<worktree>" commit -m',
+      'git -C "<worktree>" commit --amend --no-edit',
+    ])
+      assert.ok(phase3.includes(command), `${name}: Phase 3 does not carry ${command}`);
+  }
+});
+
+const ontoOf = (record: Record<string, unknown>): string => {
+  const dir = mkdtempSync(join(tmpdir(), "skill-contract-onto-"));
+  try {
+    const file = join(dir, "launch.json");
+    writeFileSync(file, JSON.stringify(record));
+    return execFileSync("jq", ["-r", ONTO_FILTER, file], { encoding: "utf8" }).trim();
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+};
+
+test("the commit filter of Phase 3 names the base before any publication and the last published commit after one", () => {
+  assert.equal(ontoOf({ base: "b1" }), "b1");
+  assert.equal(ontoOf({ base: "b1", publications: [{ commit: "p1" }, { commit: "p2" }] }), "p2");
+});
+
+test("following Phase 3 after the session committed and the capture added media leaves one commit on top of the base that holds the media", () => {
+  const dir = mkdtempSync(join(tmpdir(), "skill-contract-commit-"));
+  const git = (...args: string[]) => execFileSync("git", ["-C", dir, "-c", "user.name=t", "-c", "user.email=t@example.com", ...args], { encoding: "utf8" }).trim();
+  try {
+    git("init", "-q");
+    writeFileSync(join(dir, "a.txt"), "a");
+    git("add", "-A");
+    git("commit", "-q", "-m", "base");
+    const base = git("rev-parse", "HEAD");
+    writeFileSync(join(dir, "a.txt"), "changed");
+    git("add", "-A");
+    git("commit", "-q", "-m", "session");
+    writeFileSync(join(dir, "shot.png"), "media");
+    assert.notEqual(git("status", "--porcelain"), "");
+    git("add", "-A");
+    if (git("rev-parse", "HEAD") === ontoOf({ base })) git("commit", "-q", "-m", "title (#1)");
+    else git("commit", "-q", "--amend", "--no-edit");
+    assert.equal(git("rev-parse", "HEAD^"), base);
+    assert.equal(git("show", "HEAD:shot.png"), "media");
+    assert.equal(git("status", "--porcelain"), "");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
