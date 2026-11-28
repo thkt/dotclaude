@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "test": "bun test --parallel=4 --timeout=300000 ./tests ./agents ./hooks ./skills",
-    "check": "tsc && bun run test && oxlint && biome lint && textlint '.ja/**/*.md' && ast-grep scan . .ja && ast-grep test --skip-snapshot-tests"
+    "check": "bun run lint && bun run check:classification && bun run test",
+    "lint": "tsc && oxlint && biome lint && textlint '.ja/**/*.md' && ast-grep scan . .ja && ast-grep test --skip-snapshot-tests",
+    "check:affected": "bun scripts/feedback-loop/runtime.mjs affected",
+    "check:classification": "bun scripts/feedback-loop/runtime.mjs classification",
+    "check:feedback": "bun run lint && bun run check:affected"
   },
   "devDependencies": {
     "@ast-grep/cli": "0.51.3",

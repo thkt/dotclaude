@@ -9,6 +9,7 @@
     "includes": [
       "**",
       "!plugins/**",
+      "!scripts/feedback-loop/**",
       "!bridge-spawn",
       "!seed-admin"
     ]

@@ -106,6 +106,7 @@ const biomeConfig = JSON.parse(readFileSync(BIOME_JSON, "utf8"));
 const PLANNED_FILES_INCLUDES = [
   "**",
   "!plugins/**",
+  "!scripts/feedback-loop/**",
   "!bridge-spawn",
   "!seed-admin",
 ];
@@ -121,7 +122,7 @@ function biomeHoles(config) {
   return holes;
 }
 
-test("biome.json's files.includes equals the four planned entries exactly", () => {
+test("biome.json's files.includes equals the five planned entries exactly", () => {
   assert.deepEqual(biomeConfig.files.includes, PLANNED_FILES_INCLUDES);
 });
 

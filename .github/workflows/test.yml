@@ -35,6 +35,9 @@ jobs:
       - name: Type check
         run: bunx tsc
 
+      - name: Test classification
+        run: bun run check:classification
+
       - name: Bun tests
         run: bun run test
 
