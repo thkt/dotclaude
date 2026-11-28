@@ -16,3 +16,4 @@ files:
   - '**/*.js'
 ignores:
   - '**/fixtures/**'
+  - 'scripts/feedback-loop/**'

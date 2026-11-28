@@ -16,3 +16,4 @@ files:
   - '**/*.ts'
 ignores:
   - '**/fixtures/**'
+  - 'scripts/feedback-loop/**'

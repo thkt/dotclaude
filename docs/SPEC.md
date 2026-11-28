@@ -185,6 +185,7 @@ The only check before a write is `rust_pre_edit.ts`'s clippy, which takes `.rs`.
 
 | Step          | Command                                                                                      |
 | ------------- | -------------------------------------------------------------------------------------------- |
+| Test classification | `bun run check:classification`. Compares the collection globs and the assurance entries in `.feedback-loop.json` with the tests `bun test` collects |
 | Bun tests     | `bun run test`. `package.json`'s `scripts.test` runs the tests under `./tests`, `./agents`, `./hooks`, and `./skills`, 4 in parallel, with a 300-second limit per test |
 | Shell tests   | `find hooks sandbox -name '*.test.sh'`, one file per bash invocation                          |
 | oxlint        | `bunx oxlint --format=github`                                                                  |
@@ -204,6 +205,7 @@ The lint targets and thresholds live in configuration files. This document does 
 | `.rumdl.toml`         | Which Markdown rules are disabled                                       |
 | `.oxlintrc.json`      | JavaScript static checks                                                |
 | `biome.json`          | The cognitive-complexity cap. That one rule only; the formatter and every other rule are off |
+| `.feedback-loop.json` | The feedback-loop settings. The tests `check:affected` selects from, the quality and assurance split, and which files each test reads |
 | `sgconfig.yml`        | Where the ast-grep rules (`ast-grep/rules/`) and their tests (`ast-grep/rule-tests/`) live. The rules report a comment in `.ts`, `.js`, or `.sh` that matches none of the permitted forms |
 
 ### Cross-cutting tests

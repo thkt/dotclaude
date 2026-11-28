@@ -185,6 +185,7 @@ agent は必ず fork 文脈で走り、呼び出し元の会話履歴を持た�
 
 | ステップ      | コマンド                                                                                     |
 | ------------- | -------------------------------------------------------------------------------------------- |
+| Test classification | `bun run check:classification`。`.feedback-loop.json` の収集範囲と assurance の指定を、`bun test` が集めるテストと照合する |
 | Bun tests     | `bun run test`。`package.json` の `scripts.test` が、`./tests`、`./agents`、`./hooks`、`./skills` の下のテストを 4 並列、1 件 300 秒の上限で実行 |
 | Shell tests   | `find hooks sandbox -name '*.test.sh'` を 1 ファイルずつ bash で実行                          |
 | oxlint        | `bunx oxlint --format=github`                                                                  |
@@ -204,6 +205,7 @@ lint の対象と閾値は設定ファイルが持つ。文書側で数値を繰
 | `.rumdl.toml`         | Markdown 検査で無効にする規則                                           |
 | `.oxlintrc.json`      | JavaScript の静的検査                                                   |
 | `biome.json`          | 認知的複雑度の上限。規則はこの 1 本だけで、formatter と他の規則は止めている |
+| `.feedback-loop.json` | feedback-loop の設定。`check:affected` が選ぶテストの範囲、quality と assurance の分け方、テストと読み込むファイルの対応 |
 | `sgconfig.yml`        | ast-grep の規則 (`ast-grep/rules/`) と規則のテスト (`ast-grep/rule-tests/`) の置き場。規則は通す形に当たらない `.ts`、`.js`、`.sh` のコメントを報告する |
 
 ### 横断テスト
