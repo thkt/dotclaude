@@ -1,12 +1,12 @@
 // 生成元: thkt/feedback-loop scripts/build.ts。直接編集せず、正本を変更して再生成してください
-// バージョン: 0.5.2
+// バージョン: 0.5.5
 import { plugin } from 'bun';
 import { afterAll } from 'bun:test';
 import { appendFileSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { isAbsolute, join } from 'node:path';
 
-// Bun 1.4.4のplugin()で読み込むモジュールをテストごとに記録します。
+// Bun 1.4.5のplugin()で読み込むモジュールをテストごとに記録します。
 // onLoadはundefined返却を拒否するため、コードをUTF-8文字列とloaderで返します。
 
 const recordDirVariable = 'FEEDBACK_LOOP_RECORD_DIR';
@@ -126,7 +126,7 @@ function register(recordDir: string) {
     setup(build) {
       build.onLoad({ filter: recordedPattern }, (args) => {
         const path = args.path;
-        // Bun 1.4.4のbun testでは、Bun.mainが実行中のテストファイルを指します。文書にない挙動で、記録のテストが確かめます。
+        // Bun 1.4.5のbun testでは、Bun.mainが実行中のテストファイルを指します。文書にない挙動で、記録のテストが確かめます。
         // テストがimportする別のテストファイルは、持ち主にしません。
         if (inherited === undefined && inTestRunner && path === Bun.main) {
           owner = path;

@@ -1,5 +1,5 @@
 // 生成元: thkt/feedback-loop scripts/build.ts。直接編集せず、正本を変更して再生成してください
-// バージョン: 0.5.2
+// バージョン: 0.5.5
 // src/runtime.ts
 import assert12 from "node:assert/strict";
 import { readFileSync as readFileSync5 } from "node:fs";
@@ -59,8 +59,8 @@ function sha256(body) {
 }
 
 // src/git.ts
-function gitOutput(root, args) {
-  const result = spawnSync("git", args, { cwd: root, encoding: "utf8" });
+function gitOutput(root, args, env) {
+  const result = spawnSync("git", args, { cwd: root, encoding: "utf8", env });
   return result.status === 0 ? result.stdout.trim() : undefined;
 }
 function resolveCommit(root, ref, subject) {
@@ -326,6 +326,7 @@ var configKeys = {
   testArgs: true,
   allowSkipped: true,
   mutation: true,
+  commitHook: true,
   globalChanges: true,
   ignoredChanges: true,
   dependencies: true
@@ -350,6 +351,7 @@ function readConfig(root) {
     bunWorkers = 4,
     allowSkipped = true,
     mutation = true,
+    commitHook = true,
     assurance: assuranceValue = [],
     dependencies: dependenciesValue = []
   } = value;
@@ -365,6 +367,7 @@ function readConfig(root) {
   assert4(testGlobs.length > 0, "テストglobは必須です");
   assert4(typeof allowSkipped === "boolean", "allowSkippedはbooleanです");
   assert4(typeof mutation === "boolean", "mutationはbooleanです");
+  assert4(typeof commitHook === "boolean", "commitHookはbooleanです");
   assertStringArray(bunArgs, "bunArgs");
   assert4(value.runner === "bun" || bunArgs.length === 0, "VitestにはbunArgsを指定できません");
   assert4(typeof bunWorkers === "number" && Number.isSafeInteger(bunWorkers) && bunWorkers > 0, "bunWorkersは正の安全な整数で指定してください");
@@ -404,6 +407,7 @@ function readConfig(root) {
     testArgs,
     allowSkipped,
     mutation,
+    commitHook,
     globalChanges,
     ignoredChanges,
     dependencies
@@ -902,7 +906,6 @@ function bunTestArgv(config, files, report) {
     "test",
     ...files.map((file) => `./${file}`),
     ...config.testArgs,
-    "--no-orphans",
     `--parallel=${config.bunWorkers}`,
     "--reporter=junit",
     "--reporter-outfile",
@@ -1347,6 +1350,10 @@ function deniedGroupFailure(pgid, error, readProcessList) {
   try {
     return countLiveMembers(readProcessList(), pgid) === 0 ? undefined : { error };
   } catch (listError) {
+    if (hasErrorCode(listError, "EPERM")) {
+      console.error(`プロセスグループ${pgid}の終了を確かめられません。psの起動が拒否されました: ${errorMessage(listError)}`);
+      return;
+    }
     return {
       error: new Error(`${errorMessage(error)}。プロセスの一覧を読めません: ${errorMessage(listError)}`, { cause: error })
     };
@@ -1597,9 +1604,9 @@ function generatedConfig(repoConfig, include) {
 }
 function vitestRunnerArgs(root, config) {
   const given = configFromTestArgs(config.testArgs);
-  return (quality, directory) => {
+  return (tests, directory) => {
     const file = join9(directory, "vitest.config.mjs");
-    writeFileSync2(file, generatedConfig(given === undefined ? foundVitestConfig(root) : resolve5(root, given), quality.map((path) => excludePattern(root, path))));
+    writeFileSync2(file, generatedConfig(given === undefined ? foundVitestConfig(root) : resolve5(root, given), tests.map((path) => excludePattern(root, path))));
     return ["--runner", "vitest", "--config", file];
   };
 }
@@ -1696,9 +1703,9 @@ function mutatorFiles(root) {
 `);
   return { directory, config, report };
 }
-function bunRunnerArgs(root, config, quality, directory) {
-  const qualitySet = new Set(quality);
-  const ignored = bunTestFiles(root).filter((file) => !qualitySet.has(file)).toSorted();
+function bunRunnerArgs(root, config, tests, directory) {
+  const testSet = new Set(tests);
+  const ignored = bunTestFiles(root).filter((file) => !testSet.has(file)).toSorted();
   const bunfig = join10(directory, "bunfig.toml");
   writeFileSync3(bunfig, `[test]
 pathIgnorePatterns = [${ignored.map((file) => JSON.stringify(escapeGlob(file))).join(", ")}]
@@ -1871,7 +1878,7 @@ function bunSetup(root, config) {
   return {
     command: join10(dirname4(mutatorEntry), "cli.js"),
     env,
-    args: (quality, directory) => bunRunnerArgs(root, config, quality, directory),
+    args: (tests, directory) => bunRunnerArgs(root, config, tests, directory),
     typeErrors: async (candidates) => typeErrors(root, mutatorEntry, candidates)
   };
 }
@@ -1897,7 +1904,7 @@ async function prepare(root, config, run, request) {
   const argv = [
     runtime,
     setup.command,
-    ...setup.args(classes.quality, files.directory),
+    ...setup.args(request.withAssurance ? [...classes.quality, ...classes.assurance] : classes.quality, files.directory),
     "--include",
     escapeGlob(path),
     "--config-file",
@@ -1945,8 +1952,8 @@ function recordedReasons(root) {
 function isUndetected(outcome) {
   return typeof outcome !== "string" && (outcome.verdict === "survived" || outcome.verdict === "uncovered");
 }
-async function mutation(root, config, run, module) {
-  const prepared = await prepare(root, config, run, { module, key: undefined });
+async function mutation(root, config, run, request) {
+  const prepared = await prepare(root, config, run, { ...request, key: undefined });
   const judged = await runMutator(root, run, prepared);
   if (judged.length === 0) {
     console.error(`mutatorは${prepared.path}から壊し方を作りませんでした。mutatorが対象にしないファイルか、壊せるコードが無いファイルです`);
@@ -2148,19 +2155,22 @@ async function affected(root, config, run, specified) {
   console.log(`変更なし: ${subjects.join("と")}だけのため、テストを実行していません`);
 }
 function mutationRequest(args) {
-  const usage = `mutationは「mutation <モジュール>」か「mutation <モジュール> --key <鍵>」か「mutation --check-changes」の形で呼びます: ${args.join(" ")}`;
+  const usage = `mutationは「mutation <モジュール> [--with-assurance]」か「mutation <モジュール> --key <鍵> [--with-assurance]」か「mutation --check-changes」の形で呼びます: ${args.join(" ")}`;
   const given = args.filter((arg) => arg !== "--");
   if (given.includes("--check-changes")) {
     assert12(given.length === 1, usage);
     return "check-changes";
   }
-  const [module, flag, key, ...rest] = given;
-  assert12(module !== undefined && !module.startsWith("-") && rest.length === 0, usage);
+  const [module, ...options] = given;
+  const rest = options.filter((option) => option !== "--with-assurance");
+  const withAssurance = rest.length < options.length;
+  assert12(module !== undefined && !module.startsWith("-") && options.length - rest.length <= 1, usage);
+  const [flag, key, ...extra] = rest;
   if (flag === undefined) {
-    return { module, key: undefined };
+    return { module, key: undefined, withAssurance };
   }
-  assert12(flag === "--key" && key !== undefined && key !== "", usage);
-  return { module, key };
+  assert12(flag === "--key" && key !== undefined && key !== "" && extra.length === 0, usage);
+  return { module, key, withAssurance };
 }
 function reportList(report) {
   console.log(JSON.stringify(report, null, 2));
@@ -2210,11 +2220,11 @@ var operations = {
       return;
     }
     const run = runnerFor(root, "mutation", []);
-    const { module, key } = request;
+    const { module, key, withAssurance } = request;
     if (key === undefined) {
-      reportList(await mutation(root, readConfig(root), run, module));
+      reportList(await mutation(root, readConfig(root), run, { module, withAssurance }));
     } else {
-      reportKey(await mutationByKey(root, readConfig(root), run, { module, key }));
+      reportKey(await mutationByKey(root, readConfig(root), run, { module, key, withAssurance }));
     }
   }
 };
