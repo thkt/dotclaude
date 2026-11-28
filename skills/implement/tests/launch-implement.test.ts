@@ -655,3 +655,26 @@ test("implement, repair, reread, and continue start claude with --output-format 
   assert.equal(continueWork(continued).status, 0);
   streamed(argsIn(continued, "continue-args"), "continue");
 });
+
+const commitLineOf = (onto: string): string =>
+  `\`git commit -m '${FEATURE_TITLE} (#${ISSUE})'\` when \`git rev-parse HEAD\` prints \`${onto}\``;
+
+test("before any publication, the implement prompt has the session commit on top of the base commit with the Issue title as the message", () => {
+  const f = prepared();
+  fakeImplementer(f, [FINISHED]);
+  assert.equal(implementAt(f).status, 0);
+  const [{ stdin }] = implementCalls(f);
+  assert.ok(stdin.includes(commitLineOf(baseOf(f))), stdin);
+});
+
+test("after a publication, the implement prompt has the session commit on top of the last published commit", () => {
+  const f = publishedReady();
+  assert.equal(published(f).status, 0);
+  const publications = launchRecord(worktreeOf(f)).publications as { commit: string }[];
+  const last = publications[publications.length - 1].commit;
+  assert.notEqual(last, baseOf(f));
+  fakeImplementer(f, [FINISHED]);
+  assert.equal(implementAt(f, "--fresh").status, 0);
+  const [{ stdin }] = implementCalls(f);
+  assert.ok(stdin.includes(commitLineOf(last)), stdin);
+});

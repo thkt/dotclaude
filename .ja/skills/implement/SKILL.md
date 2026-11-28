@@ -39,7 +39,7 @@ argument-hint: "[issue number or URL] [--no-publish]"
 
 1. `launch_file` の記録を読む。記録は、1 つの JSON である。最後の巡のレビューは、`reviews` の末尾の要素にある。その要素の `self` と `independent` が、自己レビューと独立したレビューで、それぞれ `findings` と `verified` を持つ。実装の session の返事は、`implement.reply` にある。`jq '.reviews[-1] | .self, .independent | {findings, verified}' "<launch_file>"` と、`jq -r '.implement.reply' "<launch_file>"` で読める。返事からは、Issue に書いていない判断を抜き出す。
 2. Phase 1 の手順 4 で控えた確認のうち、公開の前に行うものを行う。worktree の file は変えない。結果を控える。
-3. `git -C "<worktree>" add -A` と、`git -C "<worktree>" commit -m "<Issue の題> (#<番号>)"` を、この順に呼ぶ。`-C` を付けないと、対象 repo の checkout に commit する。`add -A` は、Phase 2 でレビューが受理した tree と同じ file を stage する。file を変えない。
+3. `git -C "<worktree>" status --porcelain` を呼ぶ。何も出なければ、実装と修正の session が commit を済ませている。commit を打たずに 4 へ進む。何か出たときだけ、`git -C "<worktree>" add -A` を呼ぶ。続けて、`git -C "<worktree>" rev-parse HEAD` の出力を、`jq -r '.publications[-1].commit // .base' "<launch_file>"` の出力と比べる。同じなら `git -C "<worktree>" commit -m "<Issue の題> (#<番号>)"` を呼ぶ。違えば `git -C "<worktree>" commit --amend --no-edit` を呼ぶ。撮影の media は session の commit の後に worktree へ入るので、amend でその commit にまとめる。`-C` を付けないと、対象 repo の checkout に commit する。`add -A` は、Phase 2 でレビューが受理した tree と同じ file を stage する。file を変えない。
 4. `launch.ts publish --worktree "<worktree>"` を呼ぶ。出力の `url` と `number` を控える。`publish` は、push と、draft の PR の作成と、media の添付を済ませる。その後に本文を確かめ、公開を記録する。`git push` と `gh pr create` を自分では打たない。
 5. ${CLAUDE_SKILL_DIR}/references/publish.md の手順に進む。本文を読み、確認の comment を書く。CI を確かめて、ready に切り替える。
 6. PR の URL、確認した結果、確かめていないこと、残る作業をユーザーに返す。残る作業は、main へ入った後に行う確認を含む。merge は人が決める。

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { git, LAUNCH_FILE, treeHash } from "../../../hooks/_lib/gate_record.ts";
 import { type ChildOutcome, type ChildRun, GIVE_REPLY, runClaudeOnce } from "./claude-child.ts";
 import { agreedIssueOf, ASSESSED, digestOf, DONE_GATE, finishedSessionOf, gateAt, gateStatusOf, holding, implementStateOf, type Launch, listOf, nonEmpty, notDoneOf, notImplemented, notPrepared, objectOf, oneLine, outputOf, parseObject, type Prepared, preparedAt, type Problem, type Result, stopped, viewIssue, type WorktreeCall, writeLaunch } from "./launch-state.ts";
-import { capturedParagraph, captureFailedPrompt, continuePrompt, earlierParagraph, INDEPENDENT_JUDGING_SCHEMA, INDEPENDENT_REVIEW_SCHEMA, independentOpening, type IssueText, JUDGE_EARLIER, JUDGING_SCHEMA, notCapturedParagraph, promptFor, PUBLISHED_FIELDS, repairPrompt, replyParagraph, rereadPrompt, resumePrompt, REVIEW_SCHEMA, REVIEW_TOOLS, reviewPrompt, ROLES, selfOpening, STATES } from "./prompts.ts";
+import { capturedParagraph, captureFailedPrompt, continuePrompt, earlierParagraph, INDEPENDENT_JUDGING_SCHEMA, INDEPENDENT_REVIEW_SCHEMA, independentOpening, type IssueText, JUDGE_EARLIER, JUDGING_SCHEMA, notCapturedParagraph, type CommitTarget, commitMessageOf, promptFor, PUBLISHED_FIELDS, repairPrompt, replyParagraph, rereadPrompt, resumePrompt, REVIEW_SCHEMA, REVIEW_TOOLS, reviewPrompt, ROLES, selfOpening, STATES } from "./prompts.ts";
 import { capture, type CaptureConfig, captureConfigOf, captureDecisionOf, captureStateOf, lastPassedOf } from "./capture.ts";
 
 const CHILD_TIMEOUT_MS = 3_600_000;
@@ -14,6 +14,12 @@ const agreedTextOf = (launch: Launch, worktree: string): IssueText | Problem => 
   if (!("found" in agreed)) return agreed;
   const { title, body } = agreed.found;
   return { title, body: typeof body === "string" ? body : "" };
+};
+
+const commitTargetOf = (stored: Record<string, unknown>, launch: Launch, { title }: IssueText): CommitTarget => {
+  const publications = listOf(stored, "publications");
+  const published = objectOf(publications[publications.length - 1])?.commit;
+  return { onto: nonEmpty(published) ? published : launch.base, message: commitMessageOf(launch.issue, title) };
 };
 
 const issueChange = (launch: Launch, worktree: string): Problem | null => {
@@ -105,12 +111,12 @@ export const implement = async (call: WorktreeCall): Promise<Result> => {
     const implementRecord = { session_id: sessionId, issue_digest: launch.issue_digest, started_at: new Date().toISOString() };
     const base = { ...launch, ...kept, implement: implementRecord };
     writeLaunch(launchPath, base);
-    const outcome = await runChild({ ...implementingRun(call), prompt: promptFor(launch.issue, launch.repository, issueText, DONE_GATE), sessionId });
+    const outcome = await runChild({ ...implementingRun(call), prompt: promptFor(launch.issue, launch.repository, issueText, commitTargetOf(stored, launch, issueText), DONE_GATE), sessionId });
     return { outcome, resumed: false, issueDigest: launch.issue_digest, base };
   };
   const resume = async (): Promise<ImplementChild> => {
     const earlier = objectOf(stored.implement) ?? {};
-    const prompt = resumePrompt(launch.issue, launch.repository, issueText, launch.base, DONE_GATE);
+    const prompt = resumePrompt(launch.issue, launch.repository, issueText, launch.base, commitTargetOf(stored, launch, issueText), DONE_GATE);
     const outcome = await resumeImplementing(call, prompt, earlier.session_id as string);
     return noSessionOf(outcome) ? startNew() : { outcome, resumed: true, issueDigest: earlier.issue_digest, base: stored };
   };
@@ -445,10 +451,10 @@ export const repair = async (call: WorktreeCall): Promise<Result> => {
   if (last.issue_digest !== launch.issue_digest) {
     return stop("review-stale", `The last review judged a version of Issue #${launch.issue} other than the agreed one.`);
   }
-  const changed = issueChange(launch, worktree);
-  if (changed !== null) return stop(changed.reason, changed.detail);
+  const issueText = agreedTextOf(launch, worktree);
+  if ("reason" in issueText) return stop(issueText.reason, issueText.detail);
 
-  const prompt = repairPrompt(launch.issue, launch.base, required.map(repairLine).join("\n"), DONE_GATE);
+  const prompt = repairPrompt(launch.issue, launch.base, required.map(repairLine).join("\n"), commitTargetOf(stored, launch, issueText), DONE_GATE);
   const reply = sessionReplyOf(await resumeImplementing(call, prompt, implemented));
   if (typeof reply === "string") return stop("child-failed", reply);
 
@@ -508,7 +514,7 @@ export const reread = async (call: WorktreeCall): Promise<Result> => {
   if ("reason" in issueText) return stop(issueText.reason, issueText.detail);
 
   const before = treeHash(gate.root);
-  const prompt = rereadPrompt(launch.issue, launch.repository, issueText, launch.base, DONE_GATE);
+  const prompt = rereadPrompt(launch.issue, launch.repository, issueText, launch.base, commitTargetOf(stored, launch, issueText), DONE_GATE);
   const reply = sessionReplyOf(await resumeImplementing(call, prompt, implemented));
   if (typeof reply === "string") return stop("child-failed", reply);
 
@@ -538,11 +544,12 @@ const unrepairedCaptureOf = (worktree: string, prepared: Prepared): Unrepaired |
   return state === null || state.failed === null ? null : { config: state.config, failed: state.failed };
 };
 
-const capturePromptOf = ({ issue, repository, base }: Launch, { config, failed }: Unrepaired): string =>
+const capturePromptOf = ({ issue, repository, base }: Launch, commit: CommitTarget, { config, failed }: Unrepaired): string =>
   captureFailedPrompt({
     issue,
     repository,
     base,
+    commit,
     doneGate: DONE_GATE,
     how: typeof failed.exit_code === "number" ? `with exit code ${failed.exit_code}` : "without an exit code",
     logTail: typeof failed.log_tail === "string" ? failed.log_tail : "",
@@ -568,11 +575,12 @@ export const continueWork = async (call: WorktreeCall): Promise<Result> => {
     const exit = gateBefore.status ?? gateBefore.signal;
     return stop("gate-unreadable", `done_gate.ts status exited ${exit}, which resuming the implementing session cannot fix: ${outputOf(gateBefore)}`);
   }
-  const issueChanged = issueChange(launch, worktree);
-  if (issueChanged !== null) return stop(issueChanged.reason, issueChanged.detail);
+  const issueText = agreedTextOf(launch, worktree);
+  if ("reason" in issueText) return stop(issueText.reason, issueText.detail);
 
   const before = treeHash(gate.root);
-  const prompt = unrepaired === null ? continuePrompt(launch.issue, launch.repository, launch.base, DONE_GATE) : capturePromptOf(launch, unrepaired);
+  const commit = commitTargetOf(stored, launch, issueText);
+  const prompt = unrepaired === null ? continuePrompt(launch.issue, launch.repository, launch.base, commit, DONE_GATE) : capturePromptOf(launch, commit, unrepaired);
   const reply = sessionReplyOf(await resumeImplementing(call, prompt, implemented));
   if (typeof reply === "string") return stop("child-failed", reply);
 
